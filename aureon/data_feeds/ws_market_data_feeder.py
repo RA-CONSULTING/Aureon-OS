@@ -63,6 +63,7 @@ import asyncio
 import atexit
 import ctypes
 import json
+import subprocess
 import time
 import urllib.parse
 import urllib.request
@@ -108,6 +109,10 @@ ALPACA_DEFAULT_SYMBOLS = [
 ]
 
 CAPITAL_DEFAULT_SYMBOLS = [
+    "GOLD",
+    "GCM2026",
+    "GLD",
+    "GDX",
     "AAPL",
     "TSLA",
     "NVDA",
@@ -192,13 +197,25 @@ def _ticker_count(payload: Dict[str, Any]) -> int:
     return len(cache)
 
 
+def _snapshot_success_timestamp(source_key: str, payload: Dict[str, Any]) -> float:
+    source_health = payload.get("source_health", {}) if isinstance(payload.get("source_health"), dict) else {}
+    health = source_health.get(source_key, {}) if isinstance(source_health.get(source_key), dict) else {}
+    for field in ("last_success_at", "generated_at"):
+        try:
+            value = health.get(field) if isinstance(health, dict) else None
+            if value is not None:
+                return float(value)
+        except Exception:
+            pass
+    try:
+        return float(payload.get("generated_at", time.time()) or time.time())
+    except Exception:
+        return time.time()
+
+
 def _cached_last_good_snapshot(source_key: str, payload: Dict[str, Any], reason: str) -> Dict[str, Any]:
     cached = dict(payload)
-    original_generated_at = cached.get("generated_at", time.time())
-    try:
-        original_generated_at_f = float(original_generated_at)
-    except Exception:
-        original_generated_at_f = time.time()
+    original_generated_at_f = _snapshot_success_timestamp(source_key, cached)
     now = time.time()
     cached["generated_at"] = now
     cached["mode"] = "cached_last_good_during_provider_backoff"
@@ -229,11 +246,23 @@ def _pid_is_running(pid: int) -> bool:
         return False
     if sys.platform == "win32":
         try:
-            handle = ctypes.windll.kernel32.OpenProcess(0x1000, False, int(pid))
-            if handle:
-                ctypes.windll.kernel32.CloseHandle(handle)
-                return True
-            return False
+            result = subprocess.run(
+                ["tasklist", "/FI", f"PID eq {int(pid)}", "/FO", "CSV", "/NH"],
+                capture_output=True,
+                text=True,
+                timeout=2,
+                check=False,
+            )
+            return str(int(pid)) in (result.stdout or "")
+        except Exception:
+            pass
+        try:
+            handle = ctypes.windll.kernel32.OpenProcess(0x100000, False, int(pid))
+            if not handle:
+                return False
+            wait_result = ctypes.windll.kernel32.WaitForSingleObject(handle, 0)
+            ctypes.windll.kernel32.CloseHandle(handle)
+            return wait_result == 0x00000102
         except Exception:
             return False
     try:
@@ -407,6 +436,14 @@ class MarketSnapshotStore:
             if current is None or (_ticker_count(payload) > 0 and _ticker_count(current) <= 0):
                 self._snapshots[source_key] = payload
 
+    async def last_good_snapshot(self, source_key: str) -> Optional[Dict[str, Any]]:
+        async with self._lock:
+            self._hydrate_from_existing_cache_unlocked()
+            payload = self._snapshots.get(source_key)
+            if isinstance(payload, dict) and _ticker_count(payload) > 0:
+                return dict(payload)
+        return None
+
     async def update(self, source_key: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         async with self._lock:
             self._hydrate_from_existing_cache_unlocked()
@@ -513,9 +550,25 @@ async def run_binance_all_tickers_rest_fallback(
 
 def _atomic_write_json(path: Path, payload: Dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
-    tmp.replace(path)
+    encoded = json.dumps(payload, ensure_ascii=False)
+    last_error: Optional[BaseException] = None
+    for attempt in range(8):
+        tmp = path.with_name(f"{path.name}.{os.getpid()}.{int(time.time() * 1000)}.{attempt}.tmp")
+        try:
+            tmp.write_text(encoded, encoding="utf-8")
+            os.replace(tmp, path)
+            return
+        except OSError as exc:
+            last_error = exc
+            try:
+                tmp.unlink(missing_ok=True)
+            except Exception:
+                pass
+            if getattr(exc, "winerror", None) != 5 and not isinstance(exc, PermissionError):
+                raise
+            time.sleep(min(0.5, 0.05 * (attempt + 1)))
+    if last_error is not None:
+        raise last_error
 
 
 def _binance_quote_priority(binance_uk_mode: bool) -> List[str]:
@@ -994,13 +1047,27 @@ async def run_budgeted_snapshot_feed(
                 last_good_payload = dict(payload)
                 await store.update(source_key, payload)
             elif last_good_payload is not None and fallback_grace_sec > 0:
-                last_success_at = float(last_good_payload.get("generated_at", time.time()) or time.time())
+                last_success_at = _snapshot_success_timestamp(source_key, last_good_payload)
                 if time.time() - last_success_at <= fallback_grace_sec:
                     await store.update(
                         source_key,
                         _cached_last_good_snapshot(
                             source_key,
                             last_good_payload,
+                            str(payload.get("reason", "") or "empty_snapshot"),
+                        ),
+                    )
+                else:
+                    await store.update(source_key, payload)
+            elif fallback_grace_sec > 0:
+                persisted_good = await store.last_good_snapshot(source_key)
+                if persisted_good is not None and time.time() - _snapshot_success_timestamp(source_key, persisted_good) <= fallback_grace_sec:
+                    last_good_payload = dict(persisted_good)
+                    await store.update(
+                        source_key,
+                        _cached_last_good_snapshot(
+                            source_key,
+                            persisted_good,
                             str(payload.get("reason", "") or "empty_snapshot"),
                         ),
                     )
@@ -1014,8 +1081,16 @@ async def run_budgeted_snapshot_feed(
         except asyncio.CancelledError:
             raise
         except Exception as e:
+            persisted_good = None
+            if last_good_payload is None and fallback_grace_sec > 0:
+                try:
+                    persisted_good = await store.last_good_snapshot(source_key)
+                except Exception:
+                    persisted_good = None
+                if persisted_good is not None:
+                    last_good_payload = dict(persisted_good)
             if last_good_payload is not None and fallback_grace_sec > 0:
-                last_success_at = float(last_good_payload.get("generated_at", time.time()) or time.time())
+                last_success_at = _snapshot_success_timestamp(source_key, last_good_payload)
                 if time.time() - last_success_at <= fallback_grace_sec:
                     await store.update(source_key, _cached_last_good_snapshot(source_key, last_good_payload, f"snapshot_error:{e}"))
                 else:

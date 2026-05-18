@@ -175,6 +175,62 @@ def test_capability_forge_interactive_game_builds_local_playable_artifact(tmp_pa
     assert quality["score"] >= 0.8
 
 
+def test_capability_forge_space_shooter_prompt_builds_matching_game(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
+        _fake_expression_context,
+    )
+
+    report = build_and_write_capability_forge(
+        "Build me an advanced game that I am a space ship shooting enemies.",
+        root=tmp_path,
+    )
+
+    manifest = report["artifact_manifest"]
+    quality = report["artifact_quality_report"]
+    html = Path(manifest["asset_path"]).read_text(encoding="utf-8").lower()
+
+    assert report["handover_ready"] is True
+    assert manifest["game_kind"] == "space_shooter"
+    assert "spaceship enemy shooter" in html
+    assert "shoot: space" in html
+    assert "enemies" in html
+    assert "bullets" in html
+    assert "glowing door" not in html
+    assert any(check["id"] == "enemy_shooter_loop_present" and check["ok"] for check in quality["checks"])
+
+
+def test_capability_forge_repeated_game_prompt_creates_unique_project_artifacts(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
+        _fake_expression_context,
+    )
+
+    prompt = "Build me an advanced game that I am a space ship shooting enemies."
+    first = build_and_write_capability_forge(prompt, root=tmp_path)
+    second = build_and_write_capability_forge(prompt, root=tmp_path)
+
+    first_manifest = first["artifact_manifest"]
+    second_manifest = second["artifact_manifest"]
+    assert first["build_id"] != second["build_id"]
+    assert first["project_id"] != second["project_id"]
+    assert first_manifest["public_url"] != second_manifest["public_url"]
+    assert first_manifest["build_id"] == first["build_id"]
+    assert second_manifest["build_id"] == second["build_id"]
+
+    for report in (first, second):
+        manifest = report["artifact_manifest"]
+        quality = report["artifact_quality_report"]
+        checks = {check["id"]: check for check in quality["checks"]}
+        assert report["summary"]["fresh_project_per_request"] is True
+        assert report["uniqueness_contract"]["reuse_allowed_for_handover"] is False
+        assert manifest["uniqueness_contract"]["build_id"] == manifest["build_id"]
+        assert checks["unique_build_id_present"]["ok"] is True
+        assert checks["no_stale_handover_reuse"]["ok"] is True
+        assert manifest["build_id"] in manifest["public_url"]
+        assert Path(manifest["asset_path"]).exists()
+
+
 def test_capability_forge_barcode_tool_request_builds_domain_specific_skill(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(
         "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
@@ -201,6 +257,69 @@ def test_capability_forge_barcode_tool_request_builds_domain_specific_skill(tmp_
     tool_text = Path(manifest["tool_path"]).read_text(encoding="utf-8")
     assert "CODE39_PATTERNS" in tool_text
     assert "build_labels" in tool_text
+
+
+def test_capability_forge_full_stack_prompt_builds_backend_frontend_tests(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
+        _fake_expression_context,
+    )
+
+    report = build_and_write_capability_forge(
+        "Build a full-stack client task tracker with a backend API, frontend dashboard, local data store, and tests.",
+        root=tmp_path,
+    )
+
+    manifest = report["artifact_manifest"]
+    full_stack = report["full_stack_system_report"]
+    quality = report["artifact_quality_report"]
+    crew_roles = {item["role"] for item in report["recruited_crew"]}
+
+    assert report["task_family"] == "full_stack"
+    assert report["handover_ready"] is True
+    assert report["summary"]["full_stack_system_created"] is True
+    assert report["adaptive_skill_evidence"]["name"] == "local_full_stack_system_forge"
+    assert manifest["kind"] == "full_stack_system"
+    assert manifest["public_url"].endswith("/frontend/index.html")
+    assert Path(manifest["backend_path"]).exists()
+    assert Path(manifest["frontend_path"]).exists()
+    assert Path(manifest["test_path"]).exists()
+    assert "API Engineer" in crew_roles
+    assert "Frontend Engineer" in crew_roles
+    assert "Integration Test Pilot" in crew_roles
+    assert full_stack["validation"]["status"] == "contract_validated"
+    assert quality["handover_ready"] is True
+    assert any(check["id"] == "crud_contract_passes" and check["ok"] for check in quality["checks"])
+
+    backend_text = Path(manifest["backend_path"]).read_text(encoding="utf-8")
+    frontend_text = Path(manifest["frontend_path"]).read_text(encoding="utf-8")
+    app_text = Path(manifest["project_dir"], "frontend", "app.js").read_text(encoding="utf-8")
+    test_text = Path(manifest["test_path"]).read_text(encoding="utf-8")
+    assert "def create_item" in backend_text
+    assert "app.js" in frontend_text
+    assert "api/items" in app_text
+    assert "test_health_and_crud_contract" in test_text
+
+
+def test_capability_forge_repeated_tool_prompt_creates_unique_skill_dirs(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
+        _fake_expression_context,
+    )
+
+    prompt = "Build a local barcode label generator tool for the warehouse team, with run instructions and proof."
+    first = build_and_write_capability_forge(prompt, root=tmp_path)
+    second = build_and_write_capability_forge(prompt, root=tmp_path)
+
+    first_manifest = first["artifact_manifest"]
+    second_manifest = second["artifact_manifest"]
+    assert first_manifest["kind"] == "barcode_label_generator"
+    assert second_manifest["kind"] == "barcode_label_generator"
+    assert first_manifest["public_url"] != second_manifest["public_url"]
+    assert first_manifest["tool_path"] != second_manifest["tool_path"]
+    assert first_manifest["build_id"] != second_manifest["build_id"]
+    assert first_manifest["uniqueness_contract"]["reuse_allowed_for_handover"] is False
+    assert second_manifest["uniqueness_contract"]["reuse_allowed_for_handover"] is False
 
 
 def test_capability_forge_generic_finished_tool_blocks_fake_handover(tmp_path: Path, monkeypatch) -> None:

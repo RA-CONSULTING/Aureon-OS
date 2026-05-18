@@ -12,6 +12,7 @@ param(
     [switch]$SkipMarketTelemetry,
     [switch]$SkipMindHub,
     [switch]$SkipSelfQuestioning,
+    [switch]$SkipAutonomousSelfRun,
     [switch]$SkipFrontend,
     [switch]$SkipNpmInstall,
     [switch]$WaitForRefresh,
@@ -23,7 +24,8 @@ param(
     [int]$ObserverInterval = 30,
     [int]$MarketInterval = 1,
     [int]$StatusTimeoutSec = 75,
-    [int]$SupervisorIntervalSec = 20
+    [int]$SupervisorIntervalSec = 20,
+    [int]$SelfRunIntervalSec = 300
 )
 
 $ErrorActionPreference = "Stop"
@@ -628,6 +630,42 @@ function Test-AureonRuntimeWriterAlive {
     return (Test-ProcessAlive -ProcessId $writerPid)
 }
 
+function Test-AureonRuntimeLiveTradingArmed {
+    param($RuntimeState)
+    if ($null -eq $RuntimeState) {
+        return $false
+    }
+    try {
+        $plan = $RuntimeState.exchange_action_plan
+        if ($null -eq $plan) {
+            return $false
+        }
+        $globalBlockers = @()
+        if ($null -ne $plan.global_blockers) {
+            $globalBlockers = @($plan.global_blockers | ForEach-Object { [string]$_ })
+        }
+        $requiredCleared = @(
+            "live_trading_not_enabled",
+            "real_orders_disabled",
+            "exchange_mutations_disabled",
+            "order_intent_publish_disabled"
+        )
+        foreach ($blocker in $requiredCleared) {
+            if ($globalBlockers -contains $blocker) {
+                return $false
+            }
+        }
+        return (
+            [bool]$plan.order_intent_publish_enabled -and
+            [bool]$plan.executor_enabled -and
+            (-not [bool]$plan.real_orders_disabled) -and
+            (-not [bool]$plan.exchange_mutations_disabled)
+        )
+    } catch {
+        return $false
+    }
+}
+
 function Complete-AureonMindRebootIntent {
     param([string]$Status = "completed")
     try {
@@ -1107,6 +1145,7 @@ if (-not $env:UNIFIED_MARKET_EMBEDDED_DASHBOARD) { $env:UNIFIED_MARKET_EMBEDDED_
 if (-not $env:UNIFIED_RUNTIME_WRITER_LOCK_TTL_SEC) { $env:UNIFIED_RUNTIME_WRITER_LOCK_TTL_SEC = "120" }
 if (-not $env:UNIFIED_CENTRAL_BEAT_REFRESH_SEC) { $env:UNIFIED_CENTRAL_BEAT_REFRESH_SEC = "2" }
 if (-not $env:UNIFIED_READY_STALE_AFTER_SEC) { $env:UNIFIED_READY_STALE_AFTER_SEC = "45" }
+if (-not $env:UNIFIED_TICK_RUNNING_STALE_AFTER_SEC) { $env:UNIFIED_TICK_RUNNING_STALE_AFTER_SEC = "600" }
 if (-not $env:UNIFIED_PROBE_SYMBOL_MIN_INTERVAL_SEC) { $env:UNIFIED_PROBE_SYMBOL_MIN_INTERVAL_SEC = "5" }
 if (-not $env:UNIFIED_PROBE_SYMBOL_STALE_TTL_SEC) { $env:UNIFIED_PROBE_SYMBOL_STALE_TTL_SEC = "30" }
 if (-not $env:MARKET_CACHE_DIR) { $env:MARKET_CACHE_DIR = "ws_cache" }
@@ -1279,6 +1318,16 @@ if (-not $SkipMarketTelemetry) {
         $marketCanRestart = $marketDowntimeWindow -and (-not $marketHasOpenPositions)
         $marketHoldReason = "local_flight_fallback"
     }
+    if ($marketLive.ok -and $null -eq $marketState) {
+        $marketState = Get-AureonRuntimeState -TimeoutSec 3
+    }
+    $marketLiveTradingArmed = Test-AureonRuntimeLiveTradingArmed -RuntimeState $marketState
+    $operatorLiveUpgrade = [bool]($LiveTrading -and $marketLive.ok -and (-not $marketHasOpenPositions) -and (-not $marketLiveTradingArmed))
+    if ($operatorLiveUpgrade) {
+        $marketCanRestart = $true
+        $marketHoldReason = "operator_confirmed_live_mode_requires_runtime_replacement"
+        Write-Aureon "Operator-confirmed live mode requested; replacing non-live market runtime after flat-position check" "WATCH"
+    }
 
     if ($LegacyMarketRuntimeOnDefaultPort) {
         Request-AureonMarketRebootIntent -Reason "legacy_market_runtime_without_flight_test_preserved_until_safe_downtime"
@@ -1413,6 +1462,16 @@ $started += Start-AureonProcess `
     -Arguments "-m aureon.autonomous.aureon_organism_runtime_observer --watch --interval $ObserverInterval --refresh-core" `
     -WorkingDirectory $RepoRoot `
     -LogDirectory $LogRoot
+
+if (-not $SkipAutonomousSelfRun) {
+    $started += Start-AureonProcess `
+        -Name "Autonomous self-run coding loop" `
+        -Pattern "aureon.autonomous.aureon_autonomous_self_run_loop --forever" `
+        -FilePath $Python `
+        -Arguments "-m aureon.autonomous.aureon_autonomous_self_run_loop --forever --interval-seconds $SelfRunIntervalSec --max-stress-attempts 2" `
+        -WorkingDirectory $RepoRoot `
+        -LogDirectory $LogRoot
+}
 
 if (-not $SkipFrontend) {
     Stop-ProcessOnPort -Port $FrontendPort -Name "Unified frontend console"
@@ -1626,6 +1685,12 @@ if ($KeepAlive) {
                             Write-Aureon "Refreshing read-only market status server so market flight-test endpoints are available; trading loop remains untouched" "INFO"
                             Restart-AureonMarketStatusServerOnly
                         }
+                        $marketLiveTradingArmed = Test-AureonRuntimeLiveTradingArmed -RuntimeState $runtimeStateForWriter
+                        if ($LiveTrading -and (-not $marketHasOpenPositions) -and (-not $marketLiveTradingArmed)) {
+                            $marketCanRestart = $true
+                            $marketHoldReason = "operator_confirmed_live_mode_requires_runtime_replacement"
+                            Write-Aureon "Operator-confirmed live mode still needs the market runtime replaced; flat-position check approved" "WATCH"
+                        }
                         if (-not $marketWriterAlive -and ((Get-Date) - $marketWriterTakeoverLastAttempt).TotalSeconds -ge $marketWriterTakeoverCooldownSec) {
                             $takeoverReason = "supervisor_dead_or_missing_writer_pid_$marketWriterPid; restart_deferred_reason=$marketHoldReason"
                             Start-AureonMarketTelemetryWriterOnly -Reason $takeoverReason | Out-Null
@@ -1702,6 +1767,13 @@ if ($KeepAlive) {
             -Name "Organism runtime observer" `
             -Pattern "aureon.autonomous.aureon_organism_runtime_observer --watch" `
             -Arguments "-m aureon.autonomous.aureon_organism_runtime_observer --watch --interval $ObserverInterval --refresh-core"
+
+        if (-not $SkipAutonomousSelfRun) {
+            Ensure-BackgroundProcess `
+                -Name "Autonomous self-run coding loop" `
+                -Pattern "aureon.autonomous.aureon_autonomous_self_run_loop --forever" `
+                -Arguments "-m aureon.autonomous.aureon_autonomous_self_run_loop --forever --interval-seconds $SelfRunIntervalSec --max-stress-attempts 2"
+        }
 
         Write-SupervisorManifest -Statuses $statuses
         $summary = ($statuses | ForEach-Object {

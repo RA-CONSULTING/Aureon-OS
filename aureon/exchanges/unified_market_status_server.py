@@ -41,6 +41,10 @@ ENV_PATH = Path(os.getenv("AUREON_ENV_FILE") or (REPO_ROOT / ".env")).expanduser
 HOST = "127.0.0.1"
 STATUS_FILE_STALE_AFTER_SEC = float(os.getenv("UNIFIED_STATUS_FILE_STALE_AFTER_SEC", "60") or 60)
 TICK_STALE_AFTER_SEC = float(os.getenv("UNIFIED_READY_STALE_AFTER_SEC", "45") or 45)
+TICK_RUNNING_STALE_AFTER_SEC = max(
+    TICK_STALE_AFTER_SEC,
+    float(os.getenv("UNIFIED_TICK_RUNNING_STALE_AFTER_SEC", "600") or 600),
+)
 
 EXCHANGE_ENV_FIELDS: dict[str, tuple[str, ...]] = {
     "binance": ("BINANCE_API_KEY", "BINANCE_API_SECRET"),
@@ -92,14 +96,19 @@ def _runtime_watchdog(payload: dict[str, Any], status_file_age_sec: float | None
         last_tick_age = None
     tick_running_sec = max(0.0, now - last_started_ts) if last_started_ts > last_completed_ts else 0.0
 
-    stale_reason = str(payload.get("stale_reason") or watchdog.get("tick_stale_reason") or "")
-    tick_stale = bool(payload.get("stale") or watchdog.get("tick_stale"))
-    if last_tick_age is not None and last_tick_age > TICK_STALE_AFTER_SEC:
+    existing_reason = str(payload.get("stale_reason") or watchdog.get("tick_stale_reason") or "")
+    active_tick = bool(last_started_ts > last_completed_ts)
+    stale_reason = ""
+    tick_stale = False
+    if not active_tick and last_tick_age is not None and last_tick_age > TICK_STALE_AFTER_SEC:
         tick_stale = True
-        stale_reason = stale_reason or "last_tick_age_exceeded"
-    if tick_running_sec > TICK_STALE_AFTER_SEC:
+        stale_reason = "last_tick_age_exceeded"
+    if active_tick and tick_running_sec > TICK_RUNNING_STALE_AFTER_SEC:
         tick_stale = True
         stale_reason = "tick_in_progress_stalled"
+    if not tick_stale and existing_reason not in {"", "last_tick_age_exceeded", "tick_in_progress_stalled"}:
+        tick_stale = bool(payload.get("stale") or watchdog.get("tick_stale"))
+        stale_reason = existing_reason
 
     status_file_fresh = status_file_age_sec is None or status_file_age_sec <= STATUS_FILE_STALE_AFTER_SEC
     open_positions = _has_open_positions(payload)
@@ -120,6 +129,9 @@ def _runtime_watchdog(payload: dict[str, Any], status_file_age_sec: float | None
             "tick_stale": tick_stale,
             "tick_stale_reason": stale_reason,
             "tick_stale_after_sec": TICK_STALE_AFTER_SEC,
+            "tick_active": active_tick,
+            "tick_long_running": bool(active_tick and tick_running_sec > TICK_STALE_AFTER_SEC),
+            "tick_running_stale_after_sec": TICK_RUNNING_STALE_AFTER_SEC,
             "last_tick_age_sec": round(float(last_tick_age), 3) if last_tick_age is not None else None,
             "last_tick_running_sec": round(float(tick_running_sec), 3) if tick_running_sec > 0 else 0.0,
             "open_positions": open_positions,
@@ -140,6 +152,12 @@ def _read_status() -> dict[str, Any]:
                 age_sec = max(0.0, time.time() - stat.st_mtime)
                 payload.setdefault("ok", True)
                 payload.setdefault("source", "unified-market-status-server")
+                payload.setdefault(
+                    "generated_at",
+                    payload.get("dashboard_generated_at")
+                    or payload.get("last_tick_completed_at")
+                    or datetime.fromtimestamp(stat.st_mtime).isoformat(),
+                )
                 payload["status_file"] = str(STATUS_PATH)
                 payload["status_file_mtime"] = datetime.fromtimestamp(stat.st_mtime).isoformat()
                 payload["status_file_age_sec"] = round(age_sec, 3)
@@ -147,6 +165,16 @@ def _read_status() -> dict[str, Any]:
                 if payload["runtime_watchdog"].get("tick_stale"):
                     payload["stale"] = True
                     payload["stale_reason"] = payload["runtime_watchdog"].get("tick_stale_reason")
+                elif str(payload.get("stale_reason") or "") in {"last_tick_age_exceeded", "tick_in_progress_stalled"}:
+                    payload["stale"] = False
+                    payload["stale_reason"] = ""
+                if (
+                    not payload.get("stale")
+                    and bool(payload.get("trading_ready"))
+                    and bool(payload.get("data_ready"))
+                    and not bool(payload.get("duplicate_runtime"))
+                ):
+                    payload["ok"] = True
                 if age_sec > STATUS_FILE_STALE_AFTER_SEC:
                     payload["stale"] = True
                     payload.setdefault("warnings", [])

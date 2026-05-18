@@ -529,12 +529,37 @@ def _repair_case(case: Dict[str, Any], attempt: int, evaluation: Dict[str, Any])
     safe_surfaces = ["frontend/public/aureon_*", "state/aureon_*", "docs/audits/aureon_*"]
     if runner in {"live_repo_probe", "self_repair_probe"}:
         safe_surfaces = LIVE_REPO_ALLOWLIST
+    work_order = _self_fix_work_order(case, evaluation, safe_surfaces=safe_surfaces)
     return {
         "attempt": attempt,
         "status": "auto_apply_safe_repair",
         "strategy": "safe_rerun_with_strengthened_proof" if runner == "capability_forge" else "safe_local_probe_rerun",
         "failure_reason": evaluation.get("failure_reason"),
+        "repair_work_order": work_order,
+        "self_fix_director": "aureon.autonomous.aureon_autonomous_self_fix_director",
+        "safe_patch_requirement": "apply an allowlisted unified diff through the guarded self-fix director, or publish no_safe_patch_available",
         "allowed_surfaces": safe_surfaces,
+        "blocked_authority": ["live_trading", "payments", "filings", "credential_reveal", "destructive_os_actions"],
+    }
+
+
+def _self_fix_work_order(
+    case: Dict[str, Any],
+    evaluation: Dict[str, Any],
+    *,
+    safe_surfaces: Optional[Sequence[str]] = None,
+) -> Dict[str, Any]:
+    runner = str(case.get("runner") or "")
+    surfaces = list(safe_surfaces or (LIVE_REPO_ALLOWLIST if runner in {"live_repo_probe", "self_repair_probe"} else ["frontend/public/aureon_*", "state/aureon_*", "docs/audits/aureon_*"]))
+    return {
+        "id": f"self_fix_{case.get('id', 'unknown')}",
+        "title": f"Self-fix complex stress case {case.get('id', 'unknown')}",
+        "source_case": case.get("id"),
+        "priority": "P0" if evaluation.get("fake_pass_detected") or case.get("expected_handover") else "P1",
+        "failure_reason": evaluation.get("failure_reason") or "stress case requires repair evidence",
+        "safe_apply_route": "aureon.autonomous.aureon_autonomous_self_fix_director.GuardedPatchApplier",
+        "allowed_surfaces": surfaces,
+        "acceptance": "Aureon either applies an allowlisted local patch with git apply --check and tests, or publishes the exact no-safe-patch blocker.",
         "blocked_authority": ["live_trading", "payments", "filings", "credential_reveal", "destructive_os_actions"],
     }
 
@@ -572,6 +597,13 @@ def _run_case_with_repairs(case: Dict[str, Any], root: Path, *, max_attempts: in
 
     quality = final_eval.get("quality_report") if isinstance(final_eval.get("quality_report"), dict) else {}
     manifest = final_eval.get("artifact_manifest") if isinstance(final_eval.get("artifact_manifest"), dict) else {}
+    repair_work_order = (
+        repair_attempts[-1].get("repair_work_order")
+        if repair_attempts and isinstance(repair_attempts[-1], dict)
+        else _self_fix_work_order(case, final_eval)
+        if not final_eval.get("ok") or final_eval.get("fake_pass_detected")
+        else {}
+    )
     return {
         "id": case.get("id"),
         "prompt": case.get("prompt"),
@@ -590,6 +622,7 @@ def _run_case_with_repairs(case: Dict[str, Any], root: Path, *, max_attempts: in
         "quality_report": quality,
         "quality_score": final_eval.get("quality_score", 0),
         "repair_attempts": repair_attempts,
+        "repair_work_order": repair_work_order,
         "attempt_results": attempt_results,
         "handover_state": {
             "expected": final_eval.get("expected_handover"),

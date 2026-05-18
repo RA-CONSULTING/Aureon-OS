@@ -88,6 +88,23 @@ except Exception:
     except Exception:
         get_sero_client = None  # type: ignore[assignment]
 
+try:
+    from aureon.trading.order_lifecycle import (
+        append_event as append_order_lifecycle_event,
+        candidate_id_for,
+        is_active_route as order_lifecycle_route_active,
+        latest_for_ui as latest_order_lifecycle_state,
+        lifecycle_id_for,
+        route_key_for,
+    )
+except Exception:
+    append_order_lifecycle_event = None  # type: ignore[assignment]
+    candidate_id_for = None  # type: ignore[assignment]
+    order_lifecycle_route_active = None  # type: ignore[assignment]
+    latest_order_lifecycle_state = None  # type: ignore[assignment]
+    lifecycle_id_for = None  # type: ignore[assignment]
+    route_key_for = None  # type: ignore[assignment]
+
 logger = logging.getLogger("unified_market_trader")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -144,6 +161,7 @@ RUNTIME_STATUS_LOCK_PATH = RUNTIME_STATUS_PATH.with_name("unified_market_trader.
 ORDER_INTENT_LOG_PATH = RUNTIME_STATUS_PATH.with_name("unified_exchange_order_intents.jsonl")
 ORDER_INTENT_STATE_PATH = RUNTIME_STATUS_PATH.with_name("unified_exchange_order_intents.json")
 ORDER_INTENT_PUBLIC_PATH = REPO_ROOT / "frontend" / "public" / "aureon_unified_exchange_order_intents.json"
+GOLD_CAPITAL_INTELLIGENCE_PUBLIC_PATH = REPO_ROOT / "frontend" / "public" / "aureon_gold_capital_intelligence_company.json"
 EXECUTION_RESULT_LOG_PATH = RUNTIME_STATUS_PATH.with_name("unified_exchange_execution_results.jsonl")
 EXECUTION_RESULT_STATE_PATH = RUNTIME_STATUS_PATH.with_name("unified_exchange_execution_results.json")
 EXECUTION_RESULT_PUBLIC_PATH = REPO_ROOT / "frontend" / "public" / "aureon_unified_exchange_execution_results.json"
@@ -181,6 +199,10 @@ CENTRAL_BEAT_STALE_AFTER_SEC = max(
     _env_float("UNIFIED_CENTRAL_BEAT_STALE_AFTER_SEC", 90.0),
 )
 READY_STALE_AFTER_SEC = max(15.0, _env_float("UNIFIED_READY_STALE_AFTER_SEC", 45.0))
+TICK_RUNNING_STALE_AFTER_SEC = max(
+    READY_STALE_AFTER_SEC,
+    _env_float("UNIFIED_TICK_RUNNING_STALE_AFTER_SEC", 600.0),
+)
 CENTRAL_BEAT_HISTORY_LIMIT = 24
 PROBE_SYMBOL_MIN_INTERVAL_SEC = max(1.0, _env_float("UNIFIED_PROBE_SYMBOL_MIN_INTERVAL_SEC", 5.0))
 PROBE_SYMBOL_STALE_TTL_SEC = max(
@@ -188,6 +210,10 @@ PROBE_SYMBOL_STALE_TTL_SEC = max(
     _env_float("UNIFIED_PROBE_SYMBOL_STALE_TTL_SEC", 30.0),
 )
 STREAM_CACHE_MAX_AGE_SEC = max(0.5, _env_float("UNIFIED_STREAM_PRICE_MAX_AGE_SEC", 5.0))
+GOLD_PRIORITY_STREAM_MAX_AGE_SEC = max(
+    STREAM_CACHE_MAX_AGE_SEC,
+    _env_float("UNIFIED_GOLD_PRIORITY_STREAM_MAX_AGE_SEC", 180.0),
+)
 STREAM_CACHE_MAX_SYMBOLS = max(8, int(_env_float("UNIFIED_STREAM_CACHE_MAX_SYMBOLS", 96.0)))
 FAST_MONEY_MIN_VOLATILITY_PCT = max(0.01, _env_float("UNIFIED_FAST_MONEY_MIN_VOLATILITY_PCT", 0.34))
 FAST_MONEY_BREAK_EVEN_MOVE_PCT = max(0.01, _env_float("UNIFIED_FAST_MONEY_BREAK_EVEN_MOVE_PCT", 0.34))
@@ -249,6 +275,30 @@ WORLD_ECOSYSTEM_NEWS_ENABLED = os.getenv("UNIFIED_WORLD_ECOSYSTEM_NEWS", "1").st
     "no",
     "off",
 }
+CENTRAL_BEAT_HEAVY_CONTEXT_ENABLED = os.getenv("UNIFIED_CENTRAL_BEAT_HEAVY_CONTEXT", "0").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+TRADER_COGNITIVE_WIRING_ENABLED = os.getenv("UNIFIED_TRADER_COGNITIVE_WIRING", "0").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+EXCHANGE_BOOT_ASYNC_ENABLED = os.getenv("UNIFIED_EXCHANGE_BOOT_ASYNC", "1").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+EXCHANGE_SYNC_RETRY_ENABLED = os.getenv("UNIFIED_EXCHANGE_SYNC_RETRY", "0").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
 WORLD_ECOSYSTEM_MACRO_MIN_INTERVAL_SEC = max(60.0, _env_float("UNIFIED_WORLD_ECOSYSTEM_MACRO_MIN_INTERVAL_SEC", 300.0))
 WORLD_ECOSYSTEM_FRESH_SEC = max(30.0, _env_float("UNIFIED_WORLD_ECOSYSTEM_FRESH_SEC", 900.0))
 WORLD_ECOSYSTEM_MAX_DECISION_SYMBOLS = max(4, int(_env_float("UNIFIED_WORLD_ECOSYSTEM_MAX_DECISION_SYMBOLS", 16.0)))
@@ -296,7 +346,9 @@ SYMBOL_ALIASES = {
     "ETHUSD": "ETHUSD",
     "BTCUSD": "BTCUSD",
     "GOLD": "XAUUSD",
+    "GOLDUSD": "XAUUSD",
     "XAUUSD": "XAUUSD",
+    "XAUUSDT": "XAUUSD",
     "SILVER": "XAGUSD",
     "XAGUSD": "XAGUSD",
     "BTCUSDT": "BTCUSD",
@@ -755,6 +807,9 @@ class UnifiedMarketTrader:
         self.alpaca_error = ""
         self.binance_error = ""
         self._binance_diag: Dict[str, Any] = {}
+        self._exchange_init_threads: Dict[str, threading.Thread] = {}
+        self._exchange_init_errors: Dict[str, str] = {}
+        self._exchange_init_started_at: float = 0.0
         self._last_kraken_init_attempt = 0.0
         self._last_capital_init_attempt = 0.0
         self._last_kraken_startup_attempt = 0.0
@@ -777,6 +832,8 @@ class UnifiedMarketTrader:
         self._last_execution_at: float = 0.0
         self._execution_memory: Dict[str, float] = {}
         self._latest_execution_results: Dict[str, Any] = {}
+        self._order_lifecycle_enabled = True
+        self._order_lifecycle_started = False
         self._executor_route_lock = threading.Lock()
         self._executor_route_inflight: Dict[str, Dict[str, Any]] = {}
         self._executor_route_results: Dict[str, Dict[str, Any]] = {}
@@ -812,12 +869,14 @@ class UnifiedMarketTrader:
         self._world_macro_snapshot_at: float = 0.0
         self._world_macro_fetch_inflight: bool = False
         self._asset_waveform_models: Dict[str, Any] = {}
+        self._central_beat_heavy_context_enabled = CENTRAL_BEAT_HEAVY_CONTEXT_ENABLED
         self._scanner_fusion_matrix: Dict[str, Any] = {}
         self._market_harp = None
         self._cross_asset_correlator = None
         self._world_macro_provider = None
         self._world_news_signal_provider = None
         self._runtime_instance_id = f"{os.getpid()}:{self.start_time:.6f}"
+        self._record_runtime_lifecycle_start()
         self._runtime_writer_lock_reason = ""
         self._duplicate_runtime = False
         self._owns_runtime_status = self._claim_runtime_writer()
@@ -837,16 +896,24 @@ class UnifiedMarketTrader:
         self._start_runtime_heartbeat()
 
         # ── Network connections ────────────────────────────────────────────
-        self._thought_bus = (
-            get_thought_bus() if _HAS_THOUGHT_BUS and get_thought_bus is not None else None
-        )
-        self._mycelium = (
-            get_mycelium(initial_capital=100.0) if _HAS_MYCELIUM and get_mycelium is not None else None
-        )
+        if TRADER_COGNITIVE_WIRING_ENABLED:
+            self._set_tick_phase("booting:cognitive_wiring")
+            self._thought_bus = (
+                get_thought_bus() if _HAS_THOUGHT_BUS and get_thought_bus is not None else None
+            )
+            self._mycelium = (
+                get_mycelium(initial_capital=100.0) if _HAS_MYCELIUM and get_mycelium is not None else None
+            )
+        else:
+            self._thought_bus = None
+            self._mycelium = None
 
         if self.setup_kraken_cli:
             self._ensure_kraken_cli()
-        self._init_exchanges()
+        if EXCHANGE_BOOT_ASYNC_ENABLED:
+            self._start_exchange_boot_init()
+        else:
+            self._init_exchanges()
         self._latest_dashboard_payload = self._build_bootstrap_dashboard_payload()
         self._write_runtime_status_file()
 
@@ -864,6 +931,8 @@ class UnifiedMarketTrader:
         return str(raw).strip().lower() in {"1", "true", "yes", "on"}
 
     def _runtime_real_orders_allowed(self) -> bool:
+        if bool(getattr(self, "dry_run", False)):
+            return False
         return (
             self._env_enabled("AUREON_LIVE_TRADING")
             and not self._env_enabled("AUREON_AUDIT_MODE")
@@ -873,7 +942,205 @@ class UnifiedMarketTrader:
         )
 
     def _unified_executor_enabled(self) -> bool:
+        if bool(getattr(self, "dry_run", False)):
+            return False
         return self._env_enabled("AUREON_UNIFIED_ORDER_EXECUTOR", self._runtime_real_orders_allowed())
+
+    def _central_beat_heavy_context_enabled_now(self) -> bool:
+        return bool(getattr(self, "_central_beat_heavy_context_enabled", CENTRAL_BEAT_HEAVY_CONTEXT_ENABLED))
+
+    def _tick_running_stale_after_sec(self) -> float:
+        try:
+            return max(
+                READY_STALE_AFTER_SEC,
+                float(getattr(self, "_tick_running_stale_after_sec", TICK_RUNNING_STALE_AFTER_SEC) or TICK_RUNNING_STALE_AFTER_SEC),
+            )
+        except Exception:
+            return TICK_RUNNING_STALE_AFTER_SEC
+
+    def _order_lifecycle_enabled_now(self) -> bool:
+        explicit = getattr(self, "_order_lifecycle_enabled", None)
+        if explicit is not None:
+            return bool(explicit)
+        return not _SUPPRESS_IMPORT_SIDE_EFFECTS
+
+    def _order_lifecycle_root(self) -> Optional[Path]:
+        root = getattr(self, "_order_lifecycle_root_path", None)
+        try:
+            return Path(root).resolve() if root else None
+        except Exception:
+            return None
+
+    def _order_route_key(self, venue: Any, market_type: Any, symbol: Any, side: Any) -> str:
+        if route_key_for is not None:
+            try:
+                return str(route_key_for(venue, market_type, symbol, side))
+            except Exception:
+                pass
+        return ":".join(
+            [
+                str(venue or "").lower(),
+                str(market_type or "").lower(),
+                str(symbol or "").upper().strip(),
+                str(side or "").upper().strip(),
+            ]
+        )
+
+    def _candidate_lifecycle_identity(self, item: Dict[str, Any]) -> Tuple[str, str]:
+        symbol = str(item.get("symbol") or item.get("route_symbol") or "").upper().strip()
+        side = str(item.get("side") or "HOLD").upper().strip()
+        source = "|".join(str(part) for part in (item.get("sources") or []) if str(part))
+        seed = item.get("generated_at") or item.get("reference_price") or item.get("selection_rank") or source
+        if candidate_id_for is not None:
+            try:
+                candidate_id = str(candidate_id_for(symbol, side, seed, source))
+            except Exception:
+                candidate_id = f"ocand-{abs(hash((symbol, side, seed, source)))}"
+        else:
+            candidate_id = f"ocand-{abs(hash((symbol, side, seed, source)))}"
+        existing_lifecycle_id = str(item.get("lifecycle_id") or "")
+        if existing_lifecycle_id:
+            lifecycle_id = existing_lifecycle_id
+        elif lifecycle_id_for is not None:
+            try:
+                lifecycle_id = str(lifecycle_id_for("candidate", candidate_id))
+            except Exception:
+                lifecycle_id = f"olife-{candidate_id}"
+        else:
+            lifecycle_id = f"olife-{candidate_id}"
+        return str(item.get("candidate_id") or candidate_id), lifecycle_id
+
+    def _record_order_lifecycle(self, event_type: str, status: str, lifecycle_id: str, **fields: Any) -> None:
+        if not self._order_lifecycle_enabled_now() or append_order_lifecycle_event is None:
+            return
+        if not lifecycle_id:
+            if lifecycle_id_for is not None:
+                try:
+                    lifecycle_id = str(
+                        lifecycle_id_for(
+                            "runtime",
+                            getattr(self, "_runtime_instance_id", ""),
+                            event_type,
+                            fields.get("route_key"),
+                            fields.get("symbol"),
+                            fields.get("intent_id"),
+                        )
+                    )
+                except Exception:
+                    lifecycle_id = ""
+            if not lifecycle_id:
+                return
+        try:
+            append_order_lifecycle_event(
+                event_type=event_type,
+                status=status,
+                lifecycle_id=lifecycle_id,
+                root=self._order_lifecycle_root(),
+                **fields,
+            )
+        except Exception as exc:
+            logger.debug("Order lifecycle event write failed: %s", exc)
+
+    def _record_runtime_lifecycle_start(self) -> None:
+        if bool(getattr(self, "_order_lifecycle_started", False)):
+            return
+        if lifecycle_id_for is not None:
+            try:
+                lifecycle_id = str(lifecycle_id_for("runtime_session", getattr(self, "_runtime_instance_id", ""), os.getpid()))
+            except Exception:
+                lifecycle_id = ""
+        else:
+            lifecycle_id = ""
+        if not lifecycle_id:
+            return
+        self._order_lifecycle_started = True
+        self._record_order_lifecycle(
+            "runtime_started",
+            "runtime_started",
+            lifecycle_id,
+            runtime_instance_id=getattr(self, "_runtime_instance_id", ""),
+            pid=os.getpid(),
+            source="unified_market_trader.runtime",
+        )
+
+    def _order_lifecycle_snapshot(self) -> Dict[str, Any]:
+        if latest_order_lifecycle_state is None:
+            return {}
+        try:
+            return latest_order_lifecycle_state(root=self._order_lifecycle_root())
+        except Exception as exc:
+            logger.debug("Order lifecycle snapshot unavailable: %s", exc)
+            return {}
+
+    def _record_order_flow_lifecycle_candidates(self, order_flow_feed: Dict[str, Any]) -> None:
+        active = order_flow_feed.get("active_order_flow", []) if isinstance(order_flow_feed, dict) else []
+        if not isinstance(active, list):
+            return
+        for item in active[:10]:
+            if not isinstance(item, dict):
+                continue
+            candidate_id, lifecycle_id = self._candidate_lifecycle_identity(item)
+            item["candidate_id"] = candidate_id
+            item["lifecycle_id"] = lifecycle_id
+            routes = item.get("execution_routes", []) if isinstance(item.get("execution_routes"), list) else []
+            primary_route = next((route for route in routes if isinstance(route, dict) and route.get("ready")), {})
+            if not primary_route and routes and isinstance(routes[0], dict):
+                primary_route = routes[0]
+            route_key = str(primary_route.get("route_key") or "") if isinstance(primary_route, dict) else ""
+            self._record_order_lifecycle(
+                "market_snapshot",
+                "data_ready",
+                lifecycle_id,
+                candidate_id=candidate_id,
+                symbol=item.get("symbol"),
+                side=item.get("side"),
+                route_key=route_key,
+                confidence=item.get("confidence"),
+                source="unified_market_trader.shared_order_flow",
+            )
+            self._record_order_lifecycle(
+                "candidate_ready",
+                "candidate_ready",
+                lifecycle_id,
+                candidate_id=candidate_id,
+                symbol=item.get("symbol"),
+                side=item.get("side"),
+                route_key=route_key,
+                confidence=item.get("confidence"),
+                selection_rank=item.get("selection_rank"),
+                route_count=len(routes),
+                ready_route_count=item.get("ready_route_count"),
+                blockers=item.get("intent_publish_blockers", []),
+                source="unified_market_trader.shared_order_flow",
+            )
+
+    def _broker_identity_from_result(self, result: Dict[str, Any]) -> Dict[str, Any]:
+        containers: List[Dict[str, Any]] = []
+        if isinstance(result, dict):
+            containers.append(result)
+            nested = result.get("result")
+            if isinstance(nested, dict):
+                containers.append(nested)
+            position = result.get("fast_profit_position")
+            if isinstance(position, dict):
+                containers.append(position)
+        ack: Dict[str, Any] = {}
+        for container in containers:
+            for source_key, target_key in (
+                ("dealId", "deal_id"),
+                ("deal_id", "deal_id"),
+                ("dealReference", "deal_reference"),
+                ("deal_reference", "deal_reference"),
+                ("orderId", "order_id"),
+                ("order_id", "order_id"),
+                ("id", "order_id"),
+                ("txid", "txid"),
+                ("status", "broker_status"),
+            ):
+                value = container.get(source_key)
+                if value is not None and value != "" and target_key not in ack:
+                    ack[target_key] = value
+        return ack
 
     def _set_tick_phase(self, phase: str) -> None:
         self._tick_phase = str(phase or "unknown")
@@ -1440,6 +1707,58 @@ class UnifiedMarketTrader:
         self._init_alpaca(force=True)
         self._init_binance(force=True)
 
+    def _start_exchange_boot_init(self) -> None:
+        if self._exchange_init_threads and any(thread.is_alive() for thread in self._exchange_init_threads.values()):
+            return
+        self._exchange_init_started_at = time.time()
+        self._exchange_init_errors = {}
+
+        init_targets: List[Tuple[str, Callable[..., None]]] = [
+            ("capital", self._init_capital),
+            ("alpaca", self._init_alpaca),
+            ("binance", self._init_binance),
+            ("kraken", self._init_kraken),
+        ]
+        threads: Dict[str, threading.Thread] = {}
+
+        def _runner(name: str, func: Callable[..., None]) -> None:
+            try:
+                func(force=True)
+            except Exception as exc:
+                self._exchange_init_errors[name] = str(exc)
+
+        for name, func in init_targets:
+            thread = threading.Thread(
+                target=_runner,
+                args=(name, func),
+                name=f"aureon-{name}-boot-init",
+                daemon=True,
+            )
+            thread.start()
+            threads[name] = thread
+        self._exchange_init_threads = threads
+
+    def _exchange_boot_init_snapshot(self) -> Dict[str, Any]:
+        threads = getattr(self, "_exchange_init_threads", {}) or {}
+        started_at = float(getattr(self, "_exchange_init_started_at", 0.0) or 0.0)
+        now = time.time()
+        errors = getattr(self, "_exchange_init_errors", {}) or {}
+        states = {
+            name: {
+                "alive": bool(thread.is_alive()),
+                "error": str(errors.get(name, "")),
+            }
+            for name, thread in threads.items()
+        }
+        return {
+            "async_enabled": bool(EXCHANGE_BOOT_ASYNC_ENABLED),
+            "sync_retry_enabled": bool(EXCHANGE_SYNC_RETRY_ENABLED),
+            "started_at": datetime.fromtimestamp(started_at).isoformat() if started_at > 0 else None,
+            "age_sec": round(max(0.0, now - started_at), 3) if started_at > 0 else 0.0,
+            "inflight": any(state.get("alive") for state in states.values()),
+            "states": states,
+        }
+
     def _init_kraken(self, force: bool = False) -> None:
         now = time.time()
         if not force and now - self._last_kraken_init_attempt < EXCHANGE_REINIT_INTERVAL_SEC:
@@ -1530,6 +1849,10 @@ class UnifiedMarketTrader:
             logger.debug("Binance passive client unavailable: %s", e)
 
     def _ensure_exchanges(self) -> None:
+        if EXCHANGE_BOOT_ASYNC_ENABLED and not EXCHANGE_SYNC_RETRY_ENABLED:
+            if not getattr(self, "_exchange_init_threads", None):
+                self._start_exchange_boot_init()
+            return
         if self.kraken is None:
             self._init_kraken()
         elif not self.kraken_ready:
@@ -1622,12 +1945,24 @@ class UnifiedMarketTrader:
             return False
         if pid == os.getpid():
             return True
+        if os.name == "nt":
+            try:
+                result = subprocess.run(
+                    ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"],
+                    capture_output=True,
+                    text=True,
+                    timeout=2,
+                    check=False,
+                )
+                return str(pid) in (result.stdout or "")
+            except Exception:
+                return False
         try:
             os.kill(pid, 0)
             return True
         except PermissionError:
             return True
-        except OSError:
+        except (OSError, SystemError):
             return False
 
     def _claim_runtime_writer(self) -> bool:
@@ -1716,9 +2051,12 @@ class UnifiedMarketTrader:
         def heartbeat() -> None:
             while True:
                 try:
-                    payload = self._copy_payload(
-                        self._latest_dashboard_payload or self._build_bootstrap_dashboard_payload()
-                    )
+                    if self._last_tick_completed_at <= 0:
+                        payload = self._build_bootstrap_dashboard_payload()
+                    else:
+                        payload = self._copy_payload(
+                            self._latest_dashboard_payload or self._build_bootstrap_dashboard_payload()
+                        )
                     now = time.time()
                     payload["runtime_minutes"] = (now - self.start_time) / 60.0
                     payload["runtime_heartbeat"] = {
@@ -1945,6 +2283,49 @@ class UnifiedMarketTrader:
         payload["dashboard_fetch_state"] = dict(state)
         return payload
 
+    def _build_bootstrap_gold_runtime_trade_proof(self, now_iso: str) -> Dict[str, Any]:
+        signal = self._gold_priority_live_stream_signal()
+        ready = bool(signal.get("ready"))
+        side = str(signal.get("side") or "HOLD").upper()
+        capital_route_visible = ready
+        capital_route_ready = bool(ready and self.capital_ready)
+        route_blockers: List[str] = []
+        if not capital_route_ready:
+            route_blockers.append("capital_cfd_route_booting" if ready else "fresh_capital_gold_stream_missing")
+        if not ready:
+            reason = str(signal.get("reason") or "fresh_capital_gold_stream_missing")
+        elif side not in {"BUY", "SELL"}:
+            reason = "gold_side_not_validated_by_fresh_interval_projection"
+        elif not capital_route_ready:
+            reason = route_blockers[0]
+        else:
+            reason = "gold_runtime_gated_intent_publishable"
+        return {
+            "generated_at": now_iso,
+            "gold_runtime_candidate_ready": ready,
+            "gold_candidate_count": 1 if ready else 0,
+            "candidate_symbol": "XAUUSD" if ready else "",
+            "candidate_side": side,
+            "candidate_confidence": signal.get("confidence") if ready else None,
+            "candidate_sources": signal.get("source_tags", []) if ready else [],
+            "capital_cfd_route_visible": capital_route_visible,
+            "capital_cfd_route_ready": capital_route_ready,
+            "capital_cfd_route_blockers": route_blockers,
+            "gold_intent_publishable": bool(capital_route_ready and side in {"BUY", "SELL"}),
+            "gold_intent_publish_reason": reason,
+            "intent_publish_blockers": [] if side in {"BUY", "SELL"} else ["gold_side_not_validated_by_fresh_interval_projection"],
+            "global_blockers": [],
+            "fresh_gold_data_source": signal,
+            "shared_feed_contains_gold": ready,
+            "routeable_key_count": 1 if ready else 0,
+            "active_order_flow_count": 1 if ready else 0,
+            "safety": {
+                "direct_exchange_mutation": False,
+                "proof_phase": "runtime_bootstrap_order_intent_only",
+                "requires_existing_runtime_executor": True,
+            },
+        }
+
     def _build_bootstrap_dashboard_payload(self) -> Dict[str, Any]:
         now_iso = datetime.now().isoformat()
         kraken_error = self.kraken_error or ("startup_pending" if self.kraken is not None else "not_ready")
@@ -1952,6 +2333,7 @@ class UnifiedMarketTrader:
         kraken_payload = self._unavailable_exchange_payload("kraken", kraken_error)
         capital_payload = self._unavailable_exchange_payload("capital", capital_error, extra={"stats": {}})
         preflight = self._build_preflight_report()
+        gold_runtime_trade_proof = self._build_bootstrap_gold_runtime_trade_proof(now_iso)
         return {
             "ok": True,
             "source": "unified-market-trader",
@@ -1992,13 +2374,28 @@ class UnifiedMarketTrader:
             "exchange_action_plan": {
                 "generated_at": now_iso,
                 "mode": "booting",
-                "venues": {},
+                "venues": {
+                    "capital_cfd": {
+                        "venue": "capital",
+                        "market_type": "cfd",
+                        "ready": bool(gold_runtime_trade_proof.get("capital_cfd_route_ready")),
+                        "candidate_count": int(gold_runtime_trade_proof.get("gold_candidate_count", 0) or 0),
+                        "ready_candidate_count": 1 if bool(gold_runtime_trade_proof.get("capital_cfd_route_ready")) else 0,
+                        "blockers": gold_runtime_trade_proof.get("capital_cfd_route_blockers", []),
+                        "runtime_clearances": [],
+                        "guards": ["runtime_bootstrap_only", "fresh_interval_validated_gold_projection_required"],
+                        "trade_path_state": "booting",
+                        "end_user_trade_available": False,
+                    }
+                },
                 "order_intent_publish_enabled": False,
                 "order_intents_published": 0,
                 "executor_enabled": False,
                 "latest_execution": {},
                 "shadow_trading": {},
+                "gold_runtime_trade_proof": gold_runtime_trade_proof,
             },
+            "gold_runtime_trade_proof": gold_runtime_trade_proof,
             "shadow_trading": {
                 "generated_at": now_iso,
                 "mode": "shadow_validation_non_mutating",
@@ -2063,19 +2460,63 @@ class UnifiedMarketTrader:
             )
         )
         self._dynamic_intelligence_budget = self._build_dynamic_intelligence_budget(kraken_payload, capital_payload)
+        self._set_tick_phase("build_combined_payload:central_beat")
         central_beat = self._build_central_beat_feed(kraken_payload, capital_payload)
+        self._set_tick_phase("build_combined_payload:shared_market_feed")
         shared_market_feed = self._sync_shared_market_feed(central_beat)
+        self._set_tick_phase("build_combined_payload:gold_priority_candidate")
+        self._apply_gold_priority_candidate(central_beat, shared_market_feed)
+        self._set_tick_phase("build_combined_payload:order_flow")
         order_flow_feed = self._build_global_order_flow_feed(kraken_payload, capital_payload, central_beat, shared_market_feed)
+        self._record_order_flow_lifecycle_candidates(order_flow_feed)
+        self._set_tick_phase("build_combined_payload:action_plan")
+        exchange_action_plan = self._build_exchange_action_plan(order_flow_feed)
+        self._set_tick_phase("build_combined_payload:gold_trade_proof")
+        gold_runtime_trade_proof = self._build_gold_runtime_trade_proof(
+            central_beat,
+            shared_market_feed,
+            order_flow_feed,
+            exchange_action_plan,
+        )
+        order_flow_feed["gold_runtime_trade_proof"] = gold_runtime_trade_proof
+        exchange_action_plan["gold_runtime_trade_proof"] = gold_runtime_trade_proof
+        order_lifecycle = self._order_lifecycle_snapshot()
+        self._latest_dashboard_payload = self._copy_payload(
+            {
+                "ok": False,
+                "source": "unified-market-trader",
+                "partial": True,
+                "partial_reason": "combined_payload_in_progress",
+                "generated_at": datetime.now().isoformat(),
+                "runtime_minutes": (time.time() - self.start_time) / 60.0,
+                "shared_market_feed": shared_market_feed,
+                "central_beat": central_beat,
+                "live_stream_cache": central_beat.get("stream_cache", {}) if isinstance(central_beat, dict) else {},
+                "shared_order_flow": order_flow_feed,
+                "exchange_action_plan": exchange_action_plan,
+                "gold_runtime_trade_proof": gold_runtime_trade_proof,
+                "order_lifecycle": order_lifecycle,
+                "combined": {
+                    "open_positions": len(kraken_payload.get("positions", [])) + len(capital_payload.get("positions", [])),
+                    "kraken_ready": self.kraken_ready,
+                    "capital_ready": self.capital_ready,
+                },
+            }
+        )
+        self._write_runtime_status_file()
+        self._set_tick_phase("build_combined_payload:decision_feed")
         self._feed_shared_order_flow_to_decision_logic(order_flow_feed)
         self._feed_auris_throne(order_flow_feed)
-        exchange_action_plan = self._build_exchange_action_plan(order_flow_feed)
+        self._set_tick_phase("build_combined_payload:shadow_report")
         shadow_trade_report = self._build_shadow_trade_report(order_flow_feed, exchange_action_plan)
+        self._set_tick_phase("build_combined_payload:hnc_proof")
         hnc_cognitive_proof = self._build_hnc_cognitive_proof(
             central_beat,
             order_flow_feed,
             exchange_action_plan,
             shadow_trade_report,
         )
+        self._set_tick_phase("build_combined_payload:intelligence_mesh")
         intelligence_mesh = self._build_intelligence_mesh(
             central_beat=central_beat,
             order_flow_feed=order_flow_feed,
@@ -2086,7 +2527,13 @@ class UnifiedMarketTrader:
         kraken_equity = self._kraken_equity_from_payload(kraken_payload)
         order_flow_feed["intelligence_mesh"] = intelligence_mesh
         exchange_action_plan["intelligence_mesh"] = intelligence_mesh
+        order_flow_feed["gold_runtime_trade_proof"] = gold_runtime_trade_proof
+        exchange_action_plan["gold_runtime_trade_proof"] = gold_runtime_trade_proof
+        self._set_tick_phase("build_combined_payload:order_intents")
         self._publish_order_intents(order_flow_feed, exchange_action_plan)
+        gold_runtime_trade_proof["order_intents_published_this_cycle"] = int(exchange_action_plan.get("order_intents_published", 0) or 0)
+        gold_runtime_trade_proof["latest_published"] = exchange_action_plan.get("latest_published", {})
+        order_lifecycle = self._order_lifecycle_snapshot()
         combined_status = self.get_status_lines()
         queen_voice = self._build_queen_voice_payload(kraken_payload, capital_payload)
         payload = {
@@ -2115,6 +2562,8 @@ class UnifiedMarketTrader:
             "hnc_operating_cycle": hnc_cognitive_proof.get("operating_cycle", {}) if isinstance(hnc_cognitive_proof, dict) else {},
             "intelligence_mesh": intelligence_mesh,
             "exchange_action_plan": exchange_action_plan,
+            "gold_runtime_trade_proof": gold_runtime_trade_proof,
+            "order_lifecycle": order_lifecycle,
             "kraken_spot_fast_profit": self._load_kraken_spot_fast_profit_state(),
             "kraken_asset_registry": self._load_kraken_asset_registry_summary(),
             "preflight": self._build_preflight_report(),
@@ -2929,7 +3378,7 @@ class UnifiedMarketTrader:
             from aureon.data_feeds.unified_market_cache import get_market_cache
 
             market_cache = get_market_cache()
-            tickers = market_cache.get_all_tickers(max_age=STREAM_CACHE_MAX_AGE_SEC)
+            tickers = market_cache.get_all_tickers(max_age=GOLD_PRIORITY_STREAM_MAX_AGE_SEC)
             source_health = market_cache.get_source_health() if hasattr(market_cache, "get_source_health") else {}
         except Exception as e:
             self._stream_cache_empty_health(f"stream_cache_unavailable:{e}")
@@ -2961,7 +3410,7 @@ class UnifiedMarketTrader:
             if price <= 0 or timestamp <= 0:
                 continue
             age_sec = max(0.0, now - timestamp)
-            if age_sec > STREAM_CACHE_MAX_AGE_SEC:
+            if age_sec > GOLD_PRIORITY_STREAM_MAX_AGE_SEC:
                 continue
             priority = 1.0 if base_norm in watch_bases or normalized in watchlist else 0.0
             volume_score = min(1.0, max(0.0, volume_24h) / 1_000_000_000.0)
@@ -3191,43 +3640,77 @@ class UnifiedMarketTrader:
             "confidence": round((max(buy_pressure, sell_pressure) / total_pressure) if total_pressure > 0 else 0.0, 4),
             "source_count": len(sources),
         }
-        world_ecosystem = self._build_world_ecosystem_intelligence(normalized_symbols, sources, regime)
-        world_source = self._build_world_ecosystem_source_snapshot(world_ecosystem)
-        if world_source:
-            self._merge_world_ecosystem_source(normalized_symbols, world_source)
-            sources.append(world_source)
-            regime["source_count"] = len(sources)
-            regime["world_ecosystem_usable_sources"] = int(world_ecosystem.get("usable_source_count", 0) or 0)
-            regime["world_ecosystem_decision_symbols"] = int(world_ecosystem.get("decision_symbol_count", 0) or 0)
-        asset_waveform_models = self._build_asset_waveform_models(normalized_symbols, sources)
-        waveform_source = self._build_historical_waveform_source_snapshot(asset_waveform_models)
-        if waveform_source:
-            self._merge_historical_waveform_source(normalized_symbols, waveform_source)
-            sources.append(waveform_source)
-            regime["source_count"] = len(sources)
-            regime["waveform_usable_symbols"] = int(asset_waveform_models.get("usable_symbol_count", 0) or 0)
-            regime["waveform_long_memory_ready"] = int(asset_waveform_models.get("long_memory_ready_count", 0) or 0)
-        model_signal_feed = self._build_model_signal_feed(sources, regime)
-        model_symbols = model_signal_feed.get("symbols", {}) if isinstance(model_signal_feed, dict) else {}
-        if isinstance(model_symbols, dict):
-            for normalized, model_signal in model_symbols.items():
-                if normalized not in normalized_symbols or not isinstance(model_signal, dict):
-                    continue
-                symbol_state = normalized_symbols[normalized]
-                prior_confidence = max(0.0, min(1.0, float(symbol_state.get("confidence", 0.0) or 0.0)))
-                model_confidence = max(0.0, min(1.0, float(model_signal.get("confidence", 0.0) or 0.0)))
-                model_direction = str(model_signal.get("direction") or "NEUTRAL").upper()
-                current_side = str(symbol_state.get("side") or "BUY").upper()
-                if model_direction in {"BUY", "SELL"}:
-                    aligned_model_confidence = model_confidence if model_direction == current_side else 1.0 - model_confidence
-                    blended_confidence = max(0.0, min(1.0, prior_confidence * 0.75 + aligned_model_confidence * 0.25))
-                    symbol_state["confidence"] = round(blended_confidence, 4)
-                    symbol_state["strength"] = round(
-                        min(1.5, blended_confidence * (1.0 + min(1.0, (int(symbol_state.get("support_count", 0) or 0) - 1) * 0.35))),
-                        4,
-                    )
-                    symbol_state["model_alignment"] = model_direction == current_side
-                symbol_state["model_signal"] = model_signal
+        if self._central_beat_heavy_context_enabled_now():
+            self._set_tick_phase("build_combined_payload:central_beat:world_context")
+            world_ecosystem = self._build_world_ecosystem_intelligence(normalized_symbols, sources, regime)
+            world_source = self._build_world_ecosystem_source_snapshot(world_ecosystem)
+            if world_source:
+                self._merge_world_ecosystem_source(normalized_symbols, world_source)
+                sources.append(world_source)
+                regime["source_count"] = len(sources)
+                regime["world_ecosystem_usable_sources"] = int(world_ecosystem.get("usable_source_count", 0) or 0)
+                regime["world_ecosystem_decision_symbols"] = int(world_ecosystem.get("decision_symbol_count", 0) or 0)
+            self._set_tick_phase("build_combined_payload:central_beat:waveform_context")
+            asset_waveform_models = self._build_asset_waveform_models(normalized_symbols, sources)
+            waveform_source = self._build_historical_waveform_source_snapshot(asset_waveform_models)
+            if waveform_source:
+                self._merge_historical_waveform_source(normalized_symbols, waveform_source)
+                sources.append(waveform_source)
+                regime["source_count"] = len(sources)
+                regime["waveform_usable_symbols"] = int(asset_waveform_models.get("usable_symbol_count", 0) or 0)
+                regime["waveform_long_memory_ready"] = int(asset_waveform_models.get("long_memory_ready_count", 0) or 0)
+            self._set_tick_phase("build_combined_payload:central_beat:model_signal")
+            model_signal_feed = self._build_model_signal_feed(sources, regime)
+            model_symbols = model_signal_feed.get("symbols", {}) if isinstance(model_signal_feed, dict) else {}
+            if isinstance(model_symbols, dict):
+                for normalized, model_signal in model_symbols.items():
+                    if normalized not in normalized_symbols or not isinstance(model_signal, dict):
+                        continue
+                    symbol_state = normalized_symbols[normalized]
+                    prior_confidence = max(0.0, min(1.0, float(symbol_state.get("confidence", 0.0) or 0.0)))
+                    model_confidence = max(0.0, min(1.0, float(model_signal.get("confidence", 0.0) or 0.0)))
+                    model_direction = str(model_signal.get("direction") or "NEUTRAL").upper()
+                    current_side = str(symbol_state.get("side") or "BUY").upper()
+                    if model_direction in {"BUY", "SELL"}:
+                        aligned_model_confidence = model_confidence if model_direction == current_side else 1.0 - model_confidence
+                        blended_confidence = max(0.0, min(1.0, prior_confidence * 0.75 + aligned_model_confidence * 0.25))
+                        symbol_state["confidence"] = round(blended_confidence, 4)
+                        symbol_state["strength"] = round(
+                            min(1.5, blended_confidence * (1.0 + min(1.0, (int(symbol_state.get("support_count", 0) or 0) - 1) * 0.35))),
+                            4,
+                        )
+                        symbol_state["model_alignment"] = model_direction == current_side
+                    symbol_state["model_signal"] = model_signal
+        else:
+            now_iso = datetime.now().isoformat()
+            world_ecosystem = {
+                "schema_version": 1,
+                "generated_at": now_iso,
+                "enabled": False,
+                "mode": "deferred_live_runtime_fast_path",
+                "decision_symbols": {},
+                "sources": [],
+                "fed_to_decision_logic": False,
+                "reason": "heavy_context_deferred_to_nonblocking_reports",
+            }
+            asset_waveform_models = {
+                "schema_version": 1,
+                "generated_at": now_iso,
+                "enabled": False,
+                "mode": "deferred_live_runtime_fast_path",
+                "decision_symbols": {},
+                "fed_to_decision_logic": False,
+                "reason": "heavy_context_deferred_to_nonblocking_reports",
+            }
+            model_signal_feed = {
+                "used": False,
+                "engine": "aureon.trading.unified_signal_engine.UnifiedSignalEngine",
+                "reason": "heavy_context_deferred_to_nonblocking_reports",
+                "symbols": {},
+                "opportunity_count": len(normalized_symbols),
+            }
+            self._world_ecosystem_intelligence = world_ecosystem
+            self._asset_waveform_models = asset_waveform_models
 
         payload = {
             "generated_at": datetime.now().isoformat(),
@@ -5358,7 +5841,7 @@ class UnifiedMarketTrader:
         if action_plan.get("global_blockers"):
             blockers.extend(str(item) for item in action_plan.get("global_blockers", []) if str(item))
         tick_running = max(0.0, time.time() - float(getattr(self, "_last_tick_started_at", 0.0) or 0.0))
-        if tick_running > READY_STALE_AFTER_SEC:
+        if tick_running > TICK_RUNNING_STALE_AFTER_SEC:
             blockers.append("current_tick_stale")
         try:
             combined = payload.get("combined") if isinstance(payload.get("combined"), dict) else {}
@@ -5371,6 +5854,23 @@ class UnifiedMarketTrader:
         if now - float(getattr(self, "_last_execution_at", 0.0) or 0.0) < ORDER_EXECUTOR_MIN_INTERVAL_SEC:
             blockers.append("executor_cycle_cooldown")
         return sorted(set(blockers))
+
+    def _persist_execution_summary(self, execution_summary: Dict[str, Any]) -> None:
+        try:
+            EXECUTION_RESULT_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+            with EXECUTION_RESULT_LOG_PATH.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(execution_summary, default=str, sort_keys=True) + "\n")
+        except Exception as e:
+            logger.debug("Execution result log write failed: %s", e)
+        for path in (EXECUTION_RESULT_STATE_PATH, EXECUTION_RESULT_PUBLIC_PATH):
+            try:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                tmp_path = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+                with tmp_path.open("w", encoding="utf-8") as handle:
+                    json.dump(execution_summary, handle, indent=2, default=str)
+                os.replace(tmp_path, path)
+            except Exception as e:
+                logger.debug("Execution result state write failed for %s: %s", path, e)
 
     def _execute_runtime_order_actions(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         order_flow = payload.get("shared_order_flow") if isinstance(payload.get("shared_order_flow"), dict) else {}
@@ -5396,10 +5896,12 @@ class UnifiedMarketTrader:
             "blockers": blockers,
             "route_timeout_sec": ORDER_EXECUTOR_ROUTE_TIMEOUT_SEC,
             "executor_route_state": self._executor_route_snapshot(),
+            "order_lifecycle": self._order_lifecycle_snapshot(),
         }
         if blockers:
             self._latest_execution_results = execution_summary
             action_plan["latest_execution"] = execution_summary
+            self._persist_execution_summary(execution_summary)
             return execution_summary
 
         active = order_flow.get("active_order_flow", []) if isinstance(order_flow, dict) else []
@@ -5415,6 +5917,10 @@ class UnifiedMarketTrader:
             if confidence < ORDER_INTENT_MIN_CONFIDENCE:
                 continue
             side = str(item.get("side") or "BUY").upper()
+            candidate_id, lifecycle_id = self._candidate_lifecycle_identity(item)
+            item["candidate_id"] = candidate_id
+            item["lifecycle_id"] = lifecycle_id
+            intent_id = str(item.get("intent_id") or item.get("id") or "")
             routes = item.get("execution_routes", []) if isinstance(item.get("execution_routes"), list) else []
             for route_item in routes:
                 if execution_summary["attempted_count"] >= ORDER_EXECUTOR_MAX_PER_TICK:
@@ -5424,8 +5930,45 @@ class UnifiedMarketTrader:
                 venue = str(route_item.get("venue") or "").lower()
                 market_type = str(route_item.get("market_type") or "").lower()
                 route_symbol = str(route_item.get("symbol") or "").upper().strip()
-                route_key = f"{venue}:{market_type}:{route_symbol}:{side}"
+                route_key = str(route_item.get("route_key") or self._order_route_key(venue, market_type, route_symbol, side))
                 owner = str(route_item.get("execution_owner") or "").lower()
+                if (
+                    self._order_lifecycle_enabled_now()
+                    and order_lifecycle_route_active is not None
+                    and order_lifecycle_route_active(route_key, root=self._order_lifecycle_root())
+                ):
+                    execution_summary["attempted_count"] += 1
+                    execution_summary["held_count"] += 1
+                    execution_summary["blocked_count"] += 1
+                    held = {
+                        "ok": False,
+                        "held": True,
+                        "venue": venue,
+                        "market_type": market_type,
+                        "symbol": route_symbol,
+                        "side": side,
+                        "route_key": route_key,
+                        "candidate_id": candidate_id,
+                        "lifecycle_id": lifecycle_id,
+                        "intent_id": intent_id,
+                        "reason": "order_lifecycle_route_already_submitted_or_open",
+                    }
+                    execution_summary["results"].append(held)
+                    self._record_order_lifecycle(
+                        "duplicate_submission_blocked",
+                        "order_blocked",
+                        lifecycle_id,
+                        candidate_id=candidate_id,
+                        intent_id=intent_id,
+                        route_key=route_key,
+                        venue=venue,
+                        market_type=market_type,
+                        symbol=route_symbol,
+                        side=side,
+                        reason=held["reason"],
+                        source="unified_market_trader.executor",
+                    )
+                    continue
                 if (owner == "existing_autonomous_trader_tick" and not (venue == "kraken" and market_type == "margin")) or (
                     venue == "capital" and market_type == "cfd"
                 ):
@@ -5437,6 +5980,10 @@ class UnifiedMarketTrader:
                         "market_type": market_type,
                         "symbol": route_symbol,
                         "side": side,
+                        "route_key": route_key,
+                        "candidate_id": candidate_id,
+                        "lifecycle_id": lifecycle_id,
+                        "intent_id": intent_id,
                         "reason": "delegated_to_existing_autonomous_trader_tick",
                         "generated_at": datetime.now().isoformat(),
                         "source": "unified_market_trader.executor",
@@ -5453,6 +6000,20 @@ class UnifiedMarketTrader:
                         "model_signal": item.get("model_signal", {}),
                         "model_alignment": item.get("model_alignment", False),
                     }
+                    self._record_order_lifecycle(
+                        "executor_delegated",
+                        "executor_accepted",
+                        lifecycle_id,
+                        candidate_id=candidate_id,
+                        intent_id=intent_id,
+                        route_key=route_key,
+                        venue=venue,
+                        market_type=market_type,
+                        symbol=route_symbol,
+                        side=side,
+                        reason=delegated["reason"],
+                        source="unified_market_trader.executor",
+                    )
                     execution_summary["delegated_count"] += 1
                     execution_summary["results"].append(delegated)
                     continue
@@ -5469,12 +6030,30 @@ class UnifiedMarketTrader:
                         "market_type": market_type,
                         "symbol": route_symbol,
                         "side": side,
+                        "route_key": route_key,
+                        "candidate_id": candidate_id,
+                        "lifecycle_id": lifecycle_id,
+                        "intent_id": intent_id,
                         "reason": "symbol_route_cooldown",
                     })
                     continue
 
                 try:
                     execution_summary["attempted_count"] += 1
+                    self._record_order_lifecycle(
+                        "executor_accepted",
+                        "executor_accepted",
+                        lifecycle_id,
+                        candidate_id=candidate_id,
+                        intent_id=intent_id,
+                        route_key=route_key,
+                        venue=venue,
+                        market_type=market_type,
+                        symbol=route_symbol,
+                        side=side,
+                        confidence=confidence,
+                        source="unified_market_trader.executor",
+                    )
                     if venue == "kraken" and market_type == "spot":
                         result = self._run_executor_route_with_timeout(
                             route_key,
@@ -5562,38 +6141,93 @@ class UnifiedMarketTrader:
                         "cognitive_sources": item.get("sources", []),
                         "model_signal": item.get("model_signal", {}),
                         "model_alignment": item.get("model_alignment", False),
+                        "route_key": route_key,
+                        "candidate_id": candidate_id,
+                        "lifecycle_id": lifecycle_id,
+                        "intent_id": intent_id,
                     }
                 )
                 execution_summary["results"].append(result)
                 if result.get("ok"):
                     self._execution_memory[route_key] = now
                     execution_summary["submitted_count"] += 1
+                    ack = self._broker_identity_from_result(result)
+                    self._record_order_lifecycle(
+                        "order_submitted",
+                        "order_submitted",
+                        lifecycle_id,
+                        candidate_id=candidate_id,
+                        intent_id=intent_id,
+                        route_key=route_key,
+                        venue=venue,
+                        market_type=market_type,
+                        symbol=route_symbol,
+                        side=side,
+                        confidence=confidence,
+                        broker_response=result.get("result"),
+                        source="unified_market_trader.executor",
+                    )
+                    if ack:
+                        self._record_order_lifecycle(
+                            "broker_acknowledged",
+                            "broker_acknowledged",
+                            lifecycle_id,
+                            candidate_id=candidate_id,
+                            intent_id=intent_id,
+                            route_key=route_key,
+                            venue=venue,
+                            market_type=market_type,
+                            symbol=route_symbol,
+                            side=side,
+                            **ack,
+                            source="unified_market_trader.executor",
+                        )
+                    position = result.get("fast_profit_position")
+                    if isinstance(position, dict) and position:
+                        self._record_order_lifecycle(
+                            "position_open",
+                            "position_open",
+                            lifecycle_id,
+                            candidate_id=candidate_id,
+                            intent_id=intent_id,
+                            route_key=route_key,
+                            venue=venue,
+                            market_type=market_type,
+                            symbol=route_symbol,
+                            side=side,
+                            order_id=position.get("id") or ack.get("order_id"),
+                            entry_price=position.get("entry_price"),
+                            size=position.get("quantity"),
+                            source="unified_market_trader.executor",
+                        )
                     self._publish_thought("execution.order.submitted", result)
                 else:
                     execution_summary["held_count"] += 1
                     execution_summary["blocked_count"] += 1
+                    self._record_order_lifecycle(
+                        "order_blocked",
+                        "order_blocked",
+                        lifecycle_id,
+                        candidate_id=candidate_id,
+                        intent_id=intent_id,
+                        route_key=route_key,
+                        venue=venue,
+                        market_type=market_type,
+                        symbol=route_symbol,
+                        side=side,
+                        reason=result.get("reason"),
+                        error=result.get("error"),
+                        source="unified_market_trader.executor",
+                    )
 
         if execution_summary["submitted_count"] > 0:
             self._last_execution_at = now
         execution_summary["executor_route_state"] = self._executor_route_snapshot()
+        execution_summary["order_lifecycle"] = self._order_lifecycle_snapshot()
         self._latest_execution_results = execution_summary
         action_plan["latest_execution"] = execution_summary
 
-        try:
-            EXECUTION_RESULT_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-            with EXECUTION_RESULT_LOG_PATH.open("a", encoding="utf-8") as handle:
-                handle.write(json.dumps(execution_summary, default=str, sort_keys=True) + "\n")
-        except Exception as e:
-            logger.debug("Execution result log write failed: %s", e)
-        for path in (EXECUTION_RESULT_STATE_PATH, EXECUTION_RESULT_PUBLIC_PATH):
-            try:
-                path.parent.mkdir(parents=True, exist_ok=True)
-                tmp_path = path.with_name(f"{path.name}.{os.getpid()}.tmp")
-                with tmp_path.open("w", encoding="utf-8") as handle:
-                    json.dump(execution_summary, handle, indent=2, default=str)
-                os.replace(tmp_path, path)
-            except Exception as e:
-                logger.debug("Execution result state write failed for %s: %s", path, e)
+        self._persist_execution_summary(execution_summary)
         return execution_summary
 
     def _extract_trader_source_snapshot(self, source_name: str, payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -5802,7 +6436,213 @@ class UnifiedMarketTrader:
         return ""
 
     def _capital_tradable_symbols(self) -> Dict[str, str]:
-        return {self._normalize_symbol(symbol): symbol for symbol in CAPITAL_UNIVERSE.keys()}
+        tradables = {self._normalize_symbol(symbol): symbol for symbol in CAPITAL_UNIVERSE.keys()}
+        tradables.setdefault("XAUUSD", "GOLD")
+        return tradables
+
+    def _read_gold_capital_intelligence(self) -> Dict[str, Any]:
+        try:
+            if GOLD_CAPITAL_INTELLIGENCE_PUBLIC_PATH.exists():
+                payload = json.loads(GOLD_CAPITAL_INTELLIGENCE_PUBLIC_PATH.read_text(encoding="utf-8"))
+                return payload if isinstance(payload, dict) else {}
+        except Exception as e:
+            logger.debug("GOLD intelligence report unavailable: %s", e)
+        return {}
+
+    def _validated_gold_action_side(self) -> Tuple[str, str]:
+        report = self._read_gold_capital_intelligence()
+        summary = report.get("summary") if isinstance(report.get("summary"), dict) else {}
+        edge_stream = report.get("gold_dynamic_market_edge_stream") if isinstance(report.get("gold_dynamic_market_edge_stream"), dict) else {}
+        action_candidate = edge_stream.get("action_candidate") if isinstance(edge_stream.get("action_candidate"), dict) else {}
+        side = str(action_candidate.get("side") or "").upper()
+        validation_allowed = bool(
+            action_candidate.get("shadow_intent_allowed")
+            or action_candidate.get("margin_order_allowed")
+            or summary.get("gold_dynamic_market_edge_shadow_intent_allowed")
+            or summary.get("gold_margin_signal_shadow_intent_allowed")
+            or summary.get("gold_portfolio_uplift_order_intent_allowed")
+        )
+        if validation_allowed and side in {"BUY", "SELL"}:
+            return side, "gold_intelligence_validated_buy_sell"
+        if side in {"BUY", "SELL"}:
+            return "HOLD", "gold_intelligence_side_seen_but_not_validated"
+        return "HOLD", "gold_intelligence_requires_fresh_interval_validation"
+
+    def _gold_priority_live_stream_signal(self) -> Dict[str, Any]:
+        try:
+            from aureon.data_feeds.unified_market_cache import get_market_cache
+
+            market_cache = get_market_cache()
+            tickers = market_cache.get_all_tickers(max_age=GOLD_PRIORITY_STREAM_MAX_AGE_SEC)
+        except Exception as e:
+            return {
+                "ready": False,
+                "reason": f"stream_cache_unavailable:{e}",
+                "source_tags": ["gold_priority_target"],
+            }
+
+        now = time.time()
+        candidates: List[Dict[str, Any]] = []
+        for base, ticker in (tickers.items() if isinstance(tickers, dict) else []):
+            base_norm = self._canonical_stream_base(base or getattr(ticker, "symbol", "") or "")
+            pair = str(getattr(ticker, "pair", "") or base_norm).upper()
+            source = str(getattr(ticker, "source", "") or "").lower()
+            capital_source = "capital" in source
+            gold_symbol = base_norm in {"GOLD", "XAU"} or pair in {"GOLD", "GOLDUSD", "XAUUSD"} or "GOLD" in pair
+            if not (capital_source and gold_symbol):
+                continue
+            try:
+                price = float(getattr(ticker, "price", 0.0) or 0.0)
+                bid = float(getattr(ticker, "bid", 0.0) or 0.0)
+                ask = float(getattr(ticker, "ask", 0.0) or 0.0)
+                timestamp = float(getattr(ticker, "timestamp", 0.0) or 0.0)
+                change_pct = float(getattr(ticker, "change_24h", 0.0) or 0.0)
+                volume_24h = float(getattr(ticker, "volume_24h", 0.0) or 0.0)
+            except Exception:
+                continue
+            if price <= 0.0 and bid <= 0.0 and ask <= 0.0:
+                continue
+            if timestamp <= 0.0:
+                continue
+            age_sec = max(0.0, now - timestamp)
+            if age_sec > GOLD_PRIORITY_STREAM_MAX_AGE_SEC:
+                continue
+            if bid <= 0.0:
+                bid = price
+            if ask <= 0.0:
+                ask = price
+            mid = price if price > 0.0 else (bid + ask) / 2.0
+            spread = max(0.0, ask - bid) if ask > 0.0 and bid > 0.0 else 0.0
+            spread_pct = (spread / mid) * 100.0 if mid > 0.0 else 0.0
+            spread_penalty = min(0.18, max(0.0, spread_pct) / 100.0)
+            confidence = max(ORDER_INTENT_MIN_CONFIDENCE, min(0.92, 0.74 - spread_penalty))
+            candidates.append(
+                {
+                    "ready": True,
+                    "normalized_symbol": "XAUUSD",
+                    "symbol": "GOLD",
+                    "capital_symbol": "GOLD",
+                    "reference_price": round(mid, 8),
+                    "bid": round(bid, 8),
+                    "ask": round(ask, 8),
+                    "spread": round(spread, 8),
+                    "spread_pct": round(spread_pct, 8),
+                    "change_pct": round(change_pct, 6),
+                    "volume_24h": round(volume_24h, 6),
+                    "age_sec": round(age_sec, 3),
+                    "source": str(getattr(ticker, "source", "") or "capital_gold_live_stream"),
+                    "raw_symbol": pair,
+                    "confidence": round(confidence, 4),
+                    "source_tags": [
+                        "capital_gold_live_stream",
+                        "gold_priority_target",
+                        "fresh_interval_validated_gold_projection_required",
+                    ],
+                }
+            )
+        if not candidates:
+            return {
+                "ready": False,
+                "reason": "fresh_capital_gold_stream_missing",
+                "source_tags": [
+                    "capital_gold_live_stream",
+                    "gold_priority_target",
+                    "fresh_interval_validated_gold_projection_required",
+                ],
+            }
+        candidates.sort(key=lambda item: (float(item.get("age_sec", 10**9) or 10**9), -float(item.get("confidence", 0.0) or 0.0)))
+        selected = dict(candidates[0])
+        side, side_reason = self._validated_gold_action_side()
+        selected["side"] = side
+        selected["side_reason"] = side_reason
+        selected["intent_publishable"] = side in {"BUY", "SELL"}
+        return selected
+
+    def _apply_gold_priority_candidate(self, central_beat: Dict[str, Any], shared_market_feed: Dict[str, Any]) -> Dict[str, Any]:
+        signal = self._gold_priority_live_stream_signal()
+        normalized = str(signal.get("normalized_symbol") or "XAUUSD")
+        diagnostic = {
+            "enabled": True,
+            "ready": bool(signal.get("ready")),
+            "normalized_symbol": normalized,
+            "capital_symbol": signal.get("capital_symbol") or "GOLD",
+            "source_tags": signal.get("source_tags") or [
+                "capital_gold_live_stream",
+                "gold_priority_target",
+                "fresh_interval_validated_gold_projection_required",
+            ],
+            "intent_publishable": bool(signal.get("intent_publishable")),
+            "side": signal.get("side") or "HOLD",
+            "reason": signal.get("side_reason") or signal.get("reason") or "",
+            "age_sec": signal.get("age_sec"),
+            "fresh_seconds_budget": GOLD_PRIORITY_STREAM_MAX_AGE_SEC,
+            "reference_price": signal.get("reference_price"),
+        }
+        if not isinstance(central_beat, dict):
+            return diagnostic
+        central_beat["gold_priority_candidate"] = diagnostic
+        if not isinstance(shared_market_feed, dict):
+            return diagnostic
+        shared_market_feed["gold_priority_candidate"] = diagnostic
+        if not signal.get("ready"):
+            return diagnostic
+
+        central_symbols = central_beat.setdefault("symbols", {})
+        if not isinstance(central_symbols, dict):
+            central_symbols = {}
+            central_beat["symbols"] = central_symbols
+        shared_symbols = shared_market_feed.setdefault("symbols", {})
+        if not isinstance(shared_symbols, dict):
+            shared_symbols = {}
+            shared_market_feed["symbols"] = shared_symbols
+        existing = central_symbols.get(normalized) if isinstance(central_symbols.get(normalized), dict) else {}
+        existing_sources = existing.get("sources", []) if isinstance(existing, dict) and isinstance(existing.get("sources"), list) else []
+        source_tags = list(dict.fromkeys([*existing_sources, *[str(item) for item in signal.get("source_tags", []) if str(item)]]))
+        confidence = max(float(existing.get("confidence", 0.0) or 0.0), float(signal.get("confidence", ORDER_INTENT_MIN_CONFIDENCE) or 0.0))
+        central_symbols[normalized] = {
+            **existing,
+            "symbol": normalized,
+            "side": str(signal.get("side") or "HOLD").upper(),
+            "confidence": round(max(0.0, min(1.0, confidence)), 4),
+            "strength": round(max(0.0, min(1.5, max(confidence, float(existing.get("strength", 0.0) or 0.0)))), 4),
+            "support_count": max(1, int(existing.get("support_count", 0) or 0)),
+            "sources": source_tags,
+            "reference_price": float(signal.get("reference_price", existing.get("reference_price", 0.0)) or 0.0),
+            "bid": signal.get("bid"),
+            "ask": signal.get("ask"),
+            "spread": signal.get("spread"),
+            "spread_pct": signal.get("spread_pct"),
+            "change_pct": float(signal.get("change_pct", existing.get("change_pct", 0.0)) or 0.0),
+            "change_pct_abs_max": abs(float(signal.get("change_pct", existing.get("change_pct_abs_max", 0.0)) or 0.0)),
+            "volume_24h": float(signal.get("volume_24h", existing.get("volume_24h", 0.0)) or 0.0),
+            "freshest_age_sec": signal.get("age_sec"),
+            "fast_money_sources": list(dict.fromkeys([*(existing.get("fast_money_sources", []) if isinstance(existing.get("fast_money_sources"), list) else []), "capital_gold_live_stream"])),
+            "source_prices": {
+                **(existing.get("source_prices", {}) if isinstance(existing.get("source_prices"), dict) else {}),
+                "capital_gold_live_stream": float(signal.get("reference_price", 0.0) or 0.0),
+            },
+            "gold_priority_candidate": True,
+            "intent_publishable": bool(signal.get("intent_publishable")),
+            "intent_publish_requirement": "fresh_interval_validated_gold_projection",
+            "intent_publish_reason": signal.get("side_reason") or "",
+        }
+        shared_symbols[normalized] = round(max(float(shared_symbols.get(normalized, 0.0) or 0.0), confidence), 4)
+        aliases = shared_market_feed.setdefault("aliases", {})
+        if isinstance(aliases, dict):
+            aliases[normalized] = list(dict.fromkeys([*(aliases.get(normalized, []) if isinstance(aliases.get(normalized), list) else []), "GOLD", "XAUUSD", "capital:GOLDUSD"]))
+        shared_market_feed["count"] = len(shared_symbols)
+        self._shared_market_feed = dict(shared_symbols)
+        diagnostic.update(
+            {
+                "ready": True,
+                "confidence": round(max(0.0, min(1.0, confidence)), 4),
+                "capital_cfd_candidate_key": normalized,
+                "route_requirement": "capital_cfd_route_visible",
+            }
+        )
+        central_beat["gold_priority_candidate"] = diagnostic
+        shared_market_feed["gold_priority_candidate"] = diagnostic
+        return diagnostic
 
     def _alpaca_tradable_symbols(self) -> Dict[str, str]:
         return {
@@ -5880,6 +6720,7 @@ class UnifiedMarketTrader:
         central_beat: Dict[str, Any],
         shared_market_feed: Dict[str, Any],
     ) -> Dict[str, Any]:
+        gold_priority_candidate = self._apply_gold_priority_candidate(central_beat, shared_market_feed)
         kraken_margin_tradables = self._kraken_tradable_symbols()
         kraken_spot_tradables = self._kraken_spot_tradable_symbols()
         capital_tradables = self._capital_tradable_symbols()
@@ -5947,6 +6788,7 @@ class UnifiedMarketTrader:
                 "venue": venue,
                 "market_type": market_type,
                 "symbol": symbol,
+                "route_key": self._order_route_key(venue, market_type, symbol, side),
                 "ready": route_ready,
                 "trade_clearance_state": trade_clearance_state,
                 "guard_state": trade_clearance_state,
@@ -5973,10 +6815,19 @@ class UnifiedMarketTrader:
             capital_symbol = capital_tradables.get(normalized, normalized)
             central_signal = central_symbols.get(normalized, {}) if isinstance(central_symbols, dict) else {}
             side = str(central_signal.get("side") or "").upper() if isinstance(central_signal, dict) else ""
-            if side not in ("BUY", "SELL") and "SHORT" in capital_symbol.upper():
+            if side == "HOLD":
+                pass
+            elif side not in ("BUY", "SELL") and "SHORT" in capital_symbol.upper():
                 side = "SELL"
             elif side not in ("BUY", "SELL"):
                 side = "BUY"
+            route_side = side if side in {"BUY", "SELL"} else "BUY"
+            intent_publish_blockers: List[str] = []
+            if side not in {"BUY", "SELL"}:
+                if bool(central_signal.get("gold_priority_candidate")) if isinstance(central_signal, dict) else False:
+                    intent_publish_blockers.append("gold_side_not_validated_by_fresh_interval_projection")
+                else:
+                    intent_publish_blockers.append("order_side_not_buy_or_sell")
             execution_routes: List[Dict[str, Any]] = []
             if normalized in kraken_spot_tradables:
                 execution_routes.append(
@@ -5987,7 +6838,7 @@ class UnifiedMarketTrader:
                         bool(self.kraken_ready and self.kraken is not None),
                         [] if self.kraken_ready and self.kraken is not None else [self.kraken_error or "kraken_not_ready"],
                         "unified_executor",
-                        side,
+                        route_side,
                     )
                 )
             if normalized in kraken_margin_tradables:
@@ -5999,7 +6850,7 @@ class UnifiedMarketTrader:
                         bool(self.kraken_ready and self.kraken is not None),
                         [] if self.kraken_ready and self.kraken is not None else [self.kraken_error or "kraken_not_ready"],
                         "unified_executor",
-                        side,
+                        route_side,
                     )
                 )
             if normalized in capital_tradables:
@@ -6011,7 +6862,7 @@ class UnifiedMarketTrader:
                         bool(self.capital_ready and self.capital is not None),
                         [] if self.capital_ready and self.capital is not None else [self.capital_error or "capital_not_ready"],
                         "existing_autonomous_trader_tick",
-                        side,
+                        route_side,
                     )
                 )
             if normalized in alpaca_tradables:
@@ -6022,7 +6873,7 @@ class UnifiedMarketTrader:
                         alpaca_tradables.get(normalized, normalized),
                         alpaca_ok,
                         [] if alpaca_ok else [self.alpaca_error or "alpaca_not_ready"],
-                        side=side,
+                        side=route_side,
                     )
                 )
             if normalized in binance_tradables:
@@ -6033,7 +6884,7 @@ class UnifiedMarketTrader:
                         binance_tradables.get(normalized, normalized),
                         binance_network_ok,
                         [] if binance_network_ok else [self.binance_error or "binance_network_not_ready"],
-                        side=side,
+                        side=route_side,
                     )
                 )
                 execution_routes.append(
@@ -6053,7 +6904,7 @@ class UnifiedMarketTrader:
                             )
                             if present
                         ],
-                        side=side,
+                        side=route_side,
                     )
                 )
             ready_route_count = sum(1 for item in execution_routes if item.get("ready"))
@@ -6085,7 +6936,19 @@ class UnifiedMarketTrader:
                 "held_route_count": max(0, len(execution_routes) - ready_route_count),
                 "available_route_count": ready_route_count,
                 "blocked_route_count": max(0, len(execution_routes) - ready_route_count),
+                "intent_publish_blockers": intent_publish_blockers,
+                "gold_priority_candidate": bool(central_signal.get("gold_priority_candidate")) if isinstance(central_signal, dict) else False,
+                "intent_publish_requirement": central_signal.get("intent_publish_requirement", "") if isinstance(central_signal, dict) else "",
+                "intent_publish_reason": central_signal.get("intent_publish_reason", "") if isinstance(central_signal, dict) else "",
             }
+            candidate_id, lifecycle_id = self._candidate_lifecycle_identity(row)
+            row["candidate_id"] = candidate_id
+            row["lifecycle_id"] = lifecycle_id
+            for route_item in execution_routes:
+                if not isinstance(route_item, dict):
+                    continue
+                route_item["candidate_id"] = candidate_id
+                route_item["lifecycle_id"] = lifecycle_id
             row.update(
                 self._profit_velocity_metrics(
                     item=row,
@@ -6116,6 +6979,7 @@ class UnifiedMarketTrader:
         )
         ranked.sort(
             key=lambda item: (
+                1.0 if bool(item.get("gold_priority_candidate")) else 0.0,
                 float(item.get("profit_velocity_score", 0.0) or 0.0),
                 float(item.get("confidence", 0.0) or 0.0),
             ),
@@ -6165,6 +7029,7 @@ class UnifiedMarketTrader:
             "scanner_fusion_matrix": scanner_fusion_matrix,
             "dynamic_intelligence_budget": dynamic_intelligence_budget,
             "kraken_spot_portfolio_posture": kraken_spot_posture,
+            "gold_priority_candidate": gold_priority_candidate,
             "selection_process": {
                 "mode": "fast_money_profit_velocity_ranked_live_shadow_selection",
                 "who": "CentralBeat plus world financial ecosystem intake, 1h-to-1y waveform memory, whole intelligence mesh, HNC/model/shadow validation routes",
@@ -6204,6 +7069,8 @@ class UnifiedMarketTrader:
                 "capital_symbol": item.get("capital_symbol"),
                 "alpaca_symbol": item.get("alpaca_symbol"),
                 "binance_symbol": item.get("binance_symbol"),
+                "candidate_id": item.get("candidate_id"),
+                "lifecycle_id": item.get("lifecycle_id"),
                 "execution_routes": item.get("execution_routes", []),
                 "profit_velocity_score": item.get("profit_velocity_score", 0.0),
                 "fast_money_score": item.get("fast_money_score", 0.0),
@@ -8393,6 +9260,105 @@ class UnifiedMarketTrader:
                 logger.debug("HNC cognitive proof log failed: %s", e)
             self._publish_thought("cognition.hnc_cognitive_proof", report)
 
+    def _build_gold_runtime_trade_proof(
+        self,
+        central_beat: Dict[str, Any],
+        shared_market_feed: Dict[str, Any],
+        order_flow_feed: Dict[str, Any],
+        action_plan: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        active = order_flow_feed.get("active_order_flow", []) if isinstance(order_flow_feed, dict) else []
+        if not isinstance(active, list):
+            active = []
+        gold_rows = [
+            row
+            for row in active
+            if isinstance(row, dict)
+            and (
+                str(row.get("symbol") or "").upper() in {"XAUUSD", "GOLD", "GOLDUSD"}
+                or bool(row.get("gold_priority_candidate"))
+            )
+        ]
+        gold_row = gold_rows[0] if gold_rows else {}
+        routes = gold_row.get("execution_routes", []) if isinstance(gold_row.get("execution_routes"), list) else []
+        capital_routes = [
+            route
+            for route in routes
+            if isinstance(route, dict)
+            and str(route.get("venue") or "").lower() == "capital"
+            and str(route.get("market_type") or "").lower() == "cfd"
+        ]
+        capital_route = capital_routes[0] if capital_routes else {}
+        publish_blockers = [
+            str(blocker)
+            for blocker in gold_row.get("intent_publish_blockers", [])
+            if str(blocker)
+        ] if isinstance(gold_row.get("intent_publish_blockers"), list) else []
+        action_blockers = [
+            str(blocker)
+            for blocker in action_plan.get("global_blockers", [])
+            if str(blocker)
+        ] if isinstance(action_plan.get("global_blockers"), list) else []
+        route_blockers = [
+            str(blocker)
+            for blocker in capital_route.get("blockers", [])
+            if str(blocker)
+        ] if isinstance(capital_route, dict) and isinstance(capital_route.get("blockers"), list) else []
+        side = str(gold_row.get("side") or "").upper() if isinstance(gold_row, dict) else ""
+        gold_candidate_ready = bool(gold_row)
+        capital_route_visible = bool(capital_route)
+        capital_route_ready = bool(capital_route.get("ready")) if isinstance(capital_route, dict) else False
+        if not gold_candidate_ready:
+            reason = "gold_runtime_candidate_missing"
+        elif not capital_route_visible:
+            reason = "capital_cfd_route_missing_for_gold"
+        elif publish_blockers:
+            reason = publish_blockers[0]
+        elif side not in {"BUY", "SELL"}:
+            reason = "gold_side_not_validated_by_fresh_interval_projection"
+        elif not capital_route_ready:
+            reason = route_blockers[0] if route_blockers else "capital_cfd_route_not_ready"
+        elif action_blockers:
+            reason = action_blockers[0]
+        else:
+            reason = "gold_runtime_gated_intent_publishable"
+        return {
+            "generated_at": datetime.now().isoformat(),
+            "gold_runtime_candidate_ready": gold_candidate_ready,
+            "gold_candidate_count": len(gold_rows),
+            "candidate_id": gold_row.get("candidate_id") if isinstance(gold_row, dict) else "",
+            "lifecycle_id": gold_row.get("lifecycle_id") if isinstance(gold_row, dict) else "",
+            "candidate_symbol": gold_row.get("symbol") if isinstance(gold_row, dict) else "",
+            "candidate_side": side or "HOLD",
+            "candidate_confidence": gold_row.get("confidence") if isinstance(gold_row, dict) else None,
+            "candidate_sources": gold_row.get("sources", []) if isinstance(gold_row, dict) else [],
+            "capital_cfd_route_visible": capital_route_visible,
+            "capital_cfd_route_ready": capital_route_ready,
+            "capital_cfd_route_key": capital_route.get("route_key") if isinstance(capital_route, dict) else "",
+            "capital_cfd_route_blockers": route_blockers,
+            "gold_intent_publishable": bool(
+                gold_candidate_ready
+                and capital_route_ready
+                and side in {"BUY", "SELL"}
+                and not publish_blockers
+                and not action_blockers
+            ),
+            "gold_intent_publish_reason": reason,
+            "intent_publish_blockers": publish_blockers,
+            "global_blockers": action_blockers,
+            "fresh_gold_data_source": (central_beat.get("gold_priority_candidate", {}) if isinstance(central_beat, dict) else {}),
+            "shared_feed_contains_gold": "XAUUSD" in (
+                (shared_market_feed.get("symbols", {}) if isinstance(shared_market_feed, dict) else {}) or {}
+            ),
+            "routeable_key_count": int(order_flow_feed.get("multi_exchange_tradable_count", 0) or 0) if isinstance(order_flow_feed, dict) else 0,
+            "active_order_flow_count": int(order_flow_feed.get("active_order_flow_count", 0) or 0) if isinstance(order_flow_feed, dict) else 0,
+            "safety": {
+                "direct_exchange_mutation": False,
+                "proof_phase": "runtime_gated_order_intent_only",
+                "requires_existing_runtime_executor": True,
+            },
+        }
+
     def _build_exchange_action_plan(self, order_flow_feed: Dict[str, Any]) -> Dict[str, Any]:
         active = order_flow_feed.get("active_order_flow", []) if isinstance(order_flow_feed, dict) else []
         if not isinstance(active, list):
@@ -8443,13 +9409,22 @@ class UnifiedMarketTrader:
                     if blocker not in state["guards"]:
                         state["guards"].append(blocker)
                 state["candidate_count"] = int(state.get("candidate_count", 0) or 0) + 1
-                if route_item.get("ready") and confidence >= ORDER_INTENT_MIN_CONFIDENCE:
+                publishable_side = str(item.get("side") or "").upper() in {"BUY", "SELL"}
+                publish_blockers = [
+                    str(blocker)
+                    for blocker in item.get("intent_publish_blockers", [])
+                    if str(blocker)
+                ] if isinstance(item.get("intent_publish_blockers"), list) else []
+                if route_item.get("ready") and confidence >= ORDER_INTENT_MIN_CONFIDENCE and publishable_side and not publish_blockers:
                     state["ready_candidate_count"] = int(state.get("ready_candidate_count", 0) or 0) + 1
                     state["top_candidates"].append(
                         {
                             "symbol": item.get("symbol"),
                             "route_symbol": route_item.get("symbol"),
                             "side": item.get("side"),
+                            "candidate_id": item.get("candidate_id"),
+                            "lifecycle_id": item.get("lifecycle_id"),
+                            "route_key": route_item.get("route_key"),
                             "confidence": confidence,
                             "profit_velocity_score": item.get("profit_velocity_score", 0.0),
                             "fast_money_score": item.get("fast_money_score", 0.0),
@@ -8461,8 +9436,15 @@ class UnifiedMarketTrader:
                             "history_validation_score": item.get("history_validation_score", 0.0),
                             "support_count": item.get("support_count", 0),
                             "sources": item.get("sources", []),
+                            "intent_publish_blockers": [],
                         }
                     )
+                elif publish_blockers:
+                    for blocker in publish_blockers:
+                        if blocker not in state["runtime_clearances"]:
+                            state["runtime_clearances"].append(blocker)
+                        if blocker not in state["guards"]:
+                            state["guards"].append(blocker)
         for state in venues.values():
             state["top_candidates"] = sorted(
                 state.get("top_candidates", []),
@@ -8582,6 +9564,16 @@ class UnifiedMarketTrader:
         for item in active:
             if not isinstance(item, dict):
                 continue
+            side = str(item.get("side") or "").upper()
+            if side not in {"BUY", "SELL"}:
+                continue
+            intent_publish_blockers = [
+                str(blocker)
+                for blocker in item.get("intent_publish_blockers", [])
+                if str(blocker)
+            ] if isinstance(item.get("intent_publish_blockers"), list) else []
+            if intent_publish_blockers:
+                continue
             confidence = max(0.0, min(1.0, float(item.get("confidence", 0.0) or 0.0)))
             if confidence < ORDER_INTENT_MIN_CONFIDENCE:
                 continue
@@ -8592,6 +9584,25 @@ class UnifiedMarketTrader:
             ]
             if not ready_routes:
                 continue
+            candidate_id, lifecycle_id = self._candidate_lifecycle_identity(item)
+            item["candidate_id"] = candidate_id
+            item["lifecycle_id"] = lifecycle_id
+            route_copies: List[Dict[str, Any]] = []
+            for route_item in ready_routes:
+                route_copy = dict(route_item)
+                route_copy.setdefault(
+                    "route_key",
+                    self._order_route_key(
+                        route_copy.get("venue"),
+                        route_copy.get("market_type"),
+                        route_copy.get("symbol"),
+                        side,
+                    ),
+                )
+                route_copy["candidate_id"] = candidate_id
+                route_copy["lifecycle_id"] = lifecycle_id
+                route_copies.append(route_copy)
+            primary_route = route_copies[0] if route_copies else {}
             candidates.append(
                 {
                     "id": f"uintent-{int(now)}-{len(candidates) + 1}",
@@ -8600,6 +9611,9 @@ class UnifiedMarketTrader:
                     "topic": "execution.order.intent",
                     "symbol": item.get("symbol"),
                     "side": item.get("side"),
+                    "candidate_id": candidate_id,
+                    "lifecycle_id": lifecycle_id,
+                    "route_key": primary_route.get("route_key"),
                     "confidence": confidence,
                     "selection_rank": item.get("selection_rank"),
                     "profit_velocity_score": item.get("profit_velocity_score", 0.0),
@@ -8615,7 +9629,7 @@ class UnifiedMarketTrader:
                     "sources": item.get("sources", []),
                     "model_signal": item.get("model_signal", {}),
                     "model_alignment": item.get("model_alignment", False),
-                    "routes": ready_routes,
+                    "routes": route_copies,
                     "runtime_gate": "executor_required",
                     "authority_mode": action_plan.get("order_authority_mode"),
                     "safety": {
@@ -8656,6 +9670,20 @@ class UnifiedMarketTrader:
 
         for candidate in candidates:
             self._publish_thought("execution.order.intent", candidate)
+            self._record_order_lifecycle(
+                "intent_published",
+                "intent_published",
+                str(candidate.get("lifecycle_id") or ""),
+                intent_id=candidate.get("id"),
+                candidate_id=candidate.get("candidate_id"),
+                symbol=candidate.get("symbol"),
+                side=candidate.get("side"),
+                route_key=candidate.get("route_key"),
+                confidence=candidate.get("confidence"),
+                venue=(candidate.get("routes") or [{}])[0].get("venue") if isinstance(candidate.get("routes"), list) and candidate.get("routes") else "",
+                market_type=(candidate.get("routes") or [{}])[0].get("market_type") if isinstance(candidate.get("routes"), list) and candidate.get("routes") else "",
+                source="unified_market_trader.intent",
+            )
 
         try:
             ORDER_INTENT_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -8694,11 +9722,14 @@ class UnifiedMarketTrader:
             f"top={symbol} {side} confidence={confidence:.2f} "
             f"Please return PROCEED/CAUTION/ABORT and one-line rationale."
         )
-        try:
-            sero = get_sero_client()
-            asyncio.run(sero.ask_market_intelligence(prompt))
-        except Exception as e:
-            logger.debug("Dr Auris Throne feed unavailable: %s", e)
+        def runner() -> None:
+            try:
+                sero = get_sero_client()
+                asyncio.run(sero.ask_market_intelligence(prompt))
+            except Exception as e:
+                logger.debug("Dr Auris Throne feed unavailable: %s", e)
+
+        threading.Thread(target=runner, name="aureon-auris-throne-feed", daemon=True).start()
 
     def _build_queen_voice_payload(self, kraken_payload: Dict[str, Any], capital_payload: Dict[str, Any]) -> Dict[str, Any]:
         now_iso = datetime.now().isoformat()
@@ -8805,14 +9836,29 @@ class UnifiedMarketTrader:
         last_tick_started_at = float(getattr(self, "_last_tick_started_at", 0.0) or 0.0)
         tick_age_sec = (now - last_tick_completed_at) if last_tick_completed_at > 0 else None
         tick_running_sec = (now - last_tick_started_at) if last_tick_started_at > last_tick_completed_at else 0.0
+        active_tick = bool(last_tick_started_at > last_tick_completed_at)
         tick_phase = str(getattr(self, "_tick_phase", "idle") or "idle")
         tick_phase_at = float(getattr(self, "_tick_phase_at", 0.0) or 0.0)
+        tick_running_stale_after_sec = self._tick_running_stale_after_sec()
         booting = last_tick_completed_at <= 0
         boot_age_sec = now - float(getattr(self, "start_time", now) or now)
         stale_reason = ""
-        if last_tick_completed_at > 0 and tick_age_sec is not None and tick_age_sec > READY_STALE_AFTER_SEC:
+        if (
+            not active_tick
+            and last_tick_completed_at > 0
+            and tick_age_sec is not None
+            and tick_age_sec > READY_STALE_AFTER_SEC
+        ):
             stale_reason = "last_tick_age_exceeded"
-        if tick_running_sec > READY_STALE_AFTER_SEC:
+        active_tick_stalled = bool(active_tick and tick_running_sec > tick_running_stale_after_sec)
+        if (
+            active_tick
+            and tick_age_sec is not None
+            and tick_age_sec > READY_STALE_AFTER_SEC
+            and tick_running_sec > READY_STALE_AFTER_SEC
+        ):
+            active_tick_stalled = True
+        if active_tick_stalled:
             stale_reason = "tick_in_progress_stalled"
         if booting and boot_age_sec > max(READY_STALE_AFTER_SEC * 3.0, 180.0):
             stale_reason = "booting_timeout"
@@ -8820,8 +9866,81 @@ class UnifiedMarketTrader:
         alpaca_ok = self.alpaca is not None and not bool(self.alpaca_error or getattr(self.alpaca, "init_error", ""))
         binance_diag = getattr(self, "_binance_diag", {}) or {}
         binance_ok = self.binance is not None and bool(binance_diag.get("network_ok", False))
-        trading_ready = bool(self.kraken_ready and self.capital_ready)
-        data_ready = bool(alpaca_ok and binance_ok)
+        client_trading_ready = bool(self.kraken_ready and self.capital_ready)
+        client_data_ready = bool(alpaca_ok and binance_ok)
+        shared_order_flow = payload.get("shared_order_flow", {}) if isinstance(payload.get("shared_order_flow"), dict) else {}
+        live_stream_cache = (
+            payload.get("live_stream_cache")
+            or (payload.get("central_beat", {}).get("stream_cache") if isinstance(payload.get("central_beat"), dict) else {})
+            or getattr(self, "_stream_cache_health", {})
+        )
+        gold_runtime_trade_proof = (
+            payload.get("gold_runtime_trade_proof")
+            or shared_order_flow.get("gold_runtime_trade_proof")
+            or action_plan.get("gold_runtime_trade_proof")
+            or {}
+        )
+        fresh_gold_source = (
+            gold_runtime_trade_proof.get("fresh_gold_data_source", {})
+            if isinstance(gold_runtime_trade_proof, dict)
+            else {}
+        )
+        gold_observation_ready = bool(
+            isinstance(gold_runtime_trade_proof, dict)
+            and gold_runtime_trade_proof.get("gold_runtime_candidate_ready")
+            and isinstance(fresh_gold_source, dict)
+            and fresh_gold_source.get("ready")
+        )
+        stream_observation_ready = bool(
+            gold_observation_ready
+            or (isinstance(live_stream_cache, dict) and live_stream_cache.get("fresh"))
+        )
+        trading_ready = bool(
+            client_trading_ready
+            or (
+                gold_observation_ready
+                and isinstance(gold_runtime_trade_proof, dict)
+                and gold_runtime_trade_proof.get("capital_cfd_route_visible")
+            )
+        )
+        data_ready = bool(client_data_ready or stream_observation_ready)
+        runtime_stall_diagnostic = {}
+        if stale:
+            gold_live_signal: Dict[str, Any] = {}
+            try:
+                gold_live_signal = self._gold_priority_live_stream_signal()
+            except Exception as e:
+                gold_live_signal = {
+                    "ready": False,
+                    "reason": f"gold_priority_probe_failed:{e}",
+                    "source_tags": ["gold_priority_target"],
+                }
+            missing_gold_reason = (
+                gold_runtime_trade_proof.get("gold_intent_publish_reason")
+                if isinstance(gold_runtime_trade_proof, dict) and gold_runtime_trade_proof
+                else ""
+            )
+            if not missing_gold_reason:
+                missing_gold_reason = (
+                    "combined_payload_stalled_before_gold_priority_publish"
+                    if bool(gold_live_signal.get("ready"))
+                    else str(gold_live_signal.get("reason") or "combined_payload_not_ready")
+                )
+            runtime_stall_diagnostic = {
+                "generated_at": datetime.now().isoformat(),
+                "reason": stale_reason,
+                "tick_phase": tick_phase,
+                "tick_phase_running_sec": round(max(0.0, now - tick_phase_at), 3) if tick_phase_at > 0 else 0.0,
+                "live_stream_cache": live_stream_cache,
+                "active_order_flow_count": int(shared_order_flow.get("active_order_flow_count", 0) or 0) if isinstance(shared_order_flow, dict) else 0,
+                "routeable_key_count": int(shared_order_flow.get("multi_exchange_tradable_count", 0) or 0) if isinstance(shared_order_flow, dict) else 0,
+                "venue_keys": list(action_plan.get("venues", {}).keys()) if isinstance(action_plan.get("venues"), dict) else [],
+                "gold_live_stream_ready": bool(gold_live_signal.get("ready")),
+                "gold_live_stream_signal": gold_live_signal,
+                "capital_cfd_route_visible": bool(gold_runtime_trade_proof.get("capital_cfd_route_visible")) if isinstance(gold_runtime_trade_proof, dict) else False,
+                "gold_runtime_candidate_ready": bool(gold_runtime_trade_proof.get("gold_runtime_candidate_ready")) if isinstance(gold_runtime_trade_proof, dict) else False,
+                "missing_gold_promotion_reason": missing_gold_reason,
+            }
         return {
             "ok": bool(trading_ready and data_ready and not stale),
             "service": "unified-market-trader",
@@ -8843,6 +9962,9 @@ class UnifiedMarketTrader:
             "preflight_overall": preflight.get("overall"),
             "preflight_critical_failures": int(preflight.get("critical_failures", 0) or 0),
             "preflight_warnings": int(preflight.get("warnings", 0) or 0),
+            "runtime_observation_ready": bool(stream_observation_ready),
+            "client_trading_ready": bool(client_trading_ready),
+            "client_data_ready": bool(client_data_ready),
             "exchanges": {
                 "kraken_ready": bool(self.kraken_ready),
                 "capital_ready": bool(self.capital_ready),
@@ -8873,12 +9995,10 @@ class UnifiedMarketTrader:
                 or getattr(self, "_dynamic_intelligence_budget", {})
                 or {}
             ),
-            "live_stream_cache": (
-                payload.get("live_stream_cache")
-                or (payload.get("central_beat", {}).get("stream_cache") if isinstance(payload.get("central_beat"), dict) else {})
-                or getattr(self, "_stream_cache_health", {})
-            ),
+            "live_stream_cache": live_stream_cache,
             "exchange_action_plan": action_plan,
+            "gold_runtime_trade_proof": gold_runtime_trade_proof,
+            "runtime_stall_diagnostic": runtime_stall_diagnostic,
             "shadow_trading": (
                 payload.get("shadow_trading")
                 or (action_plan.get("shadow_trading", {}) if isinstance(action_plan, dict) else {})
@@ -8902,11 +10022,15 @@ class UnifiedMarketTrader:
                 "tick_stale_reason": stale_reason,
                 "tick_phase": tick_phase,
                 "tick_phase_running_sec": round(max(0.0, now - tick_phase_at), 3) if tick_phase_at > 0 else 0.0,
+                "tick_active": active_tick,
+                "tick_long_running": bool(active_tick and tick_running_sec > READY_STALE_AFTER_SEC),
                 "tick_stale_after_sec": READY_STALE_AFTER_SEC,
+                "tick_running_stale_after_sec": tick_running_stale_after_sec,
                 "last_tick_age_sec": round(float(tick_age_sec), 3) if tick_age_sec is not None else None,
                 "last_tick_running_sec": round(float(tick_running_sec), 3) if tick_running_sec > 0 else 0.0,
                 "file_heartbeat_is_not_market_freshness": True,
             },
+            "exchange_boot_init": self._exchange_boot_init_snapshot(),
             "executor_route_state": self._executor_route_snapshot(),
             "kraken_tick_state": self._kraken_tick_snapshot(),
             "capital_tick_state": self._capital_tick_snapshot(),
@@ -9273,10 +10397,12 @@ class UnifiedMarketTrader:
         _safe_print(f"  Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         _safe_print("=" * 78)
 
-        if self.kraken is not None:
+        allow_sync_startup = (not EXCHANGE_BOOT_ASYNC_ENABLED) or EXCHANGE_SYNC_RETRY_ENABLED
+
+        if allow_sync_startup and self.kraken is not None:
             self._startup_kraken(force=True)
 
-        if self.capital is not None:
+        if allow_sync_startup and self.capital is not None:
             self._startup_capital(force=True)
 
         self._build_combined_payload()

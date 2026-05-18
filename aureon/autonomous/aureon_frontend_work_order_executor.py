@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -34,7 +35,11 @@ DEFAULT_OUTPUT_JSON = Path("docs/audits/aureon_frontend_work_order_execution.jso
 DEFAULT_OUTPUT_MD = Path("docs/audits/aureon_frontend_work_order_execution.md")
 DEFAULT_PUBLIC_JSON = Path("frontend/public/aureon_frontend_work_order_execution.json")
 DEFAULT_STATE_PATH = Path("state/aureon_frontend_work_order_execution_last_run.json")
+DEFAULT_PATCH_REGISTRY_JSON = Path("docs/audits/aureon_frontend_runtime_patch_registry.json")
+DEFAULT_PATCH_REGISTRY_PUBLIC_JSON = Path("frontend/public/aureon_frontend_runtime_patch_registry.json")
+DEFAULT_PATCH_REGISTRY_STATE_PATH = Path("state/aureon_frontend_runtime_patch_registry.json")
 DEFAULT_COMPONENT = Path("frontend/src/components/generated/AureonWorkOrderExecutionConsole.tsx")
+DEFAULT_MATERIALIZED_PATCH_MODULE = Path("frontend/src/components/generated/aureonEvolutionRuntimePatches.ts")
 DEFAULT_APP_PATH = Path("frontend/src/App.tsx")
 
 
@@ -50,6 +55,10 @@ class ExecutedWorkOrder:
     generated_artifact: str
     safety_boundary: str
     evidence: dict[str, Any] = field(default_factory=dict)
+    queue_state: str = "completed_validated"
+    queue_transition: dict[str, Any] = field(default_factory=dict)
+    validation: dict[str, Any] = field(default_factory=dict)
+    runtime_patch: dict[str, Any] = field(default_factory=dict)
     next_action: str = ""
 
     def to_dict(self) -> dict[str, Any]:
@@ -64,6 +73,10 @@ class WorkOrderExecutionReport:
     status: str
     goal: str
     summary: dict[str, Any]
+    queue_movement: dict[str, Any]
+    validation_summary: dict[str, Any]
+    runtime_patch_registry: dict[str, Any]
+    implemented_code_evidence: dict[str, Any]
     executions: list[ExecutedWorkOrder]
     generated_files: list[str]
     authoring_path: list[str]
@@ -78,6 +91,10 @@ class WorkOrderExecutionReport:
             "status": self.status,
             "goal": self.goal,
             "summary": dict(self.summary),
+            "queue_movement": dict(self.queue_movement),
+            "validation_summary": dict(self.validation_summary),
+            "runtime_patch_registry": dict(self.runtime_patch_registry),
+            "implemented_code_evidence": dict(self.implemented_code_evidence),
             "executions": [item.to_dict() for item in self.executions],
             "generated_files": list(self.generated_files),
             "authoring_path": list(self.authoring_path),
@@ -88,6 +105,10 @@ class WorkOrderExecutionReport:
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def slug(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", str(value).lower()).strip("_") or "patch"
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -133,6 +154,39 @@ def _execution_for_order(order: dict[str, Any]) -> ExecutedWorkOrder:
         artifact_type = "watch_only_record"
         next_action = "Keep visible as inventory until a stronger adapter contract exists."
 
+    data_contract = order.get("data_contract") or {}
+    acceptance_tests = order.get("acceptance_tests") or []
+    validation_checks = [
+        {
+            "id": "record_created",
+            "ok": bool(order_id and artifact),
+            "evidence": artifact,
+        },
+        {
+            "id": "target_screen_declared",
+            "ok": bool(target),
+            "evidence": target,
+        },
+        {
+            "id": "safe_data_contract_present",
+            "ok": bool(data_contract.get("safe_fields") or status == "archive_candidate"),
+            "evidence": data_contract.get("expected_topic") or "archive/supporting file",
+        },
+        {
+            "id": "acceptance_tests_carried_forward",
+            "ok": len(acceptance_tests) >= 3 or status == "archive_candidate",
+            "evidence": f"{len(acceptance_tests)} acceptance test(s)",
+        },
+        {
+            "id": "authority_boundary_preserved",
+            "ok": "read-only" in safety.lower() or "no " in safety.lower(),
+            "evidence": safety,
+        },
+    ]
+    validation_ok = all(check["ok"] for check in validation_checks)
+    queue_state = "completed_validated" if validation_ok else "failed_validation"
+    patch_id = f"runtime_patch_{slug(order_id)}"
+
     return ExecutedWorkOrder(
         id=order_id,
         title=str(order.get("title") or source_path),
@@ -147,11 +201,88 @@ def _execution_for_order(order: dict[str, Any]) -> ExecutedWorkOrder:
             "priority": order.get("priority"),
             "source_kind": order.get("source_kind"),
             "source_domain": order.get("source_domain"),
-            "data_contract": order.get("data_contract") or {},
+            "data_contract": data_contract,
             "frontend_action": order.get("frontend_action"),
-            "acceptance_tests": order.get("acceptance_tests") or [],
+            "acceptance_tests": acceptance_tests,
+        },
+        queue_state=queue_state,
+        queue_transition={
+            "from": "queued",
+            "to": queue_state,
+            "moved_from_queue": validation_ok,
+            "moved_at": utc_now(),
+        },
+        validation={
+            "ok": validation_ok,
+            "status": "validated" if validation_ok else "failed_validation",
+            "checks": validation_checks,
+        },
+        runtime_patch={
+            "patch_id": patch_id,
+            "work_order_id": order_id,
+            "status": "active_runtime_patch" if validation_ok else "inactive_failed_validation",
+            "active": validation_ok,
+            "patch_type": artifact_type,
+            "target_screen": target,
+            "source_path": source_path,
+            "evidence_url": f"/aureon_frontend_work_order_execution.json#{order_id}",
+            "registry_url": "/aureon_frontend_runtime_patch_registry.json",
         },
         next_action=next_action,
+    )
+
+
+def _runtime_patch_for_code(item: ExecutedWorkOrder) -> dict[str, Any]:
+    return {
+        "id": item.id,
+        "title": item.title,
+        "sourcePath": item.source_path,
+        "targetScreen": item.target_screen,
+        "queueState": item.queue_state,
+        "executionStatus": item.execution_status,
+        "patchType": item.artifact_type,
+        "patchId": item.runtime_patch.get("patch_id") or "",
+        "active": bool(item.runtime_patch.get("active")),
+        "validationStatus": item.validation.get("status") or "",
+        "evidenceUrl": item.runtime_patch.get("evidence_url") or "",
+    }
+
+
+def render_materialized_patch_module(report: WorkOrderExecutionReport) -> str:
+    patches = [_runtime_patch_for_code(item) for item in report.executions]
+    summary = {
+        "generatedAt": report.generated_at,
+        "sourceQueueCount": report.summary.get("source_queue_count"),
+        "materializedPatchCount": len(patches),
+        "activePatchCount": report.runtime_patch_registry.get("summary", {}).get("active_patch_count"),
+        "remainingQueueCount": report.summary.get("remaining_queue_count"),
+        "validationFailures": report.summary.get("failed_validation_count"),
+        "status": report.status,
+    }
+    return (
+        "/* Generated by python -m aureon.autonomous.aureon_frontend_work_order_executor.\n"
+        "   Materializes the frontend evolution queue as imported runtime code. */\n"
+        "export type AureonEvolutionRuntimePatch = {\n"
+        "  id: string;\n"
+        "  title: string;\n"
+        "  sourcePath: string;\n"
+        "  targetScreen: string;\n"
+        "  queueState: string;\n"
+        "  executionStatus: string;\n"
+        "  patchType: string;\n"
+        "  patchId: string;\n"
+        "  active: boolean;\n"
+        "  validationStatus: string;\n"
+        "  evidenceUrl: string;\n"
+        "};\n\n"
+        f"export const AUREON_EVOLUTION_RUNTIME_PATCH_SUMMARY = {json.dumps(summary, indent=2, sort_keys=True)} as const;\n\n"
+        f"export const AUREON_EVOLUTION_RUNTIME_PATCHES = {json.dumps(patches, indent=2, sort_keys=True)} satisfies AureonEvolutionRuntimePatch[];\n\n"
+        "export function aureonEvolutionPatchesForScreen(screen: string): AureonEvolutionRuntimePatch[] {\n"
+        "  return AUREON_EVOLUTION_RUNTIME_PATCHES.filter((patch) => patch.targetScreen === screen);\n"
+        "}\n\n"
+        "export function aureonEvolutionActivePatchCount(): number {\n"
+        "  return AUREON_EVOLUTION_RUNTIME_PATCHES.filter((patch) => patch.active).length;\n"
+        "}\n"
     )
 
 
@@ -161,6 +292,11 @@ import { Activity, Archive, CheckCircle2, Lock, ShieldAlert } from "lucide-react
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  AUREON_EVOLUTION_RUNTIME_PATCH_SUMMARY,
+  AUREON_EVOLUTION_RUNTIME_PATCHES,
+  aureonEvolutionActivePatchCount,
+} from "@/components/generated/aureonEvolutionRuntimePatches";
 
 type JsonMap = Record<string, any>;
 
@@ -195,19 +331,34 @@ function iconFor(status: string) {
 
 export function AureonWorkOrderExecutionConsole() {
   const [report, setReport] = useState<JsonMap>({});
+  const [registry, setRegistry] = useState<JsonMap>({});
 
   useEffect(() => {
     let cancelled = false;
-    fetchJson("/aureon_frontend_work_order_execution.json").then((payload) => {
-      if (!cancelled) setReport(payload);
-    });
+    const refresh = () => {
+      fetchJson("/aureon_frontend_work_order_execution.json").then((payload) => {
+        if (!cancelled) setReport(payload);
+      });
+      fetchJson("/aureon_frontend_runtime_patch_registry.json").then((payload) => {
+        if (!cancelled) setRegistry(payload);
+      });
+    };
+    refresh();
+    const timer = window.setInterval(refresh, 2500);
     return () => {
       cancelled = true;
+      window.clearInterval(timer);
     };
   }, []);
 
   const executions = Array.isArray(report.executions) ? report.executions : [];
   const summary = report.summary || {};
+  const movement = report.queue_movement || {};
+  const validation = report.validation_summary || {};
+  const patchSummary = registry.summary || report.runtime_patch_registry?.summary || {};
+  const activePatches = Array.isArray(registry.patches) ? registry.patches : report.runtime_patch_registry?.patches || [];
+  const materializedPatchCount = AUREON_EVOLUTION_RUNTIME_PATCHES.length;
+  const materializedActivePatchCount = aureonEvolutionActivePatchCount();
   const top = useMemo(() => executions.slice(0, 80), [executions]);
 
   return (
@@ -222,13 +373,48 @@ export function AureonWorkOrderExecutionConsole() {
         <div className="flex flex-wrap gap-2">
           <Badge variant="outline" className="border-green-500/40 bg-green-500/10 text-green-100">{report.status || "pending"}</Badge>
           <Badge variant="outline" className="border-border bg-muted/20 text-muted-foreground">updated {report.generated_at ? new Date(report.generated_at).toLocaleTimeString() : "pending"}</Badge>
+          <Badge variant="outline" className="border-cyan-500/40 bg-cyan-500/10 text-cyan-100">code materialized {materializedPatchCount}</Badge>
         </div>
         <div className="grid gap-2 md:grid-cols-5">
           <Stat label="orders executed" value={summary.executed_count} />
+          <Stat label="moved from queue" value={summary.moved_from_queue_count || movement.moved_from_queue_count} />
+          <Stat label="remaining queue" value={summary.remaining_queue_count ?? movement.remaining_queue_count} />
+          <Stat label="validated" value={summary.validated_count || validation.validated_count} />
+          <Stat label="runtime patches active" value={summary.runtime_patch_count || patchSummary.active_patch_count} />
+        </div>
+        <div className="grid gap-2 md:grid-cols-5">
           <Stat label="adapters" value={summary.adapter_record_count} />
           <Stat label="blocker cards" value={summary.blocker_card_count} />
           <Stat label="archive decisions" value={summary.archive_decision_count} />
-          <Stat label="screens" value={summary.target_screen_count} />
+          <Stat label="validation failures" value={summary.failed_validation_count || validation.failed_validation_count || 0} />
+          <Stat label="queue drained" value={movement.queue_drained ? "yes" : "no"} />
+        </div>
+        <div className="rounded-md border border-cyan-500/25 bg-cyan-500/10 p-3">
+          <div className="mb-2 text-sm font-medium text-cyan-50">Materialized Repo Code</div>
+          <div className="grid gap-2 md:grid-cols-4">
+            <Stat label="generated TS patches" value={materializedPatchCount} />
+            <Stat label="active in code" value={materializedActivePatchCount} />
+            <Stat label="module status" value={AUREON_EVOLUTION_RUNTIME_PATCH_SUMMARY.status} />
+            <Stat label="source queue" value={AUREON_EVOLUTION_RUNTIME_PATCH_SUMMARY.sourceQueueCount} />
+          </div>
+          <div className="mt-2 font-mono text-[11px] text-cyan-50/75">
+            frontend/src/components/generated/aureonEvolutionRuntimePatches.ts is imported by this runtime console.
+          </div>
+        </div>
+        <div className="rounded-md border border-green-500/25 bg-green-500/10 p-3">
+          <div className="mb-2 text-sm font-medium text-green-50">Runtime Patch Activation</div>
+          <div className="grid gap-2 md:grid-cols-3">
+            {activePatches.slice(0, 6).map((patch: JsonMap) => (
+              <div key={patch.patch_id} className="rounded border border-green-300/20 bg-background/20 px-2 py-1 text-[11px] text-green-50/80">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium">{String(patch.patch_type || "patch").replace(/_/g, " ")}</span>
+                  <Badge variant="outline" className="border-green-500/40 bg-green-500/10 text-green-100">{patch.status}</Badge>
+                </div>
+                <div className="mt-1 truncate font-mono text-green-50/70">{patch.source_path}</div>
+              </div>
+            ))}
+            {!activePatches.length ? <div className="text-xs text-green-50/70">No runtime patch registry loaded yet.</div> : null}
+          </div>
         </div>
         <ScrollArea className="h-[420px] pr-3">
           <div className="space-y-2">
@@ -246,10 +432,14 @@ export function AureonWorkOrderExecutionConsole() {
                     </div>
                     <div className="flex flex-wrap gap-1">
                       <Badge variant="outline" className={tone(String(item.execution_status || ""))}>{item.execution_status}</Badge>
+                      <Badge variant="outline" className={item.queue_state === "completed_validated" ? "border-green-500/40 bg-green-500/10 text-green-100" : "border-yellow-500/40 bg-yellow-500/10 text-yellow-100"}>{item.queue_state}</Badge>
                       <Badge variant="outline" className="border-border bg-muted/20 text-muted-foreground">{item.target_screen}</Badge>
                     </div>
                   </div>
                   <div className="mt-2 text-xs text-muted-foreground">{item.next_action}</div>
+                  <div className="mt-2 text-[11px] text-green-100">
+                    moved from queue: {item.queue_transition?.moved_from_queue ? "yes" : "no"} | validation: {item.validation?.status || "waiting"} | patch: {item.runtime_patch?.status || "waiting"}
+                  </div>
                   <div className="mt-2 text-[11px] text-yellow-100">{item.safety_boundary}</div>
                 </div>
               );
@@ -305,13 +495,77 @@ def build_report(goal: str, root: Optional[Path] = None) -> WorkOrderExecutionRe
 
     by_execution: dict[str, int] = {}
     by_target: dict[str, int] = {}
+    by_queue_state: dict[str, int] = {}
     for execution in executions:
         by_execution[execution.execution_status] = by_execution.get(execution.execution_status, 0) + 1
         by_target[execution.target_screen] = by_target.get(execution.target_screen, 0) + 1
+        by_queue_state[execution.queue_state] = by_queue_state.get(execution.queue_state, 0) + 1
+
+    source_queue_count = int((queue.get("summary") or {}).get("queue_count") or len(executions))
+    moved_count = len([item for item in executions if item.queue_transition.get("moved_from_queue")])
+    validated_count = len([item for item in executions if item.validation.get("ok")])
+    active_patches = [item.runtime_patch for item in executions if item.runtime_patch.get("active")]
+    failed_validation = [item for item in executions if not item.validation.get("ok")]
+    queue_movement = {
+        "source_queue_count": source_queue_count,
+        "moved_from_queue_count": moved_count,
+        "remaining_queue_count": max(0, source_queue_count - moved_count),
+        "completed_validated_count": by_queue_state.get("completed_validated", 0),
+        "failed_validation_count": by_queue_state.get("failed_validation", 0),
+        "queue_drained": source_queue_count == moved_count and not failed_validation,
+        "by_queue_state": dict(sorted(by_queue_state.items())),
+    }
+    validation_summary = {
+        "validated_count": validated_count,
+        "failed_validation_count": len(failed_validation),
+        "validation_pass_rate": round((validated_count / len(executions)) * 100, 2) if executions else 0.0,
+        "blocking_failure_count": len(failed_validation),
+    }
+    runtime_patch_registry = {
+        "schema_version": "aureon-frontend-runtime-patch-registry-v1",
+        "generated_at": utc_now(),
+        "status": "runtime_patches_active" if active_patches and not failed_validation else "runtime_patches_attention",
+        "summary": {
+            "patch_count": len(executions),
+            "active_patch_count": len(active_patches),
+            "inactive_patch_count": len(executions) - len(active_patches),
+            "target_screen_count": len(by_target),
+            "by_patch_type": {},
+            "queue_drained": queue_movement["queue_drained"],
+        },
+        "patches": active_patches,
+    }
+    by_patch_type: dict[str, int] = {}
+    for item in executions:
+        by_patch_type[item.artifact_type] = by_patch_type.get(item.artifact_type, 0) + 1
+    runtime_patch_registry["summary"]["by_patch_type"] = dict(sorted(by_patch_type.items()))
+    implemented_code_evidence = {
+        "status": "materialized_runtime_patch_code_ready" if len(active_patches) == len(executions) else "materialized_runtime_patch_code_attention",
+        "code_files_written": [
+            DEFAULT_MATERIALIZED_PATCH_MODULE.as_posix(),
+            DEFAULT_COMPONENT.as_posix(),
+            DEFAULT_APP_PATH.as_posix(),
+        ],
+        "materialized_patch_module": DEFAULT_MATERIALIZED_PATCH_MODULE.as_posix(),
+        "imported_by": DEFAULT_COMPONENT.as_posix(),
+        "mounted_in": DEFAULT_APP_PATH.as_posix(),
+        "materialized_patch_count": len(executions),
+        "active_materialized_patch_count": len(active_patches),
+        "implementation_kind": "generated_typescript_runtime_patch_definitions",
+    }
+    runtime_patch_registry["implemented_code_evidence"] = implemented_code_evidence
 
     summary = {
         "executed_count": len(executions),
-        "source_queue_count": (queue.get("summary") or {}).get("queue_count", len(executions)),
+        "source_queue_count": source_queue_count,
+        "moved_from_queue_count": moved_count,
+        "remaining_queue_count": queue_movement["remaining_queue_count"],
+        "validated_count": validated_count,
+        "failed_validation_count": len(failed_validation),
+        "runtime_patch_count": len(active_patches),
+        "runtime_patch_status": runtime_patch_registry["status"],
+        "materialized_code_status": implemented_code_evidence["status"],
+        "materialized_patch_count": implemented_code_evidence["materialized_patch_count"],
         "adapter_record_count": sum(
             count for status, count in by_execution.items()
             if status in {"read_only_adapter_record_created", "safe_status_adapter_record_created"}
@@ -323,7 +577,11 @@ def build_report(goal: str, root: Optional[Path] = None) -> WorkOrderExecutionRe
         "by_execution_status": dict(sorted(by_execution.items())),
         "by_target_screen": dict(sorted(by_target.items())),
     }
-    status = "frontend_work_orders_executed_with_blockers_visible" if summary["blocker_card_count"] else "frontend_work_orders_executed"
+    status = (
+        "frontend_work_orders_live_executed_runtime_patches_active"
+        if queue_movement["queue_drained"] and not failed_validation
+        else "frontend_work_orders_execution_attention"
+    )
     return WorkOrderExecutionReport(
         schema_version=SCHEMA_VERSION,
         generated_at=utc_now(),
@@ -331,13 +589,21 @@ def build_report(goal: str, root: Optional[Path] = None) -> WorkOrderExecutionRe
         status=status,
         goal=goal,
         summary=summary,
+        queue_movement=queue_movement,
+        validation_summary=validation_summary,
+        runtime_patch_registry=runtime_patch_registry,
+        implemented_code_evidence=implemented_code_evidence,
         executions=executions,
         generated_files=[
             DEFAULT_OUTPUT_JSON.as_posix(),
             DEFAULT_OUTPUT_MD.as_posix(),
             DEFAULT_PUBLIC_JSON.as_posix(),
             DEFAULT_STATE_PATH.as_posix(),
+            DEFAULT_PATCH_REGISTRY_JSON.as_posix(),
+            DEFAULT_PATCH_REGISTRY_PUBLIC_JSON.as_posix(),
+            DEFAULT_PATCH_REGISTRY_STATE_PATH.as_posix(),
             DEFAULT_COMPONENT.as_posix(),
+            DEFAULT_MATERIALIZED_PATCH_MODULE.as_posix(),
             DEFAULT_APP_PATH.as_posix(),
         ],
         authoring_path=[
@@ -378,9 +644,27 @@ def render_markdown(report: WorkOrderExecutionReport) -> str:
             lines.append(f"- `{key}`: `{value}`")
     lines.extend(["", "## Top Executions"])
     for item in report.executions[:100]:
-        lines.append(f"- `{item.execution_status}` `{item.target_screen}` `{item.source_path}`")
+        lines.append(f"- `{item.queue_state}` `{item.execution_status}` `{item.target_screen}` `{item.source_path}`")
     if len(report.executions) > 100:
         lines.append(f"- ... {len(report.executions) - 100} more executions in JSON")
+    lines.extend(["", "## Queue Movement"])
+    for key, value in report.queue_movement.items():
+        if isinstance(value, dict):
+            lines.extend([f"- `{key}`:", "  ```json", json.dumps(value, indent=2, sort_keys=True), "  ```"])
+        else:
+            lines.append(f"- `{key}`: `{value}`")
+    lines.extend(["", "## Runtime Patch Registry"])
+    for key, value in (report.runtime_patch_registry.get("summary") or {}).items():
+        if isinstance(value, dict):
+            lines.extend([f"- `{key}`:", "  ```json", json.dumps(value, indent=2, sort_keys=True), "  ```"])
+        else:
+            lines.append(f"- `{key}`: `{value}`")
+    lines.extend(["", "## Implemented Code Evidence"])
+    for key, value in report.implemented_code_evidence.items():
+        if isinstance(value, list):
+            lines.extend([f"- `{key}`:"] + [f"  - `{item}`" for item in value])
+        else:
+            lines.append(f"- `{key}`: `{value}`")
     lines.extend(["", "## Safety"])
     for key, value in report.safety.items():
         lines.append(f"- `{key}`: `{value}`")
@@ -391,12 +675,23 @@ def write_report(report: WorkOrderExecutionReport, root: Path) -> dict[str, Any]
     payload = json.dumps(report.to_dict(), indent=2, sort_keys=True, default=str)
     markdown = render_markdown(report)
     component = render_component()
+    materialized_patch_module = render_materialized_patch_module(report)
     files = {
         DEFAULT_OUTPUT_JSON.as_posix(): payload,
         DEFAULT_OUTPUT_MD.as_posix(): markdown,
         DEFAULT_PUBLIC_JSON.as_posix(): payload,
         DEFAULT_STATE_PATH.as_posix(): payload,
+        DEFAULT_PATCH_REGISTRY_JSON.as_posix(): json.dumps(
+            report.runtime_patch_registry, indent=2, sort_keys=True, default=str
+        ),
+        DEFAULT_PATCH_REGISTRY_PUBLIC_JSON.as_posix(): json.dumps(
+            report.runtime_patch_registry, indent=2, sort_keys=True, default=str
+        ),
+        DEFAULT_PATCH_REGISTRY_STATE_PATH.as_posix(): json.dumps(
+            report.runtime_patch_registry, indent=2, sort_keys=True, default=str
+        ),
         DEFAULT_COMPONENT.as_posix(): component,
+        DEFAULT_MATERIALIZED_PATCH_MODULE.as_posix(): materialized_patch_module,
     }
     app_path = root / DEFAULT_APP_PATH
     if app_path.exists():

@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  AUREON_EVOLUTION_RUNTIME_PATCH_SUMMARY,
+  AUREON_EVOLUTION_RUNTIME_PATCHES,
+  aureonEvolutionActivePatchCount,
+} from "@/components/generated/aureonEvolutionRuntimePatches";
 
 type JsonMap = Record<string, any>;
 type ChatMessage = {
@@ -14,6 +19,7 @@ type ChatMessage = {
   source?: string;
   model?: string;
   latency_ms?: number;
+  response_quality?: { score?: number; passed?: boolean; compiler_applied?: boolean; snags?: string[] };
   weaver?: { policy?: string; shards?: Array<{ name?: string; ok?: boolean; latency_ms?: number }> };
   dynamic_filter?: {
     filter_mode?: string;
@@ -49,6 +55,13 @@ async function fetchJson(url: string): Promise<JsonMap> {
 
 function hasPayload(value: unknown): value is JsonMap {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value) && Object.keys(value as JsonMap).length > 0;
+}
+
+function summaryNumber(value: unknown, key: string): number {
+  if (!hasPayload(value)) return 0;
+  const summary = hasPayload(value.summary) ? value.summary : {};
+  const number = Number(summary[key] || 0);
+  return Number.isFinite(number) ? number : 0;
 }
 
 function fmt(value: unknown): string {
@@ -154,6 +167,14 @@ export function AureonCodingOrganismConsole() {
     const stressAuditState = await fetchJson("/aureon_capability_stress_audit.json");
     const complexStressState = await fetchJson("/aureon_complex_build_stress_audit.json");
     const codingCapabilityState = await fetchJson("/aureon_coding_capability_unblocker.json");
+    const selfFixState = await fetchJson("/aureon_autonomous_self_fix_director.json");
+    const selfRunState = await fetchJson("/aureon_autonomous_self_run_loop.json");
+    const liveSelfRunState = await fetchJson(`${HUB_BASE}/api/autonomous-self-run/status`);
+    const publicJobsState = await fetchJson("/aureon_autonomous_job_executor.json");
+    const liveJobsState = await fetchJson(`${HUB_BASE}/api/autonomous-jobs/status`);
+    const evolutionQueueCertificationState = await fetchJson("/aureon_evolution_queue_autonomous_certification.json");
+    const workOrderExecutionState = await fetchJson("/aureon_frontend_work_order_execution.json");
+    const runtimePatchRegistryState = await fetchJson("/aureon_frontend_runtime_patch_registry.json");
     const next = { ...payload };
     if (hasPayload(forgeState) && !hasPayload(next.capability_forge)) {
       next.capability_forge = forgeState;
@@ -178,6 +199,46 @@ export function AureonCodingOrganismConsole() {
     }
     if (hasPayload(codingCapabilityState) && !hasPayload(next.coding_capability_unblocker)) {
       next.coding_capability_unblocker = codingCapabilityState;
+    }
+    if (hasPayload(selfFixState) && !hasPayload(next.autonomous_self_fix_director)) {
+      next.autonomous_self_fix_director = selfFixState;
+    }
+    if (hasPayload(liveSelfRunState) && summaryNumber(liveSelfRunState, "latest_task_count") > 0) {
+      next.autonomous_self_run_loop = liveSelfRunState;
+    } else if (
+      hasPayload(selfRunState) &&
+      (!hasPayload(next.autonomous_self_run_loop) ||
+        summaryNumber(selfRunState, "latest_task_count") > summaryNumber(next.autonomous_self_run_loop, "latest_task_count"))
+    ) {
+      next.autonomous_self_run_loop = selfRunState;
+    }
+    if (hasPayload(liveJobsState)) {
+      next.autonomous_job_executor = liveJobsState;
+    } else if (hasPayload(publicJobsState) && !hasPayload(next.autonomous_job_executor)) {
+      next.autonomous_job_executor = publicJobsState;
+    }
+    if (
+      hasPayload(evolutionQueueCertificationState) &&
+      (!hasPayload(next.evolution_queue_autonomous_certification) ||
+        summaryNumber(evolutionQueueCertificationState, "processed_count") >
+          summaryNumber(next.evolution_queue_autonomous_certification, "processed_count"))
+    ) {
+      next.evolution_queue_autonomous_certification = evolutionQueueCertificationState;
+    }
+    if (
+      hasPayload(workOrderExecutionState) &&
+      (!hasPayload(next.frontend_work_order_execution) ||
+        summaryNumber(workOrderExecutionState, "executed_count") > summaryNumber(next.frontend_work_order_execution, "executed_count"))
+    ) {
+      next.frontend_work_order_execution = workOrderExecutionState;
+    }
+    if (
+      hasPayload(runtimePatchRegistryState) &&
+      (!hasPayload(next.frontend_runtime_patch_registry) ||
+        summaryNumber(runtimePatchRegistryState, "active_patch_count") >
+          summaryNumber(next.frontend_runtime_patch_registry, "active_patch_count"))
+    ) {
+      next.frontend_runtime_patch_registry = runtimePatchRegistryState;
     }
     return next;
   };
@@ -311,6 +372,16 @@ export function AureonCodingOrganismConsole() {
           source: payload.reply_source,
           model: payload.model,
           latency_ms: payload.latency_ms,
+          response_quality: payload.response_quality
+            ? {
+                score: Number(payload.response_quality.score || 0),
+                passed: Boolean(payload.response_quality.passed),
+                compiler_applied: Boolean(payload.response_quality.compiler_applied),
+                snags: Array.isArray(payload.response_quality.snags)
+                  ? payload.response_quality.snags.map((item: unknown) => String(item))
+                  : [],
+              }
+            : undefined,
           dynamic_filter: payload.dynamic_prompt_filter
             ? {
                 filter_mode: payload.dynamic_prompt_filter.filter_mode,
@@ -419,6 +490,48 @@ export function AureonCodingOrganismConsole() {
   const complexStress = status.complex_build_stress_audit || {};
   const complexSummary = complexStress.summary || {};
   const complexCases = Array.isArray(complexStress.cases) ? complexStress.cases : [];
+  const selfFix = status.autonomous_self_fix_director || {};
+  const selfFixSummary = selfFix.summary || {};
+  const selfFixSwot = selfFix.swot || {};
+  const selfFixBacklog = Array.isArray(selfFix.repair_backlog) ? selfFix.repair_backlog : [];
+  const selfFixSelectedRepairs = Array.isArray(selfFix.selected_repairs) ? selfFix.selected_repairs : [];
+  const selfFixPatchEvidence = Array.isArray(selfFix.patch_apply_evidence) ? selfFix.patch_apply_evidence : [];
+  const selfFixSnags = Array.isArray(selfFix.snags) ? selfFix.snags : [];
+  const selfFixCodexAudit = selfFix.codex_audit_state || {};
+  const selfRun = status.autonomous_self_run_loop || {};
+  const selfRunSummary = selfRun.summary || {};
+  const selfRunHeartbeat = selfRun.heartbeat || {};
+  const selfRunCycles = Array.isArray(selfRun.cycles) ? selfRun.cycles : [];
+  const selfRunLatest = selfRunCycles.length ? selfRunCycles[selfRunCycles.length - 1] : {};
+  const selfRunTasks = Array.isArray(selfRunLatest.tasks) ? selfRunLatest.tasks : [];
+  const selfRunWorkOrders = Array.isArray(selfRun.autonomous_work_orders) ? selfRun.autonomous_work_orders : [];
+  const selfRunHardHolds = Array.isArray(selfRun.hard_boundary_holds) ? selfRun.hard_boundary_holds : [];
+  const autonomousJobs = status.autonomous_job_executor || {};
+  const autonomousJobsSummary = autonomousJobs.summary || {};
+  const autonomousJobList = Array.isArray(autonomousJobs.jobs)
+    ? autonomousJobs.jobs
+    : Array.isArray(autonomousJobs.recent_jobs)
+      ? autonomousJobs.recent_jobs
+      : [];
+  const autonomousActiveJob = autonomousJobs.active_job || autonomousJobs.current_job || {};
+  const autonomousRecentJobs = autonomousJobList.slice(-5).reverse();
+  const autonomousProof = Array.isArray(autonomousActiveJob.proof_checklist) ? autonomousActiveJob.proof_checklist : [];
+  const evolutionQueueCertification = status.evolution_queue_autonomous_certification || {};
+  const evolutionQueueCertificationSummary = evolutionQueueCertification.summary || {};
+  const evolutionQueueCertificationCases = Array.isArray(evolutionQueueCertification.cases)
+    ? evolutionQueueCertification.cases
+    : Array.isArray(evolutionQueueCertification.sample_cases)
+      ? evolutionQueueCertification.sample_cases
+      : [];
+  const workOrderExecution = status.frontend_work_order_execution || {};
+  const workOrderExecutionSummary = workOrderExecution.summary || {};
+  const workOrderMovement = workOrderExecution.queue_movement || {};
+  const workOrderValidation = workOrderExecution.validation_summary || {};
+  const runtimePatchRegistry = status.frontend_runtime_patch_registry || workOrderExecution.runtime_patch_registry || {};
+  const runtimePatchSummary = runtimePatchRegistry.summary || {};
+  const runtimePatches = Array.isArray(runtimePatchRegistry.patches) ? runtimePatchRegistry.patches : [];
+  const materializedPatchCount = AUREON_EVOLUTION_RUNTIME_PATCHES.length;
+  const materializedActivePatchCount = aureonEvolutionActivePatchCount();
   const codingCapability = status.coding_capability_unblocker || clientJob.coding_capability_unblocker || {};
   const codingCapabilitySummary = codingCapability.summary || {};
   const codingGates = Array.isArray(codingCapability.autonomous_gates) ? codingCapability.autonomous_gates : [];
@@ -434,6 +547,10 @@ export function AureonCodingOrganismConsole() {
   const qualityChecks = Array.isArray(qualityReport.checks) ? qualityReport.checks : [];
   const qualitySnags = Array.isArray(qualityReport.snags) ? qualityReport.snags : [];
   const adaptiveSkill = (capabilityForge.adaptive_skill_evidence || capabilityForge.adaptive_skill_report?.adaptive_skill || {}) as JsonMap;
+  const fullStackSystem = capabilityForge.full_stack_system_report || {};
+  const fullStackManifest = fullStackSystem.artifact_manifest || {};
+  const fullStackValidation = fullStackSystem.validation || {};
+  const fullStackFlow = Array.isArray(fullStackSystem.agent_build_flow) ? fullStackSystem.agent_build_flow : [];
   const approvalState = localApprovalState || capabilityForge.approval_state?.state || clientJob.approval_state?.state || qualityReport.approval_state?.state || "waiting_for_forge";
   const scopeOfWorks = clientJob.scope_of_works || {};
   const clientQuestions = Array.isArray(clientJob.client_questions) ? clientJob.client_questions : [];
@@ -596,6 +713,19 @@ export function AureonCodingOrganismConsole() {
                       ))}
                     </div>
                   ) : null}
+                  {message.response_quality ? (
+                    <div className="mt-2 flex flex-wrap gap-1 text-[10px] text-violet-50/70">
+                      <Badge variant={message.response_quality.passed ? "success" : "warning"}>
+                        quality {Math.round(Number(message.response_quality.score || 0) * 100)}%
+                      </Badge>
+                      {message.response_quality.compiler_applied ? <Badge variant="outline">operator compiled</Badge> : null}
+                      {(message.response_quality.snags || []).slice(0, 2).map((snag) => (
+                        <Badge key={`${message.ts}-${snag}`} variant="warning">
+                          {snag.replace(/_/g, " ")}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               ))}
               {!chatMessages.length ? (
@@ -624,6 +754,8 @@ export function AureonCodingOrganismConsole() {
 
           <div className="mt-3 grid gap-2 md:grid-cols-[1fr_auto]">
             <Textarea
+              data-testid="phi-chat-input"
+              aria-label="Phi chat message"
               value={chatInput}
               onChange={(event) => setChatInput(event.target.value)}
               onKeyDown={(event) => {
@@ -634,7 +766,14 @@ export function AureonCodingOrganismConsole() {
               }}
               className="min-h-[72px] bg-background/60 text-xs"
             />
-            <Button className="md:self-end" size="sm" onClick={sendPhiChat} disabled={chatBusy || !chatInput.trim()}>
+            <Button
+              data-testid="phi-chat-submit"
+              type="button"
+              className="md:self-end"
+              size="sm"
+              onClick={sendPhiChat}
+              disabled={chatBusy || !chatInput.trim()}
+            >
               <Send className="mr-2 h-4 w-4" />
               Talk To Aureon
             </Button>
@@ -728,6 +867,325 @@ export function AureonCodingOrganismConsole() {
           <Stat icon={TestTube2} label="test commands" value={tests.command_count || 0} />
           <Stat icon={MousePointer2} label="VM tools" value={summary.remote_vm_tool_count || 0} />
           <Stat icon={CheckCircle2} label="route ok" value={route.ok ? "yes" : "no"} />
+        </div>
+
+        <div className="rounded-md border border-cyan-500/30 bg-cyan-500/10 p-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium text-cyan-50">Autonomous Self-Run Loop</div>
+              <div className="mt-1 text-xs text-cyan-50/75">
+                The coding organism wakes its gates, creative process, stress certification, and self-fix director without waiting for Codex when work stays inside safe local authority.
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant={selfRunSummary.loop_active ? "success" : selfRun.schema_version ? "warning" : "outline"}>
+                {selfRun.status || "self-run waiting"}
+              </Badge>
+              <Badge variant={selfRunSummary.handover_ready ? "success" : selfRun.schema_version ? "warning" : "outline"}>
+                autonomous {selfRunSummary.loop_active ? "active" : "held"}
+              </Badge>
+              <Badge variant={Number(selfRunSummary.hard_boundary_hold_count || 0) ? "warning" : "success"}>
+                hard holds {selfRunSummary.hard_boundary_hold_count || 0}
+              </Badge>
+              <Badge variant="outline">cycles {selfRunSummary.cycle_count || 0}</Badge>
+            </div>
+          </div>
+          <div className="mt-3 grid gap-2 md:grid-cols-5">
+            <Mini label="Tasks" value={`${selfRunSummary.latest_task_ok_count || 0}/${selfRunSummary.latest_task_count || 0}`} />
+            <Mini label="Critical failures" value={selfRunSummary.critical_failure_count || 0} />
+            <Mini label="Soft failures" value={selfRunSummary.soft_failure_count || 0} />
+            <Mini label="Work orders" value={selfRunSummary.autonomous_work_order_count || 0} />
+            <Mini label="Heartbeat" value={selfRunHeartbeat.status || selfRunSummary.heartbeat_status || "waiting"} />
+          </div>
+          <div className="mt-3 grid gap-3 lg:grid-cols-3">
+            <div className="rounded-md border border-cyan-300/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-cyan-50">Latest Cycle Tasks</div>
+              <div className="space-y-1">
+                {selfRunTasks.slice(0, 6).map((task: JsonMap) => (
+                  <div key={task.id} className="rounded border border-cyan-300/20 bg-background/20 px-2 py-1 text-[11px] text-cyan-50/80">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium">{String(task.title || task.id).replace(/_/g, " ")}</span>
+                      <Badge variant={task.ok ? "success" : task.critical ? "warning" : "outline"}>{task.status || "waiting"}</Badge>
+                    </div>
+                    <div className="mt-1 text-cyan-50/70">
+                      {task.authority || "safe local"} | {task.duration_ms || 0}ms
+                    </div>
+                  </div>
+                ))}
+                {!selfRunTasks.length ? <div className="text-xs text-cyan-50/70">Run the self-run loop to publish autonomous cycle evidence.</div> : null}
+              </div>
+            </div>
+            <div className="rounded-md border border-cyan-300/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-cyan-50">Autonomous Next Work</div>
+              <div className="space-y-1">
+                {selfRunWorkOrders.slice(0, 5).map((order: JsonMap) => (
+                  <div key={order.id} className="rounded border border-cyan-300/20 bg-background/20 px-2 py-1 text-[11px] text-cyan-50/80">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium">{String(order.title || order.id).replace(/_/g, " ")}</span>
+                      <Badge variant={order.autonomous ? "success" : "warning"}>{order.priority || "P1"}</Badge>
+                    </div>
+                    <div className="mt-1 text-cyan-50/70">{order.next_action}</div>
+                  </div>
+                ))}
+                {!selfRunWorkOrders.length ? <div className="text-xs text-cyan-50/70">No autonomous repair work is waiting in the latest cycle.</div> : null}
+              </div>
+            </div>
+            <div className="rounded-md border border-cyan-300/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-cyan-50">Authority Boundary</div>
+              <div className="space-y-1">
+                {selfRunHeartbeat.status ? (
+                  <div className="rounded border border-cyan-300/20 bg-background/20 px-2 py-1 text-[11px] text-cyan-50/80">
+                    <div className="font-medium">heartbeat {selfRunHeartbeat.status}</div>
+                    <div className="mt-1">
+                      due {selfRunHeartbeat.next_cycle_due_seconds ?? 0}s | stale after {selfRunHeartbeat.stale_after_seconds ?? 0}s
+                    </div>
+                  </div>
+                ) : null}
+                {selfRunHardHolds.slice(0, 5).map((hold: JsonMap) => (
+                  <div key={hold.id} className="rounded border border-yellow-400/30 bg-yellow-500/10 px-2 py-1 text-[11px] text-yellow-50">
+                    <div className="font-medium">{String(hold.id || "manual hold").replace(/_/g, " ")}</div>
+                    <div className="mt-1">{hold.reason}</div>
+                  </div>
+                ))}
+                {!selfRunHardHolds.length ? (
+                  <div className="rounded border border-cyan-300/20 bg-background/20 px-2 py-1 text-[11px] text-cyan-50/80">
+                    No hard boundary is holding the safe local coding lane.
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-md border border-indigo-500/30 bg-indigo-500/10 p-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium text-indigo-50">Autonomous Job Executor</div>
+              <div className="mt-1 text-xs text-indigo-50/75">
+                Every human coding, UI, media, or tool prompt becomes a durable job that can be claimed, built, tested, repaired, and handed over when proof passes.
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant={autonomousJobs.ok ? "success" : autonomousJobs.schema_version ? "warning" : "outline"}>
+                {autonomousJobs.status || "jobs waiting"}
+              </Badge>
+              <Badge variant={Number(autonomousJobsSummary.queue_depth || 0) ? "warning" : "outline"}>
+                Queue depth {autonomousJobsSummary.queue_depth || 0}
+              </Badge>
+              <Badge variant={autonomousActiveJob.state === "handover_ready" ? "success" : autonomousActiveJob.state ? "warning" : "outline"}>
+                active {autonomousActiveJob.state || "none"}
+              </Badge>
+              <Badge variant="outline">handover {autonomousJobsSummary.handover_ready_count || 0}</Badge>
+            </div>
+          </div>
+          <div className="mt-3 grid gap-2 md:grid-cols-5">
+            <Mini label="Jobs" value={autonomousJobsSummary.job_count || autonomousJobList.length || 0} />
+            <Mini label="Queue depth" value={autonomousJobsSummary.queue_depth || 0} />
+            <Mini label="Active" value={autonomousJobsSummary.active_job_count || (autonomousActiveJob.job_id ? 1 : 0)} />
+            <Mini label="Manual holds" value={autonomousJobsSummary.manual_hold_count || 0} />
+            <Mini label="Failed budget" value={autonomousJobsSummary.failed_after_budget_count || 0} />
+          </div>
+          <div className="mt-3 grid gap-3 lg:grid-cols-3">
+            <div className="rounded-md border border-indigo-300/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-indigo-50">Active Job</div>
+              {autonomousActiveJob.job_id ? (
+                <div className="rounded border border-indigo-300/20 bg-background/20 px-2 py-1 text-[11px] text-indigo-50/80">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium">{autonomousActiveJob.job_id}</span>
+                    <Badge variant={autonomousActiveJob.handover_ready ? "success" : "warning"}>{autonomousActiveJob.state || "active"}</Badge>
+                  </div>
+                  <div className="mt-1 text-indigo-50/70">{String(autonomousActiveJob.prompt || "").slice(0, 140)}</div>
+                  <div className="mt-1 text-indigo-50/70">
+                    phase {autonomousActiveJob.phase || "waiting"} | attempts {autonomousActiveJob.attempts || 0}/{autonomousActiveJob.attempt_budget || 0}
+                  </div>
+                  {autonomousActiveJob.handover?.public_url ? (
+                    <a className="mt-2 block text-indigo-100 underline" href={String(autonomousActiveJob.handover.public_url)}>
+                      Open handover artifact
+                    </a>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="text-xs text-indigo-50/70">No active job is currently claimed by the worker.</div>
+              )}
+            </div>
+            <div className="rounded-md border border-indigo-300/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-indigo-50">Proof Checklist</div>
+              <div className="space-y-1">
+                {autonomousProof.slice(0, 6).map((check: JsonMap) => (
+                  <div key={check.id} className="rounded border border-indigo-300/20 bg-background/20 px-2 py-1 text-[11px] text-indigo-50/80">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium">{String(check.id || "proof").replace(/_/g, " ")}</span>
+                      <Badge variant={check.ok ? "success" : "warning"}>{check.ok ? "pass" : "hold"}</Badge>
+                    </div>
+                    <div className="mt-1 text-indigo-50/70">{check.evidence || "waiting for proof"}</div>
+                  </div>
+                ))}
+                {!autonomousProof.length ? <div className="text-xs text-indigo-50/70">Proof appears after a job reaches the build and test phases.</div> : null}
+              </div>
+            </div>
+            <div className="rounded-md border border-indigo-300/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-indigo-50">Recent Jobs</div>
+              <div className="space-y-1">
+                {autonomousRecentJobs.map((job: JsonMap) => (
+                  <div key={job.job_id} className="rounded border border-indigo-300/20 bg-background/20 px-2 py-1 text-[11px] text-indigo-50/80">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium">{job.job_id}</span>
+                      <Badge variant={job.state === "handover_ready" ? "success" : job.state === "held_manual_boundary" ? "warning" : "outline"}>{job.state || "waiting"}</Badge>
+                    </div>
+                    <div className="mt-1 text-indigo-50/70">{String(job.prompt || "").slice(0, 110)}</div>
+                  </div>
+                ))}
+                {!autonomousRecentJobs.length ? <div className="text-xs text-indigo-50/70">Submit a cockpit prompt to create the first durable autonomous job.</div> : null}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-md border border-fuchsia-500/30 bg-fuchsia-500/10 p-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium text-fuchsia-50">Evolution Queue 584 Certification</div>
+              <div className="mt-1 text-xs text-fuchsia-50/75">
+                The real throughput test: Aureon reads every frontend evolution work order, assigns a safe autonomous outcome, proves the data contract, and records true boundaries without stopping the coding lane.
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant={evolutionQueueCertification.ok ? "success" : evolutionQueueCertification.schema_version ? "warning" : "outline"}>
+                {evolutionQueueCertification.status || "certification waiting"}
+              </Badge>
+              <Badge variant={Number(evolutionQueueCertificationSummary.fake_pass_count || 0) ? "warning" : "success"}>
+                fake passes {evolutionQueueCertificationSummary.fake_pass_count || 0}
+              </Badge>
+              <Badge variant="outline">
+                processed {evolutionQueueCertificationSummary.processed_count || 0}/{evolutionQueueCertificationSummary.queue_count || 0}
+              </Badge>
+            </div>
+          </div>
+          <div className="mt-3 grid gap-2 md:grid-cols-5">
+            <Mini label="Throughput" value={`${evolutionQueueCertificationSummary.throughput_percent || 0}%`} />
+            <Mini label="Autonomous outcomes" value={evolutionQueueCertificationSummary.safe_autonomous_outcome_count || 0} />
+            <Mini label="Read-only adapters" value={evolutionQueueCertificationSummary.read_only_adapter_count || 0} />
+            <Mini label="Blocker cards" value={evolutionQueueCertificationSummary.blocker_card_count || 0} />
+            <Mini label="Boundary visible" value={evolutionQueueCertificationSummary.manual_boundary_visible_count || 0} />
+          </div>
+          <div className="mt-3 grid gap-3 lg:grid-cols-3">
+            <div className="rounded-md border border-fuchsia-300/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-fuchsia-50">Outcome Buckets</div>
+              <div className="space-y-1">
+                {Object.entries(evolutionQueueCertificationSummary.outcome_buckets || {}).map(([bucket, count]) => (
+                  <div key={bucket} className="flex items-center justify-between rounded border border-fuchsia-300/20 bg-background/20 px-2 py-1 text-[11px] text-fuchsia-50/80">
+                    <span className="font-medium">{bucket.replace(/_/g, " ")}</span>
+                    <Badge variant="outline">{String(count)}</Badge>
+                  </div>
+                ))}
+                {!Object.keys(evolutionQueueCertificationSummary.outcome_buckets || {}).length ? (
+                  <div className="text-xs text-fuchsia-50/70">Run the evolution queue certification to publish all 584 outcomes.</div>
+                ) : null}
+              </div>
+            </div>
+            <div className="rounded-md border border-fuchsia-300/25 bg-background/25 p-3 lg:col-span-2">
+              <div className="mb-2 text-xs font-medium text-fuchsia-50">Sample Work Order Proof</div>
+              <div className="grid gap-2 md:grid-cols-2">
+                {evolutionQueueCertificationCases.slice(0, 6).map((item: JsonMap) => (
+                  <div key={item.id} className="rounded border border-fuchsia-300/20 bg-background/20 px-2 py-1 text-[11px] text-fuchsia-50/80">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium">{String(item.id || "work order").replace(/_/g, " ")}</span>
+                      <Badge variant={item.ok ? "success" : "warning"}>{item.autonomous_outcome || "waiting"}</Badge>
+                    </div>
+                    <div className="mt-1 text-fuchsia-50/70">
+                      {item.target_screen || "screen"} | {item.handover_state?.state || "handover waiting"}
+                    </div>
+                    <div className="mt-1 text-fuchsia-50/60">{String(item.source_path || "").slice(0, 120)}</div>
+                  </div>
+                ))}
+                {!evolutionQueueCertificationCases.length ? (
+                  <div className="text-xs text-fuchsia-50/70">No certified queue cases are published yet.</div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-md border border-teal-500/30 bg-teal-500/10 p-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium text-teal-50">Live Queue Runtime Patches</div>
+              <div className="mt-1 text-xs text-teal-50/75">
+                Shows the queue moving into validated runtime patch records: each completed work order has validation proof and an active read-only patch entry.
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant={workOrderExecution.status ? "success" : "outline"}>{workOrderExecution.status || "execution waiting"}</Badge>
+              <Badge variant={Number(workOrderExecutionSummary.remaining_queue_count || 0) ? "warning" : "success"}>
+                remaining queue {workOrderExecutionSummary.remaining_queue_count ?? workOrderMovement.remaining_queue_count ?? 0}
+              </Badge>
+              <Badge variant={Number(workOrderExecutionSummary.failed_validation_count || 0) ? "warning" : "success"}>
+                validation failures {workOrderExecutionSummary.failed_validation_count || workOrderValidation.failed_validation_count || 0}
+              </Badge>
+              <Badge variant="outline">code materialized {materializedPatchCount}</Badge>
+            </div>
+          </div>
+          <div className="mt-3 grid gap-2 md:grid-cols-5">
+            <Mini label="Moved from queue" value={workOrderExecutionSummary.moved_from_queue_count || workOrderMovement.moved_from_queue_count || 0} />
+            <Mini label="Completed validated" value={workOrderMovement.completed_validated_count || workOrderExecutionSummary.validated_count || 0} />
+            <Mini label="Active runtime patches" value={runtimePatchSummary.active_patch_count || workOrderExecutionSummary.runtime_patch_count || 0} />
+            <Mini label="Patch registry" value={runtimePatchRegistry.status || workOrderExecutionSummary.runtime_patch_status || "waiting"} />
+            <Mini label="Queue drained" value={workOrderMovement.queue_drained ? "yes" : "no"} />
+          </div>
+          <div className="mt-3 grid gap-3 lg:grid-cols-3">
+            <div className="rounded-md border border-teal-300/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-teal-50">Queue Movement</div>
+              <div className="space-y-1 text-[11px] text-teal-50/80">
+                <div className="flex items-center justify-between rounded border border-teal-300/20 bg-background/20 px-2 py-1">
+                  <span>source queue</span>
+                  <Badge variant="outline">{workOrderMovement.source_queue_count || workOrderExecutionSummary.source_queue_count || 0}</Badge>
+                </div>
+                <div className="flex items-center justify-between rounded border border-teal-300/20 bg-background/20 px-2 py-1">
+                  <span>moved from queue</span>
+                  <Badge variant="outline">{workOrderMovement.moved_from_queue_count || workOrderExecutionSummary.moved_from_queue_count || 0}</Badge>
+                </div>
+                <div className="flex items-center justify-between rounded border border-teal-300/20 bg-background/20 px-2 py-1">
+                  <span>remaining queue</span>
+                  <Badge variant={Number(workOrderMovement.remaining_queue_count || 0) ? "warning" : "outline"}>{workOrderMovement.remaining_queue_count ?? workOrderExecutionSummary.remaining_queue_count ?? 0}</Badge>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-md border border-cyan-300/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-cyan-50">Materialized Repo Code</div>
+              <div className="space-y-1 text-[11px] text-cyan-50/80">
+                <div className="flex items-center justify-between rounded border border-cyan-300/20 bg-background/20 px-2 py-1">
+                  <span>generated TS patches</span>
+                  <Badge variant="outline">{materializedPatchCount}</Badge>
+                </div>
+                <div className="flex items-center justify-between rounded border border-cyan-300/20 bg-background/20 px-2 py-1">
+                  <span>active in code</span>
+                  <Badge variant="outline">{materializedActivePatchCount}</Badge>
+                </div>
+                <div className="flex items-center justify-between rounded border border-cyan-300/20 bg-background/20 px-2 py-1">
+                  <span>module status</span>
+                  <Badge variant="outline">{AUREON_EVOLUTION_RUNTIME_PATCH_SUMMARY.status}</Badge>
+                </div>
+                <div className="font-mono text-cyan-50/65">
+                  frontend/src/components/generated/aureonEvolutionRuntimePatches.ts
+                </div>
+              </div>
+            </div>
+            <div className="rounded-md border border-teal-300/25 bg-background/25 p-3 lg:col-span-2">
+              <div className="mb-2 text-xs font-medium text-teal-50">Active Runtime Patches</div>
+              <div className="grid gap-2 md:grid-cols-2">
+                {runtimePatches.slice(0, 6).map((patch: JsonMap) => (
+                  <div key={patch.patch_id} className="rounded border border-teal-300/20 bg-background/20 px-2 py-1 text-[11px] text-teal-50/80">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium">{String(patch.patch_type || "patch").replace(/_/g, " ")}</span>
+                      <Badge variant={patch.active ? "success" : "warning"}>{patch.status || "waiting"}</Badge>
+                    </div>
+                    <div className="mt-1 text-teal-50/70">{patch.target_screen || "screen"} | {String(patch.source_path || "").slice(0, 110)}</div>
+                  </div>
+                ))}
+                {!runtimePatches.length ? <div className="text-xs text-teal-50/70">Run work-order execution to activate runtime patch records.</div> : null}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3">
@@ -836,6 +1294,49 @@ export function AureonCodingOrganismConsole() {
             <div className="mt-3 rounded-md border border-teal-300/25 bg-background/25 p-3 text-xs text-teal-50/80">
               <span className="font-medium text-teal-50">Adaptive skill:</span> {adaptiveSkill.name}
               {adaptiveSkill.skill_contract ? <span> - {adaptiveSkill.skill_contract}</span> : null}
+            </div>
+          ) : null}
+          {fullStackSystem.status ? (
+            <div className="mt-3 rounded-md border border-sky-300/25 bg-sky-500/10 p-3">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="text-sm font-medium text-sky-50">Full-Stack Agent Build</div>
+                  <div className="mt-1 text-xs text-sky-50/75">
+                    Agents generated backend, frontend, data contract, tests, and runbook as a local full-stack system.
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant={fullStackSystem.ok ? "success" : "warning"}>{fullStackSystem.status}</Badge>
+                  <Badge variant={fullStackValidation.status === "contract_validated" ? "success" : "warning"}>
+                    {fullStackValidation.status || "validation waiting"}
+                  </Badge>
+                </div>
+              </div>
+              <div className="mt-3 grid gap-2 md:grid-cols-4">
+                <Mini label="Backend" value={fullStackManifest.backend_path ? "written" : "waiting"} />
+                <Mini label="Frontend" value={fullStackManifest.frontend_path ? "written" : "waiting"} />
+                <Mini label="Tests" value={fullStackManifest.test_path ? "written" : "waiting"} />
+                <Mini label="CRUD proof" value={fullStackValidation.crud_ok ? "pass" : "waiting"} />
+              </div>
+              <div className="mt-3 grid gap-2 lg:grid-cols-2">
+                <div className="rounded border border-sky-300/20 bg-background/20 p-2 text-[11px] text-sky-50/80">
+                  <div className="mb-1 font-medium text-sky-50">Agent Flow</div>
+                  {fullStackFlow.slice(0, 6).map((step: string) => (
+                    <div key={step} className="py-0.5">{step}</div>
+                  ))}
+                </div>
+                <div className="rounded border border-sky-300/20 bg-background/20 p-2 text-[11px] text-sky-50/80">
+                  <div className="mb-1 font-medium text-sky-50">Generated System Paths</div>
+                  <div className="truncate font-mono">{fullStackManifest.frontend_path || "frontend waiting"}</div>
+                  <div className="truncate font-mono">{fullStackManifest.backend_path || "backend waiting"}</div>
+                  <div className="truncate font-mono">{fullStackManifest.test_path || "tests waiting"}</div>
+                  {fullStackManifest.public_url ? (
+                    <a href={normalizePublicUrl(fullStackManifest.public_url)} target="_blank" rel="noreferrer" className="mt-2 inline-flex font-medium text-sky-100 underline underline-offset-2">
+                      Open full-stack preview
+                    </a>
+                  ) : null}
+                </div>
+              </div>
             </div>
           ) : null}
 
@@ -970,6 +1471,124 @@ export function AureonCodingOrganismConsole() {
               );
             })}
             {!complexCases.length ? <div className="text-xs text-rose-50/70">Run complex build certification to publish broad build/workload evidence.</div> : null}
+          </div>
+        </div>
+
+        <div className="rounded-md border border-lime-500/30 bg-lime-500/10 p-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium text-lime-50">Aureon Self-Fix SWOT</div>
+              <div className="mt-1 text-xs text-lime-50/75">
+                Aureon audits its own coding evidence, selects repair work, applies safe local patches autonomously, reruns tests, and records Codex/user audit as evidence.
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant={selfFix.handover_ready ? "success" : selfFix.schema_version ? "warning" : "outline"}>
+                {selfFix.status || "self-fix waiting"}
+              </Badge>
+              <Badge variant={selfFixCodexAudit.state === "failed" ? "destructive" : selfFixCodexAudit.state ? "success" : "outline"}>
+                audit {selfFixCodexAudit.state || "waiting"}
+              </Badge>
+              <Badge variant={Number(selfFixSummary.blocking_snag_count || 0) ? "warning" : "success"}>
+                snags {selfFixSummary.blocking_snag_count || 0}
+              </Badge>
+              <Badge variant="outline">repairs {selfFixSummary.selected_repair_count || 0}</Badge>
+            </div>
+          </div>
+
+          <div className="mt-3 grid gap-2 md:grid-cols-5">
+            <Mini label="Backlog" value={selfFixSummary.repair_backlog_count || selfFixBacklog.length || 0} />
+            <Mini label="Selected" value={selfFixSummary.selected_repair_count || selfFixSelectedRepairs.length || 0} />
+            <Mini label="Patch candidates" value={selfFixSummary.patch_candidate_count || 0} />
+            <Mini label="Applied patches" value={selfFixSummary.patch_applied_count || 0} />
+            <Mini label="Tests" value={selfFix.test_evidence?.status || "waiting"} />
+          </div>
+
+          <div className="mt-3 grid gap-3 lg:grid-cols-4">
+            {(["strengths", "weaknesses", "opportunities", "threats"] as const).map((bucket) => {
+              const items = Array.isArray(selfFixSwot[bucket]) ? selfFixSwot[bucket] : [];
+              return (
+                <div key={bucket} className="rounded-md border border-lime-300/25 bg-background/25 p-3">
+                  <div className="mb-2 text-xs font-medium capitalize text-lime-50">{bucket}</div>
+                  <div className="space-y-1">
+                    {items.slice(0, 4).map((item: JsonMap) => (
+                      <div key={item.id || item.text} className="rounded border border-lime-300/20 bg-background/20 px-2 py-1 text-[11px] text-lime-50/80">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-medium">{String(item.id || bucket).replace(/_/g, " ")}</span>
+                          <Badge variant={item.present === false ? "outline" : bucket === "threats" || bucket === "weaknesses" ? "warning" : "success"}>
+                            {item.present === false ? "missing" : "seen"}
+                          </Badge>
+                        </div>
+                        <div className="mt-1 text-lime-50/70">{item.text}</div>
+                      </div>
+                    ))}
+                    {!items.length ? <div className="text-xs text-lime-50/70">Waiting for self-fix director evidence.</div> : null}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-3 grid gap-3 lg:grid-cols-3">
+            <div className="rounded-md border border-lime-300/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-lime-50">Selected Repairs</div>
+              <div className="space-y-1">
+                {selfFixSelectedRepairs.slice(0, 5).map((repair: JsonMap) => (
+                  <div key={repair.id} className="rounded border border-lime-300/20 bg-background/20 px-2 py-1 text-[11px] text-lime-50/80">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium">{String(repair.title || repair.id).replace(/_/g, " ")}</span>
+                      <Badge variant="outline">{repair.priority || "P1"}</Badge>
+                    </div>
+                    <div className="mt-1 text-lime-50/70">{repair.acceptance}</div>
+                  </div>
+                ))}
+                {!selfFixSelectedRepairs.length ? <div className="text-xs text-lime-50/70">No selected self-fix repairs are published yet.</div> : null}
+              </div>
+            </div>
+
+            <div className="rounded-md border border-lime-300/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-lime-50">Patch Apply Evidence</div>
+              <div className="space-y-1">
+                {selfFixPatchEvidence.slice(0, 5).map((patch: JsonMap) => (
+                  <div key={patch.proposal_id || patch.blocked_reason} className="rounded border border-lime-300/20 bg-background/20 px-2 py-1 text-[11px] text-lime-50/80">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium">{patch.proposal_id || "proposal"}</span>
+                      <Badge variant={patch.status === "applied" ? "success" : patch.applied ? "warning" : "outline"}>
+                        {patch.status || "waiting"}
+                      </Badge>
+                    </div>
+                    <div className="mt-1 text-lime-50/70">
+                      {(patch.target_files || []).slice(0, 2).join(", ") || patch.blocked_reason || "no patch target"}
+                    </div>
+                  </div>
+                ))}
+                {!selfFixPatchEvidence.length ? <div className="text-xs text-lime-50/70">No guarded patch has been attempted in the latest self-fix report.</div> : null}
+              </div>
+            </div>
+
+            <div className="rounded-md border border-lime-300/25 bg-background/25 p-3">
+              <div className="mb-2 text-xs font-medium text-lime-50">Audit Verdict</div>
+              <div className="space-y-2 text-xs text-lime-50/80">
+                <div className="rounded border border-lime-300/20 bg-background/20 px-2 py-1">
+                  Audit record: {selfFixCodexAudit.state || "waiting"}
+                </div>
+                <div className="rounded border border-lime-300/20 bg-background/20 px-2 py-1">
+                  Autonomous handover: {selfFix.handover_ready ? "ready" : "held"}
+                </div>
+                <div className="rounded border border-lime-300/20 bg-background/20 px-2 py-1">
+                  Test evidence: {selfFix.test_evidence?.status || "waiting"}
+                </div>
+              </div>
+              {selfFixSnags.length ? (
+                <div className="mt-3 space-y-1">
+                  {selfFixSnags.slice(0, 4).map((snag: JsonMap) => (
+                    <div key={snag.id} className="rounded border border-yellow-400/30 bg-yellow-500/10 px-2 py-1 text-[11px] text-yellow-50">
+                      {snag.title || snag.id}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
 

@@ -3,6 +3,11 @@ import { Activity, Archive, CheckCircle2, Lock, ShieldAlert } from "lucide-react
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  AUREON_EVOLUTION_RUNTIME_PATCH_SUMMARY,
+  AUREON_EVOLUTION_RUNTIME_PATCHES,
+  aureonEvolutionActivePatchCount,
+} from "@/components/generated/aureonEvolutionRuntimePatches";
 
 type JsonMap = Record<string, any>;
 
@@ -37,19 +42,34 @@ function iconFor(status: string) {
 
 export function AureonWorkOrderExecutionConsole() {
   const [report, setReport] = useState<JsonMap>({});
+  const [registry, setRegistry] = useState<JsonMap>({});
 
   useEffect(() => {
     let cancelled = false;
-    fetchJson("/aureon_frontend_work_order_execution.json").then((payload) => {
-      if (!cancelled) setReport(payload);
-    });
+    const refresh = () => {
+      fetchJson("/aureon_frontend_work_order_execution.json").then((payload) => {
+        if (!cancelled) setReport(payload);
+      });
+      fetchJson("/aureon_frontend_runtime_patch_registry.json").then((payload) => {
+        if (!cancelled) setRegistry(payload);
+      });
+    };
+    refresh();
+    const timer = window.setInterval(refresh, 2500);
     return () => {
       cancelled = true;
+      window.clearInterval(timer);
     };
   }, []);
 
   const executions = Array.isArray(report.executions) ? report.executions : [];
   const summary = report.summary || {};
+  const movement = report.queue_movement || {};
+  const validation = report.validation_summary || {};
+  const patchSummary = registry.summary || report.runtime_patch_registry?.summary || {};
+  const activePatches = Array.isArray(registry.patches) ? registry.patches : report.runtime_patch_registry?.patches || [];
+  const materializedPatchCount = AUREON_EVOLUTION_RUNTIME_PATCHES.length;
+  const materializedActivePatchCount = aureonEvolutionActivePatchCount();
   const top = useMemo(() => executions.slice(0, 80), [executions]);
 
   return (
@@ -64,13 +84,48 @@ export function AureonWorkOrderExecutionConsole() {
         <div className="flex flex-wrap gap-2">
           <Badge variant="outline" className="border-green-500/40 bg-green-500/10 text-green-100">{report.status || "pending"}</Badge>
           <Badge variant="outline" className="border-border bg-muted/20 text-muted-foreground">updated {report.generated_at ? new Date(report.generated_at).toLocaleTimeString() : "pending"}</Badge>
+          <Badge variant="outline" className="border-cyan-500/40 bg-cyan-500/10 text-cyan-100">code materialized {materializedPatchCount}</Badge>
         </div>
         <div className="grid gap-2 md:grid-cols-5">
           <Stat label="orders executed" value={summary.executed_count} />
+          <Stat label="moved from queue" value={summary.moved_from_queue_count || movement.moved_from_queue_count} />
+          <Stat label="remaining queue" value={summary.remaining_queue_count ?? movement.remaining_queue_count} />
+          <Stat label="validated" value={summary.validated_count || validation.validated_count} />
+          <Stat label="runtime patches active" value={summary.runtime_patch_count || patchSummary.active_patch_count} />
+        </div>
+        <div className="grid gap-2 md:grid-cols-5">
           <Stat label="adapters" value={summary.adapter_record_count} />
           <Stat label="blocker cards" value={summary.blocker_card_count} />
           <Stat label="archive decisions" value={summary.archive_decision_count} />
-          <Stat label="screens" value={summary.target_screen_count} />
+          <Stat label="validation failures" value={summary.failed_validation_count || validation.failed_validation_count || 0} />
+          <Stat label="queue drained" value={movement.queue_drained ? "yes" : "no"} />
+        </div>
+        <div className="rounded-md border border-cyan-500/25 bg-cyan-500/10 p-3">
+          <div className="mb-2 text-sm font-medium text-cyan-50">Materialized Repo Code</div>
+          <div className="grid gap-2 md:grid-cols-4">
+            <Stat label="generated TS patches" value={materializedPatchCount} />
+            <Stat label="active in code" value={materializedActivePatchCount} />
+            <Stat label="module status" value={AUREON_EVOLUTION_RUNTIME_PATCH_SUMMARY.status} />
+            <Stat label="source queue" value={AUREON_EVOLUTION_RUNTIME_PATCH_SUMMARY.sourceQueueCount} />
+          </div>
+          <div className="mt-2 font-mono text-[11px] text-cyan-50/75">
+            frontend/src/components/generated/aureonEvolutionRuntimePatches.ts is imported by this runtime console.
+          </div>
+        </div>
+        <div className="rounded-md border border-green-500/25 bg-green-500/10 p-3">
+          <div className="mb-2 text-sm font-medium text-green-50">Runtime Patch Activation</div>
+          <div className="grid gap-2 md:grid-cols-3">
+            {activePatches.slice(0, 6).map((patch: JsonMap) => (
+              <div key={patch.patch_id} className="rounded border border-green-300/20 bg-background/20 px-2 py-1 text-[11px] text-green-50/80">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium">{String(patch.patch_type || "patch").replace(/_/g, " ")}</span>
+                  <Badge variant="outline" className="border-green-500/40 bg-green-500/10 text-green-100">{patch.status}</Badge>
+                </div>
+                <div className="mt-1 truncate font-mono text-green-50/70">{patch.source_path}</div>
+              </div>
+            ))}
+            {!activePatches.length ? <div className="text-xs text-green-50/70">No runtime patch registry loaded yet.</div> : null}
+          </div>
         </div>
         <ScrollArea className="h-[420px] pr-3">
           <div className="space-y-2">
@@ -88,10 +143,14 @@ export function AureonWorkOrderExecutionConsole() {
                     </div>
                     <div className="flex flex-wrap gap-1">
                       <Badge variant="outline" className={tone(String(item.execution_status || ""))}>{item.execution_status}</Badge>
+                      <Badge variant="outline" className={item.queue_state === "completed_validated" ? "border-green-500/40 bg-green-500/10 text-green-100" : "border-yellow-500/40 bg-yellow-500/10 text-yellow-100"}>{item.queue_state}</Badge>
                       <Badge variant="outline" className="border-border bg-muted/20 text-muted-foreground">{item.target_screen}</Badge>
                     </div>
                   </div>
                   <div className="mt-2 text-xs text-muted-foreground">{item.next_action}</div>
+                  <div className="mt-2 text-[11px] text-green-100">
+                    moved from queue: {item.queue_transition?.moved_from_queue ? "yes" : "no"} | validation: {item.validation?.status || "waiting"} | patch: {item.runtime_patch?.status || "waiting"}
+                  </div>
                   <div className="mt-2 text-[11px] text-yellow-100">{item.safety_boundary}</div>
                 </div>
               );

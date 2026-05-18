@@ -1,0 +1,21 @@
+{
+  "acceptance": [
+    "HTML artifact exists",
+    "Canvas game renders without external assets",
+    "Keyboard controls are visible to the end user",
+    "Game mechanics match the operator prompt",
+    "No cloud provider or unsafe authority is used"
+  ],
+  "asset_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_generated_apps\\build_me_an_advanced_game_that_im_a_space_ship_s_9e1154c944d9.html",
+  "controls": [
+    "Arrow keys",
+    "WASD",
+    "Space",
+    "R"
+  ],
+  "game_kind": "space_shooter",
+  "kind": "html_game",
+  "prompt": "build me an advanced game that im a space ship shooting enemies.",
+  "public_url": "/aureon_generated_apps/build_me_an_advanced_game_that_im_a_space_ship_s_9e1154c944d9.html",
+  "schema_version": "aureon-local-interactive-artifact-v1"
+}

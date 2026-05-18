@@ -14,6 +14,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional, Sequence
 
+from aureon.autonomous.runtime_status_source import read_runtime_status
+
 
 SCHEMA_VERSION = "aureon-trading-intelligence-checklist-v1"
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -1097,7 +1099,7 @@ def _decision_trust(rows: list[dict[str, Any]], runtime: dict[str, Any], summary
 def build_trading_intelligence_checklist(root: Optional[Path] = None) -> dict[str, Any]:
     root = (root or REPO_ROOT).resolve()
     runtime_rel = RUNTIME_STATUS_PATH
-    runtime = _read_json(root / runtime_rel, {})
+    runtime = read_runtime_status(root, rel_path=runtime_rel)
     if not isinstance(runtime, dict):
         runtime = {}
     rows = _dedupe_rows(_capability_rows(runtime) + _synthetic_rows(runtime, root))

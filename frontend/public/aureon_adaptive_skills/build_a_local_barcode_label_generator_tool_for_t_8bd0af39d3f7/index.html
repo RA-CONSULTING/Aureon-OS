@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aureon Barcode Label Generator</title>
+  <style>
+    :root { color-scheme: light dark; font-family: Inter, Segoe UI, Arial, sans-serif; }
+    body { margin: 0; min-height: 100vh; background: #f4f7f6; color: #1b2426; }
+    main { width: min(1120px, 94vw); margin: 0 auto; padding: 24px 0 32px; display: grid; gap: 14px; }
+    header, section { border: 1px solid #bfd0cb; border-radius: 8px; background: #ffffff; padding: 16px; box-shadow: 0 14px 35px rgba(27,36,38,.08); }
+    h1 { margin: 0 0 8px; font-size: 26px; }
+    h2 { margin: 0 0 10px; font-size: 16px; }
+    p { margin: 0; color: #526265; line-height: 1.45; }
+    textarea { width: 100%; min-height: 120px; border-radius: 7px; border: 1px solid #9db2ad; padding: 10px; font: 14px Consolas, monospace; box-sizing: border-box; }
+    button { border: 0; background: #176b5d; color: #fff; border-radius: 7px; padding: 10px 14px; cursor: pointer; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .pill { display: inline-block; margin: 4px 6px 0 0; padding: 5px 9px; border: 1px solid #9db2ad; border-radius: 999px; color: #294045; background: #eef5f3; }
+    .labels { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+    .label { background: #fff; color: #111; border: 1px dashed #697a7d; border-radius: 6px; padding: 12px; aspect-ratio: 1.9 / 1; display: grid; gap: 6px; align-content: start; break-inside: avoid; }
+    .sku { font-weight: 800; letter-spacing: .04em; }
+    .name { font-size: 13px; color: #2d383a; }
+    .location { font-size: 12px; color: #5b686b; }
+    .barcode { display: flex; align-items: stretch; height: 46px; background: #fff; gap: 0; border: 1px solid #d7dfdd; padding: 5px; }
+    .bar { background: #111; }
+    .space { background: #fff; }
+    @media print {
+      body { background: #fff; }
+      header, .input-panel { display: none; }
+      section { border: 0; box-shadow: none; padding: 0; }
+      .labels { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Aureon Barcode Label Generator</h1>
+      <p>Build a local barcode label generator tool for the warehouse team, with run instructions and proof.</p>
+      <div>
+        <span class="pill">domain-specific worker</span>
+        <span class="pill">Code 39-style renderer</span>
+        <span class="pill">local only</span>
+        <span class="pill">print preview ready</span>
+      </div>
+    </header>
+    <section class="input-panel">
+      <h2>Warehouse Rows</h2>
+      <textarea id="rows">SKU-001,Starter Widget,Aisle A1
+SKU-002,Proof Label,Aisle B4
+SKU-003,Fragile Cable,Aisle C2</textarea>
+      <div class="toolbar" style="margin-top: 10px;">
+        <button id="generate">Generate labels</button>
+        <button id="print" type="button">Print labels</button>
+        <span id="status" class="pill">waiting</span>
+      </div>
+    </section>
+    <section>
+      <h2>Label Preview</h2>
+      <div id="labels" class="labels" aria-live="polite"></div>
+    </section>
+  </main>
+  <script>
+    const CODE39 = {
+      "0":"nnnwwnwnn","1":"wnnwnnnnw","2":"nnwwnnnnw","3":"wnwwnnnnn","4":"nnnwwnnnw",
+      "5":"wnnwwnnnn","6":"nnwwwnnnn","7":"nnnwnnwnw","8":"wnnwnnwnn","9":"nnwwnnwnn",
+      "A":"wnnnnwnnw","B":"nnwnnwnnw","C":"wnwnnwnnn","D":"nnnnwwnnw","E":"wnnnwwnnn",
+      "F":"nnwnwwnnn","G":"nnnnnwwnw","H":"wnnnnwwnn","I":"nnwnnwwnn","J":"nnnnwwwnn",
+      "K":"wnnnnnnww","L":"nnwnnnnww","M":"wnwnnnnwn","N":"nnnnwnnww","O":"wnnnwnnwn",
+      "P":"nnwnwnnwn","Q":"nnnnnnwww","R":"wnnnnnwwn","S":"nnwnnnwwn","T":"nnnnwnwwn",
+      "U":"wwnnnnnnw","V":"nwwnnnnnw","W":"wwwnnnnnn","X":"nwnnwnnnw","Y":"wwnnwnnnn",
+      "Z":"nwwnwnnnn","-":"nwnnnnwnw",".":"wwnnnnwnn"," ":"nwwnnnwnn","$":"nwnwnwnnn",
+      "/":"nwnwnnnwn","+":"nwnnnwnwn","%":"nnnwnwnwn","*":"nwnnwnwnn"
+    };
+    function normalizeCode(value) {
+      return String(value || '').toUpperCase().replace(/[^A-Z0-9 .$/+%-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32) || 'SKU-001';
+    }
+    function parseRows(text) {
+      return String(text || '').split(/\n+/).map((line, index) => {
+        const parts = line.split(',').map((item) => item.trim()).filter(Boolean);
+        if (!parts.length) return null;
+        const sku = normalizeCode(parts[0] || `SKU-${String(index + 1).padStart(3, '0')}`);
+        return { sku, name: parts[1] || `Warehouse item ${index + 1}`, location: parts[2] || 'unassigned' };
+      }).filter(Boolean);
+    }
+    function renderBarcode(sku) {
+      const code = `*${normalizeCode(sku)}*`;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'barcode';
+      for (const char of code) {
+        const pattern = CODE39[char] || CODE39['-'];
+        for (let i = 0; i < pattern.length; i += 1) {
+          const span = document.createElement('span');
+          span.className = i % 2 === 0 ? 'bar' : 'space';
+          span.style.width = `${pattern[i] === 'w' ? 3 : 1}px`;
+          wrapper.appendChild(span);
+        }
+        const gap = document.createElement('span');
+        gap.className = 'space';
+        gap.style.width = '1px';
+        wrapper.appendChild(gap);
+      }
+      return wrapper;
+    }
+    function generateLabels() {
+      const rows = parseRows(document.getElementById('rows').value);
+      const target = document.getElementById('labels');
+      target.innerHTML = '';
+      for (const row of rows) {
+        const card = document.createElement('article');
+        card.className = 'label';
+        card.appendChild(renderBarcode(row.sku));
+        card.insertAdjacentHTML('beforeend', `<div class="sku">${row.sku}</div><div class="name">${row.name}</div><div class="location">${row.location}</div>`);
+        target.appendChild(card);
+      }
+      document.getElementById('status').textContent = `${rows.length} label(s) ready`;
+    }
+    document.getElementById('generate').addEventListener('click', generateLabels);
+    document.getElementById('print').addEventListener('click', () => window.print());
+    generateLabels();
+  </script>
+</body>
+</html>

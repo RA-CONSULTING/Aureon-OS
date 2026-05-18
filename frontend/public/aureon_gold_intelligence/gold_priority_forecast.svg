@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="620" viewBox="0 0 1040 620" role="img" aria-label="Aureon Capital GOLD priority forecast workbench">
+  <style>
+    .bg { fill: #071014; }
+    .panel { fill: #0d1b1f; stroke: #27424a; stroke-width: 1; }
+    .title { fill: #f8fafc; font: 700 26px Arial, sans-serif; }
+    .subtitle { fill: #94a3b8; font: 14px Arial, sans-serif; }
+    .axis { fill: #9ca3af; font: 12px Arial, sans-serif; }
+    .small { fill: #cbd5e1; font: 13px Arial, sans-serif; }
+    .metric { fill: #fef08a; font: 700 18px Arial, sans-serif; }
+  </style>
+  <rect class="bg" width="1040" height="620" />
+  <rect class="panel" x="28" y="24" width="984" height="572" rx="8" />
+  <text x="56" y="66" class="title">Aureon Capital GOLD Priority Workbench</text>
+  <text x="56" y="92" class="subtitle">Shadow forecast band from local evidence. Charts do not place trades or bypass runtime gates.</text>
+  <text x="760" y="64" class="metric">GOLD BULLISH_WATCH</text>
+  <text x="760" y="88" class="subtitle">gold_priority_workbench_attention</text>
+  <line x1="72" y1="360" x2="968" y2="360" stroke="#334155" />
+  <line x1="72" y1="72" x2="72" y2="360" stroke="#334155" />
+  <text x="80" y="124" class="axis">high 4603.73</text>
+  <text x="80" y="350" class="axis">low 4552.55</text>
+  <path d="M 72.0 145.7 L 200.0 140.9 L 328.0 136.5 L 456.0 129.9 L 584.0 119.4 L 712.0 104.9 L 840.0 89.1 L 968.0 72.0 L 968.0 288.0 L 840.0 277.1 L 712.0 267.1 L 584.0 257.9 L 456.0 251.3 L 328.0 247.1 L 200.0 244.3 L 72.0 241.3 Z" fill="#facc15" opacity="0.16" />
+  <path d="M 72.0 145.7 L 200.0 140.9 L 328.0 136.5 L 456.0 129.9 L 584.0 119.4 L 712.0 104.9 L 840.0 89.1 L 968.0 72.0" fill="none" stroke="#eab308" stroke-width="2" stroke-dasharray="5 5" />
+  <path d="M 72.0 193.5 L 200.0 192.6 L 328.0 191.8 L 456.0 190.6 L 584.0 188.7 L 712.0 186.0 L 840.0 183.1 L 968.0 180.0" fill="none" stroke="#fde047" stroke-width="4" />
+  <circle cx="72.0" cy="193.5" r="5" fill="#fde047" /><text x="58.0" y="386" class="axis">now</text><circle cx="200.0" cy="192.6" r="5" fill="#fde047" /><text x="186.0" y="386" class="axis">5m</text><circle cx="328.0" cy="191.8" r="5" fill="#fde047" /><text x="314.0" y="386" class="axis">15m</text><circle cx="456.0" cy="190.6" r="5" fill="#fde047" /><text x="442.0" y="386" class="axis">1h</text><circle cx="584.0" cy="188.7" r="5" fill="#fde047" /><text x="570.0" y="386" class="axis">4h</text><circle cx="712.0" cy="186.0" r="5" fill="#fde047" /><text x="698.0" y="386" class="axis">1d</text><circle cx="840.0" cy="183.1" r="5" fill="#fde047" /><text x="826.0" y="386" class="axis">3d</text><circle cx="968.0" cy="180.0" r="5" fill="#fde047" /><text x="954.0" y="386" class="axis">1w</text>
+  <text x="56" y="408" class="subtitle">Replay lanes and proof state</text>
+  <circle cx="78" cy="430" r="5" fill="#22c55e" /><text x="92" y="434" class="small">Capital GOLD Chart/OHLC Replay: ready_shadow_replay</text><circle cx="78" cy="456" r="5" fill="#f59e0b" /><text x="92" y="460" class="small">Cross-Asset Lead/Lag Map: attention_needs_fresh_proof</text><circle cx="78" cy="482" r="5" fill="#22c55e" /><text x="92" y="486" class="small">Order-Book Pressure Replay: ready_shadow_replay</text><circle cx="78" cy="508" r="5" fill="#22c55e" /><text x="92" y="512" class="small">Scanner Fusion Replay: ready_shadow_replay</text><circle cx="78" cy="534" r="5" fill="#22c55e" /><text x="92" y="538" class="small">Historical Waveform Replay: ready_shadow_replay</text><circle cx="78" cy="560" r="5" fill="#f59e0b" /><text x="92" y="564" class="small">Gold Driver Attribution: attention_needs_fresh_proof</text>
+</svg>

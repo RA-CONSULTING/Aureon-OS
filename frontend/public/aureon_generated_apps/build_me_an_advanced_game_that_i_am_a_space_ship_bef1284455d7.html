@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aureon Space Shooter Forge</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, Segoe UI, Arial, sans-serif; }
+    body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 50% 20%, #1f4f6b, #060913 70%); color: #eef6f7; display: grid; place-items: center; }
+    main { width: min(980px, 96vw); display: grid; gap: 12px; }
+    header { display: flex; justify-content: space-between; gap: 16px; align-items: end; }
+    h1 { margin: 0; font-size: 24px; font-weight: 750; }
+    p { margin: 0; color: #b9c8ca; line-height: 1.45; }
+    canvas { width: 100%; aspect-ratio: 16 / 9; background: #070b16; border: 1px solid #4f6f76; border-radius: 8px; box-shadow: 0 18px 50px rgba(0,0,0,.45); }
+    .hud { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill { border: 1px solid #4f6f76; border-radius: 999px; padding: 6px 10px; background: rgba(255,255,255,.06); font-size: 13px; }
+    .proof { color: #98f5c8; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Spaceship Enemy Shooter</h1>
+        <p>Build me an advanced game that I am a space ship shooting enemies.</p>
+      </div>
+      <p class="proof">Fresh local artifact. Spaceship, enemies, lasers, score, waves.</p>
+    </header>
+    <canvas id="game" width="960" height="540" aria-label="Playable spaceship shooter canvas"></canvas>
+    <div class="hud">
+      <span class="pill">Move: Arrow keys or WASD</span>
+      <span class="pill">Shoot: Space</span>
+      <span class="pill">Restart: R</span>
+      <span class="pill" id="state">Destroy enemy ships before they cross the sector.</span>
+    </div>
+  </main>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const stateLabel = document.getElementById('state');
+    const keys = new Set();
+    const player = { x: 92, y: 245, w: 42, h: 28, speed: 5.4, cooldown: 0, lives: 3, score: 0, wave: 1 };
+    let bullets = [];
+    let enemies = [];
+    let stars = Array.from({ length: 90 }, (_, i) => ({ x: (i * 71) % canvas.width, y: (i * 37) % canvas.height, s: 0.6 + (i % 4) * 0.45 }));
+    let spawnTimer = 0;
+    let gameOver = false;
+    addEventListener('keydown', (event) => { keys.add(event.key.toLowerCase()); if (event.key.toLowerCase() === 'r') reset(); });
+    addEventListener('keyup', (event) => keys.delete(event.key.toLowerCase()));
+    function reset() {
+      Object.assign(player, { x: 92, y: 245, cooldown: 0, lives: 3, score: 0, wave: 1 });
+      bullets = []; enemies = []; spawnTimer = 0; gameOver = false;
+      stateLabel.textContent = 'Destroy enemy ships before they cross the sector.';
+    }
+    function shoot() {
+      if (player.cooldown > 0 || gameOver) return;
+      bullets.push({ x: player.x + player.w, y: player.y + player.h / 2 - 3, w: 18, h: 6, vx: 10 });
+      player.cooldown = 9;
+    }
+    function spawnEnemy() {
+      const row = 50 + Math.random() * (canvas.height - 110);
+      const speed = 2.2 + player.wave * 0.28 + Math.random() * 0.8;
+      enemies.push({ x: canvas.width + 20, y: row, w: 38, h: 30, vx: -speed, hp: 1 + Math.floor(player.wave / 4) });
+    }
+    function touch(a, b) { return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y; }
+    function update() {
+      if (keys.has(' ') || keys.has('spacebar')) shoot();
+      if (!gameOver) {
+        const left = keys.has('arrowleft') || keys.has('a');
+        const right = keys.has('arrowright') || keys.has('d');
+        const up = keys.has('arrowup') || keys.has('w');
+        const down = keys.has('arrowdown') || keys.has('s');
+        player.x = Math.max(12, Math.min(canvas.width * 0.45, player.x + (right - left) * player.speed));
+        player.y = Math.max(18, Math.min(canvas.height - player.h - 18, player.y + (down - up) * player.speed));
+        player.cooldown = Math.max(0, player.cooldown - 1);
+        spawnTimer -= 1;
+        if (spawnTimer <= 0) { spawnEnemy(); spawnTimer = Math.max(24, 70 - player.wave * 4); }
+      }
+      for (const star of stars) { star.x -= star.s; if (star.x < 0) { star.x = canvas.width; star.y = Math.random() * canvas.height; } }
+      bullets.forEach(b => b.x += b.vx);
+      enemies.forEach(e => e.x += e.vx);
+      bullets = bullets.filter(b => b.x < canvas.width + 30);
+      for (const enemy of enemies) {
+        for (const bullet of bullets) {
+          if (!bullet.hit && touch(bullet, enemy)) {
+            bullet.hit = true; enemy.hp -= 1;
+            if (enemy.hp <= 0) { enemy.dead = true; player.score += 100; if (player.score % 600 === 0) player.wave += 1; }
+          }
+        }
+        if (!enemy.dead && touch(player, enemy)) { enemy.dead = true; player.lives -= 1; }
+        if (!enemy.dead && enemy.x + enemy.w < 0) { enemy.dead = true; player.lives -= 1; }
+      }
+      bullets = bullets.filter(b => !b.hit);
+      enemies = enemies.filter(e => !e.dead);
+      if (player.lives <= 0) { gameOver = true; stateLabel.textContent = `Sector lost. Final score ${player.score}. Press R to restart.`; }
+      else stateLabel.textContent = `Score ${player.score} | Lives ${player.lives} | Wave ${player.wave}`;
+    }
+    function drawShip(x, y) {
+      ctx.fillStyle = '#8be9fd';
+      ctx.beginPath(); ctx.moveTo(x + 44, y + 14); ctx.lineTo(x, y); ctx.lineTo(x + 10, y + 14); ctx.lineTo(x, y + 28); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#ffb86c'; ctx.fillRect(x - 6, y + 10, 12, 8);
+    }
+    function drawEnemy(e) {
+      ctx.fillStyle = '#ff5f7a'; ctx.fillRect(e.x, e.y + 6, e.w, e.h - 12);
+      ctx.fillStyle = '#ffd166'; ctx.fillRect(e.x + 8, e.y, e.w - 16, e.h);
+      ctx.fillStyle = '#1b1b28'; ctx.fillRect(e.x + 8, e.y + 10, 6, 6); ctx.fillRect(e.x + 24, e.y + 10, 6, 6);
+    }
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#070b16'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#dff9ff'; stars.forEach(s => ctx.fillRect(s.x, s.y, s.s, s.s));
+      bullets.forEach(b => { ctx.fillStyle = '#98f5c8'; ctx.fillRect(b.x, b.y, b.w, b.h); });
+      enemies.forEach(drawEnemy);
+      drawShip(player.x, player.y);
+      ctx.fillStyle = '#eef6f7'; ctx.font = '18px Segoe UI'; ctx.fillText(`Spaceship shooter | Score ${player.score} | Lives ${player.lives} | Wave ${player.wave}`, 24, 34);
+      if (gameOver) { ctx.fillStyle = 'rgba(0,0,0,.62)'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle = '#eef6f7'; ctx.font = '34px Segoe UI'; ctx.fillText('Game over - press R to restart', 300, 270); }
+    }
+    function frame() { update(); draw(); requestAnimationFrame(frame); }
+    reset(); frame();
+  </script>
+</body>
+</html>

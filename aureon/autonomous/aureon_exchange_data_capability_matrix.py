@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional, Sequence
@@ -18,6 +19,7 @@ from aureon.autonomous.aureon_exchange_monitoring_checklist import (
     EXCHANGE_REQUIREMENTS,
     build_exchange_monitoring_checklist,
 )
+from aureon.autonomous.runtime_status_source import read_runtime_status
 from aureon.core.exchange_rate_limit_registry import (
     build_cash_aware_rate_plan,
     get_exchange_rate_limit,
@@ -27,6 +29,7 @@ from aureon.core.exchange_rate_limit_registry import (
 SCHEMA_VERSION = "aureon-exchange-data-capability-matrix-v1"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RUNTIME_STATUS_PATH = Path("state/unified_runtime_status.json")
+DATA_OCEAN_STATUS_PATH = Path("state/aureon_data_ocean_status.json")
 DEFAULT_OUTPUT_JSON = REPO_ROOT / "docs/audits/aureon_exchange_data_capability_matrix.json"
 DEFAULT_OUTPUT_MD = REPO_ROOT / "docs/audits/aureon_exchange_data_capability_matrix.md"
 DEFAULT_PUBLIC_JSON = REPO_ROOT / "frontend/public/aureon_exchange_data_capability_matrix.json"
@@ -319,11 +322,19 @@ def _summary(rows: list[dict[str, Any]], runtime: dict[str, Any]) -> dict[str, A
 
 def build_exchange_data_capability_matrix(root: Optional[Path] = None) -> dict[str, Any]:
     root = (root or REPO_ROOT).resolve()
-    runtime = _read_json(root / RUNTIME_STATUS_PATH, {})
+    runtime = read_runtime_status(root)
     if not isinstance(runtime, dict):
         runtime = {}
     checklist = build_exchange_monitoring_checklist(root)
-    data_ocean = evaluate_data_ocean_sources(root=root, runtime=runtime, exchange_checklist=checklist)
+    data_ocean = _read_json(root / DATA_OCEAN_STATUS_PATH, {})
+    if os.getenv("AUREON_EXCHANGE_MATRIX_LIVE_DATA_OCEAN", "").strip() == "1":
+        try:
+            data_ocean = evaluate_data_ocean_sources(root=root, runtime=runtime, exchange_checklist=checklist)
+        except Exception:
+            if not isinstance(data_ocean, dict):
+                data_ocean = {}
+    if not isinstance(data_ocean, dict):
+        data_ocean = {}
     rows = [
         _row(exchange, runtime=runtime, checklist=checklist, data_ocean=data_ocean)
         for exchange in ("binance", "kraken", "alpaca", "capital")

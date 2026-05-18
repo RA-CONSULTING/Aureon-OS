@@ -3,7 +3,7 @@
   "ceremony_count": 0,
   "combat_mode": "stealth",
   "last_assessment": {
-    "timestamp": 1778870580.5550659,
+    "timestamp": 1779132801.1055214,
     "ira_hit_and_run_score": 0.5,
     "ira_stealth_score": 0.95,
     "ira_cell_integrity": 0.95,
@@ -13,7 +13,7 @@
     "sun_tzu_deception_active": false,
     "sun_tzu_enemy_weakness": "NO_CLEAR_WEAKNESS - Continue observation",
     "sun_tzu_can_win_without_fight": false,
-    "moon_phase": 0.48643585739309003,
+    "moon_phase": 0.5892113424834129,
     "active_frequency": 639,
     "ancestors_invoked": [],
     "ceremony_power": 0.0,
@@ -24,9 +24,9 @@
     "lion_strength": 0.0,
     "hummingbird_agility": 0.4,
     "ant_swarm_mode": false,
-    "counter_phase_angle": 77.08410323945333,
+    "counter_phase_angle": 134.414677094958,
     "harmonic_alignment": 1.0,
-    "neutralization_power": 0.7141225089984815,
+    "neutralization_power": 0.87337410304155,
     "recommended_philosophy": "GHOST_DANCE - Invoke ancestors, await guidance",
     "recommended_combat_mode": "stealth",
     "recommended_action": "OBSERVE - Continue intelligence gathering",
@@ -35,9 +35,9 @@
       "Philosophy: GHOST_DANCE - Invoke ancestors, await guidance",
       "Recommended Action: OBSERVE - Continue intelligence gathering",
       "Enemy Weakness: NO_CLEAR_WEAKNESS - Continue observation",
-      "Moon: \ud83c\udf15 Full Moon",
+      "Moon: \ud83c\udf19 Phase 0.59",
       "Active Frequency: Connection Hz"
     ]
   },
-  "last_updated": 1778870580.5550659
+  "last_updated": 1779132801.1055214
 }

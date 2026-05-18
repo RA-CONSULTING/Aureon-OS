@@ -39,6 +39,12 @@ def _fake_repo(root: Path) -> None:
                     "target_screen": "overview",
                     "status": "ready_for_frontend_adapter",
                     "safety_boundary": "Read-only.",
+                    "data_contract": {
+                        "expected_topic": "organism.status",
+                        "safe_fields": ["status", "health"],
+                        "secret_policy": "metadata_only_hide_values",
+                    },
+                    "acceptance_tests": ["manifest", "render", "blockers"],
                 },
                 {
                     "id": "blocked",
@@ -47,6 +53,12 @@ def _fake_repo(root: Path) -> None:
                     "target_screen": "trading",
                     "status": "blocked_security_review",
                     "safety_boundary": "Read-only.",
+                    "data_contract": {
+                        "expected_topic": "trading.status",
+                        "safe_fields": ["status", "blocked_reason"],
+                        "secret_policy": "metadata_only_hide_values",
+                    },
+                    "acceptance_tests": ["manifest", "render", "blockers"],
                 },
                 {
                     "id": "archive",
@@ -69,10 +81,25 @@ def test_execute_frontend_work_orders_generates_manifest_component_and_mount(tmp
 
     assert result["schema_version"] == "aureon-frontend-work-order-execution-v1"
     assert result["summary"]["executed_count"] == 3
+    assert result["summary"]["moved_from_queue_count"] == 3
+    assert result["summary"]["remaining_queue_count"] == 0
+    assert result["summary"]["validated_count"] == 3
+    assert result["summary"]["runtime_patch_count"] == 3
     assert result["summary"]["adapter_record_count"] == 1
     assert result["summary"]["blocker_card_count"] == 1
     assert result["summary"]["archive_decision_count"] == 1
+    assert result["queue_movement"]["queue_drained"] is True
+    assert result["validation_summary"]["failed_validation_count"] == 0
+    assert result["runtime_patch_registry"]["summary"]["active_patch_count"] == 3
+    assert result["implemented_code_evidence"]["status"] == "materialized_runtime_patch_code_ready"
+    assert result["implemented_code_evidence"]["materialized_patch_count"] == 3
+    assert result["executions"][0]["queue_state"] == "completed_validated"
+    assert result["executions"][0]["runtime_patch"]["status"] == "active_runtime_patch"
     assert "QueenCodeArchitect.write_file" in result["authoring_path"]
     assert (tmp_path / "frontend" / "public" / "aureon_frontend_work_order_execution.json").exists()
+    assert (tmp_path / "frontend" / "public" / "aureon_frontend_runtime_patch_registry.json").exists()
     assert (tmp_path / "frontend" / "src" / "components" / "generated" / "AureonWorkOrderExecutionConsole.tsx").exists()
+    materialized = tmp_path / "frontend" / "src" / "components" / "generated" / "aureonEvolutionRuntimePatches.ts"
+    assert materialized.exists()
+    assert "AUREON_EVOLUTION_RUNTIME_PATCHES" in materialized.read_text(encoding="utf-8")
     assert "AureonWorkOrderExecutionConsole" in app_text

@@ -15,6 +15,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional, Sequence
 
+from aureon.autonomous.runtime_status_source import read_runtime_status
+
 
 SCHEMA_VERSION = "aureon-exchange-monitoring-checklist-v1"
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -482,7 +484,7 @@ def _summary(rows: list[dict[str, Any]], runtime: dict[str, Any], stream_cache: 
 
 def build_exchange_monitoring_checklist(root: Optional[Path] = None) -> dict[str, Any]:
     root = (root or REPO_ROOT).resolve()
-    runtime = _read_json(root / RUNTIME_STATUS_PATH, {})
+    runtime = read_runtime_status(root)
     stream_cache = _read_json(root / STREAM_CACHE_PATH, {})
     recorder = _read_json(root / WAVEFORM_RECORDER_PATH, {})
     if not isinstance(runtime, dict):

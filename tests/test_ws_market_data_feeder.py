@@ -1,8 +1,10 @@
 import asyncio
 import json
+from unittest.mock import patch
 
 import aureon.data_feeds.ws_market_data_feeder as feeder_mod
 from aureon.data_feeds.ws_market_data_feeder import (
+    CAPITAL_DEFAULT_SYMBOLS,
     MarketSnapshotStore,
     _acquire_single_writer_lock,
     _build_generic_ticker_cache,
@@ -74,6 +76,10 @@ def test_generic_authenticated_snapshots_build_equity_cache():
     assert prices["AAPL"] == 215.5
     assert ticker_cache["AAPLUSD"]["exchange"] == "alpaca"
     assert ticker_cache["alpaca:AAPLUSD"]["change24h"] == 0.8
+
+
+def test_capital_default_watchlist_prioritizes_gold_target_lane():
+    assert CAPITAL_DEFAULT_SYMBOLS[:4] == ["GOLD", "GCM2026", "GLD", "GDX"]
 
 
 def test_merge_market_snapshots_preserves_source_health_and_tickers():
@@ -152,6 +158,15 @@ def test_single_writer_lock_replaces_stale_lock(tmp_path):
     assert "999999999" not in lock_path.read_text(encoding="utf-8")
     _release_single_writer_lock(acquired)
     assert not lock_path.exists()
+
+
+def test_windows_pid_check_uses_tasklist_before_openprocess():
+    with patch.object(feeder_mod.sys, "platform", "win32"), patch.object(feeder_mod.subprocess, "run") as run:
+        run.return_value.stdout = "INFO: No tasks are running which match the specified criteria."
+
+        assert feeder_mod._pid_is_running(14524) is False
+
+    run.assert_called_once()
 
 
 def test_cached_last_good_snapshot_preserves_mapping_during_provider_backoff():

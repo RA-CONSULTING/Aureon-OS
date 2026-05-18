@@ -1,0 +1,19 @@
+{
+  "acceptance": [
+    "HTML artifact exists",
+    "Canvas game renders without external assets",
+    "Keyboard controls are visible to the end user",
+    "No cloud provider or unsafe authority is used"
+  ],
+  "asset_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_generated_apps\\build_me_an_advanged_game_that_im_a_space_ship_s_af2fa7b06ea1.html",
+  "controls": [
+    "Arrow keys",
+    "WASD",
+    "Space",
+    "R"
+  ],
+  "kind": "html_game",
+  "prompt": "build me an advanged game that im a space ship shoting ememys.",
+  "public_url": "/aureon_generated_apps/build_me_an_advanged_game_that_im_a_space_ship_s_af2fa7b06ea1.html",
+  "schema_version": "aureon-local-interactive-artifact-v1"
+}

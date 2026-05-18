@@ -50,6 +50,19 @@ CAPITAL_PROMOTION_LOG_PATH = Path(os.getenv("CAPITAL_PROMOTION_LOG_PATH", os.pat
 CAPITAL_ASSET_REGISTRY_PATH = Path(os.getenv("CAPITAL_ASSET_REGISTRY_PATH", os.path.join(os.path.dirname(__file__), "..", "..", "state", "aureon_capital_tradable_asset_registry.json"))).resolve()
 CAPITAL_ASSET_REGISTRY_AUDIT_PATH = Path(os.getenv("CAPITAL_ASSET_REGISTRY_AUDIT_PATH", os.path.join(os.path.dirname(__file__), "..", "..", "docs", "audits", "aureon_capital_tradable_asset_registry.json"))).resolve()
 
+try:
+    from aureon.trading.order_lifecycle import (
+        append_event as append_order_lifecycle_event,
+        lifecycle_for_deal,
+        lifecycle_id_for,
+        route_key_for,
+    )
+except Exception:
+    append_order_lifecycle_event = None  # type: ignore[assignment]
+    lifecycle_for_deal = None  # type: ignore[assignment]
+    lifecycle_id_for = None  # type: ignore[assignment]
+    route_key_for = None  # type: ignore[assignment]
+
 # ── IMPORT GUARDS ──────────────────────────────────────────────────────────────
 try:
     from aureon.exchanges.capital_client import CapitalClient
@@ -364,6 +377,7 @@ class CFDPosition:
     asset_class:   str
     opened_at:     float = field(default_factory=time.time)
     current_price: float = 0.0
+    lifecycle_id:  str = ""
 
     @property
     def age_secs(self) -> float:
@@ -668,6 +682,43 @@ class CapitalCFDTrader:
     def set_lambda_engine(self, engine: Any) -> None:
         """Wire Λ(t) LambdaEngine into this trader instance (called by ICS Phase 16.7)."""
         self._lambda_engine = engine
+
+    def _capital_route_key(self, symbol: Any, direction: Any) -> str:
+        if route_key_for is not None:
+            try:
+                return str(route_key_for("capital", "cfd", symbol, direction))
+            except Exception:
+                pass
+        return f"capital:cfd:{str(symbol or '').upper().strip()}:{str(direction or '').upper().strip()}"
+
+    def _capital_lifecycle_id(self, symbol: Any, direction: Any, deal_id: Any = "", seed: Any = "") -> str:
+        deal = str(deal_id or "").strip()
+        if deal and lifecycle_for_deal is not None:
+            try:
+                existing = str(lifecycle_for_deal(deal) or "")
+                if existing:
+                    return existing
+            except Exception:
+                pass
+        if lifecycle_id_for is not None:
+            try:
+                return str(lifecycle_id_for("capital_cfd", symbol, direction, deal or seed or int(time.time())))
+            except Exception:
+                pass
+        return f"olife-capital-{str(symbol or '').upper()}-{str(direction or '').upper()}-{str(deal or seed or int(time.time()))}"
+
+    def _record_order_lifecycle(self, event_type: str, status: str, lifecycle_id: str, **fields: Any) -> None:
+        if append_order_lifecycle_event is None or not lifecycle_id:
+            return
+        try:
+            append_order_lifecycle_event(
+                event_type=event_type,
+                status=status,
+                lifecycle_id=lifecycle_id,
+                **fields,
+            )
+        except Exception as exc:
+            logger.debug("Capital order lifecycle write failed: %s", exc)
 
     # ── PROPERTIES ─────────────────────────────────────────────────────────────
     @property
@@ -2863,6 +2914,7 @@ class CapitalCFDTrader:
             asset_class=asset_class,
             opened_at=opened_at,
             current_price=current_price,
+            lifecycle_id=self._capital_lifecycle_id(symbol, direction, deal_id=deal_id),
         )
 
     def _sync_positions_from_exchange(self, force: bool = False) -> None:
@@ -2888,6 +2940,7 @@ class CapitalCFDTrader:
                 existing = existing_by_deal.get(live.deal_id)
                 if existing is not None:
                     live.opened_at = existing.opened_at
+                    live.lifecycle_id = existing.lifecycle_id or live.lifecycle_id
                     # Keep live bid/ask price from Capital.com; only fall back to local if exchange gave nothing
                     if live.current_price <= 0 and existing.current_price > 0:
                         live.current_price = existing.current_price
@@ -2897,6 +2950,27 @@ class CapitalCFDTrader:
                         live.sl_price = existing.sl_price
                     if existing.tp_price > 0:
                         live.tp_price = existing.tp_price
+                elif live.deal_id:
+                    live.lifecycle_id = live.lifecycle_id or self._capital_lifecycle_id(
+                        live.symbol,
+                        live.direction,
+                        deal_id=live.deal_id,
+                    )
+                    self._record_order_lifecycle(
+                        "position_recovered",
+                        "position_open",
+                        live.lifecycle_id,
+                        deal_id=live.deal_id,
+                        venue="capital",
+                        market_type="cfd",
+                        symbol=live.symbol,
+                        side=live.direction,
+                        route_key=self._capital_route_key(live.symbol, live.direction),
+                        entry_price=live.entry_price,
+                        size=live.size,
+                        reason="broker_position_reconciled_on_startup",
+                        source="capital_cfd_trader.reconcile",
+                    )
                 merged.append(live)
 
             self.positions = merged
@@ -4424,6 +4498,14 @@ class CapitalCFDTrader:
         base_size = float(cfg.get("size", 0.01) or 0.01)
         queen_sizing = float(cfg.get("queen_sizing", 1.0) or 1.0)
         size = max(base_size * 0.10, base_size * queen_sizing)  # floor at 10% of base
+        candidate_id = str(cfg.get("candidate_id") or ticker.get("candidate_id") or "")
+        intent_id = str(cfg.get("intent_id") or ticker.get("intent_id") or "")
+        lifecycle_id = str(
+            cfg.get("lifecycle_id")
+            or ticker.get("lifecycle_id")
+            or self._capital_lifecycle_id(symbol, direction, seed=candidate_id or intent_id or int(time.time()))
+        )
+        route_key = self._capital_route_key(symbol, direction)
         prepared = self._prepare_live_trade_candidate(
             symbol,
             direction,
@@ -4442,6 +4524,10 @@ class CapitalCFDTrader:
                 "symbol": symbol,
                 "direction": direction,
                 "size": size,
+                "candidate_id": candidate_id,
+                "intent_id": intent_id,
+                "lifecycle_id": lifecycle_id,
+                "route_key": route_key,
                 "ticker": dict(ticker),
                 "preflight": prepared.get("preflight", {}),
                 "capital_risk_envelope": prepared.get("envelope", {}),
@@ -4454,6 +4540,9 @@ class CapitalCFDTrader:
             return None
         cfg = dict(prepared.get("cfg") or cfg)
         size = float(prepared.get("size", size) or size)
+        candidate_id = str(cfg.get("candidate_id") or candidate_id)
+        intent_id = str(cfg.get("intent_id") or intent_id)
+        lifecycle_id = str(cfg.get("lifecycle_id") or lifecycle_id)
         effective_tp_pct = self._effective_tp_pct(entry_price, size, cfg)
         if direction == "BUY":
             tp_price = entry_price * (1 + effective_tp_pct / 100)
@@ -4468,6 +4557,10 @@ class CapitalCFDTrader:
                 "symbol": symbol,
                 "direction": direction,
                 "size": size,
+                "candidate_id": candidate_id,
+                "intent_id": intent_id,
+                "lifecycle_id": lifecycle_id,
+                "route_key": route_key,
                 "ticker": dict(ticker),
                 "preflight": preflight,
                 "capital_risk_envelope": prepared.get("envelope", {}),
@@ -4506,6 +4599,20 @@ class CapitalCFDTrader:
                 for raw in self.client.get_positions()
             }
             trace_payload["known_deal_ids_before"] = sorted([d for d in known_deal_ids if d])
+            self._record_order_lifecycle(
+                "executor_accepted",
+                "executor_accepted",
+                lifecycle_id,
+                candidate_id=candidate_id,
+                intent_id=intent_id,
+                route_key=route_key,
+                venue="capital",
+                market_type="cfd",
+                symbol=symbol,
+                side=direction,
+                size=size,
+                source="capital_cfd_trader.open_position",
+            )
             try:
                 result = self.client.place_market_order(
                     symbol,
@@ -4517,16 +4624,65 @@ class CapitalCFDTrader:
                 result = self.client.place_market_order(symbol, direction, size)
                 trace_payload["broker_exit_controls_fallback"] = "client_signature_without_exit_kwargs"
             trace_payload["order_response"] = dict(result) if isinstance(result, dict) else result
+            self._record_order_lifecycle(
+                "order_submitted",
+                "order_submitted",
+                lifecycle_id,
+                candidate_id=candidate_id,
+                intent_id=intent_id,
+                route_key=route_key,
+                venue="capital",
+                market_type="cfd",
+                symbol=symbol,
+                side=direction,
+                size=size,
+                broker_response=dict(result) if isinstance(result, dict) else result,
+                source="capital_cfd_trader.open_position",
+            )
             if result.get("rejected") or result.get("error"):
                 reason = result.get("reason") or result.get("error", "unknown")
                 self._record_rejection(symbol, direction, str(reason))
                 self._latest_order_error = f"{symbol} open rejected: {reason}"
+                self._record_order_lifecycle(
+                    "order_rejected",
+                    "order_rejected",
+                    lifecycle_id,
+                    candidate_id=candidate_id,
+                    intent_id=intent_id,
+                    route_key=route_key,
+                    venue="capital",
+                    market_type="cfd",
+                    symbol=symbol,
+                    side=direction,
+                    reason=reason,
+                    broker_response=dict(result) if isinstance(result, dict) else result,
+                    source="capital_cfd_trader.open_position",
+                )
                 self._write_exchange_trace(trace_payload)
                 logger.debug(f"CFD open rejected {symbol}: {reason}")
                 return None
 
             deal_ref = result.get("dealReference", "")
             deal_id  = result.get("dealId", deal_ref) or deal_ref
+            if deal_id:
+                lifecycle_id = self._capital_lifecycle_id(symbol, direction, deal_id=deal_id, seed=lifecycle_id)
+                trace_payload["lifecycle_id"] = lifecycle_id
+            self._record_order_lifecycle(
+                "broker_acknowledged",
+                "broker_acknowledged",
+                lifecycle_id,
+                candidate_id=candidate_id,
+                intent_id=intent_id,
+                route_key=route_key,
+                venue="capital",
+                market_type="cfd",
+                symbol=symbol,
+                side=direction,
+                deal_reference=deal_ref,
+                deal_id=deal_id,
+                broker_response=dict(result) if isinstance(result, dict) else result,
+                source="capital_cfd_trader.open_position",
+            )
             epic     = ticker.get("epic", symbol)
             fill_price = entry_price  # Estimate; confirm_order may refine
             confirmed_ok = False
@@ -4544,11 +4700,30 @@ class CapitalCFDTrader:
                         self._latest_order_error = f"{symbol} rejected by Capital: {reject_reason or deal_status or confirm_status}"
                         trace_payload["validated"] = False
                         trace_payload["final_error"] = self._latest_order_error
+                        self._record_order_lifecycle(
+                            "order_rejected",
+                            "order_rejected",
+                            lifecycle_id,
+                            candidate_id=candidate_id,
+                            intent_id=intent_id,
+                            route_key=route_key,
+                            venue="capital",
+                            market_type="cfd",
+                            symbol=symbol,
+                            side=direction,
+                            deal_reference=deal_ref,
+                            deal_id=deal_id,
+                            reason=reject_reason or deal_status or confirm_status,
+                            broker_response=dict(conf) if isinstance(conf, dict) else conf,
+                            source="capital_cfd_trader.confirm_order",
+                        )
                         self._write_exchange_trace(trace_payload)
                         logger.warning("CFD open rejected by Capital for %s: %s", symbol, reject_reason or deal_status or confirm_status)
                         return None
                     if not conf.get("error") and not conf.get("reason"):
                         deal_id    = conf.get("dealId", deal_id) or deal_id
+                        lifecycle_id = self._capital_lifecycle_id(symbol, direction, deal_id=deal_id, seed=lifecycle_id)
+                        trace_payload["lifecycle_id"] = lifecycle_id
                         fill_price = float(conf.get("level", fill_price) or fill_price)
                         effective_tp_pct = self._effective_tp_pct(fill_price, size, cfg)
                         if direction == "BUY":
@@ -4589,6 +4764,23 @@ class CapitalCFDTrader:
                 )
                 trace_payload["validated"] = False
                 trace_payload["final_error"] = self._latest_order_error
+                self._record_order_lifecycle(
+                    "position_validation_failed",
+                    "order_failed",
+                    lifecycle_id,
+                    candidate_id=candidate_id,
+                    intent_id=intent_id,
+                    route_key=route_key,
+                    venue="capital",
+                    market_type="cfd",
+                    symbol=symbol,
+                    side=direction,
+                    deal_reference=deal_ref,
+                    deal_id=deal_id,
+                    reason="broker_position_not_found_after_submission",
+                    positions_snapshot=trace_payload.get("positions_snapshots", []),
+                    source="capital_cfd_trader.open_position",
+                )
                 self._write_exchange_trace(trace_payload)
                 logger.warning(
                     "CFD open not validated on exchange for %s (deal_ref=%s deal_id=%s confirmed=%s)",
@@ -4601,6 +4793,22 @@ class CapitalCFDTrader:
                 logger.warning("CFD open validation returned unusable position for %s", symbol)
                 trace_payload["validated"] = False
                 trace_payload["final_error"] = f"{symbol} validated raw position could not be parsed"
+                self._record_order_lifecycle(
+                    "position_validation_failed",
+                    "order_failed",
+                    lifecycle_id,
+                    candidate_id=candidate_id,
+                    intent_id=intent_id,
+                    route_key=route_key,
+                    venue="capital",
+                    market_type="cfd",
+                    symbol=symbol,
+                    side=direction,
+                    deal_reference=deal_ref,
+                    deal_id=deal_id,
+                    reason="validated_raw_position_unusable",
+                    source="capital_cfd_trader.open_position",
+                )
                 self._write_exchange_trace(trace_payload)
                 return None
             # Guard: Capital.com sometimes returns stopLevel ≈ fill_price (inverted SL).
@@ -4622,6 +4830,7 @@ class CapitalCFDTrader:
                     "CFD SL guard: %s %s Capital sl=%.5g was inverted vs entry=%.5g → recalc sl=%.5g",
                     symbol, pos.direction, _capital_sl, pos.entry_price, pos.sl_price,
                 )
+            pos.lifecycle_id = lifecycle_id
             pos.epic = epic or pos.epic
             pos.current_price = fill_price if fill_price > 0 else pos.current_price
             if CAPITAL_BROKER_TAKE_PROFIT_ENABLED and hasattr(self.client, "update_position_limits"):
@@ -4654,7 +4863,26 @@ class CapitalCFDTrader:
                 "entry_price": pos.entry_price,
                 "tp_price": pos.tp_price,
                 "sl_price": pos.sl_price,
+                "lifecycle_id": pos.lifecycle_id,
             }
+            self._record_order_lifecycle(
+                "position_open",
+                "position_open",
+                lifecycle_id,
+                candidate_id=candidate_id,
+                intent_id=intent_id,
+                route_key=route_key,
+                venue="capital",
+                market_type="cfd",
+                symbol=pos.symbol,
+                side=pos.direction,
+                deal_reference=deal_ref,
+                deal_id=pos.deal_id,
+                entry_price=pos.entry_price,
+                size=pos.size,
+                positions_snapshot=[live_raw] if isinstance(live_raw, dict) else [],
+                source="capital_cfd_trader.open_position",
+            )
             self._write_exchange_trace(trace_payload)
             self._latest_monitor_line = (
                 f"CAPITAL OPEN {symbol} {direction} deal={pos.deal_id} size={size} entry={pos.entry_price:.5g} "
@@ -4674,9 +4902,27 @@ class CapitalCFDTrader:
 
         except Exception as _e:
             self._latest_order_error = f"{symbol} open exception: {_e}"
+            self._record_order_lifecycle(
+                "order_exception",
+                "order_failed",
+                lifecycle_id,
+                candidate_id=candidate_id,
+                intent_id=intent_id,
+                route_key=route_key,
+                venue="capital",
+                market_type="cfd",
+                symbol=symbol,
+                side=direction,
+                error=str(_e),
+                source="capital_cfd_trader.open_position",
+            )
             self._write_exchange_trace({
                 "symbol": symbol,
                 "size": size,
+                "candidate_id": candidate_id,
+                "intent_id": intent_id,
+                "lifecycle_id": lifecycle_id,
+                "route_key": route_key,
                 "ticker": dict(ticker),
                 "validated": False,
                 "final_error": self._latest_order_error,
@@ -4693,18 +4939,63 @@ class CapitalCFDTrader:
         close_ok = False
         close_detail: Dict[str, Any] = {}
         pnl_gbp = 0.0
+        lifecycle_id = pos.lifecycle_id or self._capital_lifecycle_id(pos.symbol, pos.direction, deal_id=pos.deal_id)
+        route_key = self._capital_route_key(pos.symbol, pos.direction)
 
         if self.client and pos.deal_id:
             try:
+                self._record_order_lifecycle(
+                    "close_requested",
+                    "close_requested",
+                    lifecycle_id,
+                    deal_id=pos.deal_id,
+                    route_key=route_key,
+                    venue="capital",
+                    market_type="cfd",
+                    symbol=pos.symbol,
+                    side=pos.direction,
+                    reason=reason,
+                    source="capital_cfd_trader.close_position",
+                )
                 result = self.client.close_position(pos.deal_id)
                 close_ok = bool(result.get("success"))
                 close_detail = dict(result)
+                if close_ok:
+                    self._record_order_lifecycle(
+                        "close_acknowledged",
+                        "close_acknowledged",
+                        lifecycle_id,
+                        deal_id=pos.deal_id,
+                        route_key=route_key,
+                        venue="capital",
+                        market_type="cfd",
+                        symbol=pos.symbol,
+                        side=pos.direction,
+                        reason=reason,
+                        broker_response=dict(result) if isinstance(result, dict) else result,
+                        source="capital_cfd_trader.close_position",
+                    )
                 if not close_ok:
                     # Fallback: reverse market order to flatten the position
                     opposite = "SELL" if pos.direction == "BUY" else "BUY"
                     fallback = self.client.place_market_order(pos.symbol, opposite, pos.size)
                     close_detail["fallback"] = fallback
                     close_ok = not bool(fallback.get("rejected") or fallback.get("error"))
+                    if close_ok:
+                        self._record_order_lifecycle(
+                            "close_acknowledged",
+                            "close_acknowledged",
+                            lifecycle_id,
+                            deal_id=pos.deal_id,
+                            route_key=route_key,
+                            venue="capital",
+                            market_type="cfd",
+                            symbol=pos.symbol,
+                            side=pos.direction,
+                            reason=reason,
+                            broker_response=close_detail,
+                            source="capital_cfd_trader.close_position",
+                        )
             except Exception as _e:
                 logger.debug(f"CFD close error {pos.symbol}: {_e}")
                 close_detail = {"error": str(_e)}
@@ -4732,10 +5023,26 @@ class CapitalCFDTrader:
             pnl_gbp = pnl_pct * pos.entry_price * pos.size
 
         if not close_ok:
+            self._record_order_lifecycle(
+                "close_failed",
+                "close_failed",
+                lifecycle_id,
+                deal_id=pos.deal_id,
+                route_key=route_key,
+                venue="capital",
+                market_type="cfd",
+                symbol=pos.symbol,
+                side=pos.direction,
+                reason=reason,
+                error=close_detail.get("error") if isinstance(close_detail, dict) else "",
+                broker_response=close_detail,
+                source="capital_cfd_trader.close_position",
+            )
             return {
                 "error": "close_failed",
                 "symbol": pos.symbol,
                 "deal_id": pos.deal_id,
+                "lifecycle_id": lifecycle_id,
                 "reason": reason,
                 "detail": close_detail,
             }
@@ -4765,6 +5072,8 @@ class CapitalCFDTrader:
         record = {
             "symbol":           pos.symbol,
             "deal_id":          pos.deal_id,
+            "lifecycle_id":     lifecycle_id,
+            "route_key":        route_key,
             "asset_class":      pos.asset_class,
             "direction":        pos.direction,
             "entry_price":      pos.entry_price,
@@ -4776,6 +5085,25 @@ class CapitalCFDTrader:
             "age_secs":         pos.age_secs,
             "closed_at":        datetime.now().isoformat(),
         }
+        self._record_order_lifecycle(
+            "position_closed",
+            "position_closed",
+            lifecycle_id,
+            deal_id=pos.deal_id,
+            route_key=route_key,
+            venue="capital",
+            market_type="cfd",
+            symbol=pos.symbol,
+            side=pos.direction,
+            reason=reason,
+            entry_price=pos.entry_price,
+            exit_price=cp,
+            size=pos.size,
+            net_pnl=pnl_gbp,
+            net_pnl_currency="GBP",
+            close_detail=close_detail,
+            source="capital_cfd_trader.close_position",
+        )
         fast_capture = dict(getattr(self, "_fast_profit_capture_by_deal", {}).get(pos.deal_id, {}) or {})
         if fast_capture:
             record["fast_profit_capture"] = fast_capture
@@ -5659,6 +5987,8 @@ class CapitalCFDTrader:
                 {
                     "symbol": pos.symbol,
                     "deal_id": pos.deal_id,
+                    "lifecycle_id": pos.lifecycle_id,
+                    "route_key": self._capital_route_key(pos.symbol, pos.direction),
                     "epic": pos.epic,
                     "direction": pos.direction,
                     "size": pos.size,

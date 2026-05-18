@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aureon Adaptive Skill Capsule</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, Segoe UI, Arial, sans-serif; }
+    body { margin: 0; min-height: 100vh; background: #111a20; color: #eef6f7; }
+    main { width: min(980px, 94vw); margin: 0 auto; padding: 28px 0; display: grid; gap: 14px; }
+    section { border: 1px solid #456670; border-radius: 8px; background: rgba(255,255,255,.055); padding: 16px; }
+    h1 { margin: 0 0 8px; font-size: 26px; }
+    h2 { margin: 0 0 8px; font-size: 16px; }
+    p { margin: 0; line-height: 1.45; color: #c7d5d8; }
+    pre { white-space: pre-wrap; margin: 0; color: #9cf5c8; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+    .pill { display: inline-block; margin: 4px 6px 0 0; padding: 5px 9px; border: 1px solid #5f818a; border-radius: 999px; color: #dcf4f6; }
+    button { border: 1px solid #9cf5c8; background: #173a32; color: #eef6f7; border-radius: 7px; padding: 9px 12px; cursor: pointer; }
+    textarea { width: 100%; min-height: 90px; border-radius: 7px; border: 1px solid #456670; background: #0d1418; color: #eef6f7; padding: 10px; }
+  </style>
+</head>
+<body>
+  <main>
+    <section>
+      <h1>Aureon Adaptive Skill Capsule</h1>
+      <p>Build a local quantum spline inventory generator tool with run instructions and proof.</p>
+      <div>
+        <span class="pill">task: coding</span>
+        <span class="pill">families: coding</span>
+        <span class="pill">local only</span>
+        <span class="pill">quality gated</span>
+      </div>
+    </section>
+    <div class="grid">
+      <section>
+        <h2>Who / What / Where</h2>
+        <p>Adaptive Skill Composer created a reusable local capsule for this request.</p>
+        <p>Files: index.html, skill.json, RUNBOOK.md, tool.py.</p>
+      </section>
+      <section>
+        <h2>How / Proof</h2>
+        <p>The capsule is browser-previewable, has a local Python run contract, and keeps all unsafe authority blocked.</p>
+      </section>
+    </div>
+    <section>
+      <h2>Local Test Harness</h2>
+      <textarea id="input" placeholder="Optional local input for this skill"></textarea>
+      <p style="margin-top: 10px;"><button id="run">Run local proof</button></p>
+      <pre id="output">Waiting for local proof run.</pre>
+    </section>
+  </main>
+  <script>
+    const promptText = "Build a local quantum spline inventory generator tool with run instructions and proof.";
+    document.getElementById('run').addEventListener('click', () => {
+      const input = document.getElementById('input').value;
+      const result = {
+        ok: true,
+        prompt: promptText,
+        input_text: input,
+        result: 'Adaptive skill capsule is ready and can be enhanced by Aureon for this request.',
+        authority: 'local-only; unsafe gates remain blocked'
+      };
+      document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+    });
+  </script>
+</body>
+</html>

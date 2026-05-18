@@ -1298,6 +1298,8 @@ def _prefer_adaptive_forge_prompt(prompt: str) -> bool:
     text = str(prompt or "").lower()
     if any(keyword in text for keyword in ("video", "clip", "animation", "mp4", "webm", "image", "picture", "draw", "pdf", "document")):
         return False
+    if any(keyword in text for keyword in ("full stack", "full-stack", "frontend and backend", "backend api", "api server", "crud app")):
+        return True
     return _is_interactive_app_prompt(prompt) or any(
         keyword in text
         for keyword in (
@@ -1808,6 +1810,13 @@ def submit_coding_prompt(
             "agent_company_report_created": bool(agent_company_report),
             "capability_forge_report_created": bool(capability_forge_report),
             "capability_forge_task_family": capability_forge_report.get("task_family", ""),
+            "capability_forge_build_id": capability_forge_report.get("build_id", ""),
+            "capability_forge_project_id": capability_forge_report.get("project_id", ""),
+            "fresh_project_per_request": (capability_forge_report.get("summary") or {}).get(
+                "fresh_project_per_request",
+                False,
+            ),
+            "artifact_public_url": (capability_forge_report.get("artifact_manifest") or {}).get("public_url", ""),
             "artifact_quality_gate_present": bool(artifact_quality_report),
             "artifact_quality_passed": bool(artifact_quality_report.get("handover_ready")) if artifact_quality_report else None,
             "artifact_quality_score": artifact_quality_report.get("score") if artifact_quality_report else None,

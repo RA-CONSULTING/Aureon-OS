@@ -142,7 +142,7 @@ class UnifiedMarketCache:
         
         logger.info(f"🌐 UnifiedMarketCache initialized (cache dir: {CACHE_DIR})")
     
-    def _read_cache_files(self) -> None:
+    def _read_cache_files(self, requested_max_age: Optional[float] = None) -> None:
         """Read all cache files and merge into memory"""
         now = time.time()
         if now - self._last_file_read < self._file_read_interval:
@@ -157,6 +157,11 @@ class UnifiedMarketCache:
             (KRAKEN_CACHE_PATH, 'kraken_rest', CACHE_TTL_SECONDS),
         ]
         
+        try:
+            read_age_budget = max(0.0, float(requested_max_age or 0.0))
+        except Exception:
+            read_age_budget = 0.0
+
         for path, source, ttl in cache_files:
             try:
                 if not os.path.exists(path):
@@ -166,7 +171,10 @@ class UnifiedMarketCache:
                     data = json.load(f)
                 
                 file_ts = _as_timestamp(data.get('generated_at'), 0.0)
-                if now - file_ts > ttl * 2:  # File too old
+                file_age_budget = max(ttl * 2, read_age_budget)
+                if file_age_budget <= 0:
+                    file_age_budget = ttl * 2
+                if now - file_ts > file_age_budget:  # File too old for this read
                     continue
 
                 source_health = data.get('source_health', {})
@@ -247,7 +255,7 @@ class UnifiedMarketCache:
         symbol = symbol.upper()
         
         # Refresh from files
-        self._read_cache_files()
+        self._read_cache_files(max_age)
         
         with self._cache_lock:
             ticker = self._tickers.get(symbol)
@@ -262,13 +270,13 @@ class UnifiedMarketCache:
     
     def get_all_tickers(self, max_age: float = CACHE_TTL_SECONDS) -> Dict[str, CachedTicker]:
         """Get all fresh tickers"""
-        self._read_cache_files()
+        self._read_cache_files(max_age)
         with self._cache_lock:
             return {s: t for s, t in self._tickers.items() if t.is_fresh(max_age)}
 
     def get_source_health(self) -> Dict[str, Dict[str, Any]]:
         """Get latest source-health metadata published by the shared cache writer."""
-        self._read_cache_files()
+        self._read_cache_files(CACHE_TTL_SECONDS)
         now = time.time()
         with self._cache_lock:
             health: Dict[str, Dict[str, Any]] = {}

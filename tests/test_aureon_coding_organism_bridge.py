@@ -372,8 +372,13 @@ def test_submit_coding_prompt_game_uses_adaptive_forge_not_agentcore(tmp_path: P
     )
     assert payload["summary"]["adaptive_skill_created"] is True
     assert payload["adaptive_skill_evidence"]["name"] == "local_html_game_forge"
+    assert payload["uniqueness_contract"]["reuse_allowed_for_handover"] is False
+    assert result["summary"]["fresh_project_per_request"] is True
+    assert result["summary"]["capability_forge_build_id"] == payload["build_id"]
     assert manifest["kind"] == "html_game"
     assert manifest["public_url"].endswith(".html")
+    assert result["summary"]["artifact_public_url"] == manifest["public_url"]
+    assert manifest["build_id"] in manifest["public_url"]
     assert Path(manifest["asset_path"]).exists()
     assert "aureon_generated_apps" in manifest["public_url"]
 
@@ -414,6 +419,48 @@ def test_submit_coding_prompt_barcode_tool_uses_domain_specific_adaptive_skill(t
     assert "aureon_adaptive_skills" in manifest["public_url"]
     assert Path(manifest["asset_path"]).exists()
     assert Path(manifest["tool_path"]).exists()
+
+
+def test_submit_coding_prompt_full_stack_routes_to_agent_forge(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        "aureon.autonomous.aureon_safe_code_control.build_code_expression_context",
+        _fake_expression_context,
+    )
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "aureon").mkdir()
+    _write_hnc_fixture(tmp_path)
+
+    result = submit_coding_prompt(
+        "Build a full-stack client task tracker with backend API, frontend dashboard, local data store, and tests.",
+        source="test",
+        run_tests=False,
+        include_desktop=False,
+        root=tmp_path,
+        goal_engine=RaisingGoalEngine(),
+        scope_approved=True,
+        scope_answers={
+            "goal": "Build a full-stack local client task tracker.",
+            "deliverables": "Backend API, frontend UI, local data store, tests, runbook, and preview URL.",
+            "target_system": "frontend/public/aureon_full_stack_apps and Aureon coding cockpit artifact preview.",
+            "constraints": "Local-only, no live trading, payment, filing, credential, or destructive OS action.",
+            "acceptance": "Backend/frontend/test files exist, API contract validates, and handover is quality-gated.",
+        },
+    )
+
+    route_steps = result["goal_route"]["plan"]["steps"]
+    payload = route_steps[0]["result"]["result"]
+    manifest = payload["artifact_manifest"]
+
+    assert result["ok"] is True
+    assert [step["intent"] for step in route_steps] == ["capability_forge"]
+    assert payload["task_family"] == "full_stack"
+    assert payload["adaptive_skill_evidence"]["name"] == "local_full_stack_system_forge"
+    assert manifest["kind"] == "full_stack_system"
+    assert "aureon_full_stack_apps" in manifest["public_url"]
+    assert Path(manifest["backend_path"]).exists()
+    assert Path(manifest["frontend_path"]).exists()
+    assert Path(manifest["test_path"]).exists()
+    assert payload["full_stack_system_report"]["validation"]["status"] == "contract_validated"
 
 
 def test_coding_organism_status_reads_last_run_and_queues(tmp_path: Path, monkeypatch) -> None:

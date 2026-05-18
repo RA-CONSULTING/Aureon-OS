@@ -1,4 +1,5 @@
 import os
+import json
 import sys
 import tempfile
 import time
@@ -114,12 +115,14 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         trader._world_macro_snapshot_at = 0.0
         trader._world_macro_fetch_inflight = False
         trader._asset_waveform_models = {}
+        trader._central_beat_heavy_context_enabled = True
         trader._scanner_fusion_matrix = {}
         trader._market_harp = None
         trader._cross_asset_correlator = None
         trader._world_macro_provider = lambda: {}
         trader._world_news_signal_provider = lambda: {}
         trader._extract_stream_cache_source_snapshot = lambda watchlist: {}  # type: ignore[method-assign]
+        trader._gold_priority_live_stream_signal = lambda: {"ready": False, "reason": "test_default_no_gold_stream"}  # type: ignore[method-assign]
         trader._build_asset_waveform_models = lambda normalized_symbols, sources: {  # type: ignore[method-assign]
             "schema_version": 1,
             "enabled": True,
@@ -135,6 +138,8 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         trader._last_execution_at = 0.0
         trader._execution_memory = {}
         trader._latest_execution_results = {}
+        trader._order_lifecycle_enabled = False
+        trader._order_lifecycle_started = False
         trader._executor_route_lock = trader_mod.threading.Lock()
         trader._executor_route_inflight = {}
         trader._executor_route_results = {}
@@ -456,6 +461,272 @@ class UnifiedMarketTraderTests(unittest.TestCase):
             self.assertTrue(shadow["agent_review"]["logic_validated"])
             self.assertIn("hnc_alignment_agent", shadow["agent_review"]["agents"])
             self.assertIn("runtime_clearance_agent", shadow["agent_review"]["agents"])
+
+    def test_gold_priority_live_stream_injects_capital_candidate(self):
+        trader = self._make_trader()
+        trader.capital_ready = True
+        trader._capital_tradable_symbols = lambda: {"XAUUSD": "GOLD"}  # type: ignore[method-assign]
+        trader._gold_priority_live_stream_signal = lambda: {  # type: ignore[method-assign]
+            "ready": True,
+            "normalized_symbol": "XAUUSD",
+            "symbol": "GOLD",
+            "capital_symbol": "GOLD",
+            "reference_price": 4552.5,
+            "bid": 4552.25,
+            "ask": 4552.75,
+            "spread": 0.5,
+            "spread_pct": 0.011,
+            "change_pct": 0.12,
+            "volume_24h": 0.0,
+            "age_sec": 1.2,
+            "confidence": 0.82,
+            "side": "BUY",
+            "side_reason": "gold_intelligence_validated_buy_sell",
+            "intent_publishable": True,
+            "source_tags": [
+                "capital_gold_live_stream",
+                "gold_priority_target",
+                "fresh_interval_validated_gold_projection_required",
+            ],
+        }
+
+        order_flow = trader._build_global_order_flow_feed({}, {}, {"symbols": {}}, {"symbols": {}})
+
+        self.assertEqual(order_flow["gold_priority_candidate"]["normalized_symbol"], "XAUUSD")
+        top = order_flow["active_order_flow"][0]
+        self.assertEqual(top["symbol"], "XAUUSD")
+        self.assertEqual(top["capital_symbol"], "GOLD")
+        self.assertEqual(top["side"], "BUY")
+        self.assertTrue(top["gold_priority_candidate"])
+        self.assertIn("capital_gold_live_stream", top["sources"])
+        self.assertTrue(str(top["candidate_id"]).startswith("ocand-"))
+        self.assertTrue(str(top["lifecycle_id"]).startswith("olife-"))
+        routes = {(route["venue"], route["market_type"], route["symbol"], route["ready"]) for route in top["execution_routes"]}
+        self.assertIn(("capital", "cfd", "GOLD", True), routes)
+        self.assertEqual(top["execution_routes"][0]["route_key"], "capital:cfd:GOLD:BUY")
+        self.assertEqual(top["execution_routes"][0]["lifecycle_id"], top["lifecycle_id"])
+
+    def test_capital_tradables_always_include_gold_route_key(self):
+        trader = self._make_trader()
+
+        tradables = trader._capital_tradable_symbols()
+
+        self.assertEqual(tradables["XAUUSD"], "GOLD")
+
+    def test_gold_priority_candidate_stays_visible_above_generic_flow(self):
+        trader = self._make_trader()
+        trader.kraken_ready = True
+        trader.capital_ready = True
+        trader._kraken_spot_tradable_symbols = lambda: {"BTCUSD": "XBTUSD"}  # type: ignore[method-assign]
+        trader._capital_tradable_symbols = lambda: {"XAUUSD": "GOLD", "BTCUSD": "BTCUSD"}  # type: ignore[method-assign]
+        trader._gold_priority_live_stream_signal = lambda: {  # type: ignore[method-assign]
+            "ready": True,
+            "normalized_symbol": "XAUUSD",
+            "symbol": "GOLD",
+            "capital_symbol": "GOLD",
+            "reference_price": 4552.5,
+            "age_sec": 1.0,
+            "confidence": 0.72,
+            "side": "HOLD",
+            "side_reason": "gold_intelligence_requires_fresh_interval_validation",
+            "intent_publishable": False,
+            "source_tags": ["capital_gold_live_stream", "gold_priority_target", "fresh_interval_validated_gold_projection_required"],
+        }
+        central_beat = {
+            "symbols": {
+                "BTCUSD": {
+                    "strength": 1.0,
+                    "confidence": 1.0,
+                    "support_count": 4,
+                    "side": "SELL",
+                    "sources": ["binance", "kraken"],
+                    "reference_price": 50000.0,
+                    "change_pct": 4.0,
+                }
+            }
+        }
+        shared_market_feed = {"symbols": {"BTCUSD": 1.0}}
+
+        order_flow = trader._build_global_order_flow_feed({}, {}, central_beat, shared_market_feed)
+
+        self.assertEqual(order_flow["active_order_flow"][0]["symbol"], "XAUUSD")
+        self.assertTrue(order_flow["active_order_flow"][0]["gold_priority_candidate"])
+        action_plan = trader._build_exchange_action_plan(order_flow)
+        proof = trader._build_gold_runtime_trade_proof(
+            central_beat,
+            shared_market_feed,
+            order_flow,
+            action_plan,
+        )
+        self.assertTrue(proof["gold_runtime_candidate_ready"])
+        self.assertTrue(proof["capital_cfd_route_visible"])
+
+    def test_gold_priority_hold_side_blocks_intent_publish(self):
+        trader = self._make_trader()
+        trader.capital_ready = True
+        trader._capital_tradable_symbols = lambda: {"XAUUSD": "GOLD"}  # type: ignore[method-assign]
+        trader._gold_priority_live_stream_signal = lambda: {  # type: ignore[method-assign]
+            "ready": True,
+            "normalized_symbol": "XAUUSD",
+            "symbol": "GOLD",
+            "capital_symbol": "GOLD",
+            "reference_price": 4552.5,
+            "age_sec": 1.0,
+            "confidence": 0.82,
+            "side": "HOLD",
+            "side_reason": "gold_intelligence_requires_fresh_interval_validation",
+            "intent_publishable": False,
+            "source_tags": ["capital_gold_live_stream", "gold_priority_target", "fresh_interval_validated_gold_projection_required"],
+        }
+        old_env = self._with_live_executor_env()
+        try:
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                state_path = Path(tmp_dir) / "intents.json"
+                log_path = Path(tmp_dir) / "intents.jsonl"
+                public_path = Path(tmp_dir) / "public.json"
+                with patch.object(trader_mod, "ORDER_INTENT_STATE_PATH", state_path), patch.object(
+                    trader_mod, "ORDER_INTENT_LOG_PATH", log_path
+                ), patch.object(trader_mod, "ORDER_INTENT_PUBLIC_PATH", public_path):
+                    order_flow = trader._build_global_order_flow_feed({}, {}, {"symbols": {}}, {"symbols": {}})
+                    top = order_flow["active_order_flow"][0]
+                    self.assertEqual(top["side"], "HOLD")
+                    self.assertIn("gold_side_not_validated_by_fresh_interval_projection", top["intent_publish_blockers"])
+                    action_plan = trader._build_exchange_action_plan(order_flow)
+                    self.assertIn("capital_cfd", action_plan["venues"])
+                    trader._publish_order_intents(order_flow, action_plan)
+                    self.assertFalse(state_path.exists())
+                    self.assertEqual(action_plan["order_intents_published"], 0)
+        finally:
+            self._restore_env(old_env)
+
+    def test_order_intents_include_lifecycle_identity(self):
+        old_env = self._with_live_executor_env()
+        try:
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                tmp_path = Path(tmp_dir)
+                trader = self._make_trader()
+                trader._order_lifecycle_enabled = True
+                trader._order_lifecycle_root_path = tmp_path
+                state_path = tmp_path / "intents.json"
+                log_path = tmp_path / "intents.jsonl"
+                public_path = tmp_path / "public.json"
+                order_flow = {
+                    "active_order_flow": [
+                        {
+                            "symbol": "GOLD",
+                            "side": "BUY",
+                            "confidence": 0.91,
+                            "support_count": 3,
+                            "sources": ["capital_gold_live_stream"],
+                            "execution_routes": [
+                                {
+                                    "venue": "capital",
+                                    "market_type": "cfd",
+                                    "symbol": "GOLD",
+                                    "ready": True,
+                                    "route_key": "capital:cfd:GOLD:BUY",
+                                }
+                            ],
+                        }
+                    ]
+                }
+                action_plan = {
+                    "order_intent_publish_enabled": True,
+                    "global_blockers": [],
+                    "order_authority_mode": "intent_only_runtime_gated",
+                }
+                with patch.object(trader_mod, "ORDER_INTENT_STATE_PATH", state_path), patch.object(
+                    trader_mod, "ORDER_INTENT_LOG_PATH", log_path
+                ), patch.object(trader_mod, "ORDER_INTENT_PUBLIC_PATH", public_path):
+                    trader._publish_order_intents(order_flow, action_plan)
+
+                payload = json.loads(state_path.read_text(encoding="utf-8"))
+                candidate = payload["intents"][0]
+                lifecycle_state = json.loads((tmp_path / "state" / "unified_order_lifecycle_latest.json").read_text(encoding="utf-8"))
+
+                self.assertTrue(candidate["candidate_id"].startswith("ocand-"))
+                self.assertTrue(candidate["lifecycle_id"].startswith("olife-"))
+                self.assertEqual(candidate["route_key"], "capital:cfd:GOLD:BUY")
+                self.assertEqual(candidate["routes"][0]["lifecycle_id"], candidate["lifecycle_id"])
+                self.assertEqual(lifecycle_state["latest_event"]["status"], "intent_published")
+        finally:
+            self._restore_env(old_env)
+
+    def test_dry_run_disables_unified_executor_even_when_env_armed(self):
+        old_env = self._with_live_executor_env()
+        try:
+            trader = self._make_trader()
+            trader.dry_run = True
+            payload = {"combined": {"open_positions": 0}}
+            action_plan = {"order_intent_publish_enabled": True, "global_blockers": []}
+
+            blockers = trader._execution_blockers(payload, action_plan)
+
+            self.assertFalse(trader._runtime_real_orders_allowed())
+            self.assertFalse(trader._unified_executor_enabled())
+            self.assertIn("unified_order_executor_disabled", blockers)
+            self.assertIn("real_orders_not_allowed_by_runtime", blockers)
+        finally:
+            self._restore_env(old_env)
+
+    def test_blocked_execution_summary_is_persisted(self):
+        old_env = self._with_live_executor_env()
+        try:
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                tmp_path = Path(tmp_dir)
+                trader = self._make_trader()
+                trader.dry_run = True
+                payload = {
+                    "combined": {"open_positions": 0},
+                    "exchange_action_plan": {"order_intent_publish_enabled": True, "global_blockers": []},
+                    "shared_order_flow": {"active_order_flow": []},
+                }
+                state_path = tmp_path / "execution.json"
+                public_path = tmp_path / "public_execution.json"
+                log_path = tmp_path / "execution.jsonl"
+                with patch.object(trader_mod, "EXECUTION_RESULT_STATE_PATH", state_path), patch.object(
+                    trader_mod, "EXECUTION_RESULT_PUBLIC_PATH", public_path
+                ), patch.object(trader_mod, "EXECUTION_RESULT_LOG_PATH", log_path):
+                    summary = trader._execute_runtime_order_actions(payload)
+
+                persisted = json.loads(state_path.read_text(encoding="utf-8"))
+
+                self.assertFalse(summary["executor_enabled"])
+                self.assertIn("unified_order_executor_disabled", summary["blockers"])
+                self.assertEqual(persisted["submitted_count"], 0)
+                self.assertFalse(persisted["executor_enabled"])
+                self.assertTrue(public_path.exists())
+                self.assertTrue(log_path.exists())
+        finally:
+            self._restore_env(old_env)
+
+    def test_gold_priority_capital_route_exposes_not_ready_blocker(self):
+        trader = self._make_trader()
+        trader.capital_ready = False
+        trader.capital_error = ""
+        trader._capital_tradable_symbols = lambda: {"XAUUSD": "GOLD"}  # type: ignore[method-assign]
+        trader._gold_priority_live_stream_signal = lambda: {  # type: ignore[method-assign]
+            "ready": True,
+            "normalized_symbol": "XAUUSD",
+            "symbol": "GOLD",
+            "capital_symbol": "GOLD",
+            "reference_price": 4552.5,
+            "age_sec": 1.0,
+            "confidence": 0.82,
+            "side": "BUY",
+            "side_reason": "gold_intelligence_validated_buy_sell",
+            "intent_publishable": True,
+            "source_tags": ["capital_gold_live_stream", "gold_priority_target", "fresh_interval_validated_gold_projection_required"],
+        }
+
+        order_flow = trader._build_global_order_flow_feed({}, {}, {"symbols": {}}, {"symbols": {}})
+        route = order_flow["active_order_flow"][0]["execution_routes"][0]
+        self.assertEqual(route["venue"], "capital")
+        self.assertFalse(route["ready"])
+        self.assertIn("capital_not_ready", route["blockers"])
+        action_plan = trader._build_exchange_action_plan(order_flow)
+        self.assertIn("capital_cfd", action_plan["venues"])
+        self.assertIn("capital_not_ready", action_plan["venues"]["capital_cfd"]["blockers"])
 
     def test_profit_velocity_ranking_uses_cash_price_history_and_eta(self):
         trader = self._make_trader()
@@ -817,6 +1088,21 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         }
 
         self.assertFalse(trader._lock_owner_is_fresh(lock, time.time()))
+
+    def test_windows_writer_lock_owner_check_uses_tasklist_not_posix_signal(self):
+        trader = self._make_trader()
+        lock = {
+            "instance_id": "other-runtime",
+            "pid": 12345,
+            "heartbeat_at": time.time(),
+        }
+
+        with patch.object(trader_mod.os, "name", "nt"), patch.object(trader_mod.subprocess, "run") as run:
+            run.return_value.stdout = '"python.exe","12345","Console","1","42,000 K"'
+
+            self.assertTrue(trader._runtime_writer_lock_owner_alive(lock))
+
+        run.assert_called_once()
 
     def test_shadow_trade_report_verifies_prior_shadow_against_current_price(self):
         trader = self._make_trader()

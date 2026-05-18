@@ -30,6 +30,12 @@ BRAIN_PREDICTIONS_PATH = REPO_ROOT / "brain_predictions_history.json"
 DEFAULT_OUTPUT_JSON = REPO_ROOT / "docs/audits/aureon_cognitive_trade_evidence.json"
 DEFAULT_PUBLIC_JSON = REPO_ROOT / "frontend/public/aureon_cognitive_trade_evidence.json"
 
+try:
+    from aureon.trading.order_lifecycle import append_event as append_order_lifecycle_event, lifecycle_for_deal
+except Exception:
+    append_order_lifecycle_event = None  # type: ignore[assignment]
+    lifecycle_for_deal = None  # type: ignore[assignment]
+
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -171,6 +177,29 @@ def append_trade_evidence(
     STATE_ROOT.mkdir(parents=True, exist_ok=True)
     with EVIDENCE_JSONL.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(event, sort_keys=True, default=str) + "\n")
+    lifecycle_id = str(trade.get("lifecycle_id") or "")
+    if not lifecycle_id and lifecycle_for_deal is not None:
+        try:
+            lifecycle_id = str(lifecycle_for_deal(str(trade.get("deal_id") or trade.get("dealId") or "")) or "")
+        except Exception:
+            lifecycle_id = ""
+    if lifecycle_id and append_order_lifecycle_event is not None:
+        try:
+            append_order_lifecycle_event(
+                event_type="cognitive_trade_evidence",
+                status="outcome_recorded",
+                lifecycle_id=lifecycle_id,
+                deal_id=trade.get("deal_id") or trade.get("dealId"),
+                route_key=trade.get("route_key"),
+                symbol=trade.get("symbol") or trade.get("pair"),
+                side=trade.get("direction") or trade.get("side"),
+                net_pnl=reward.get("net_pnl"),
+                outcome=reward.get("outcome"),
+                evidence_event_id=event.get("event_id"),
+                source=source,
+            )
+        except Exception:
+            pass
     return event
 
 

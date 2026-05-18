@@ -71,6 +71,22 @@ cd C:\path\to\aureon-trading
 
 This starts the production supervisor, market runtime, telemetry/status server, mind hub, self-questioning loop, organism observer, manifest refresh, and unified console.
 
+### Fully Live Order Mode
+
+Use this only when the operator accepts live trading risk, exchange credentials are configured, and open Capital positions have been closed or reconciled. The command refuses to arm live order mutation when `/api/flight-test` reports open positions, because the runtime must not hot-swap from dry-run to live execution while exposure is active.
+
+```powershell
+cd C:\Users\user\aureon-trading-integrated-main-20260508; $ft=Invoke-RestMethod http://127.0.0.1:8791/api/flight-test; if ($ft.checks.open_positions) { throw "LIVE START BLOCKED: open_positions_reported. Close/reconcile Capital positions first, then rerun." }; Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -ne $PID -and (($_.Name -match 'python' -and $_.CommandLine -match 'aureon\.exchanges\.unified_market_trader') -or ($_.Name -eq 'cmd.exe' -and $_.CommandLine -match 'AUREON_PRODUCTION_LIVE\.cmd')) } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }; .\AUREON_PRODUCTION_LIVE.cmd -WaitForRefresh -MarketStatusPort 8791
+```
+
+Verify the runtime is actually live and not dry-run:
+
+```powershell
+$r=Invoke-RestMethod http://127.0.0.1:8791/api/terminal-state; $r.exchange_action_plan | Select order_intent_publish_enabled,executor_enabled,live_enabled,real_orders_disabled,exchange_mutations_disabled,trade_path_state,global_blockers
+```
+
+Fully live order mode requires `executor_enabled=True`, `live_enabled=True`, `real_orders_disabled=False`, `exchange_mutations_disabled=False`, and no `global_blockers`. If any of `live_trading_not_enabled`, `real_orders_disabled`, `exchange_mutations_disabled`, `open_positions_reported`, duplicate-route blockers, recovered-exit blockers, stale data, or risk/operator blockers appear, Aureon stays evidence-first and must not submit live orders until the existing runtime gates clear.
+
 ### Low-Priority Planetary Data Ocean
 
 Run this in a second terminal when you want Aureon to keep widening its market map without stalling the live trading loop:

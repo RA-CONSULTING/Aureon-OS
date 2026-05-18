@@ -140,6 +140,8 @@ def test_complex_build_repair_loop_reruns_and_records_attempt(tmp_path: Path) ->
     assert report["summary"]["repair_attempt_count"] == 1
     assert case["ok"] is True
     assert len(case["repair_attempts"]) == 1
+    assert case["repair_attempts"][0]["repair_work_order"]["safe_apply_route"].endswith("GuardedPatchApplier")
+    assert case["repair_work_order"]["acceptance"].startswith("Aureon either applies")
     assert case["attempt_results"][0]["ok"] is False
     assert case["attempt_results"][1]["ok"] is True
 
@@ -169,3 +171,4 @@ def test_complex_build_live_repo_probe_blocks_unallowlisted_target(tmp_path: Pat
     assert report["ok"] is False
     assert report["summary"]["unexpected_failure_count"] == 1
     assert "allowlist" in report["cases"][0]["failure_reason"].lower()
+    assert report["cases"][0]["repair_work_order"]["source_case"] == "live_repo_capability_extension"
