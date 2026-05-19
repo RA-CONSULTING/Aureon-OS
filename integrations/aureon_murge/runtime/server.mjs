@@ -36,6 +36,7 @@ const terminalSessions = new Map();
 const sandboxSessions = new Map();
 
 const app = express();
+app.disable('x-powered-by');
 app.use(express.json({ limit: '1mb' }));
 app.use((req, res, next) => {
   const origin = req.headers.origin;

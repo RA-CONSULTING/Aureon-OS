@@ -202,6 +202,28 @@ The Trading screen exposes a read-only **MURGE Runtime Activation** panel with s
 
 MURGE activation must not bypass trading gates, migrate credentials, run cloud deploys, expose shell input, or mutate broker state. Review any `collision_review_required` rows for `.gitignore`, `README.md`, or `docs/SECURITY.md` by distilling the imported content instead of overwriting repo-owned files. Review any `murge_dependency_vulnerability_review_required` rows before trusting the desktop shell beyond local evidence display.
 
+### Flameborn Full Launch Proof
+
+Flameborn is now the local operator face for the MURGE/Aureon unity shell. It exposes the web app, runtime server, desktop readiness, Aureon supervisor, Phi bridge, ThoughtBus/Mycelium visibility, terminal guard, Docker sandbox guard, provider/cloud boundaries, npm audit state, and live-trading gate visibility in one read-only panel.
+
+Open the local shell:
+
+```powershell
+http://127.0.0.1:4173/
+```
+
+Regenerate the full capability stress proof after service, dependency, or guard changes:
+
+```powershell
+.\.venv\Scripts\python.exe -m aureon.autonomous.aureon_flameborn_full_capability_stress_audit --json --no-external-fabric
+```
+
+The public artifact is written to `frontend/public/aureon_flameborn_full_capability_stress_audit.json`, with mirrors in `state/aureon_flameborn_full_capability_stress_last_run.json` and `docs/audits/aureon_flameborn_full_capability_stress_audit.json`. Flameborn serves it through `GET http://127.0.0.1:4173/api/aureon/full-capability-stress` and renders it as **Full Launch Proof**.
+
+The proof follows the official security baselines for Express/Node server hardening, Electron renderer isolation, Docker sandbox boundaries, Cloudflare local-only configuration, WebSocket origin checks, and `npm audit` classification. It does not start services, execute shell commands, read credentials, deploy to Cloudflare, or place/close/cancel broker orders.
+
+Current expected status is `flameborn_full_capability_attention` until the desktop dependency audit is repaired. At the time of this README update, the live proof showed `13/14` required rows passing: web, runtime, desktop security, supervisor, Phi chat, terminal guard, sandbox guard, WebSocket origin guard, provider boundary, Cloudflare boundary, live gate visibility, no trading bypass, ThoughtBus receipt, and Mycelium receipt. The remaining blocker was `npm_audit_high_critical_or_missing` from high-severity desktop dependency audit rows.
+
 ### Unified Console Layout
 
 The unified autonomous console is organized as an operations-first dashboard instead of one long stacked feed. Open `http://127.0.0.1:8081/` for the default **Overview** tab, or deep-link to a specific operator lane:

@@ -27,6 +27,13 @@ function loadEnvFile(envPath) {
 loadEnvFile(path.join(__dirname, ".env"));
 loadEnvFile(path.join(process.env.HOME || "", ".config/gemini/env"));
 
+const LOCAL_HOME = process.env.HOME || process.env.USERPROFILE || process.cwd();
+const DEFAULT_AUREON_ROOT = path.resolve(__dirname, "..", "..", "..");
+const DEFAULT_AUREON_PHI_BASE_URL = "http://127.0.0.1:13002";
+const DEFAULT_AUREON_TERMINAL_STATE_URL = "http://127.0.0.1:8791/api/terminal-state";
+const DEFAULT_AUREON_FLIGHT_TEST_URL = "http://127.0.0.1:8791/api/flight-test";
+const DEFAULT_AUREON_REBOOT_ADVICE_URL = "http://127.0.0.1:8791/api/reboot-advice";
+
 const PORT = process.env.PORT || 4173;
 const HOST = process.env.HOST || "127.0.0.1";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
@@ -35,11 +42,18 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY 
 const XAI_API_KEY = process.env.XAI_API_KEY || "";
 const XAI_ALLOW_PAID = String(process.env.XAI_ALLOW_PAID || "false").toLowerCase() === "true";
 const HF_TOKEN = process.env.HF_TOKEN || process.env.HUGGINGFACE_API_KEY || "";
-const AUREON_API_BASE_URL = String(process.env.AUREON_API_BASE_URL || "").replace(/\/+$/, "");
+const AUREON_API_BASE_URL = String(
+  process.env.AUREON_API_BASE_URL || process.env.AUREON_PHI_BASE_URL || DEFAULT_AUREON_PHI_BASE_URL,
+).replace(/\/+$/, "");
 const AUREON_API_KEY = process.env.AUREON_API_KEY || "";
-const AUREON_CHAT_PATH = process.env.AUREON_CHAT_PATH || "/api/message";
+const AUREON_CHAT_PATH = process.env.AUREON_CHAT_PATH || "/api/phi-bridge/chat";
+const AUREON_TERMINAL_STATE_URL = process.env.AUREON_TERMINAL_STATE_URL || DEFAULT_AUREON_TERMINAL_STATE_URL;
+const AUREON_FLIGHT_TEST_URL = process.env.AUREON_FLIGHT_TEST_URL || DEFAULT_AUREON_FLIGHT_TEST_URL;
+const AUREON_REBOOT_ADVICE_URL = process.env.AUREON_REBOOT_ADVICE_URL || DEFAULT_AUREON_REBOOT_ADVICE_URL;
+const AUREON_PHI_STATUS_URL = process.env.AUREON_PHI_STATUS_URL || `${AUREON_API_BASE_URL}/api/phi-bridge/status`;
+const AUREON_CHAT_TIMEOUT_MS = Math.max(3000, Number(process.env.AUREON_CHAT_TIMEOUT_MS || 18000));
 const AUREON_VAULT_PATH = process.env.AUREON_VAULT_PATH || path.join(__dirname, "logs", "aureon-vault");
-const GARY_AUREON_ROOT = process.env.GARY_AUREON_ROOT || path.join(process.env.HOME || "", "Desktop", "gary repo nexus", "aureon-trading");
+const GARY_AUREON_ROOT = process.env.GARY_AUREON_ROOT || DEFAULT_AUREON_ROOT || path.join(LOCAL_HOME, "aureon-trading");
 const MURGE_HOST_TERMINAL_GATE = String(process.env.MURGE_HOST_TERMINAL_ENABLED || "false").toLowerCase();
 const LOCAL_TERMINAL_ENABLED = ["1", "true", "yes", "on", "enabled"].includes(MURGE_HOST_TERMINAL_GATE)
   && String(process.env.LOCAL_TERMINAL_ENABLED || "true").toLowerCase() !== "false";
@@ -194,9 +208,63 @@ const mimeTypes = {
   ".svg": "image/svg+xml",
 };
 
+function securityHeaders(extra = {}) {
+  return {
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+    "Cross-Origin-Opener-Policy": "same-origin",
+    ...extra,
+  };
+}
+
 function sendJson(res, code, payload) {
-  res.writeHead(code, { "Content-Type": "application/json; charset=utf-8" });
+  res.writeHead(code, securityHeaders({ "Content-Type": "application/json; charset=utf-8" }));
   res.end(JSON.stringify(payload));
+}
+
+async function fetchJsonWithTimeout(url, timeoutMs = 2500) {
+  const startedAt = Date.now();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    const text = await response.text();
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = { raw: text.slice(0, 2000) };
+    }
+    return {
+      ok: response.ok,
+      statusCode: response.status,
+      url,
+      data,
+      roundTripMs: Date.now() - startedAt,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      statusCode: null,
+      url,
+      data: null,
+      error: error?.name === "AbortError" ? `timeout after ${timeoutMs}ms` : error?.message || String(error),
+      roundTripMs: Date.now() - startedAt,
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function normalizeArray(value) {
+  if (Array.isArray(value)) return value.filter((item) => item !== null && item !== undefined);
+  if (value && typeof value === "object") return Object.values(value).filter((item) => item !== null && item !== undefined);
+  if (value === null || value === undefined || value === "") return [];
+  return [value];
+}
+
+function safeBoolean(value) {
+  return value === true || value === "true" || value === 1 || value === "1";
 }
 
 class EventBus {
@@ -687,6 +755,161 @@ function getAureonSystemCapabilities() {
   };
 }
 
+function readPublicArtifact(relativePath) {
+  const artifactPath = path.resolve(DEFAULT_AUREON_ROOT, relativePath);
+  if (!artifactPath.startsWith(DEFAULT_AUREON_ROOT) || !fs.existsSync(artifactPath)) {
+    return { exists: false, path: artifactPath, data: null, updatedAt: null };
+  }
+  const stats = fs.statSync(artifactPath);
+  try {
+    return {
+      exists: true,
+      path: artifactPath,
+      updatedAt: stats.mtime.toISOString(),
+      data: JSON.parse(fs.readFileSync(artifactPath, "utf8")),
+    };
+  } catch (error) {
+    return {
+      exists: true,
+      path: artifactPath,
+      updatedAt: stats.mtime.toISOString(),
+      data: null,
+      error: error.message,
+    };
+  }
+}
+
+async function buildSupervisorSnapshot(timeoutMs = 1200) {
+  const [terminalState, flightTest, phiBridge] = await Promise.all([
+    fetchJsonWithTimeout(AUREON_TERMINAL_STATE_URL, timeoutMs),
+    fetchJsonWithTimeout(AUREON_FLIGHT_TEST_URL, timeoutMs),
+    fetchJsonWithTimeout(AUREON_PHI_STATUS_URL, timeoutMs),
+  ]);
+  const systems = getAureonSystemCapabilities();
+  const fabric = readPublicArtifact("frontend/public/aureon_live_trade_signal_fabric.json");
+  const fabricStress = readPublicArtifact("frontend/public/aureon_live_trade_signal_fabric_stress_audit.json");
+  const murgeActivation = readPublicArtifact("frontend/public/aureon_murge_runtime_activation_stress_audit.json");
+  const flamebornFullCapability = readPublicArtifact("frontend/public/aureon_flameborn_full_capability_stress_audit.json");
+  const terminalPayload = terminalState.data || {};
+  const exchangePlan = terminalPayload.exchange_action_plan || {};
+  const liveGates = {
+    orderIntentPublishEnabled: safeBoolean(exchangePlan.order_intent_publish_enabled),
+    executorEnabled: safeBoolean(exchangePlan.executor_enabled),
+    liveEnabled: safeBoolean(exchangePlan.live_enabled),
+    realOrdersDisabled: safeBoolean(exchangePlan.real_orders_disabled),
+    exchangeMutationsDisabled: safeBoolean(exchangePlan.exchange_mutations_disabled),
+    tradePathState: exchangePlan.trade_path_state || "unknown",
+  };
+  const globalBlockers = normalizeArray(exchangePlan.global_blockers).map(String);
+  const flightChecks = flightTest.data?.checks && typeof flightTest.data.checks === "object" ? flightTest.data.checks : {};
+  const artifactRows = [
+    {
+      id: "live_signal_fabric",
+      label: "Live Signal Fabric",
+      exists: fabric.exists,
+      status: fabric.data?.status || "artifact_missing",
+      updatedAt: fabric.updatedAt,
+      path: fabric.path,
+    },
+    {
+      id: "live_signal_fabric_stress",
+      label: "Live Signal Fabric Stress",
+      exists: fabricStress.exists,
+      status: fabricStress.data?.status || "artifact_missing",
+      updatedAt: fabricStress.updatedAt,
+      path: fabricStress.path,
+    },
+    {
+      id: "murge_runtime_activation",
+      label: "MURGE Runtime Activation",
+      exists: murgeActivation.exists,
+      status: murgeActivation.data?.status || "artifact_missing",
+      updatedAt: murgeActivation.updatedAt,
+      path: murgeActivation.path,
+    },
+    {
+      id: "flameborn_full_capability_stress",
+      label: "Flameborn Full Launch Proof",
+      exists: flamebornFullCapability.exists,
+      status: flamebornFullCapability.data?.status || "artifact_missing",
+      updatedAt: flamebornFullCapability.updatedAt,
+      path: flamebornFullCapability.path,
+    },
+  ];
+  const liveCapabilityRows = [
+    {
+      id: "aureon_supervisor_terminal_state",
+      label: "Aureon Supervisor Terminal State",
+      status: terminalState.ok ? "connected" : "unreachable",
+      endpoint: AUREON_TERMINAL_STATE_URL,
+      generatedAt: terminalPayload.generated_at || null,
+      roundTripMs: terminalState.roundTripMs,
+    },
+    {
+      id: "phi_bridge_chat",
+      label: "Phi Bridge Chat",
+      status: phiBridge.ok ? "connected" : "unreachable",
+      endpoint: AUREON_PHI_STATUS_URL,
+      mode: phiBridge.data?.status || phiBridge.data?.mode || null,
+      roundTripMs: phiBridge.roundTripMs,
+    },
+    {
+      id: "murge_flameborn_web",
+      label: "Flameborn Web Shell",
+      status: "serving_localhost",
+      endpoint: `http://${HOST}:${PORT}/`,
+      localOnly: HOST === "127.0.0.1" || HOST === "localhost" || HOST === "::1",
+    },
+    {
+      id: "thoughtbus_mycelium_visibility",
+      label: "ThoughtBus + Mycelium Visibility",
+      status: fabric.data?.summary?.thoughtbus_receiving || fabric.data?.summary?.mycelium_receiving ? "receiving" : "artifact_visible",
+      thoughtbusReceiving: Boolean(fabric.data?.summary?.thoughtbus_receiving),
+      myceliumReceiving: Boolean(fabric.data?.summary?.mycelium_receiving),
+    },
+  ];
+  const blockers = [
+    terminalState.ok ? null : "aureon_terminal_state_unreachable",
+    phiBridge.ok ? null : "aureon_phi_bridge_unreachable",
+    ...globalBlockers,
+  ].filter(Boolean);
+  return {
+    status: terminalState.ok || phiBridge.ok ? "aureon_supervisor_connected" : "aureon_supervisor_attention",
+    generatedAt: new Date().toISOString(),
+    localOnly: HOST === "127.0.0.1" || HOST === "localhost" || HOST === "::1",
+    supervisorConnected: terminalState.ok,
+    phiBridgeConnected: phiBridge.ok,
+    noTradingGateBypass: true,
+    endpoints: {
+      terminalState: AUREON_TERMINAL_STATE_URL,
+      flightTest: AUREON_FLIGHT_TEST_URL,
+      rebootAdvice: AUREON_REBOOT_ADVICE_URL,
+      phiBridge: AUREON_PHI_STATUS_URL,
+    },
+    liveGates,
+    flightChecks,
+    globalBlockers,
+    blockers,
+    systems,
+    liveCapabilityRows,
+    artifactRows,
+    terminalStateProof: {
+      ok: terminalState.ok,
+      statusCode: terminalState.statusCode,
+      roundTripMs: terminalState.roundTripMs,
+      generatedAt: terminalPayload.generated_at || null,
+      status: terminalPayload.status || null,
+    },
+    phiBridgeProof: {
+      ok: phiBridge.ok,
+      statusCode: phiBridge.statusCode,
+      roundTripMs: phiBridge.roundTripMs,
+      status: phiBridge.data?.status || null,
+      available: phiBridge.data?.available ?? null,
+    },
+  };
+}
+
 function serveFile(req, res) {
   const requestUrl = new URL(req.url || "/", `http://${req.headers.host || "127.0.0.1"}`);
   const requestedPath = requestUrl.pathname === "/" ? "/index.html" : requestUrl.pathname;
@@ -706,7 +929,7 @@ function serveFile(req, res) {
       return;
     }
     const ext = path.extname(filePath).toLowerCase();
-    res.writeHead(200, { "Content-Type": mimeTypes[ext] || "application/octet-stream" });
+    res.writeHead(200, securityHeaders({ "Content-Type": mimeTypes[ext] || "application/octet-stream" }));
     res.end(data);
   });
 }
@@ -1109,30 +1332,44 @@ async function callAureonBrain(parsed) {
   }
 
   try {
-    const response = await fetch(`${AUREON_API_BASE_URL}${AUREON_CHAT_PATH}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(AUREON_API_KEY ? { Authorization: `Bearer ${AUREON_API_KEY}` } : {}),
-      },
-      body: JSON.stringify({
-        text: routedMessage,
-        message: routedMessage,
-        voice,
-        fast: true,
-        peer_id: "flameborn-academy",
-        model,
-        provider: "aureon",
-        rolePrompt,
-        context: {
-          app: "flAmeBornLLC LLM Academy",
-          mode: "aureon-vault-voice",
-          voice,
-          vaultRecord,
-          classroom: "observer-compatible",
-        },
-      }),
+    const controller = new AbortController();
+    let timer = null;
+    const timeoutPromise = new Promise((_, reject) => {
+      timer = setTimeout(() => {
+        controller.abort();
+        const timeoutError = new Error(`Aureon Brain timeout after ${AUREON_CHAT_TIMEOUT_MS} ms.`);
+        timeoutError.name = "AbortError";
+        reject(timeoutError);
+      }, AUREON_CHAT_TIMEOUT_MS);
     });
+    const response = await Promise.race([
+      fetch(`${AUREON_API_BASE_URL}${AUREON_CHAT_PATH}`, {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          ...(AUREON_API_KEY ? { Authorization: `Bearer ${AUREON_API_KEY}` } : {}),
+        },
+        body: JSON.stringify({
+          text: routedMessage,
+          message: routedMessage,
+          voice,
+          fast: true,
+          peer_id: "flameborn-academy",
+          model,
+          provider: "aureon",
+          rolePrompt,
+          context: {
+            app: "flAmeBornLLC LLM Academy",
+            mode: "aureon-vault-voice",
+            voice,
+            vaultRecord,
+            classroom: "observer-compatible",
+          },
+        }),
+      }),
+      timeoutPromise,
+    ]).finally(() => clearTimeout(timer));
 
     const data = await parseJsonResponse(response);
     if (!response.ok) {
@@ -1216,9 +1453,13 @@ function writeAureonVaultRecord(record) {
 
 function buildAureonLocalFallback(model, vaultRecord, bridgeError) {
   const reply = [
-    "Aureon Brain bridge is prepared but not connected to a live Aureon endpoint yet.",
-    "I recorded this turn into the local Aureon vault memory so Obsidian can index it.",
-    "Set AUREON_API_BASE_URL to Gary's bridge/vault server to activate the external brain.",
+    AUREON_API_BASE_URL
+      ? "Aureon supervisor is wired, but the live chat bridge did not return a text response in time."
+      : "Aureon Brain bridge is prepared but no live Aureon endpoint is configured yet.",
+    "I recorded this turn into the local Aureon vault memory so the organism keeps the context.",
+    AUREON_API_BASE_URL
+      ? "Check the Phi bridge model/runtime if you need live generated text instead of the vault fallback."
+      : "Set AUREON_API_BASE_URL to the local Aureon bridge to activate live chat.",
   ].join(" ");
 
   return {
@@ -1249,12 +1490,18 @@ function aureonArchitectureStatus() {
   };
 }
 
-function handleAureonStatus(res) {
+async function handleAureonStatus(res) {
+  const supervisor = await buildSupervisorSnapshot();
   sendJson(res, 200, {
     provider: "aureon",
     configured: Boolean(AUREON_API_BASE_URL),
     baseUrlConfigured: Boolean(AUREON_API_BASE_URL),
+    baseUrl: AUREON_API_BASE_URL,
     chatPath: AUREON_CHAT_PATH,
+    localBridgeEnabled: true,
+    supervisorConnected: supervisor.supervisorConnected,
+    phiBridgeConnected: supervisor.phiBridgeConnected,
+    tradePathState: supervisor.liveGates.tradePathState,
     activation: {
       localOnly: HOST === "127.0.0.1" || HOST === "localhost" || HOST === "::1",
       hostTerminalEnabled: LOCAL_TERMINAL_ENABLED,
@@ -1264,14 +1511,59 @@ function handleAureonStatus(res) {
       noTradingGateBypass: true,
     },
     architecture: aureonArchitectureStatus(),
+    supervisor: {
+      status: supervisor.status,
+      blockers: supervisor.blockers,
+      liveGates: supervisor.liveGates,
+      liveCapabilityRows: supervisor.liveCapabilityRows,
+      artifactRows: supervisor.artifactRows,
+    },
   });
 }
 
-function handleAureonSystems(res) {
+async function handleAureonSystems(res) {
+  const supervisor = await buildSupervisorSnapshot(3000);
   sendJson(res, 200, {
     provider: "aureon",
-    capabilities: getAureonSystemCapabilities(),
+    capabilities: supervisor.systems,
+    liveCapabilityRows: supervisor.liveCapabilityRows,
+    artifactRows: supervisor.artifactRows,
+    liveGates: supervisor.liveGates,
+    noTradingGateBypass: true,
   });
+}
+
+async function handleAureonSupervisor(res) {
+  sendJson(res, 200, await buildSupervisorSnapshot(3000));
+}
+
+async function handleAureonFullCapabilityStress(res) {
+  const artifact = readPublicArtifact("frontend/public/aureon_flameborn_full_capability_stress_audit.json");
+  if (!artifact.exists || !artifact.data) {
+    sendJson(res, 404, {
+      status: "artifact_missing",
+      path: artifact.path,
+      error: artifact.error || "Flameborn full capability stress artifact has not been generated.",
+    });
+    return;
+  }
+  sendJson(res, 200, artifact.data);
+}
+
+async function handleAureonChat(req, res) {
+  try {
+    const parsed = await readJsonBody(req, res);
+    const result = await callAureonBrain({
+      ...parsed,
+      provider: "aureon",
+      model: parsed.model || "aureon-brain",
+    });
+    sendJson(res, 200, result);
+  } catch (err) {
+    if (!res.writableEnded) {
+      sendJson(res, 500, { error: { message: `Aureon bridge error: ${err.message}` } });
+    }
+  }
 }
 
 function buildMetacognitionSnapshot() {
@@ -1645,6 +1937,10 @@ const server = http.createServer((req, res) => {
     handleChat(req, res);
     return;
   }
+  if (req.method === "POST" && req.url === "/api/aureon/chat") {
+    handleAureonChat(req, res);
+    return;
+  }
   if (req.method === "POST" && req.url === "/api/assistant/cli") {
     handleAssistantCli(req, res);
     return;
@@ -1662,11 +1958,23 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (req.method === "GET" && req.url === "/api/aureon/status") {
-    handleAureonStatus(res);
+    handleAureonStatus(res).catch((error) => sendJson(res, 500, { error: { message: error.message } }));
     return;
   }
   if (req.method === "GET" && req.url === "/api/aureon/systems") {
-    handleAureonSystems(res);
+    handleAureonSystems(res).catch((error) => sendJson(res, 500, { error: { message: error.message } }));
+    return;
+  }
+  if (req.method === "GET" && req.url === "/api/aureon/capabilities") {
+    handleAureonSystems(res).catch((error) => sendJson(res, 500, { error: { message: error.message } }));
+    return;
+  }
+  if (req.method === "GET" && req.url === "/api/aureon/supervisor") {
+    handleAureonSupervisor(res).catch((error) => sendJson(res, 500, { error: { message: error.message } }));
+    return;
+  }
+  if (req.method === "GET" && req.url === "/api/aureon/full-capability-stress") {
+    handleAureonFullCapabilityStress(res).catch((error) => sendJson(res, 500, { error: { message: error.message } }));
     return;
   }
   if (req.method === "GET" && req.url.startsWith("/api/research/feed")) {
@@ -1808,6 +2116,11 @@ terminalWss.on("connection", (ws, req) => {
 server.on("upgrade", (req, socket, head) => {
   const requestUrl = new URL(req.url || "/", `http://${req.headers.host || "127.0.0.1"}`);
   if (requestUrl.pathname !== "/ws/sandbox-terminal") {
+    socket.destroy();
+    return;
+  }
+  if (!allowTerminalRequest(req) || !isTrustedTerminalOrigin(req)) {
+    socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
     socket.destroy();
     return;
   }

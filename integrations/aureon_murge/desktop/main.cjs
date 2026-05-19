@@ -38,6 +38,14 @@ function createWindow() {
   });
 
   mainWindow.loadURL(WEB_URL);
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    return isAllowedExternalUrl(url) ? { action: 'allow' } : { action: 'deny' };
+  });
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (url !== WEB_URL && !isAllowedExternalUrl(url)) {
+      event.preventDefault();
+    }
+  });
 
   if (process.env.FLAMEBORN_DESKTOP_DEVTOOLS === 'true') {
     mainWindow.webContents.openDevTools({ mode: 'detach' });
