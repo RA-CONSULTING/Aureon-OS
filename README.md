@@ -52,7 +52,7 @@ This is the operating ethos behind the agent-company system: scope the client si
 
 | Need | Start here |
 |---|---|
-| Run the whole organism | See **Full System Startup** below — two terminals, organism + Flameborn |
+| Run the whole organism | `.\start_everything_production.ps1` — one command, both terminals, full production |
 | Validate before live operation | `.\AUREON_PRODUCTION_LIVE.cmd -ValidateOnly -NoOpen -MarketStatusPort 8791` |
 | Watch live trading state | `http://127.0.0.1:8791/api/terminal-state`, `/api/flight-test`, `/api/reboot-advice` |
 | Launch Flameborn frontend (replaces MURGE) | `bash scripts/start_aureon_with_flameborn.sh` or `.\scripts\start_aureon_with_flameborn.ps1` — opens `http://127.0.0.1:4173` with Aureon brain bridge |
@@ -112,6 +112,8 @@ Returns exit code 0 only when Aureon Vault UI and Flameborn Web are both reachab
 ## Full System Startup
 
 To run **everything** with all capabilities switched on, open **two PowerShell terminals**.
+
+> **One-command option:** If you want a single command that opens both terminals automatically, run `.\start_everything_production.ps1` from the repo root. It does exactly the two steps below for you.
 
 ### Terminal 1 — Aureon Organism (Brain)
 
