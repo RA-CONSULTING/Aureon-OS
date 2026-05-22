@@ -4,6 +4,7 @@ import sys
 import tempfile
 import time
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import patch
 
@@ -651,6 +652,44 @@ class UnifiedMarketTraderTests(unittest.TestCase):
                 self.assertEqual(lifecycle_state["latest_event"]["status"], "intent_published")
         finally:
             self._restore_env(old_env)
+
+    def test_parallel_strategy_support_is_loaded_for_matching_route(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            strategy_state = tmp_path / "strategy_intents.json"
+            strategy_state.write_text(
+                json.dumps(
+                    {
+                        "generated_at": datetime.now(timezone.utc).isoformat(),
+                        "intents": [
+                            {
+                                "worker_id": "capital_cfd_strategy",
+                                "generated_at": datetime.now(timezone.utc).isoformat(),
+                                "route_key": "capital:cfd:GOLD:BUY",
+                                "side": "BUY",
+                                "confidence": 0.74,
+                                "expected_net_revenue": 0.05,
+                                "three_p_floor_passed": True,
+                            },
+                            {
+                                "worker_id": "binance_liquidity_confirmation",
+                                "generated_at": datetime.now(timezone.utc).isoformat(),
+                                "route_key": "capital:cfd:GOLD:SELL",
+                                "side": "SELL",
+                                "confidence": 0.7,
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            trader = self._make_trader()
+            with patch.object(trader_mod, "UNIFIED_STRATEGY_INTENT_STATE_PATH", strategy_state):
+                support = trader._parallel_strategy_support_for("capital:cfd:GOLD:BUY", "BUY")
+
+            self.assertEqual(len(support), 1)
+            self.assertEqual(support[0]["worker_id"], "capital_cfd_strategy")
+            self.assertEqual(support[0]["expected_net_revenue"], 0.05)
 
     def test_dry_run_disables_unified_executor_even_when_env_armed(self):
         old_env = self._with_live_executor_env()
@@ -1974,6 +2013,78 @@ class UnifiedMarketTraderTests(unittest.TestCase):
         self.assertEqual(probe.calls, 1)
         self.assertEqual(first["symbols"]["BTCUSD"]["side"], "BUY")
         self.assertEqual(second["symbols"]["BTCUSD"]["side"], "BUY")
+
+    def test_record_order_lifecycle_adds_live_proof_fields(self):
+        trader = self._make_trader()
+        trader._order_lifecycle_enabled = True
+        trader._order_lifecycle_root_path = REPO_ROOT
+        captured: dict = {}
+
+        def fake_append_event(*args, **kwargs):
+            captured.update(kwargs)
+
+        with patch.object(trader_mod, "append_order_lifecycle_event", side_effect=fake_append_event):
+            trader._record_order_lifecycle(
+                "candidate_ready",
+                "candidate_ready",
+                "life-1",
+                candidate_id="cand-1",
+                route_key="capital:cfd:GOLD:BUY",
+                venue="capital",
+                symbol="GOLD",
+                side="BUY",
+                source="unified_market_trader.shared_order_flow",
+            )
+
+        self.assertEqual(captured.get("event_type"), "candidate_ready")
+        self.assertEqual(captured.get("status"), "candidate_ready")
+        self.assertEqual(captured.get("lifecycle_id"), "life-1")
+        self.assertEqual(captured.get("proof_mode"), "live_runtime")
+        self.assertTrue(captured.get("no_trading_gate_bypass"))
+        self.assertEqual(captured.get("api_budget_source"), "unified_market_trader.governor_snapshot")
+        self.assertTrue(str(captured.get("rate_limit_family", "")).startswith("capital_"))
+
+    def test_shared_order_flow_signal_publish_carries_live_proof_fields(self):
+        trader = self._make_trader()
+        trader._central_feed_targets = lambda: []  # type: ignore[method-assign]
+        payload = {
+            "shared_tradable_count": 1,
+            "active_order_flow": [
+                {
+                    "symbol": "XAUUSD",
+                    "side": "BUY",
+                    "confidence": 0.71,
+                    "profit_velocity_score": 0.62,
+                    "fast_money_score": 0.58,
+                    "candidate_id": "cand-1",
+                    "lifecycle_id": "life-1",
+                    "execution_routes": [{"venue": "capital", "market_type": "cfd", "symbol": "GOLD"}],
+                }
+            ],
+        }
+        captured: dict = {}
+
+        def fake_publish(phase, event_payload, **kwargs):
+            captured["phase"] = phase
+            captured["payload"] = dict(event_payload)
+            return {"ok": True}
+
+        with patch.object(trader_mod, "publish_trade_flow_event", side_effect=fake_publish):
+            trader._feed_shared_order_flow_to_decision_logic(payload)
+
+        self.assertEqual(captured.get("phase"), "signal_generated")
+        emitted = captured.get("payload", {})
+        self.assertEqual(emitted.get("proof_mode"), "live_runtime")
+        self.assertIn(
+            emitted.get("api_budget_source"),
+            {"unified_market_trader.runtime", "unified_market_trader.governor_snapshot"},
+        )
+        self.assertTrue(
+            str(emitted.get("rate_limit_family", "")).startswith("capital_")
+            or str(emitted.get("rate_limit_family", "")).startswith("runtime_event_budget")
+        )
+        self.assertEqual(emitted.get("route_key"), "capital:cfd:GOLD:BUY")
+        self.assertEqual(emitted.get("trace_id"), "life-1")
 
 
 if __name__ == "__main__":

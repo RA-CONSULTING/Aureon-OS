@@ -292,7 +292,13 @@ def seer_get_vision() -> Dict[str, Any]:
     seer = _get_seer()
     if seer.latest_vision is None or (time.time() - seer.latest_vision.timestamp > 60):
         seer.see()
-    return seer.get_vision_summary()
+    summary = seer.get_vision_summary()
+    try:
+        from aureon.wisdom.antarctic_research_bridge import apply_to_seer_summary
+        summary = apply_to_seer_summary(summary)
+    except Exception:
+        pass
+    return summary
 
 
 def seer_get_risk_modifier() -> float:

@@ -39,6 +39,7 @@ CAPITAL_ECOSYSTEM_PUBLIC_PATH = Path("frontend/public/aureon_capital_ecosystem_i
 CAPITAL_LIVE_DRY_STRESS_PATH = Path("frontend/public/aureon_capital_ecosystem_live_dry_stress_audit.json")
 CAPITAL_REVENUE_LOGIC_STRESS_PATH = Path("frontend/public/aureon_capital_revenue_logic_stress_audit.json")
 CAPITAL_REVENUE_LIVE_GATE_READINESS_PATH = Path("frontend/public/aureon_capital_revenue_live_gate_readiness_audit.json")
+LIVE_TRADE_SIGNAL_FABRIC_STRESS_PATH = Path("frontend/public/aureon_live_trade_signal_fabric_stress_audit.json")
 CAPITAL_ASSET_REGISTRY_PATH = Path("state/aureon_capital_tradable_asset_registry.json")
 GOLD_COMPANY_PUBLIC_PATH = Path("frontend/public/aureon_gold_capital_intelligence_company.json")
 TRADING_CHECKLIST_PUBLIC_PATH = Path("frontend/public/aureon_trading_intelligence_checklist.json")
@@ -916,6 +917,54 @@ def _build_capital_revenue_live_gate_readiness_proof(root: Path) -> Dict[str, An
     }
 
 
+def _build_live_trade_signal_fabric_stress_proof(root: Path) -> Dict[str, Any]:
+    payload = _read_json(_rooted(root, LIVE_TRADE_SIGNAL_FABRIC_STRESS_PATH), {})
+    if not isinstance(payload, dict):
+        payload = {}
+    summary = payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
+    blockers = [str(item) for item in (payload.get("blockers") or []) if str(item)]
+    if not payload:
+        blockers.append("live_trade_signal_fabric_stress_audit_missing")
+    if payload and not bool(summary.get("real_evidence_only_mode")):
+        blockers.append("live_trade_signal_fabric_not_real_only")
+    if int(_as_number(summary.get("real_evidence_gap_count"), 0)) > 0:
+        blockers.append("live_trade_signal_fabric_real_evidence_missing")
+    status = str(payload.get("status") or "")
+    certified = bool(payload and status == "live_trade_signal_fabric_stress_certified" and not blockers)
+    return {
+        "state": "live_trade_signal_fabric_stress_certified" if certified else "live_trade_signal_fabric_stress_attention",
+        "path": LIVE_TRADE_SIGNAL_FABRIC_STRESS_PATH.as_posix(),
+        "present": bool(payload),
+        "generated_at": payload.get("generated_at") or "",
+        "status": status,
+        "chain_certification_state": payload.get("chain_certification_state") or "",
+        "capital_a_to_b_ready": bool(payload.get("capital_a_to_b_ready")),
+        "event_count": int(_as_number(summary.get("event_count"), 0)),
+        "active_trace_count": int(_as_number(summary.get("active_trace_count"), 0)),
+        "complete_trace_count": int(_as_number(summary.get("complete_trace_count"), 0)),
+        "broken_trace_count": int(_as_number(summary.get("broken_trace_count"), 0)),
+        "recovered_trace_count": int(_as_number(summary.get("recovered_trace_count"), 0)),
+        "real_evidence_only_mode": bool(summary.get("real_evidence_only_mode")),
+        "synthetic_trace_count": int(_as_number(summary.get("synthetic_trace_count"), 0)),
+        "synthetic_event_count": int(_as_number(summary.get("synthetic_event_count"), 0)),
+        "publisher_gap_count": int(_as_number(summary.get("publisher_gap_count"), 0)),
+        "api_budget_gap_count": int(_as_number(summary.get("api_budget_gap_count"), 0)),
+        "broker_gap_count": int(_as_number(summary.get("broker_gap_count"), 0)),
+        "real_evidence_gap_count": int(_as_number(summary.get("real_evidence_gap_count"), 0)),
+        "real_evidence_gap_top_phase": str(summary.get("real_evidence_gap_top_phase") or ""),
+        "real_evidence_gap_top_producer": str(summary.get("real_evidence_gap_top_producer") or ""),
+        "real_evidence_gap_top_field": str(summary.get("real_evidence_gap_top_field") or ""),
+        "complete_capital_chain_count": int(_as_number(summary.get("complete_capital_chain_count"), 0)),
+        "external_live_route_leak_count": int(_as_number(summary.get("external_live_route_leak_count"), 0)),
+        "thoughtbus_receiving": bool(summary.get("thoughtbus_receiving")),
+        "mycelium_receiving": bool(summary.get("mycelium_receiving")),
+        "executor_gate_respected": bool(summary.get("executor_gate_respected")),
+        "no_direct_broker_mutation": bool(summary.get("no_direct_broker_mutation")),
+        "blockers": list(dict.fromkeys(blockers))[:30],
+        "snapshot": payload,
+    }
+
+
 def _goal_trade_state(
     data_capture: Dict[str, Any],
     capital_gold: Dict[str, Any],
@@ -1023,6 +1072,7 @@ def build_live_goal_trade_audit(*, root: Optional[Path] = None, now: Optional[da
     capital_live_dry_stress = _build_capital_live_dry_stress_proof(root)
     capital_revenue_logic = _build_capital_revenue_logic_proof(root)
     capital_revenue_live_gate = _build_capital_revenue_live_gate_readiness_proof(root)
+    live_trade_signal_fabric_stress = _build_live_trade_signal_fabric_stress_proof(root)
     goal_trade = _goal_trade_state(data_capture, capital_gold, order_intent, runtime_gate, order_lifecycle)
     report = {
         "schema_version": SCHEMA_VERSION,
@@ -1049,6 +1099,7 @@ def build_live_goal_trade_audit(*, root: Optional[Path] = None, now: Optional[da
         "capital_live_dry_stress_proof": capital_live_dry_stress,
         "capital_revenue_logic_proof": capital_revenue_logic,
         "capital_revenue_live_gate_readiness_proof": capital_revenue_live_gate,
+        "live_trade_signal_fabric_stress_proof": live_trade_signal_fabric_stress,
         "runtime_candidate_proof": {
             "gold_runtime_candidate_ready": runtime_gate.get("gold_runtime_candidate_ready"),
             "capital_cfd_route_visible": runtime_gate.get("capital_cfd_route_visible"),
@@ -1088,6 +1139,7 @@ def _make_markdown(report: Dict[str, Any]) -> str:
     live_dry = report.get("capital_live_dry_stress_proof") if isinstance(report.get("capital_live_dry_stress_proof"), dict) else {}
     revenue = report.get("capital_revenue_logic_proof") if isinstance(report.get("capital_revenue_logic_proof"), dict) else {}
     live_gate = report.get("capital_revenue_live_gate_readiness_proof") if isinstance(report.get("capital_revenue_live_gate_readiness_proof"), dict) else {}
+    fabric_stress = report.get("live_trade_signal_fabric_stress_proof") if isinstance(report.get("live_trade_signal_fabric_stress_proof"), dict) else {}
     lines = [
         "# Aureon Live Goal Trade Audit",
         "",
@@ -1110,6 +1162,7 @@ def _make_markdown(report: Dict[str, Any]) -> str:
         f"- Capital live dry stress: `{live_dry.get('state')}` status `{live_dry.get('status')}` blockers `{len(live_dry.get('blockers') or [])}`",
         f"- Capital revenue logic: `{revenue.get('state')}` net-positive `{revenue.get('net_positive_candidate_count')}` intent-eligible `{revenue.get('intent_eligible_candidate_count')}` blockers `{len(revenue.get('blockers') or [])}`",
         f"- Capital live-gate readiness: `{live_gate.get('state')}` ready-now `{live_gate.get('ready_now_candidate_count')}` missing gates `{live_gate.get('missing_gate_count')}` blockers `{len(live_gate.get('blockers') or [])}`",
+        f"- Live signal fabric stress: `{fabric_stress.get('state')}` chain `{fabric_stress.get('chain_certification_state')}` real-only `{fabric_stress.get('real_evidence_only_mode')}` synthetic traces `{fabric_stress.get('synthetic_trace_count')}` publisher gaps `{fabric_stress.get('publisher_gap_count')}` rate gaps `{fabric_stress.get('api_budget_gap_count')}` broker gaps `{fabric_stress.get('broker_gap_count')}` real gaps `{fabric_stress.get('real_evidence_gap_count')}` top `{fabric_stress.get('real_evidence_gap_top_phase')}/{fabric_stress.get('real_evidence_gap_top_producer')}/{fabric_stress.get('real_evidence_gap_top_field')}`",
         "",
         "## Blockers",
     ]

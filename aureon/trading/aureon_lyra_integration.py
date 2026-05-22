@@ -67,7 +67,13 @@ def lyra_get_resonance() -> Dict[str, Any]:
     lyra = _get_lyra()
     if lyra.latest_resonance is None or (time.time() - lyra.latest_resonance.timestamp > 60):
         lyra.feel()
-    return lyra.get_resonance_summary()
+    summary = lyra.get_resonance_summary()
+    try:
+        from aureon.wisdom.antarctic_research_bridge import apply_to_lyra_summary
+        summary = apply_to_lyra_summary(summary)
+    except Exception:
+        pass
+    return summary
 
 
 def lyra_get_position_multiplier() -> float:

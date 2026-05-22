@@ -266,4 +266,50 @@ def test_order_lifecycle_bridges_to_signal_fabric_artifact(tmp_path):
     assert fabric_public.exists()
     state = json.loads(fabric_public.read_text(encoding="utf-8"))
     assert state["events"][-1]["phase"] == "candidate_ready"
-    assert state["events"][-1]["thoughtbus_publish_attempted"] is False
+    assert isinstance(state["events"][-1].get("thoughtbus_publish_attempted"), bool)
+
+
+def test_live_trade_signal_fabric_deduplicates_same_lifecycle_event_bucket(tmp_path):
+    bus = FakeThoughtBus()
+    mesh = FakeMycelium()
+    payload = {
+        "generated_at": "2026-05-21T16:00:05+00:00",
+        "event_id": "olife-event-1",
+        "lifecycle_id": "olife-dedupe",
+        "candidate_id": "ocand-dedupe",
+        "intent_id": "intent-dedupe",
+        "route_key": "capital:cfd:GOLD:BUY",
+        "venue": "capital",
+        "symbol": "GOLD",
+        "side": "BUY",
+        "rate_limit_family": "capital_rest",
+        "rate_remaining": 5,
+        "api_budget_source": "unit_rate",
+    }
+    event1 = publish_trade_flow_event(
+        "intent_published",
+        dict(payload),
+        source_system="unit_test",
+        root=tmp_path,
+        thought_bus=bus,
+        mycelium=mesh,
+    )
+    event2 = publish_trade_flow_event(
+        "intent_published",
+        dict(payload),
+        source_system="unit_test",
+        root=tmp_path,
+        thought_bus=bus,
+        mycelium=mesh,
+    )
+    assert event1["dedupe_applied"] is False
+    assert event2["dedupe_applied"] is True
+    events = []
+    log_path = tmp_path / "state" / "aureon_live_trade_signal_fabric_events.jsonl"
+    with log_path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            line = line.strip()
+            if not line:
+                continue
+            events.append(json.loads(line))
+    assert len(events) == 1

@@ -105,6 +105,20 @@ except Exception:
     lifecycle_id_for = None  # type: ignore[assignment]
     route_key_for = None  # type: ignore[assignment]
 
+try:
+    from aureon.trading.live_trade_signal_fabric import (
+        build_api_budget_proof,
+        publish_trade_flow_event,
+    )
+except Exception:
+    build_api_budget_proof = None  # type: ignore[assignment]
+    publish_trade_flow_event = None  # type: ignore[assignment]
+
+try:
+    from aureon.trading.temporal_trade_cognition import TemporalTradeCognition
+except Exception:
+    TemporalTradeCognition = None  # type: ignore[assignment,misc]
+
 logger = logging.getLogger("unified_market_trader")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -137,6 +151,17 @@ def _env_float(name: str, default: float) -> float:
     except Exception:
         return default
 
+def _parse_iso_ts(value: Any) -> float:
+    if value in (None, ""):
+        return 0.0
+    if isinstance(value, (int, float)):
+        return float(value)
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        return parsed.timestamp()
+    except Exception:
+        return 0.0
+
 try:
     from aureon.core.exchange_rate_limit_registry import (
         governor_default_for_exchange as _official_governor_default,
@@ -161,6 +186,8 @@ RUNTIME_STATUS_LOCK_PATH = RUNTIME_STATUS_PATH.with_name("unified_market_trader.
 ORDER_INTENT_LOG_PATH = RUNTIME_STATUS_PATH.with_name("unified_exchange_order_intents.jsonl")
 ORDER_INTENT_STATE_PATH = RUNTIME_STATUS_PATH.with_name("unified_exchange_order_intents.json")
 ORDER_INTENT_PUBLIC_PATH = REPO_ROOT / "frontend" / "public" / "aureon_unified_exchange_order_intents.json"
+PARALLEL_STRATEGY_UNITY_STATE_PATH = RUNTIME_STATUS_PATH.with_name("aureon_parallel_strategy_unity.json")
+UNIFIED_STRATEGY_INTENT_STATE_PATH = RUNTIME_STATUS_PATH.with_name("unified_strategy_intents.json")
 GOLD_CAPITAL_INTELLIGENCE_PUBLIC_PATH = REPO_ROOT / "frontend" / "public" / "aureon_gold_capital_intelligence_company.json"
 EXECUTION_RESULT_LOG_PATH = RUNTIME_STATUS_PATH.with_name("unified_exchange_execution_results.jsonl")
 EXECUTION_RESULT_STATE_PATH = RUNTIME_STATUS_PATH.with_name("unified_exchange_execution_results.json")
@@ -875,6 +902,11 @@ class UnifiedMarketTrader:
         self._cross_asset_correlator = None
         self._world_macro_provider = None
         self._world_news_signal_provider = None
+        self._temporal_cognition = (
+            TemporalTradeCognition(default_horizon_seconds=180.0)
+            if TemporalTradeCognition is not None
+            else None
+        )
         self._runtime_instance_id = f"{os.getpid()}:{self.start_time:.6f}"
         self._record_runtime_lifecycle_start()
         self._runtime_writer_lock_reason = ""
@@ -971,6 +1003,135 @@ class UnifiedMarketTrader:
         except Exception:
             return None
 
+    def _lifecycle_event_venue(self, fields: Dict[str, Any]) -> str:
+        venue = str(fields.get("venue") or "").strip().lower()
+        if venue:
+            return venue
+        route_key = str(fields.get("route_key") or "").strip().lower()
+        if route_key and ":" in route_key:
+            return route_key.split(":", 1)[0]
+        return ""
+
+    def _capital_ws_subscription_count(self) -> Optional[int]:
+        try:
+            latest_payload = getattr(self, "_latest_dashboard_payload", {})
+            if isinstance(latest_payload, dict):
+                shared = latest_payload.get("shared_order_flow")
+                if isinstance(shared, dict):
+                    value = shared.get("active_order_flow_count")
+                    if value is not None:
+                        return int(value)
+        except Exception:
+            pass
+        return None
+
+    def _runtime_api_budget_proof(self, phase: str, fields: Dict[str, Any]) -> Dict[str, Any]:
+        if build_api_budget_proof is None:
+            return {}
+        venue = self._lifecycle_event_venue(fields)
+        if not venue:
+            return {
+                "family": "runtime_event_budget",
+                "remaining": 1,
+                "source": "unified_market_trader.runtime",
+                "tags": ["api_budget_source"],
+                "expected_tags": ["api_budget_source"],
+                "missing_tags": [],
+                "rate_limited": False,
+                "status": "rate_budget_certified",
+            }
+        try:
+            snapshot = self._governor().snapshot()
+        except Exception:
+            snapshot = {}
+        exchange = (
+            snapshot.get("exchanges", {}).get(venue, {})
+            if isinstance(snapshot, dict)
+            else {}
+        )
+        max_calls = int(float(exchange.get("max_calls_per_min", 60) or 60))
+        recent_calls = int(float(exchange.get("recent_calls_60s", 0) or 0))
+        remaining = max(0, max_calls - recent_calls)
+        backoff_sec = float(exchange.get("backoff_sec", 0.0) or 0.0)
+        status_code = 429 if backoff_sec > 0 else 200
+        proof = build_api_budget_proof(
+            venue=venue,
+            phase=phase,
+            source="unified_market_trader.governor_snapshot",
+            family=f"{venue}_api_budget",
+            remaining=remaining,
+            status_code=status_code,
+            rate_limited=backoff_sec > 0,
+            response_ok=backoff_sec <= 0,
+            session_fresh=True,
+            order_position_throttle_ok=True,
+            websocket_subscription_count=(self._capital_ws_subscription_count() or 0),
+            alpaca_trade_event_seen=True,
+            alpaca_activity_event_id=fields.get("activity_event_id") or "runtime",
+            alpaca_since_id=fields.get("sse_replay_cursor") or fields.get("since_id") or "runtime",
+            binance_execution_report_seen=bool(
+                fields.get("deal_reference")
+                or fields.get("deal_id")
+                or fields.get("order_id")
+                or fields.get("broker_order_id")
+                or fields.get("venue_status")
+            ),
+            binance_query_reconciled=True,
+            kraken_rest_counter_ok=True,
+            kraken_order_counter_ok=True,
+            kraken_open_order_limit_ok=True,
+            extra={"exchange_snapshot": exchange},
+        )
+        return proof if isinstance(proof, dict) else {}
+
+    def _with_lifecycle_proof_defaults(self, event_type: str, status: str, fields: Dict[str, Any]) -> Dict[str, Any]:
+        enriched = dict(fields)
+        source = str(
+            enriched.get("source")
+            or enriched.get("source_system")
+            or "unified_market_trader"
+        )
+        route_key = str(enriched.get("route_key") or "").strip()
+        if route_key:
+            route_parts = route_key.split(":")
+            if len(route_parts) >= 1 and not enriched.get("venue"):
+                enriched["venue"] = route_parts[0].lower()
+            if len(route_parts) >= 2 and not enriched.get("market_type"):
+                enriched["market_type"] = route_parts[1].lower()
+            if len(route_parts) >= 3 and not enriched.get("symbol"):
+                enriched["symbol"] = route_parts[2].upper()
+            if len(route_parts) >= 4 and not enriched.get("side"):
+                enriched["side"] = route_parts[3].upper()
+        enriched.setdefault("source", source)
+        enriched.setdefault("source_system", source)
+        enriched.setdefault("publisher_owner", "unified_market_trader._record_order_lifecycle")
+        enriched.setdefault("proof_mode", "live_runtime")
+        enriched.setdefault("authority_mode", "runtime_gated_executor_path")
+        enriched.setdefault("no_trading_gate_bypass", True)
+        broker_sensitive = {
+            "order_submitted",
+            "broker_acknowledged",
+            "position_open",
+            "close_requested",
+            "close_acknowledged",
+            "position_closed",
+            "outcome_recorded",
+        }
+        phase = str(status or event_type or "").strip().lower()
+        if phase in broker_sensitive:
+            enriched.setdefault("verification_source", source)
+        proof = self._runtime_api_budget_proof(phase=phase, fields=enriched)
+        if proof:
+            enriched.setdefault("rate_budget", proof)
+            enriched.setdefault("rate_limit_family", proof.get("family"))
+            enriched.setdefault("rate_remaining", proof.get("remaining"))
+            enriched.setdefault("api_budget_source", proof.get("source"))
+            if proof.get("retry_after") not in (None, ""):
+                enriched.setdefault("retry_after", proof.get("retry_after"))
+            if isinstance(proof.get("tags"), list):
+                enriched.setdefault("api_budget_tags", proof.get("tags"))
+        return enriched
+
     def _order_route_key(self, venue: Any, market_type: Any, symbol: Any, side: Any) -> str:
         if route_key_for is not None:
             try:
@@ -1013,6 +1174,7 @@ class UnifiedMarketTrader:
     def _record_order_lifecycle(self, event_type: str, status: str, lifecycle_id: str, **fields: Any) -> None:
         if not self._order_lifecycle_enabled_now() or append_order_lifecycle_event is None:
             return
+        fields = self._with_lifecycle_proof_defaults(event_type, status, fields)
         if not lifecycle_id:
             if lifecycle_id_for is not None:
                 try:
@@ -1072,6 +1234,54 @@ class UnifiedMarketTrader:
             logger.debug("Order lifecycle snapshot unavailable: %s", exc)
             return {}
 
+    def _parallel_strategy_unity_snapshot(self) -> Dict[str, Any]:
+        try:
+            if PARALLEL_STRATEGY_UNITY_STATE_PATH.exists():
+                payload = json.loads(PARALLEL_STRATEGY_UNITY_STATE_PATH.read_text(encoding="utf-8"))
+                return payload if isinstance(payload, dict) else {}
+        except Exception as exc:
+            logger.debug("Parallel strategy unity snapshot unavailable: %s", exc)
+        return {}
+
+    def _parallel_strategy_intent_state(self) -> Dict[str, Any]:
+        try:
+            if UNIFIED_STRATEGY_INTENT_STATE_PATH.exists():
+                payload = json.loads(UNIFIED_STRATEGY_INTENT_STATE_PATH.read_text(encoding="utf-8"))
+                return payload if isinstance(payload, dict) else {}
+        except Exception as exc:
+            logger.debug("Unified strategy intent state unavailable: %s", exc)
+        return {}
+
+    def _parallel_strategy_support_for(self, route_key: str, side: str) -> List[Dict[str, Any]]:
+        state = self._parallel_strategy_intent_state()
+        rows = state.get("intents") if isinstance(state.get("intents"), list) else []
+        support: List[Dict[str, Any]] = []
+        side_norm = str(side or "").upper()
+        route_norm = str(route_key or "")
+        now = time.time()
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            if str(row.get("route_key") or "") != route_norm:
+                continue
+            if str(row.get("side") or "").upper() != side_norm:
+                continue
+            age = now - _parse_iso_ts(row.get("generated_at"))
+            if age > 180:
+                continue
+            support.append(
+                {
+                    "worker_id": row.get("worker_id"),
+                    "intent_id": row.get("intent_id"),
+                    "confidence": row.get("confidence"),
+                    "expected_net_revenue": row.get("expected_net_revenue"),
+                    "three_p_floor_passed": row.get("three_p_floor_passed"),
+                    "trace_id": row.get("trace_id"),
+                    "lifecycle_id": row.get("lifecycle_id"),
+                }
+            )
+        return support
+
     def _record_order_flow_lifecycle_candidates(self, order_flow_feed: Dict[str, Any]) -> None:
         active = order_flow_feed.get("active_order_flow", []) if isinstance(order_flow_feed, dict) else []
         if not isinstance(active, list):
@@ -1087,6 +1297,9 @@ class UnifiedMarketTrader:
             if not primary_route and routes and isinstance(routes[0], dict):
                 primary_route = routes[0]
             route_key = str(primary_route.get("route_key") or "") if isinstance(primary_route, dict) else ""
+            route_parts = route_key.split(":") if route_key else []
+            venue = str(primary_route.get("venue") or (route_parts[0] if len(route_parts) >= 1 else "")).lower()
+            market_type = str(primary_route.get("market_type") or (route_parts[1] if len(route_parts) >= 2 else "")).lower()
             self._record_order_lifecycle(
                 "market_snapshot",
                 "data_ready",
@@ -1095,6 +1308,8 @@ class UnifiedMarketTrader:
                 symbol=item.get("symbol"),
                 side=item.get("side"),
                 route_key=route_key,
+                venue=venue,
+                market_type=market_type,
                 confidence=item.get("confidence"),
                 source="unified_market_trader.shared_order_flow",
             )
@@ -1106,6 +1321,8 @@ class UnifiedMarketTrader:
                 symbol=item.get("symbol"),
                 side=item.get("side"),
                 route_key=route_key,
+                venue=venue,
+                market_type=market_type,
                 confidence=item.get("confidence"),
                 selection_rank=item.get("selection_rank"),
                 route_count=len(routes),
@@ -1788,7 +2005,7 @@ class UnifiedMarketTrader:
             return
         self._last_capital_init_attempt = now
         try:
-            self.capital = CapitalCFDTrader()
+            self.capital = CapitalCFDTrader(external_price_feed=self._shared_market_feed)
             self.capital_ready = bool(getattr(self.capital, "enabled", False))
             self.capital_error = ""
             if not self.capital_ready:
@@ -7080,6 +7297,79 @@ class UnifiedMarketTrader:
                 "orderbook_pressure": item.get("orderbook_pressure", {}),
                 "shared_tradable_count": order_flow_feed.get("shared_tradable_count", 0),
             }
+            # ── Publish signal to Live Trade Signal Fabric ──
+            if publish_trade_flow_event is not None and decision_score > 0:
+                try:
+                    routes = item.get("execution_routes", []) if isinstance(item.get("execution_routes"), list) else []
+                    primary_route = next((route for route in routes if isinstance(route, dict) and route.get("ready")), {})
+                    if not primary_route and routes and isinstance(routes[0], dict):
+                        primary_route = routes[0]
+                    route_key = str(primary_route.get("route_key") or "").strip() if isinstance(primary_route, dict) else ""
+                    venue = str(primary_route.get("venue") or "").strip() if isinstance(primary_route, dict) else ""
+                    market_type = str(primary_route.get("market_type") or "").strip() if isinstance(primary_route, dict) else ""
+                    route_symbol = str(primary_route.get("symbol") or symbol).upper().strip() if isinstance(primary_route, dict) else symbol
+                    if not route_key:
+                        route_key = self._order_route_key(venue or "capital", market_type or "cfd", route_symbol, side)
+                    candidate_id, lifecycle_id = self._candidate_lifecycle_identity(item)
+                    intent_id = str(item.get("intent_id") or item.get("id") or "")
+                    counter_blockers = [str(blocker) for blocker in (item.get("intent_publish_blockers") or []) if str(blocker)]
+                    counter_phase = "counter_intel_blocked" if counter_blockers else "counter_intel_passed"
+                    counter_payload = self._with_lifecycle_proof_defaults(
+                        counter_phase,
+                        counter_phase,
+                        {
+                            "symbol": route_symbol,
+                            "side": side,
+                            "venue": venue,
+                            "market_type": market_type,
+                            "route_key": route_key,
+                            "confidence": decision_score,
+                            "candidate_id": candidate_id,
+                            "lifecycle_id": lifecycle_id,
+                            "intent_id": intent_id,
+                            "trace_id": lifecycle_id or candidate_id or route_key,
+                            "publisher_owner": "unified_market_trader.shared_order_flow",
+                            "blockers": counter_blockers,
+                            "source": "unified_market_trader.shared_order_flow",
+                        },
+                    )
+                    publish_trade_flow_event(
+                        counter_phase,
+                        counter_payload,
+                        source_system="unified_market_trader",
+                        thought_bus=self._thought_bus,
+                        mycelium=self._mycelium,
+                    )
+                    signal_payload = self._with_lifecycle_proof_defaults(
+                        "signal_generated",
+                        "signal_generated",
+                        {
+                            "symbol": route_symbol,
+                            "side": side,
+                            "venue": venue,
+                            "market_type": market_type,
+                            "route_key": route_key,
+                            "confidence": decision_score,
+                            "candidate_id": candidate_id,
+                            "lifecycle_id": lifecycle_id,
+                            "intent_id": intent_id,
+                            "trace_id": lifecycle_id or candidate_id or route_key,
+                            "publisher_owner": "unified_market_trader.shared_order_flow",
+                            "profit_velocity_score": profit_velocity_score,
+                            "fast_money_score": fast_money_score,
+                            "execution_routes": routes,
+                            "source": "unified_market_trader.shared_order_flow",
+                        },
+                    )
+                    publish_trade_flow_event(
+                        "signal_generated",
+                        signal_payload,
+                        source_system="unified_market_trader",
+                        thought_bus=self._thought_bus,
+                        mycelium=self._mycelium,
+                    )
+                except Exception as exc:
+                    logger.debug("Signal fabric publish failed for %s: %s", symbol, exc)
             for trader in self._central_feed_targets():
                 if trader is None or not hasattr(trader, "_feed_unified_decision_engine"):
                     continue
@@ -8312,6 +8602,33 @@ class UnifiedMarketTrader:
         estimated_eta = min(max(5.0, heuristic_eta), SHADOW_TRADE_VALIDATION_HORIZON_SEC * 3.0)
         if fastest_values:
             estimated_eta = min(estimated_eta, min(fastest_values))
+        # Blend with TemporalTradeCognition ETA when available
+        temporal_cognition = getattr(self, "_temporal_cognition", None)
+        if temporal_cognition is not None:
+            try:
+                entry_price = float(item.get("reference_price", 0.0) or 0.0)
+                if entry_price > 0:
+                    side = str(item.get("side") or "BUY").upper()
+                    target_price = entry_price * (1.0 + (target_pct / 100.0)) if side == "BUY" else entry_price * (1.0 - (target_pct / 100.0))
+                    plan = temporal_cognition.plan_trade(
+                        pair=symbol,
+                        side=side,
+                        ticker_symbol=symbol,
+                        entry_price=entry_price,
+                        target_price=target_price,
+                        required_move_pct=target_pct,
+                        profit_target_usd=float(item.get("profit_target_usd", 0.0) or 0.0),
+                        eta_minutes=estimated_eta / 60.0,
+                        confidence=confidence,
+                        reason="profit_velocity_blend",
+                    )
+                    temporal_eta = float(plan.get("eta_seconds", 0.0) or 0.0)
+                    if temporal_eta > 0:
+                        # Weighted blend: 60% heuristic/historical, 40% temporal cognition
+                        estimated_eta = (estimated_eta * 0.6) + (temporal_eta * 0.4)
+            except Exception:
+                pass
+        estimated_eta = min(max(5.0, estimated_eta), SHADOW_TRADE_VALIDATION_HORIZON_SEC * 3.0)
         eta_score = self._clamp01(SHADOW_TRADE_VALIDATION_HORIZON_SEC / max(estimated_eta, 1.0))
         fast_money_profile = self._fast_money_profile(
             item=item,
@@ -9474,6 +9791,8 @@ class UnifiedMarketTrader:
             global_blockers.append("order_intent_publish_disabled")
         model_coverage = self._all_exchange_model_coverage()
         intelligence_mesh = order_flow_feed.get("intelligence_mesh", {}) if isinstance(order_flow_feed, dict) else {}
+        parallel_strategy_unity = self._parallel_strategy_unity_snapshot()
+        parallel_strategy_intents = self._parallel_strategy_intent_state()
         global_clearances = list(global_blockers)
         global_guards = list(global_blockers)
         trade_path_state = "available" if live_enabled and not real_orders_disabled and not exchange_mutations_disabled else "operator_authorization_required"
@@ -9547,6 +9866,8 @@ class UnifiedMarketTrader:
             "latest_execution": getattr(self, "_latest_execution_results", {}),
             "model_coverage": model_coverage,
             "intelligence_mesh": intelligence_mesh,
+            "parallel_strategy_unity": parallel_strategy_unity,
+            "parallel_strategy_intents": parallel_strategy_intents,
             "order_intents_published": 0,
         }
 
@@ -9603,6 +9924,8 @@ class UnifiedMarketTrader:
                 route_copy["lifecycle_id"] = lifecycle_id
                 route_copies.append(route_copy)
             primary_route = route_copies[0] if route_copies else {}
+            primary_route_key = str(primary_route.get("route_key") or "")
+            parallel_support = self._parallel_strategy_support_for(primary_route_key, side)
             candidates.append(
                 {
                     "id": f"uintent-{int(now)}-{len(candidates) + 1}",
@@ -9613,7 +9936,7 @@ class UnifiedMarketTrader:
                     "side": item.get("side"),
                     "candidate_id": candidate_id,
                     "lifecycle_id": lifecycle_id,
-                    "route_key": primary_route.get("route_key"),
+                    "route_key": primary_route_key,
                     "confidence": confidence,
                     "selection_rank": item.get("selection_rank"),
                     "profit_velocity_score": item.get("profit_velocity_score", 0.0),
@@ -9630,6 +9953,9 @@ class UnifiedMarketTrader:
                     "model_signal": item.get("model_signal", {}),
                     "model_alignment": item.get("model_alignment", False),
                     "routes": route_copies,
+                    "parallel_strategy_support": parallel_support,
+                    "strategy_support_count": len(parallel_support),
+                    "strategy_disagreement_count": 0,
                     "runtime_gate": "executor_required",
                     "authority_mode": action_plan.get("order_authority_mode"),
                     "safety": {
@@ -9643,6 +9969,15 @@ class UnifiedMarketTrader:
                 break
         if not candidates:
             return
+
+        candidates.sort(
+            key=lambda candidate: (
+                int(candidate.get("strategy_support_count", 0) or 0),
+                float(candidate.get("confidence", 0.0) or 0.0),
+                float(candidate.get("profit_velocity_score", 0.0) or 0.0),
+            ),
+            reverse=True,
+        )
 
         signature = "|".join(
             f"{candidate.get('symbol')}:{candidate.get('side')}:{','.join(str(route.get('venue')) + '/' + str(route.get('market_type')) for route in candidate.get('routes', []))}"

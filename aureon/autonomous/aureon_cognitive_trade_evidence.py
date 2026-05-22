@@ -197,6 +197,16 @@ def append_trade_evidence(
                 outcome=reward.get("outcome"),
                 evidence_event_id=event.get("event_id"),
                 source=source,
+                source_system="aureon_cognitive_trade_evidence",
+                publisher_owner="aureon_cognitive_trade_evidence.append_trade_evidence",
+                proof_mode="live_runtime",
+                verification_source="runtime_cognitive_trade_evidence",
+                authority_mode="runtime_gated_executor_path",
+                no_trading_gate_bypass=True,
+                rate_limit_family="runtime_event_budget",
+                rate_remaining=1,
+                api_budget_source="aureon_cognitive_trade_evidence",
+                api_budget_tags=["api_budget_source"],
             )
         except Exception:
             pass

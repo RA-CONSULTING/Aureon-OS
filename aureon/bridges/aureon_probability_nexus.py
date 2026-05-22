@@ -285,77 +285,100 @@ def _get_unified_intelligence() -> dict:
         'lyra_action':     'HOLD',
         'lyra_score':      0.5,
         'lyra_urgency':    'none',
+        'research_score':  0.5,
+        'research_modifier': 1.0,
+        'research_phase':  '',
+        'research_sources': 0,
         'planner_stance':  '',
         'planner_agree':   0.5,
         'intel_sources':   0,
     }
 
-    # ── Seer (8 Oracles + WarCounsel) ──────────────────────────────────────
-    seer_mod = sys.modules.get('aureon_seer')
-    if seer_mod:
-        try:
-            get_seer_fn = getattr(seer_mod, 'get_seer', None)
-            AureonTheSeer = getattr(seer_mod, 'AureonTheSeer', None)
-            seer_inst = get_seer_fn() if callable(get_seer_fn) else None
-            if seer_inst is None and AureonTheSeer:
-                seer_inst = AureonTheSeer()
-            if seer_inst:
-                vision = getattr(seer_inst, 'latest_vision', None)
-                if vision is None:
-                    vision = seer_inst.see()
-                if vision:
-                    intel['seer_grade']    = str(getattr(vision, 'grade',         'UNKNOWN'))
-                    intel['seer_score']    = float(getattr(vision, 'unified_score', 0.5))
-                    intel['seer_action']   = str(getattr(vision, 'action',         'HOLD'))
-                    intel['seer_risk_mod'] = float(getattr(vision, 'risk_modifier', 1.0))
-                    intel['war_mode']      = str(getattr(vision, 'tactical_mode',  'STANDARD'))
-                    intel['war_sources']  += 1
-                    intel['intel_sources'] += 1
-                    # Rune Oracle details (inside vision if available)
-                    runes_reading = getattr(vision, 'runes', None)
-                    if runes_reading and hasattr(runes_reading, 'details'):
-                        rd = runes_reading.details or {}
-                        intel['war_rune_active'] = int(rd.get('total_active', 0))
-                        intel['war_rune_dom']    = str(rd.get('dominant_rune', ''))
-        except Exception as _e:
-            pass  # Seer cold or error — defaults remain
+    def _getval(obj, key, default):
+        """Try dict.get first, then getattr (handles both return types)."""
+        if isinstance(obj, dict):
+            return obj.get(key, default)
+        return getattr(obj, key, default)
 
-    # ── Lyra (6 Chambers — emotional frequency / Hz) ───────────────────────
-    lyra_mod = sys.modules.get('aureon_lyra')
-    if lyra_mod:
+    def _ingest_research(ctx, role):
+        """Fold Antarctic research context into the nexus packet."""
+        if not isinstance(ctx, dict):
+            return
+        role_ctx = ctx.get(role) if isinstance(ctx.get(role), dict) else ctx
+        if not isinstance(role_ctx, dict):
+            return
         try:
-            get_lyra_fn = getattr(lyra_mod, 'get_lyra', None)
-            AureonLyra  = getattr(lyra_mod, 'AureonLyra', None)
-            lyra_inst   = get_lyra_fn() if callable(get_lyra_fn) else None
-            if lyra_inst is None and AureonLyra:
-                lyra_inst = AureonLyra()
-            if lyra_inst:
-                res = getattr(lyra_inst, 'latest_resonance', None)
-                if res is None:
-                    res = lyra_inst.feel()
-                if res:
-                    intel['lyra_action']  = str(getattr(res, 'action',        'HOLD'))
-                    intel['lyra_score']   = float(getattr(res, 'unified_score', 0.5))
-                    intel['lyra_urgency'] = str(getattr(res, 'exit_urgency',  'none'))
-                    intel['intel_sources'] += 1
+            score = float(role_ctx.get('score', intel['research_score']))
+            mod = float(role_ctx.get('confidence_modifier', 1.0))
         except Exception:
-            pass
+            return
+        intel['research_score'] = round((float(intel['research_score']) + score) / 2.0, 4)
+        intel['research_modifier'] = round(
+            float(intel['research_modifier']) * max(0.90, min(1.10, mod)),
+            4,
+        )
+        intel['research_sources'] += 1
+        phase = (
+            role_ctx.get('dominant_rune')
+            or role_ctx.get('dominant_rune_emotion')
+            or role_ctx.get('map')
+            or ''
+        )
+        if phase:
+            intel['research_phase'] = str(phase)
 
-    # ── Strategic War Planner (OODA chess engine) ──────────────────────────
-    swp_mod = sys.modules.get('aureon_strategic_war_planner')
-    if swp_mod:
-        try:
-            get_planner_fn = getattr(swp_mod, 'get_war_planner', None)
-            if callable(get_planner_fn):
-                planner = get_planner_fn()
-                if planner:
-                    status = planner.get_status() if hasattr(planner, 'get_status') else {}
-                    if isinstance(status, dict):
-                        intel['planner_stance'] = str(status.get('stance', ''))
-                        intel['planner_agree']  = float(status.get('consensus_agreement', 0.5))
-                        intel['intel_sources'] += 1
-        except Exception:
-            pass
+    # ── Seer (via aureon_seer_integration) ────────────────────────────────
+    try:
+        from aureon.intelligence.aureon_seer_integration import (
+            seer_get_vision, seer_get_risk_modifier
+        )
+        vision = seer_get_vision()
+        if vision:
+            intel['seer_grade']    = str(_getval(vision, 'grade',         'UNKNOWN'))
+            intel['seer_score']    = float(_getval(vision, 'unified_score', 0.5))
+            intel['seer_action']   = str(_getval(vision, 'action',         'HOLD'))
+            intel['seer_risk_mod'] = float(seer_get_risk_modifier() if callable(seer_get_risk_modifier) else 1.0)
+            intel['war_mode']      = str(_getval(vision, 'tactical_mode',  'STANDARD'))
+            intel['war_sources']  += 1
+            intel['intel_sources'] += 1
+            runes_reading = _getval(vision, 'runes', None)
+            if runes_reading:
+                if isinstance(runes_reading, dict):
+                    rd = runes_reading.get('details', {}) or {}
+                else:
+                    rd = getattr(runes_reading, 'details', None) or {}
+                if isinstance(rd, dict):
+                    intel['war_rune_active'] = int(rd.get('total_active', 0))
+                    intel['war_rune_dom']    = str(rd.get('dominant_rune', ''))
+            _ingest_research(_getval(vision, 'antarctic_research', None), 'seer')
+    except Exception:
+        pass
+
+    # ── Lyra (via aureon_lyra_integration) ────────────────────────────────
+    try:
+        from aureon.trading.aureon_lyra_integration import lyra_get_resonance
+        res = lyra_get_resonance()
+        if res:
+            intel['lyra_action']  = str(_getval(res, 'action',        'HOLD'))
+            intel['lyra_score']   = float(_getval(res, 'unified_score', 0.5))
+            intel['lyra_urgency'] = str(_getval(res, 'exit_urgency',  'none'))
+            intel['intel_sources'] += 1
+            _ingest_research(_getval(res, 'antarctic_research', None), 'lyra')
+    except Exception:
+        pass
+
+    # ── War Strategy (via war_strategy) ────────────────────────────────────
+    try:
+        from aureon.command_centers.war_strategy import get_quick_kill_estimate
+        qk = get_quick_kill_estimate()
+        if isinstance(qk, dict):
+            intel['planner_stance'] = str(qk.get('stance', 'STANDARD'))
+            intel['planner_agree']  = float(qk.get('confidence', 0.5))
+            intel['war_mode']       = str(qk.get('mode', intel['war_mode']))
+            intel['intel_sources'] += 1
+            intel['war_sources']   += 1
+    except Exception:
+        pass
 
     _UNIFIED_INTEL_CACHE['data']    = intel
     _UNIFIED_INTEL_CACHE['expires'] = now + _UNIFIED_INTEL_TTL
@@ -422,6 +445,14 @@ def _compute_confidence_multiplier(intel: dict) -> float:
     elif rune_active >= 2:
         mult *= 1.05   # 2-4 traditions converging — mild boost
 
+    # Antarctic/HNC research map: Seer reads stars, Lyra reads emotions.
+    # This is a bounded context modifier, never a gate bypass.
+    if int(intel.get('research_sources', 0)) > 0:
+        try:
+            mult *= max(0.90, min(1.10, float(intel.get('research_modifier', 1.0))))
+        except Exception:
+            pass
+
     # ── Strategic War Planner Stance (adversarial chess / OODA) ─────────────
     planner_map = {
         'BLITZ':         1.15,  # Full offence
@@ -448,6 +479,8 @@ def _log_unified_intelligence(intel: dict, conf_mult: float) -> None:
     runes   = intel.get('war_rune_active', 0)
     stance  = intel.get('planner_stance', '')
     dom     = intel.get('war_rune_dom', '')
+    research_sources = intel.get('research_sources', 0)
+    research_phase = intel.get('research_phase', '')
 
     # Translate internal codes into viewer-friendly descriptions
     _seer_labels = {
@@ -484,6 +517,8 @@ def _log_unified_intelligence(intel: dict, conf_mult: float) -> None:
     if runes > 0:
         dom_str = f" — dominant: {dom}" if dom else ""
         print(f"   🪄  Runes Active: {runes} war runes{dom_str}")
+    if research_sources:
+        print(f"   HNC Research : {research_phase or 'Antarctic star/emotion map'}")
     print(f"   {_conf_emoji} Confidence  : {conf_mult:.0%}")
 
     # Return compact summary string so callers can update their live dashboard

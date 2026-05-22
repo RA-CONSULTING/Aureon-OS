@@ -1402,6 +1402,28 @@ if (-not $SkipMarketTelemetry) {
     }
 }
 
+if ($env:AUREON_DISABLE_PARALLEL_STRATEGY_UNITY -ne "1") {
+    $parallelStrategyArgs = "-m aureon.trading.parallel_strategy_unity --watch --interval 5"
+    $started += Start-AureonProcess `
+        -Name "Parallel strategy unity supervisor" `
+        -Pattern "aureon.trading.parallel_strategy_unity --watch" `
+        -FilePath $Python `
+        -Arguments $parallelStrategyArgs `
+        -WorkingDirectory $RepoRoot `
+        -LogDirectory $LogRoot
+}
+
+if ($env:AUREON_DISABLE_PARALLEL_STRATEGY_UNITY_STRESS_AUDIT -ne "1") {
+    $parallelStrategyAuditArgs = "-m aureon.autonomous.aureon_parallel_strategy_unity_stress_audit --watch --interval 10"
+    $started += Start-AureonProcess `
+        -Name "Parallel strategy unity stress audit" `
+        -Pattern "aureon.autonomous.aureon_parallel_strategy_unity_stress_audit --watch" `
+        -FilePath $Python `
+        -Arguments $parallelStrategyAuditArgs `
+        -WorkingDirectory $RepoRoot `
+        -LogDirectory $LogRoot
+}
+
 if (-not $SkipMindHub) {
     $mindLive = Test-AureonEndpoint -Url "http://127.0.0.1:13002/api/thoughts" -TimeoutSec 3
     $mindFlight = $null

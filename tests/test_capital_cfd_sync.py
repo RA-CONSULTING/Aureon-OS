@@ -499,6 +499,7 @@ class TestCapitalCFDSync(unittest.TestCase):
         pos_sell = CFDPosition("GOLD", "D2", "E2", "SELL", 0.1, 3000.0, 2980.0, 3020.0, "commodity")
         pos_sell.current_price = 2990.0
         trader.positions = [pos_buy, pos_sell]
+        trader._disable_market_hours_guard = True
         closed = []
         trader._close_position = lambda pos, reason: closed.append((pos.deal_id, reason)) or {"deal_id": pos.deal_id}
 

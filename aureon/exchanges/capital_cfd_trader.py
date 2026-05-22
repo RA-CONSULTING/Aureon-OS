@@ -1,7 +1,7 @@
 """
 capital_cfd_trader.py  —  Autonomous CFD Trader for Capital.com
 
-Covers the non-crypto slice of the financial system:
+Covers the full financial system including crypto CFDs:
   • Forex   — EURUSD · GBPUSD · USDJPY · AUDUSD · USDCAD · EURGBP
   • Indices — UK100 · US500 · US30 · DE40
   • Commodities — GOLD · SILVER · OIL_CRUDE · NATURALGAS
@@ -62,6 +62,11 @@ except Exception:
     lifecycle_for_deal = None  # type: ignore[assignment]
     lifecycle_id_for = None  # type: ignore[assignment]
     route_key_for = None  # type: ignore[assignment]
+
+try:
+    from aureon.trading.live_trade_signal_fabric import build_api_budget_proof
+except Exception:
+    build_api_budget_proof = None  # type: ignore[assignment]
 
 # ── IMPORT GUARDS ──────────────────────────────────────────────────────────────
 try:
@@ -230,6 +235,15 @@ CAPITAL_UNIVERSE: Dict[str, dict] = {
     "NVDA":       {"class": "stock",     "tp_pct": 1.20, "sl_pct": 0.55, "trail_activation_pct": 0.25, "cognitive_timeout_s": 180, "size": 0.01, "max_spread_pct": 0.20, "momentum_threshold": 0.05},
     "AMZN":       {"class": "stock",     "tp_pct": 1.10, "sl_pct": 0.55, "trail_activation_pct": 0.22, "cognitive_timeout_s": 180, "size": 0.01, "max_spread_pct": 0.15, "momentum_threshold": 0.05},
     "MSFT":       {"class": "stock",     "tp_pct": 1.10, "sl_pct": 0.55, "trail_activation_pct": 0.22, "cognitive_timeout_s": 180, "size": 0.01, "max_spread_pct": 0.15, "momentum_threshold": 0.05},
+    # ── Cryptocurrencies ──────────────────────────────────────────────────
+    "BTCUSD":     {"class": "crypto",    "tp_pct": 3.50, "sl_pct": 2.00, "trail_activation_pct": 1.00, "cognitive_timeout_s": 300, "size": 0.01, "max_spread_pct": 0.80, "momentum_threshold": 0.12},
+    "ETHUSD":     {"class": "crypto",    "tp_pct": 3.50, "sl_pct": 2.00, "trail_activation_pct": 1.00, "cognitive_timeout_s": 300, "size": 0.01, "max_spread_pct": 0.80, "momentum_threshold": 0.12},
+    "SOLUSD":     {"class": "crypto",    "tp_pct": 4.00, "sl_pct": 2.50, "trail_activation_pct": 1.20, "cognitive_timeout_s": 300, "size": 0.01, "max_spread_pct": 1.00, "momentum_threshold": 0.15},
+    "XRPUSD":     {"class": "crypto",    "tp_pct": 4.00, "sl_pct": 2.50, "trail_activation_pct": 1.20, "cognitive_timeout_s": 300, "size": 0.01, "max_spread_pct": 1.00, "momentum_threshold": 0.15},
+    "LTCUSD":     {"class": "crypto",    "tp_pct": 4.00, "sl_pct": 2.50, "trail_activation_pct": 1.20, "cognitive_timeout_s": 300, "size": 0.01, "max_spread_pct": 1.00, "momentum_threshold": 0.15},
+    "ADAUSD":     {"class": "crypto",    "tp_pct": 4.00, "sl_pct": 2.50, "trail_activation_pct": 1.20, "cognitive_timeout_s": 300, "size": 0.01, "max_spread_pct": 1.00, "momentum_threshold": 0.15},
+    "DOTUSD":     {"class": "crypto",    "tp_pct": 4.00, "sl_pct": 2.50, "trail_activation_pct": 1.20, "cognitive_timeout_s": 300, "size": 0.01, "max_spread_pct": 1.00, "momentum_threshold": 0.15},
+    "DOGEUSD":    {"class": "crypto",    "tp_pct": 5.00, "sl_pct": 3.00, "trail_activation_pct": 1.50, "cognitive_timeout_s": 300, "size": 0.01, "max_spread_pct": 1.20, "momentum_threshold": 0.18},
 }
 
 # ── CONFIG ─────────────────────────────────────────────────────────────────────
@@ -264,7 +278,7 @@ CFD_CONFIG: Dict[str, float] = {
     "position_ttl_secs": _env_float("CAPITAL_POSITION_TTL_SECS", 3600.0), # Selection benchmark only; not a forced close
     "scan_interval_secs": _env_float("CAPITAL_SCAN_INTERVAL_SECS", 8.0),  # Opportunity scan interval
     "monitor_interval":   _env_float("CAPITAL_MONITOR_INTERVAL_SECS", 2.0),  # Position monitor interval
-    "exchange_sync_secs": _env_float("CAPITAL_EXCHANGE_SYNC_SECS", 5.0),  # Reconcile local CFD positions against Capital.com
+    "exchange_sync_secs": _env_float("CAPITAL_EXCHANGE_SYNC_SECS", 30.0),  # Reconcile local CFD positions against Capital.com
     "quad_gate_ttl":      _env_float("CAPITAL_QUAD_GATE_TTL_SECS", 10.0),  # Cache Seer/Lyra gate results for N secs
 }
 CFD_FLAGS = {
@@ -346,6 +360,8 @@ CAPITAL_STRESS_MOVE_FLOORS = {
     "stock": _env_float("CAPITAL_STRESS_MOVE_PCT_STOCKS", 3.0),
     "shares": _env_float("CAPITAL_STRESS_MOVE_PCT_STOCKS", 3.0),
     "share": _env_float("CAPITAL_STRESS_MOVE_PCT_STOCKS", 3.0),
+    "crypto": _env_float("CAPITAL_STRESS_MOVE_PCT_CRYPTO", 5.0),
+    "cryptocurrency": _env_float("CAPITAL_STRESS_MOVE_PCT_CRYPTO", 5.0),
     "unknown": _env_float("CAPITAL_STRESS_MOVE_PCT_UNKNOWN", 3.0),
 }
 CAPITAL_MARGIN_FALLBACK_PCT = {
@@ -358,6 +374,8 @@ CAPITAL_MARGIN_FALLBACK_PCT = {
     "stock": _env_float("CAPITAL_FALLBACK_MARGIN_PCT_STOCKS", 20.0),
     "shares": _env_float("CAPITAL_FALLBACK_MARGIN_PCT_STOCKS", 20.0),
     "share": _env_float("CAPITAL_FALLBACK_MARGIN_PCT_STOCKS", 20.0),
+    "crypto": _env_float("CAPITAL_FALLBACK_MARGIN_PCT_CRYPTO", 50.0),
+    "cryptocurrency": _env_float("CAPITAL_FALLBACK_MARGIN_PCT_CRYPTO", 50.0),
     "unknown": _env_float("CAPITAL_FALLBACK_MARGIN_PCT_UNKNOWN", 20.0),
 }
 
@@ -467,7 +485,7 @@ class CapitalSwarmAgentVote:
 # ── MAIN CLASS ─────────────────────────────────────────────────────────────────
 class CapitalCFDTrader:
     """
-    Autonomous CFD trader for Capital.com (non-crypto asset classes).
+    Autonomous CFD trader for Capital.com (forex, indices, commodities, stocks, crypto).
 
     Instruments: Forex · Indices · Commodities · Stocks (CFDs)
 
@@ -483,7 +501,7 @@ class CapitalCFDTrader:
     SHADOW_MIN_VALIDATE = CAPITAL_SHADOW_MIN_VALIDATE_SECS
     SHADOW_MAX_ACTIVE = 4
 
-    def __init__(self) -> None:
+    def __init__(self, external_price_feed: Optional[Dict[str, Any]] = None) -> None:
         self.client: Optional[CapitalClient] = None
         self._state_lock = threading.RLock()
 
@@ -495,6 +513,8 @@ class CapitalCFDTrader:
         self._prices: Dict[str, dict] = {}
         self._prices_lock = threading.RLock()
         self._prices_fetched_at: float = 0.0
+        # External price feed from unified_market_trader — avoids heavy Capital API calls
+        self._external_price_feed: Optional[Dict[str, Any]] = external_price_feed
         self._latest_candidate_snapshot: List[Dict[str, Any]] = []
         self._latest_target_snapshot: Dict[str, Any] = {}
         self._latest_status_lines: List[str] = []
@@ -707,9 +727,71 @@ class CapitalCFDTrader:
                 pass
         return f"olife-capital-{str(symbol or '').upper()}-{str(direction or '').upper()}-{str(deal or seed or int(time.time()))}"
 
+    def _capital_api_budget_proof(self, phase: str, fields: Dict[str, Any]) -> Dict[str, Any]:
+        if build_api_budget_proof is None:
+            return {}
+        client = getattr(self, "client", None)
+        now = time.time()
+        rate_limit_until = float(getattr(client, "_rate_limit_until", 0.0) or 0.0) if client is not None else 0.0
+        session_start = float(getattr(client, "session_start_time", 0.0) or 0.0) if client is not None else 0.0
+        session_age = max(0.0, now - session_start) if session_start > 0 else None
+        rate_limited = rate_limit_until > now
+        session_fresh = bool(session_age is not None and session_age <= 600.0)
+        proof = build_api_budget_proof(
+            venue=str(fields.get("venue") or "capital"),
+            phase=phase,
+            source="capital_cfd_trader.session_guard",
+            family="capital_api_budget",
+            remaining=0 if rate_limited else 1,
+            status_code=429 if rate_limited else 200,
+            rate_limited=rate_limited,
+            response_ok=not rate_limited,
+            retry_after=max(0, int(rate_limit_until - now)) if rate_limited else None,
+            session_age_sec=session_age,
+            session_fresh=session_fresh,
+            order_position_throttle_ok=not rate_limited,
+            websocket_subscription_count=0,
+            extra={"rate_limit_until": rate_limit_until},
+        )
+        return proof if isinstance(proof, dict) else {}
+
+    def _with_lifecycle_proof_defaults(self, event_type: str, status: str, fields: Dict[str, Any]) -> Dict[str, Any]:
+        enriched = dict(fields)
+        source = str(enriched.get("source") or "capital_cfd_trader")
+        enriched.setdefault("source", source)
+        enriched.setdefault("source_system", source)
+        enriched.setdefault("publisher_owner", "capital_cfd_trader._record_order_lifecycle")
+        enriched.setdefault("proof_mode", "live_runtime")
+        enriched.setdefault("authority_mode", "runtime_gated_executor_path")
+        enriched.setdefault("no_trading_gate_bypass", True)
+        broker_sensitive = {
+            "order_submitted",
+            "broker_acknowledged",
+            "position_open",
+            "close_requested",
+            "close_acknowledged",
+            "position_closed",
+            "outcome_recorded",
+        }
+        phase = str(status or event_type or "").strip().lower()
+        if phase in broker_sensitive:
+            enriched.setdefault("verification_source", source)
+        proof = self._capital_api_budget_proof(phase=phase, fields=enriched)
+        if proof:
+            enriched.setdefault("rate_budget", proof)
+            enriched.setdefault("rate_limit_family", proof.get("family"))
+            enriched.setdefault("rate_remaining", proof.get("remaining"))
+            enriched.setdefault("api_budget_source", proof.get("source"))
+            if proof.get("retry_after") not in (None, ""):
+                enriched.setdefault("retry_after", proof.get("retry_after"))
+            if isinstance(proof.get("tags"), list):
+                enriched.setdefault("api_budget_tags", proof.get("tags"))
+        return enriched
+
     def _record_order_lifecycle(self, event_type: str, status: str, lifecycle_id: str, **fields: Any) -> None:
         if append_order_lifecycle_event is None or not lifecycle_id:
             return
+        fields = self._with_lifecycle_proof_defaults(event_type, status, fields)
         try:
             append_order_lifecycle_event(
                 event_type=event_type,
@@ -1743,6 +1825,8 @@ class CapitalCFDTrader:
             return "commodities"
         if text in {"stocks", "stock", "shares", "share", "equity", "equities"}:
             return "stocks"
+        if text in {"crypto", "cryptocurrency", "cryptocurrencies", "digital_asset", "digital_assets", "coin", "coins"}:
+            return "crypto"
         return text or "unknown"
 
     def _fallback_margin_pct(self, asset_class: Any) -> float:
@@ -2721,10 +2805,42 @@ class CapitalCFDTrader:
 
     # ── PRICES ─────────────────────────────────────────────────────────────────
     def _refresh_prices(self) -> None:
-        """Fetch prices for all universe symbols (thread-safe via concurrent futures)."""
-        if not self.client:
+        """Fetch prices for all universe symbols.
+
+        Priority:
+          1. External unified market feed (Binance WS / Kraken / shared feed)
+          2. Capital monitor cache (written by background monitor)
+          3. Capital REST API (last resort — slow, rate-limited)
+        """
+        now = time.time()
+        if now - self._prices_fetched_at < CFD_CONFIG["price_ttl_secs"]:
             return
-        if time.time() - self._prices_fetched_at < CFD_CONFIG["price_ttl_secs"]:
+
+        # 1. Try external unified feed first (fast, no API calls)
+        external = getattr(self, "_external_price_feed", None)
+        if external is not None:
+            try:
+                fresh: Dict[str, dict] = {}
+                for sym in self._active_universe().keys():
+                    price = float(external.get(sym.upper()) or external.get(sym) or 0.0)
+                    if price > 0:
+                        fresh[sym.upper()] = {
+                            "price": price,
+                            "bid": price * 0.9995,
+                            "ask": price * 1.0005,
+                            "change_pct": 0.0,
+                        }
+                if fresh:
+                    with self._prices_lock:
+                        self._prices.update(fresh)
+                        self._prices_fetched_at = now
+                    logger.debug(f"Capital prices refreshed from external feed: {len(fresh)} symbols")
+                    return
+            except Exception as _e:
+                logger.debug(f"External price feed refresh failed: {_e}")
+
+        # 2. Fall back to Capital client (monitor cache → API)
+        if not self.client:
             return
         try:
             raw = self.client.get_tickers_for_symbols(list(self._active_universe().keys()))
@@ -2736,8 +2852,20 @@ class CapitalCFDTrader:
             logger.debug(f"CFD price refresh error: {_e}")
 
     def _get_price(self, symbol: str) -> Optional[dict]:
+        sym_upper = symbol.upper()
+        # Check external feed first
+        external = getattr(self, "_external_price_feed", None)
+        if external is not None:
+            price = float(external.get(sym_upper) or external.get(symbol) or 0.0)
+            if price > 0:
+                return {
+                    "price": price,
+                    "bid": price * 0.9995,
+                    "ask": price * 1.0005,
+                    "change_pct": 0.0,
+                }
         with self._prices_lock:
-            return self._prices.get(symbol.upper())
+            return self._prices.get(sym_upper)
 
     def _canonical_symbol(self, value: Optional[str]) -> str:
         if not value:
@@ -2781,17 +2909,41 @@ class CapitalCFDTrader:
                     continue
                 with self._prices_lock:
                     previous_prices = dict(self._prices)
-                raw = self.client.get_tickers_for_symbols(symbols) if self.client else {}
+
+                # Prefer external unified feed; only hit Capital API for symbols missing externally
+                raw: Dict[str, Dict[str, float]] = {}
+                external = getattr(self, "_external_price_feed", None)
+                missing_symbols: List[str] = []
+                if external is not None:
+                    for sym in symbols:
+                        price = float(external.get(sym.upper()) or external.get(sym) or 0.0)
+                        if price > 0:
+                            raw[sym.upper()] = {
+                                "price": price,
+                                "bid": price * 0.9995,
+                                "ask": price * 1.0005,
+                                "change_pct": 0.0,
+                            }
+                        else:
+                            missing_symbols.append(sym)
+                else:
+                    missing_symbols = symbols
+
+                # Only call Capital API for symbols not in external feed
+                if missing_symbols and self.client is not None:
+                    capital_raw = self.client.get_tickers_for_symbols(missing_symbols)
+                    if capital_raw:
+                        raw.update(capital_raw)
+
                 if raw:
-                    with self._state_lock:
-                        with self._prices_lock:
-                            self._prices.update(raw)
-                            self._prices_fetched_at = time.time()
-                        self._update_position_prices()
-                        self._last_monitor = time.time()
-                        live_closed = self._monitor_positions()
-                        self._update_shadows()
-                        self._handle_live_price_events(previous_prices, raw, force=bool(live_closed))
+                    with self._prices_lock:
+                        self._prices.update(raw)
+                        self._prices_fetched_at = time.time()
+                    # NOTE: Do NOT acquire _state_lock here. The background thread's
+                    # only job is to keep prices fresh. All position monitoring,
+                    # shadow updates, and event handling are owned by tick().
+                    # Holding _state_lock while calling _monitor_positions() can
+                    # trigger blocking HTTP close requests and starve tick().
             except Exception as e:
                 logger.debug("Capital live refresh loop error: %s", e)
 
@@ -4241,18 +4393,20 @@ class CapitalCFDTrader:
             return []
         if not self.positions:
             return []
-        # Don't try to close positions when markets are closed — just reset the timer
-        from datetime import datetime, timezone
-        hour = datetime.now(timezone.utc).hour
-        weekday = datetime.now(timezone.utc).weekday()
-        if weekday >= 5:  # Weekend — most CFD markets closed
-            self._last_deadman_kick_at = now
-            return []
-        # Gold closes 21:00-22:00 UTC daily, all day Saturday
-        # Don't panic-close during known closures
-        if 21 <= hour < 22:
-            self._last_deadman_kick_at = now
-            return []
+        ignore_market_hours_guard = bool(getattr(self, "_disable_market_hours_guard", False))
+        if not ignore_market_hours_guard:
+            # Don't try to close positions when markets are closed — just reset the timer
+            from datetime import datetime, timezone
+            hour = datetime.now(timezone.utc).hour
+            weekday = datetime.now(timezone.utc).weekday()
+            if weekday >= 5:  # Weekend — most CFD markets closed
+                self._last_deadman_kick_at = now
+                return []
+            # Gold closes 21:00-22:00 UTC daily, all day Saturday
+            # Don't panic-close during known closures
+            if 21 <= hour < 22:
+                self._last_deadman_kick_at = now
+                return []
         logger.warning("Capital deadman triggered: stale loop age=%.1fs", age)
         # Broadcast to ThoughtBus so Hive Command and other systems know
         try:
@@ -5420,138 +5574,32 @@ class CapitalCFDTrader:
         if not self._ensure_client_ready():
             return []
         self._ensure_live_refresh()
+        # Expensive API calls happen OUTSIDE the lock so the background
+        # _continuous_price_refresh_loop() thread never starves.
+        self._sync_positions_from_exchange()
+        self._refresh_prices()
+        # 👁 Feed Seer + Lyra with live market context so predictions are real
+        try:
+            from aureon.intelligence.aureon_seer_integration import seer_update_context
+            from aureon.trading.aureon_lyra_integration import lyra_update_context
+            seer_update_context(
+                positions=[p.__dict__ if hasattr(p, '__dict__') else p for p in (self.positions or [])],
+                ticker_cache=dict(self._prices),
+                market_data={"prices_fetched_at": self._prices_fetched_at, "universe_size": len(self._active_universe())},
+            )
+            lyra_update_context(
+                positions=[p.__dict__ if hasattr(p, '__dict__') else p for p in (self.positions or [])],
+                ticker_cache=dict(self._prices),
+                market_data={"prices_fetched_at": self._prices_fetched_at, "universe_size": len(self._active_universe())},
+            )
+        except Exception:
+            pass
+        # Snapshot refreshes are slow (file scans) and don't need state lock.
+        self._refresh_unified_intel_snapshot()
+        self._refresh_mind_map_snapshot()
+        self._refresh_thought_bus_snapshot()
         with self._state_lock:
             return self._tick_locked()
-
-        now = time.time()
-        closed_this_tick: List[dict] = self._deadman_guard(now)
-        self._last_deadman_kick_at = now
-        if now - float(getattr(self, "_harmonic_wiring_audit_at", 0.0) or 0.0) > 120.0:
-            self._harmonic_wiring_audit = self._build_harmonic_wiring_audit()
-            self._harmonic_wiring_audit_at = now
-        sync_elapsed = 0.0
-        refresh_elapsed = 0.0
-        monitor_elapsed = 0.0
-        shadow_elapsed = 0.0
-        scan_elapsed = 0.0
-
-        stage_started = time.time()
-        self._sync_positions_from_exchange()
-        sync_elapsed = time.time() - stage_started
-        self._refresh_unified_intel_snapshot()
-        self._refresh_thought_bus_snapshot()
-
-        # Phase 0: price refresh
-        stage_started = time.time()
-        self._refresh_prices()
-        refresh_elapsed = time.time() - stage_started
-
-        # Phase 1: monitor open positions
-        if now - self._last_monitor >= CFD_CONFIG["monitor_interval"]:
-            stage_started = time.time()
-            self._last_monitor = now
-            self._update_position_prices()
-            closed_this_tick.extend(self._monitor_positions())
-            monitor_elapsed = time.time() - stage_started
-
-        # Phase 2: update and promote shadows
-        stage_started = time.time()
-        self._update_shadows()
-        promoted_this_tick = False
-        validated_shadows = sorted(
-            [
-                shadow for shadow in self.shadow_trades
-                if shadow.validated
-            ],
-            key=lambda item: (float(item.validation_time or item.created_at or 0.0), -float(item.score or 0.0)),
-        )
-        for shadow in list(validated_shadows):
-            if not shadow.validated:
-                continue
-            gate_preview = self._build_shadow_promotion_gate(shadow, self._get_price(shadow.symbol))
-            min_validate_window = float(gate_preview.get("validation_window_secs", self.SHADOW_MIN_VALIDATE) or self.SHADOW_MIN_VALIDATE)
-            if shadow.validation_time > 0 and (now - shadow.validation_time) < min_validate_window:
-                continue
-            promoted = self._promote_shadow(shadow)
-            if promoted is not None:
-                promoted_this_tick = True
-                self.shadow_trades.remove(shadow)
-                break
-            if self._cooldown_info(shadow.symbol, str(shadow.direction or "").upper()) is not None:
-                self.shadow_trades.remove(shadow)
-        shadow_elapsed = time.time() - stage_started
-
-        # Phase 3: scan for new opportunity
-        should_scan = (now - self._last_scan >= CFD_CONFIG["scan_interval_secs"]) or bool(closed_this_tick)
-        if should_scan:
-            stage_started = time.time()
-            self._last_scan = now
-
-            self._quad_gate()  # refresh modifier (always proceeds)
-            self._find_best_opportunity()
-            self._queue_background_shadows()
-            if len(self.positions) < int(CFD_CONFIG["max_positions"]) and not promoted_this_tick:
-                slot_filled_this_tick = self._fill_live_monitoring_slots(now)
-                if slot_filled_this_tick:
-                    promoted_this_tick = True
-                opened_directions = {str(pos.direction or "").upper() for pos in self.positions}
-                for sym, cfg, ticker in self._ranked_opportunities():
-                    direction = str(cfg.get("direction", "BUY") or "BUY").upper()
-                    if direction in opened_directions:
-                        continue
-                    if CAPITAL_FORCE_SLOT_FILL:
-                        continue
-                    preflight = self._capital_preflight(sym, float(cfg.get("size", 0.0) or 0.0), ticker, cfg)
-                    working_cfg = dict(cfg)
-                    if (not preflight.get("ok")) and "below Capital minimum" in str(preflight.get("reason") or ""):
-                        adjusted_cfg = self._sized_cfg_from_preflight(cfg, preflight)
-                        if adjusted_cfg is not None:
-                            adjusted_preflight = self._capital_preflight(
-                                sym,
-                                float(adjusted_cfg.get("size", 0.0) or 0.0),
-                                ticker,
-                                adjusted_cfg,
-                            )
-                            if adjusted_preflight.get("ok"):
-                                working_cfg = adjusted_cfg
-                                preflight = adjusted_preflight
-
-                    self._latest_target_snapshot = {
-                        **dict(self._latest_target_snapshot),
-                        "symbol": sym,
-                        "direction": str(working_cfg.get("direction", "BUY") or "BUY").upper(),
-                        "asset_class": working_cfg.get("class", cfg.get("class", "unknown")),
-                        "size": float(working_cfg.get("size", 0.0) or 0.0),
-                        "preflight_reason": str(preflight.get("reason") or ""),
-                        "market_status": str(preflight.get("market_status") or ""),
-                        "minimum_deal_size": float(preflight.get("minimum_deal_size", 0.0) or 0.0),
-                        "available_balance": float(preflight.get("available_balance", 0.0) or 0.0),
-                    }
-
-                    if not preflight.get("ok"):
-                        self._record_rejection(sym, direction, str(preflight.get("reason") or "preflight_failed"))
-                        self._latest_order_error = f"{sym} preflight failed: {preflight.get('reason') or 'unknown'}"
-                        logger.warning("CFD candidate skipped for %s: %s", sym, preflight.get("reason") or "unknown")
-                        continue
-
-                    if self._create_shadow(sym, working_cfg, ticker) is not None:
-                        opened_directions.add(direction)
-                        if opened_directions >= {"BUY", "SELL"} or len(self.positions) >= int(CFD_CONFIG["max_positions"]):
-                            break
-                    else:
-                        self._record_rejection(sym, direction, "shadow_blocked_or_duplicate")
-
-        if should_scan:
-            scan_elapsed = time.time() - stage_started
-
-        self._latest_tick_line = (
-            f"CAPITAL TICK sync={sync_elapsed:.2f}s prices={refresh_elapsed:.2f}s "
-            f"monitor={monitor_elapsed:.2f}s shadows={shadow_elapsed:.2f}s scan={scan_elapsed:.2f}s "
-            f"positions={len(self.positions)} shadows_active={len(self.shadow_trades)}"
-        )
-        self._build_lane_snapshot()
-        self.status_lines()
-        return closed_this_tick
 
     # ── STATUS ─────────────────────────────────────────────────────────────────
     def _tick_locked(self) -> List[dict]:
@@ -5566,17 +5614,6 @@ class CapitalCFDTrader:
         monitor_elapsed = 0.0
         shadow_elapsed = 0.0
         scan_elapsed = 0.0
-
-        stage_started = time.time()
-        self._sync_positions_from_exchange()
-        sync_elapsed = time.time() - stage_started
-        self._refresh_unified_intel_snapshot()
-        self._refresh_mind_map_snapshot()
-        self._refresh_thought_bus_snapshot()
-
-        stage_started = time.time()
-        self._refresh_prices()
-        refresh_elapsed = time.time() - stage_started
 
         if now - self._last_monitor >= CFD_CONFIG["monitor_interval"]:
             stage_started = time.time()

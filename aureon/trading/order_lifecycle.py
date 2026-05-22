@@ -14,6 +14,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
+try:
+    from aureon.trading.live_trade_signal_fabric import publish_lifecycle_event
+except Exception:
+    publish_lifecycle_event = None  # type: ignore[assignment]
 
 SCHEMA_VERSION = "aureon-order-lifecycle-v1"
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -656,6 +660,8 @@ def append_event(
     for key, value in fields.items():
         if value is not None and value != "":
             event[key] = value
+    event.setdefault("publisher_owner", "order_lifecycle.append_event")
+    event.setdefault("source_system", str(event.get("source") or "order_lifecycle"))
     event["event_id"] = _event_identity(event)
 
     log_path = rooted(root, LOG_PATH)
@@ -672,6 +678,11 @@ def append_event(
         event,
     )
     _write_state(state, root)
+    if publish_lifecycle_event is not None:
+        try:
+            publish_lifecycle_event(event, root=root, emit_external=True)
+        except Exception:
+            pass
     return event
 
 

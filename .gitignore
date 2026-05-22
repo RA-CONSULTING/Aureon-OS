@@ -165,3 +165,40 @@ queen_neuron_v2_weights.json
 imports/Kimi_Agent_Aureon_*/aureon-trading-main/
 imports/Kimi_Agent_Aureon_*/aureon-trading-main-snapshot/
 imports/Kimi_Agent_Aureon_*/aureon-trading.zip
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# RUNTIME STATE — regenerated on every boot, never commit
+# ═══════════════════════════════════════════════════════════════════════════════
+adaptive_learning_history.json
+brain_predictions_history.json
+miner_brain_knowledge.json
+public/consciousness_state.json
+queen_neuron_v2_weights.json
+lattice_simulation.png
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FLAMEBORN FRONTEND — generated / runtime artifacts
+# ═══════════════════════════════════════════════════════════════════════════════
+flameborn/uploads/
+flameborn/data/
+flameborn/logs/
+flameborn/.obsidian/
+flameborn/.claude/worktrees/
+flameborn/Kings_Accounting_Suite/
+flameborn/loveavblr/
+flameborn/*.zip
+flameborn/Untitled.canvas
+flameborn/queen_neuron_v2_weights.json
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ROOT-LEVEL ARTIFACTS — copies, uploads, caches
+# ═══════════════════════════════════════════════════════════════════════════════
+.claude/worktrees/
+.obsidian/
+AUREON MURGE REQUIRED.zip
+Kings_Accounting_Suite/
+Untitled.canvas
+bussiness accounts/
+data/exchange_account_archives/
+loveavblr/
+uploads/

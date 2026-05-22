@@ -45,6 +45,26 @@ from collections import deque, defaultdict
 logger = logging.getLogger(__name__)
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# QGITA + HARMONIC FIELD - Graceful imports
+# ═══════════════════════════════════════════════════════════════════════════════
+try:
+    from aureon.wisdom.aureon_qgita_framework import QGITAMarketAnalyzer
+    QGITA_AVAILABLE = True
+except Exception as e:
+    QGITA_AVAILABLE = False
+    QGITAMarketAnalyzer = None
+    logger.debug(f"QGITA not available in AutonomyHub: {e}")
+
+try:
+    from aureon.harmonic.global_harmonic_field import get_global_field, compute_global_omega
+    HARMONIC_FIELD_AVAILABLE = True
+except Exception as e:
+    HARMONIC_FIELD_AVAILABLE = False
+    get_global_field = None
+    compute_global_omega = None
+    logger.debug(f"Global Harmonic Field not available in AutonomyHub: {e}")
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # 1. UNIFIED SIGNAL - The common language between all systems
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -503,17 +523,28 @@ class DecisionGate:
 
     def evaluate(self, consensus: UnifiedSignal,
                  data_signals: Dict[str, UnifiedSignal],
-                 predictions: Dict[str, UnifiedSignal]) -> UnifiedSignal:
+                 predictions: Dict[str, UnifiedSignal],
+                 external_checks: Optional[Dict[str, Any]] = None) -> UnifiedSignal:
         """
         Single decision point. Returns a decision UnifiedSignal.
 
         Gate priority:
         1. Circuit breaker (hard stop)
         2. Macro veto (global conditions)
-        3. Prediction consensus (the brain)
-        4. Data confirmation (the eyes)
+        3. External cognitive gates (Source Law, ZPE, Auris)
+        4. Prediction consensus (the brain)
+        5. Data confirmation (the eyes)
+
+        Args:
+            external_checks: Optional dict with keys:
+                - source_law_action: str ("EXECUTE" or "HOLD")
+                - source_law_coherence: float (0-1)
+                - zpe_grounded: bool
+                - auris_lighthouse_cleared: bool
+                - auris_confidence: float (0-1)
         """
         reasons = []
+        external_checks = external_checks or {}
 
         # GATE 1: Circuit breaker
         if self.circuit_breaker_active:
@@ -525,18 +556,48 @@ class DecisionGate:
             reasons.append(f"MACRO_VETO: macro_strength={macro.strength:.2f}")
             return self._decision("HOLD", consensus.confidence * 0.3, 0.0, reasons)
 
-        # GATE 3: Minimum consensus confidence
+        # ═══════════════════════════════════════════════════════════════════════
+        # GATE 3: EXTERNAL COGNITIVE GATES (Source Law + ZPE + Auris)
+        # These close the loop between signal detection and execution.
+        # ═══════════════════════════════════════════════════════════════════════
+
+        # 3a: Source Law coherence threshold (default 0.938 entry / 0.934 exit)
+        sl_action = external_checks.get('source_law_action')
+        sl_coherence = external_checks.get('source_law_coherence', 0.0)
+        if sl_action is not None and sl_action != "EXECUTE":
+            reasons.append(f"SOURCE_LAW_VETO: coherence={sl_coherence:.3f} < 0.938")
+            return self._decision("HOLD", consensus.confidence * 0.3, 0.0, reasons)
+
+        # 3b: ZPE grounding check
+        zpe_grounded = external_checks.get('zpe_grounded')
+        if zpe_grounded is False:
+            reasons.append("ZPE_DEGROUNDED: temporal ground unstable")
+            return self._decision("HOLD", consensus.confidence * 0.3, 0.0, reasons)
+
+        # 3c: Auris lighthouse cleared
+        auris_lh = external_checks.get('auris_lighthouse_cleared')
+        if auris_lh is False:
+            reasons.append("AURIS_VETO: lighthouse not cleared")
+            return self._decision("HOLD", consensus.confidence * 0.3, 0.0, reasons)
+
+        # If Source Law coherence is high, boost confidence
+        if sl_coherence >= 0.938:
+            reasons.append(f"SOURCE_LAW_CLEAR: coherence={sl_coherence:.3f}")
+
+        # ═══════════════════════════════════════════════════════════════════════
+
+        # GATE 4: Minimum consensus confidence
         if consensus.confidence < self.min_confidence:
             reasons.append(f"LOW_CONFIDENCE: {consensus.confidence:.2f} < {self.min_confidence}")
             return self._decision("HOLD", consensus.confidence, 0.0, reasons)
 
-        # GATE 4: Minimum agreement
+        # GATE 5: Minimum agreement
         agreement = consensus.payload.get('agreement_ratio', 0.0)
         if agreement < self.min_agreement:
             reasons.append(f"LOW_AGREEMENT: {agreement:.2f} < {self.min_agreement}")
             return self._decision("HOLD", consensus.confidence, consensus.strength * 0.5, reasons)
 
-        # GATE 5: Sentiment confirmation (optional boost)
+        # GATE 6: Sentiment confirmation (optional boost)
         sentiment = data_signals.get('news_sentiment:SENTIMENT')
         sentiment_aligned = False
         if sentiment:
@@ -544,7 +605,7 @@ class DecisionGate:
                 sentiment_aligned = True
                 reasons.append(f"SENTIMENT_CONFIRMS: {sentiment.direction}")
 
-        # GATE 6: Whale flow confirmation (optional boost)
+        # GATE 7: Whale flow confirmation (optional boost)
         whale_aligned = False
         for key, sig in data_signals.items():
             if sig.source == "whale_hunter" and sig.direction == consensus.direction:
@@ -561,6 +622,16 @@ class DecisionGate:
         if macro and macro.direction == consensus.direction:
             final_confidence = min(final_confidence + 0.05, 1.0)
             reasons.append("MACRO_ALIGNED")
+        # QGITA structural event boost
+        qgita_pred = predictions.get('qgita')
+        if qgita_pred and qgita_pred.payload.get('qgita_structural_event'):
+            final_confidence = min(final_confidence + 0.08, 1.0)
+            reasons.append("QGITA_STRUCTURAL_EVENT")
+        # Harmonic field alignment boost
+        hf_pred = predictions.get('harmonic_field')
+        if hf_pred and hf_pred.direction == consensus.direction:
+            final_confidence = min(final_confidence + 0.05, 1.0)
+            reasons.append("HARMONIC_FIELD_ALIGNED")
 
         # Position size multiplier based on confidence
         position_mult = 0.5  # Base
@@ -1283,6 +1354,148 @@ def adapt_quantum_telescope(data_signals: Dict[str, UnifiedSignal],
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# QGITA ADAPTER - Quantum Gravity in the Act (φ-resonant signal detection)
+# ═══════════════════════════════════════════════════════════════════════════════
+_qgita_instance = None
+
+def _get_qgita_instance():
+    global _qgita_instance
+    if _qgita_instance is None and QGITA_AVAILABLE:
+        _qgita_instance = QGITAMarketAnalyzer()
+    return _qgita_instance
+
+
+def adapt_qgita(data_signals: Dict[str, UnifiedSignal],
+                symbol: str) -> Optional[UnifiedSignal]:
+    """Adapter: QGITA Framework -> UnifiedSignal
+
+    Maps QGITA's two-stage pipeline (FTCP + Lighthouse) into a trading
+    prediction with direction, confidence, and structural-event flag.
+    """
+    qgita = _get_qgita_instance()
+    if not qgita:
+        return None
+
+    try:
+        # Pull the latest price for this symbol from data bridge
+        price = 0.0
+        for key, sig in data_signals.items():
+            if sig.symbol == symbol and sig.source.startswith('market_'):
+                price = float(sig.payload.get('price', 0) or 0)
+                break
+
+        if price > 0:
+            qgita.feed_price(price, time.time())
+
+        analysis = qgita.analyze()
+        if analysis.get("status") != "complete":
+            return None
+
+        signals = analysis.get("signals", {})
+        coherence = analysis.get("coherence", {})
+        stage2 = analysis.get("stage2", {})
+
+        direction = signals.get("direction", "NEUTRAL")
+        confidence = signals.get("confidence", 0.5)
+        structural = signals.get("structural_event", False)
+        global_R = coherence.get("global_R", 0.0)
+        lighthouse_L = stage2.get("current_lighthouse_intensity", 0.0)
+
+        # Map direction string to UnifiedSignal direction
+        sig_dir = "BULLISH" if direction == "BULLISH" or direction == "RALLY" else \
+                  "BEARISH" if direction == "BEARISH" or direction == "DUMP" else "NEUTRAL"
+
+        # Structural events get a confidence boost
+        if structural:
+            confidence = min(1.0, confidence + 0.15)
+
+        # Regime-aware strength: chaotic = reduced strength
+        regime = analysis.get("regime", {}).get("state", "neutral")
+        strength = signals.get("strength", 0.0)
+        if regime == "chaotic":
+            strength *= 0.5
+        elif regime == "coherent":
+            strength *= 1.2
+
+        return UnifiedSignal(
+            source="predictor:qgita",
+            signal_type="prediction",
+            symbol=symbol,
+            direction=sig_dir,
+            confidence=confidence,
+            strength=max(-1.0, min(1.0, strength)) * (1 if sig_dir == "BULLISH" else -1 if sig_dir == "BEARISH" else 1),
+            payload={
+                "qgita_regime": regime,
+                "qgita_global_R": global_R,
+                "qgita_lighthouse_L": lighthouse_L,
+                "qgita_structural_event": structural,
+                "qgita_ftcp_count": analysis.get("stage1", {}).get("ftcp_count", 0),
+                "qgita_lhe_count": stage2.get("lhe_count", 0),
+            }
+        )
+    except Exception as e:
+        logger.debug(f"QGITA adapter error: {e}")
+        return None
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# HARMONIC FIELD ADAPTER - Global Λ(t) -> UnifiedSignal
+# ═══════════════════════════════════════════════════════════════════════════════
+_harmonic_field_instance = None
+
+def _get_harmonic_field_instance():
+    global _harmonic_field_instance
+    if _harmonic_field_instance is None and HARMONIC_FIELD_AVAILABLE:
+        _harmonic_field_instance = get_global_field()
+    return _harmonic_field_instance
+
+
+def adapt_harmonic_field(data_signals: Dict[str, UnifiedSignal],
+                         symbol: str) -> Optional[UnifiedSignal]:
+    """Adapter: Global Harmonic Field Λ(t) -> UnifiedSignal
+
+    Uses the Master Formula Ω output to generate a directional bias.
+    """
+    field = _get_harmonic_field_instance()
+    if not field:
+        return None
+
+    try:
+        omega = compute_global_omega(field)
+        if omega is None:
+            return None
+
+        # Omega > 0.55 = bullish harmonic substrate, < 0.45 = bearish
+        if omega > 0.55:
+            direction = "BULLISH"
+            strength = min(1.0, (omega - 0.5) * 4)
+        elif omega < 0.45:
+            direction = "BEARISH"
+            strength = -min(1.0, (0.5 - omega) * 4)
+        else:
+            direction = "NEUTRAL"
+            strength = 0.0
+
+        confidence = min(1.0, abs(omega - 0.5) * 3)
+
+        return UnifiedSignal(
+            source="predictor:harmonic_field",
+            signal_type="prediction",
+            symbol=symbol,
+            direction=direction,
+            confidence=confidence,
+            strength=strength,
+            payload={
+                "omega": omega,
+                "field_sources": len(getattr(field, 'sources', [])) if field else 0,
+            }
+        )
+    except Exception as e:
+        logger.debug(f"Harmonic field adapter error: {e}")
+        return None
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # 7. THE BIG WHEEL - AUTONOMY HUB
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1318,6 +1531,8 @@ class AutonomyHub:
         self.prediction_bus.register_predictor('whale_hunter', adapt_whale_hunter)
         self.prediction_bus.register_predictor('quantum_telescope', adapt_quantum_telescope)
         self.prediction_bus.register_predictor('war_planner', adapt_war_planner)
+        self.prediction_bus.register_predictor('qgita', adapt_qgita)
+        self.prediction_bus.register_predictor('harmonic_field', adapt_harmonic_field)
 
         # Apply learned weights from feedback loop
         self._apply_learned_weights()
@@ -1394,11 +1609,20 @@ class AutonomyHub:
                         f"| Pattern: {payload.get('step_forward', {}).get('pattern', '?')} "
                         f"| Confidence: {payload.get('confidence', 0):.0%}")
 
-    def spin_cycle(self, symbol: str = "BTCUSD") -> UnifiedSignal:
+    def spin_cycle(self, symbol: str = "BTCUSD",
+                   external_checks: Optional[Dict[str, Any]] = None) -> UnifiedSignal:
         """
         ONE TURN OF THE BIG WHEEL.
 
         Returns the decision for this cycle.
+
+        Args:
+            symbol: Trading pair to evaluate
+            external_checks: Optional cognitive gates from ecosystem/ICS:
+                - source_law_action: "EXECUTE" or "HOLD"
+                - source_law_coherence: float (0-1)
+                - zpe_grounded: bool
+                - auris_lighthouse_cleared: bool
         """
         self._cycle_count += 1
         cycle_start = time.time()
@@ -1422,8 +1646,8 @@ class AutonomyHub:
             # Re-run consensus with learned weights
             consensus = self._weighted_consensus(predictions, learned_weights)
 
-        # STEP 6: Decision gate evaluates everything
-        decision = self.decision_gate.evaluate(consensus, data_signals, predictions)
+        # STEP 6: Decision gate evaluates everything (including external cognitive gates)
+        decision = self.decision_gate.evaluate(consensus, data_signals, predictions, external_checks)
 
         # STEP 7: Publish decision to ThoughtBus
         if self._thought_bus:

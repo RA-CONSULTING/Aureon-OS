@@ -34,6 +34,25 @@ except Exception:
 
 logger = logging.getLogger(__name__)
 
+# Module-level shared session cache to prevent multiple instances from
+# flooding Capital.com with independent session requests.
+_SHARED_SESSION: Dict[str, Any] = {
+    "cst": None,
+    "x_security_token": None,
+    "session_start_time": 0.0,
+    "demo_mode": None,
+    "rate_limit_until": 0.0,
+    "init_error": "",
+}
+
+# Module-level shared market cache so multiple CapitalClient instances
+# don't each re-download the full market catalogue.
+_SHARED_MARKET_CACHE: Dict[str, Any] = {
+    "markets": [],
+    "market_index": {},
+    "market_cache_time": 0.0,
+}
+
 CAPITAL_HTTP_TIMEOUT = float(os.getenv('CAPITAL_HTTP_TIMEOUT_SECS', '8'))
 CAPITAL_SESSION_RETRY_BACKOFF_SECS = float(os.getenv('CAPITAL_SESSION_RETRY_BACKOFF_SECS', '15'))
 CAPITAL_TICKER_WORKERS = int(os.getenv('CAPITAL_TICKER_WORKERS', '4'))
@@ -58,20 +77,32 @@ class CapitalClient:
         self.password = os.getenv('CAPITAL_PASSWORD') or os.getenv('CAPITAL_API_PASSWORD')
         self.demo_mode = os.getenv('CAPITAL_DEMO', '0') == '1'
         self.init_error = ""
-        
+
         if self.demo_mode:
             self.base_url = "https://demo-api-capital.backend-capital.com/api/v1"
         else:
             self.base_url = "https://api-capital.backend-capital.com/api/v1"
-            
-        self.cst = None
-        self.x_security_token = None
-        self.session_start_time = 0
+
         self.dry_run = False  # ALWAYS LIVE
-        self.market_cache: List[Dict[str, Any]] = []
-        self.market_index: Dict[str, Dict[str, Any]] = {}
-        self.market_cache_time = 0.0
-        self.market_cache_ttl = int(os.getenv('CAPITAL_MARKET_CACHE_TTL', '900'))  # 15 minutes
+        # Share session tokens across all CapitalClient instances
+        global _SHARED_SESSION
+        if _SHARED_SESSION.get("demo_mode") is None:
+            _SHARED_SESSION["demo_mode"] = self.demo_mode
+        if _SHARED_SESSION.get("demo_mode") == self.demo_mode and _SHARED_SESSION.get("cst"):
+            self.cst = _SHARED_SESSION.get("cst")
+            self.x_security_token = _SHARED_SESSION.get("x_security_token")
+            self.session_start_time = float(_SHARED_SESSION.get("session_start_time", 0.0) or 0.0)
+            self.init_error = str(_SHARED_SESSION.get("init_error", "") or "")
+        else:
+            self.cst = None
+            self.x_security_token = None
+            self.session_start_time = 0
+        # Share market cache across instances to avoid duplicate catalogue downloads
+        global _SHARED_MARKET_CACHE
+        self.market_cache: List[Dict[str, Any]] = list(_SHARED_MARKET_CACHE.get("markets", []))
+        self.market_index: Dict[str, Dict[str, Any]] = dict(_SHARED_MARKET_CACHE.get("market_index", {}))
+        self.market_cache_time = float(_SHARED_MARKET_CACHE.get("market_cache_time", 0.0) or 0.0)
+        self.market_cache_ttl = int(os.getenv('CAPITAL_MARKET_CACHE_TTL', '3600'))  # 60 minutes (was 15)
         self._rate_limit_until = 0  # Timestamp when rate limit expires
         self._rate_limit_logged = False  # Only log rate limits once
         self._session_error_logged = False  # Only log session errors once
@@ -82,7 +113,7 @@ class CapitalClient:
         self._accounts_cache_time: float = 0.0                  # Accounts cache fetch timestamp
         self._snapshot_cache: Dict[str, Any] = {}               # In-memory market snapshot cache {epic: data}
         self._snapshot_cache_times: Dict[str, float] = {}       # Snapshot cache fetch timestamps
-        
+
         if not self.api_key or not self.identifier or not self.password:
             logger.warning("Capital.com credentials not fully set. Client will be disabled.")
             self.enabled = False
@@ -108,17 +139,38 @@ class CapitalClient:
         """Create a new session to get CST and X-SECURITY-TOKEN."""
         if not self.enabled:
             return
-        
+
+        global _SHARED_SESSION
+        now = time.time()
+
+        # Check global rate limit first
+        if now < _SHARED_SESSION.get("rate_limit_until", 0.0):
+            self._rate_limit_until = _SHARED_SESSION.get("rate_limit_until", 0.0)
+            self.init_error = "rate_limited"
+            return  # Still rate limited globally, skip silently
+
         # Check if we're rate limited
-        if time.time() < self._rate_limit_until:
+        if now < self._rate_limit_until:
             return  # Still rate limited, skip silently
 
-        if time.time() < self._next_session_retry_at:
+        if now < self._next_session_retry_at:
             return
-        
-        # Check if session is still valid (avoid unnecessary re-auth within 50 min window)
-        if (self.cst and self.x_security_token and 
-            (time.time() - self.session_start_time) < (50 * 60)):  # 50 min buffer
+
+        # Check shared session cache first (avoid duplicate auth across instances)
+        if (_SHARED_SESSION.get("demo_mode") == self.demo_mode
+                and _SHARED_SESSION.get("cst")
+                and _SHARED_SESSION.get("x_security_token")
+                and (now - float(_SHARED_SESSION.get("session_start_time", 0.0) or 0.0)) < (50 * 60)):
+            self.cst = _SHARED_SESSION.get("cst")
+            self.x_security_token = _SHARED_SESSION.get("x_security_token")
+            self.session_start_time = float(_SHARED_SESSION.get("session_start_time", 0.0) or 0.0)
+            self.init_error = str(_SHARED_SESSION.get("init_error", "") or "")
+            logger.debug("Capital.com session reused from shared cache.")
+            return
+
+        # Check if this instance already has a valid session
+        if (self.cst and self.x_security_token and
+            (now - self.session_start_time) < (50 * 60)):  # 50 min buffer
             logger.debug("Capital.com session still valid (within 50 min), skipping re-auth")
             return
 
@@ -131,7 +183,7 @@ class CapitalClient:
             "X-CAP-API-KEY": self.api_key,
             "Content-Type": "application/json"
         }
-        
+
         try:
             response = requests.post(url, json=payload, headers=headers, timeout=CAPITAL_HTTP_TIMEOUT)
             if response.status_code == 200:
@@ -141,10 +193,17 @@ class CapitalClient:
                 self._next_session_retry_at = 0.0
                 self.init_error = ""
                 self._session_error_logged = False  # Reset on success
+                # Update shared cache so other instances can reuse
+                _SHARED_SESSION["cst"] = self.cst
+                _SHARED_SESSION["x_security_token"] = self.x_security_token
+                _SHARED_SESSION["session_start_time"] = self.session_start_time
+                _SHARED_SESSION["demo_mode"] = self.demo_mode
+                _SHARED_SESSION["init_error"] = self.init_error
                 logger.info("Capital.com session established.")
             elif response.status_code == 429 or 'too-many.requests' in response.text.lower():
                 # Rate limited - back off for 10 minutes (Capital.com has aggressive limits)
                 self._rate_limit_until = time.time() + 600
+                _SHARED_SESSION["rate_limit_until"] = self._rate_limit_until
                 self.init_error = "rate_limited"
                 if not self._session_error_logged:
                     logger.warning("Capital.com rate limited - backing off for 5 minutes")
@@ -238,14 +297,14 @@ class CapitalClient:
         """Get headers for authenticated requests."""
         if not self.enabled:
             return {}  # Don't try to create session when disabled
-        
+
         if not self.cst or not self.x_security_token:
             self._create_session()
-            
+
         # If session creation failed, return empty headers
         if not self.cst or not self.x_security_token:
             return {}
-            
+
         return {
             "X-CAP-API-KEY": self.api_key,
             "CST": self.cst,
@@ -282,7 +341,20 @@ class CapitalClient:
         if not self.enabled:
             return []
 
-        # Return in-memory cache if still fresh.
+        global _SHARED_MARKET_CACHE
+
+        # Return shared in-memory cache if still fresh.
+        if (
+            not force_refresh
+            and _SHARED_MARKET_CACHE.get("markets")
+            and (time.time() - float(_SHARED_MARKET_CACHE.get("market_cache_time", 0.0) or 0.0)) < self.market_cache_ttl
+        ):
+            self.market_cache = list(_SHARED_MARKET_CACHE["markets"])
+            self.market_index = dict(_SHARED_MARKET_CACHE.get("market_index", {}))
+            self.market_cache_time = float(_SHARED_MARKET_CACHE.get("market_cache_time", 0.0) or 0.0)
+            return self.market_cache
+
+        # Return instance in-memory cache if still fresh.
         if (
             not force_refresh
             and self.market_cache
@@ -309,6 +381,9 @@ class CapitalClient:
                             self.market_cache = markets
                             self.market_cache_time = time.time() - age
                             self._update_market_index(markets)
+                            _SHARED_MARKET_CACHE["markets"] = list(markets)
+                            _SHARED_MARKET_CACHE["market_index"] = dict(self.market_index)
+                            _SHARED_MARKET_CACHE["market_cache_time"] = self.market_cache_time
                             logger.info(f"Capital.com market catalogue loaded from disk cache ({len(markets)} markets, age={age:.0f}s)")
                             return self.market_cache
             except Exception as _disk_err:
@@ -317,9 +392,14 @@ class CapitalClient:
         markets: List[Dict[str, Any]] = []
         queue: List[Optional[str]] = [None]
         visited: set = set()
+        bfs_started = time.time()
+        max_bfs_sec = 30.0  # Hard cap on catalogue traversal time
 
-        while queue:
+        while queue and (time.time() - bfs_started) < max_bfs_sec:
             node_id = queue.pop(0)
+            if node_id in visited:
+                continue
+            visited.add(node_id)
             path = '/marketnavigation' if not node_id else f'/marketnavigation/{node_id}'
             try:
                 response = self._request('GET', path)
@@ -451,17 +531,17 @@ class CapitalClient:
 
     def get_account_balance(self) -> Dict[str, float]:
         """Get account balances.
-        
+
         Note: Capital.com API may report currency incorrectly (e.g. 'USD' for GBP accounts).
         We override to use the actual account currency which is GBP for UK accounts.
         """
         if not self.enabled:
             return {}
-        
+
         # Override: Capital.com UK accounts are denominated in GBP
         # The API sometimes incorrectly reports 'USD' as the currency label
         account_currency = os.getenv('CAPITAL_ACCOUNT_CURRENCY', 'GBP').upper()
-            
+
         try:
             response = self._request('GET', '/accounts')
             if response.status_code == 200:
@@ -481,7 +561,7 @@ class CapitalClient:
         except Exception as e:
             logger.error(f"Error fetching Capital.com balances: {e}")
             return {}
-    
+
     def get_accounts(self, *, cache_ttl: float = 60.0) -> List[Dict[str, Any]]:
         """Get account information including available balance.
         Returns list of accounts with structure: [{'accountId': str, 'available': float, 'balance': float}]
@@ -526,7 +606,7 @@ class CapitalClient:
             return {'price': 0.0, 'bid': 0.0, 'ask': 0.0}
 
         # 🔥 Skip crypto symbols - Capital.com doesn't have them
-        CRYPTO_PATTERNS = ('USDT', 'USDC', 'BTC', 'ETH', 'XBT', 'SOL', 'ADA', 'XRP', 
+        CRYPTO_PATTERNS = ('USDT', 'USDC', 'BTC', 'ETH', 'XBT', 'SOL', 'ADA', 'XRP',
                            'DOGE', 'SHIB', 'AVAX', 'DOT', 'LINK', 'MATIC', 'UNI')
         if any(p in symbol.upper() for p in CRYPTO_PATTERNS):
             return {'price': 0.0, 'bid': 0.0, 'ask': 0.0}
@@ -630,7 +710,7 @@ class CapitalClient:
 
     def get_24h_tickers(self) -> List[Dict[str, Any]]:
         """
-        Get top markets or a watchlist. 
+        Get top markets or a watchlist.
         Capital.com doesn't have a simple 'all tickers' endpoint that is lightweight.
         We'll fetch a top list or specific categories if possible.
         For now, let's fetch top crypto and tech stocks if we can, or just return empty if too complex.
@@ -638,7 +718,7 @@ class CapitalClient:
         """
         if not self.enabled:
             return []
-            
+
         max_snapshots = int(os.getenv('CAPITAL_MAX_TICKER_SNAPSHOTS', '400'))
         tickers: List[Dict[str, Any]] = []
         markets = self.get_all_markets()
@@ -732,17 +812,17 @@ class CapitalClient:
         """Place a market order."""
         if not self.enabled:
             return {'error': 'Client disabled'}
-        
+
         # 🔥 CRYPTO GUARD: Capital.com does NOT support direct crypto trading!
         # Only CFDs (forex, indices, commodities, stocks) are supported
-        CRYPTO_PATTERNS = ('USDT', 'USDC', 'BTC', 'ETH', 'XBT', 'SOL', 'ADA', 'XRP', 
+        CRYPTO_PATTERNS = ('USDT', 'USDC', 'BTC', 'ETH', 'XBT', 'SOL', 'ADA', 'XRP',
                            'DOGE', 'SHIB', 'AVAX', 'DOT', 'LINK', 'MATIC', 'UNI',
                            'ATOM', 'LTC', 'BCH', 'ETC', 'XLM', 'ALGO', 'FIL', 'VET')
         symbol_upper = symbol.upper()
         if any(pattern in symbol_upper for pattern in CRYPTO_PATTERNS):
             logger.warning(f"Capital.com BLOCKED crypto order for {symbol} - use Binance/Kraken instead")
             return {'error': 'Crypto not supported on Capital.com', 'rejected': True, 'reason': 'CRYPTO_NOT_SUPPORTED'}
-        
+
         if self.dry_run:
             logger.info(f"[DRY RUN] Capital.com {side} {quantity} {symbol}")
             return {'id': 'dry_run_id', 'status': 'filled'}
@@ -772,7 +852,7 @@ class CapitalClient:
             stop_amount=stop_amount,
             trailing_stop=trailing_stop,
         )
-        
+
         try:
             response = self._request('POST', path, json_body=payload)
             if response.status_code == 200:
@@ -970,7 +1050,7 @@ class CapitalClient:
         """Get all open positions."""
         if not self.enabled:
             return []
-            
+
         try:
             response = self._request('GET', '/positions')
             if response.status_code == 200:
@@ -1017,7 +1097,7 @@ class CapitalClient:
         """
         if not self.enabled:
             return []
-            
+
         path = '/history/activity'
         params: Dict[str, Any] = {"detailed": "true"}
         if from_date:
@@ -1026,7 +1106,7 @@ class CapitalClient:
             if raw and "T" not in raw:
                 raw = raw + "T00:00:00"
             params['from'] = raw
-            
+
         try:
             response = self._request('GET', path, params=params)
             if response.status_code == 200:
@@ -1040,12 +1120,12 @@ class CapitalClient:
     def compute_trade_fees(self, position: Dict[str, Any]) -> Dict[str, float]:
         """
         Calculate fees for a Capital.com position/trade.
-        
+
         Capital.com Fee Structure (CFD/Spread Betting):
         - Spread cost: Built into bid/ask (varies by instrument, typically 0.1-0.5%)
         - Overnight financing: ~2.5% annually (charged daily on leveraged positions)
         - No commission on most instruments
-        
+
         Returns dict with:
         - spread_cost: Estimated spread cost in account currency
         - overnight_cost: Accumulated overnight financing
@@ -1055,30 +1135,30 @@ class CapitalClient:
         size = float(position.get('position', {}).get('size', 0) or 0)
         level = float(position.get('position', {}).get('level', 0) or 0)  # Entry price
         notional = size * level
-        
+
         # Get current market to estimate spread
         epic = position.get('market', {}).get('epic', '')
         market = position.get('market', {})
         bid = float(market.get('bid', 0) or 0)
         offer = float(market.get('offer', 0) or 0)
-        
+
         # Calculate spread percentage
         if bid > 0 and offer > 0:
             spread_pct = (offer - bid) / ((offer + bid) / 2)
         else:
             spread_pct = 0.001  # Default 0.1%
-            
+
         # Spread cost (paid on entry)
         spread_cost = notional * spread_pct
-        
+
         # Overnight financing (calculate based on creation date if available)
         overnight_cost = 0.0
         # Note: Would need to track days held for accurate overnight cost
         # For now, estimate based on typical overnight rates
-        
+
         total_fees = spread_cost + overnight_cost
         fee_pct = (total_fees / notional) if notional > 0 else 0
-        
+
         return {
             'spread_cost': spread_cost,
             'spread_pct': spread_pct,
@@ -1101,7 +1181,7 @@ class CapitalClient:
         """
         Calculate total fees for a position/trade in the quote currency.
         This provides a consistent interface with Binance/Kraken clients.
-        
+
         Returns: Total fee in quote currency
         """
         fees = self.compute_trade_fees(position)
@@ -1110,9 +1190,9 @@ class CapitalClient:
     def calculate_cost_basis(self, symbol: str) -> Dict[str, Any]:
         """
         Calculate cost basis for a symbol from order history.
-        
+
         Capital.com uses 'epic' for symbol names (e.g., 'BTCUSD', 'AAPL').
-        
+
         Returns dict with:
         - symbol: The symbol/epic
         - total_quantity: Net quantity held
@@ -1121,7 +1201,7 @@ class CapitalClient:
         - trades: Number of trades
         """
         history = self.get_order_history()
-        
+
         if not history:
             return {
                 "symbol": symbol,
@@ -1130,40 +1210,40 @@ class CapitalClient:
                 "avg_cost": 0.0,
                 "trades": 0
             }
-        
+
         total_qty = 0.0
         buy_qty = 0.0
         buy_cost = 0.0
         trade_count = 0
-        
+
         for activity in history:
             # Capital.com activity structure varies by type
             epic = activity.get('epic', '') or activity.get('details', {}).get('epic', '')
             if epic.upper() != symbol.upper():
                 continue
-            
+
             activity_type = activity.get('type', '')
-            
+
             # Look for deal confirmed activities
             if 'deal' in activity_type.lower() or 'position' in activity_type.lower():
                 size = float(activity.get('details', {}).get('size', 0) or 0)
                 level = float(activity.get('details', {}).get('level', 0) or 0)
                 direction = activity.get('details', {}).get('direction', '')
-                
+
                 if size <= 0 or level <= 0:
                     continue
-                
+
                 trade_count += 1
-                
+
                 if direction.upper() == 'BUY':
                     total_qty += size
                     buy_qty += size
                     buy_cost += size * level
                 elif direction.upper() == 'SELL':
                     total_qty -= size
-        
+
         avg_cost = buy_cost / buy_qty if buy_qty > 0 else 0.0
-        
+
         return {
             "symbol": symbol,
             "total_quantity": total_qty,

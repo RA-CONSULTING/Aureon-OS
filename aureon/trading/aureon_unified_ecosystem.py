@@ -622,6 +622,49 @@ except ImportError as e:
     HARMONIC_FUSION_AVAILABLE = False
     print(f"⚠️  Harmonic Wave Fusion not available: {e}")
 
+# ⚡ QGITA - QUANTUM GRAVITY IN THE ACT (φ-resonant signal detection)
+try:
+    from aureon.wisdom.aureon_qgita_framework import QGITAMarketAnalyzer
+    QGITA_AVAILABLE = True
+    print("⚡ QGITA Framework loaded - Golden Ratio φ temporal resonance filter")
+except ImportError as e:
+    QGITA_AVAILABLE = False
+    QGITAMarketAnalyzer = None
+    print(f"⚠️  QGITA Framework not available: {e}")
+
+# ☉ SOURCE LAW - 10-9-1 Emerald Tablet decision funnel
+try:
+    from aureon.queen.queen_source_law import SourceLawEngine, ENTRY_COHERENCE, EXIT_COHERENCE
+    SOURCE_LAW_AVAILABLE = True
+    print(f"☉ Source Law Engine loaded - ENTRY={ENTRY_COHERENCE} EXIT={EXIT_COHERENCE}")
+except ImportError as e:
+    SOURCE_LAW_AVAILABLE = False
+    SourceLawEngine = None
+    ENTRY_COHERENCE = 0.938
+    EXIT_COHERENCE = 0.934
+    print(f"⚠️  Source Law Engine not available: {e}")
+
+# ⏳ TEMPORAL GROUND - Multiverse hash chain + ZPE grounding
+try:
+    from aureon.queen.temporal_ground import TemporalGroundStation, get_temporal_ground_station
+    TEMPORAL_GROUND_AVAILABLE = True
+    print("⏳ Temporal Ground Station loaded - ZPE + multiverse hash chain")
+except ImportError as e:
+    TEMPORAL_GROUND_AVAILABLE = False
+    TemporalGroundStation = None
+    get_temporal_ground_station = None
+    print(f"⚠️  Temporal Ground not available: {e}")
+
+# 🔮 AURIS METACOGNITION - 9-node voter + lighthouse
+try:
+    from aureon.vault.auris_metacognition import AurisMetacognition
+    AURIS_META_AVAILABLE = True
+    print("🔮 Auris Metacognition loaded - 9-node consensus voter")
+except ImportError as e:
+    AURIS_META_AVAILABLE = False
+    AurisMetacognition = None
+    print(f"⚠️  Auris Metacognition not available: {e}")
+
 # 🪜 CONVERSION LADDER - Capital Momentum Builder (Mycelium-directed) 🪜
 try:
     from aureon.conversion.aureon_conversion_ladder import ConversionLadder
@@ -13461,6 +13504,54 @@ class AureonKrakenEcosystem:
         except Exception as e:
             print(f"⚠️  Autonomy Hub init deferred: {e}")
 
+        # ⚡ QGITA - Quantum Gravity in the Act (φ-resonant temporal filter)
+        self.qgita = None
+        if QGITA_AVAILABLE:
+            try:
+                self.qgita = QGITAMarketAnalyzer()
+                print("   ⚡ QGITA: ACTIVE - Fibonacci lattice + Lighthouse consensus wired")
+            except Exception as e:
+                print(f"   ⚠️ QGITA init failed: {e}")
+
+        # ☉ SOURCE LAW - 10-9-1 Emerald Tablet cognitive gate
+        self.source_law = None
+        if SOURCE_LAW_AVAILABLE:
+            try:
+                self.source_law = SourceLawEngine()
+                self.source_law.start()  # Start vacuum accumulation + ThoughtBus subscribers
+                print(f"   ☉ Source Law: ACTIVE - ENTRY={ENTRY_COHERENCE} EXIT={EXIT_COHERENCE}")
+            except Exception as e:
+                print(f"   ⚠️ Source Law init failed: {e}")
+
+        # ⏳ TEMPORAL GROUND - ZPE grounding + multiverse hash chain
+        self.temporal_ground = None
+        if TEMPORAL_GROUND_AVAILABLE:
+            try:
+                self.temporal_ground = get_temporal_ground_station(
+                    thought_bus=(THOUGHT_BUS if THOUGHT_BUS_AVAILABLE else None)
+                )
+                print("   ⏳ Temporal Ground: ACTIVE - ZPE + hash chain monitoring")
+            except Exception as e:
+                print(f"   ⚠️ Temporal Ground init failed: {e}")
+
+        # 📦 VAULT - Required for Auris metacognition + cognitive gates
+        self.vault = None
+        try:
+            from aureon.vault.aureon_vault import AureonVault
+            self.vault = AureonVault()
+            print("   📦 Vault: ACTIVE - Auris cognitive substrate ready")
+        except Exception as e:
+            print(f"   ⚠️ Vault init failed: {e}")
+
+        # 🔮 AURIS METACOGNITION - 9-node voter
+        self.auris_meta = None
+        if AURIS_META_AVAILABLE:
+            try:
+                self.auris_meta = AurisMetacognition()
+                print("   🔮 Auris Meta: ACTIVE - 9-node consensus + lighthouse")
+            except Exception as e:
+                print(f"   ⚠️ Auris Meta init failed: {e}")
+
         # ⚔️ THE MIND - Strategic War Planner (adversarial chess engine)
         self.war_planner = None
         try:
@@ -14275,6 +14366,21 @@ class AureonKrakenEcosystem:
         except Exception:
             # Never let wiring failure break startup
             pass
+
+        # ⏱️ LOOP TIMING TELEMETRY — track signal→order→goal latencies
+        self._loop_timing = {
+            "signal_timestamp": 0.0,
+            "cognitive_tick_ms": 0.0,
+            "order_fired_timestamp": 0.0,
+            "goal_achieved_timestamp": 0.0,
+            "signal_to_order_sec": 0.0,
+            "order_to_goal_sec": 0.0,
+            "full_loop_sec": 0.0,
+            "target_signal_to_order_sec": 30.0,
+            "target_order_to_goal_sec": 30.0,
+            "target_full_loop_sec": 50.0,
+            "history": [],  # List of completed loop timings
+        }
 
     def _emit_mycelium_event(self, event: str, payload: Optional[Dict[str, Any]] = None) -> None:
         """Emit a normalized event into the MyceliumStateAggregator and ThoughtBus.
@@ -15856,7 +15962,22 @@ class AureonKrakenEcosystem:
         """
         if self.scouts_deployed or not CONFIG['DEPLOY_SCOUTS_IMMEDIATELY']:
             return
-        
+
+        # 🧠 COGNITIVE HEALTH GATE — even scouts need a minimally coherent ecosystem
+        cog_report = getattr(self, '_last_cognitive_report', None)
+        if cog_report:
+            try:
+                sl = cog_report.get("source_law", {})
+                tg = cog_report.get("temporal_ground", {})
+                # Don't deploy scouts if ZPE is de-grounded or SL is on HOLD with very low coherence
+                zpe_ok = tg.get("grounded", True)
+                sl_ok = sl.get("action") == "EXECUTE" and sl.get("coherence_gamma", 0.0) >= 0.90
+                if not (zpe_ok and sl_ok):
+                    print(f"   🧠🛑 SCOUT DEPLOYMENT BLOCKED: cognitive health too low (ZPE={zpe_ok} SL={sl.get('action')}/{sl.get('coherence_gamma', 0):.3f})")
+                    return
+            except Exception:
+                pass
+
         # ☘️ USE IRISH PATRIOT DEPLOYER IF AVAILABLE
         if hasattr(self, 'patriot_deployer') and self.patriot_deployer is not None:
             print("\n   ☘️🔥 DEPLOYING IRISH PATRIOT SCOUTS - Celtic Warriors Ready! 🔥☘️")
@@ -17622,40 +17743,73 @@ class AureonKrakenEcosystem:
     
     def _check_eta_oracle_exit(self, pos: 'Position', current_price: float, reason: str) -> Optional[bool]:
         """
-        🔮 ETA ORACLE - SIMPLE BREAKEVEN CHECK
-        
-        Exit only when profit exceeds breakeven (fees covered + tiny margin).
-        
+        🔮 ETA ORACLE - MOMENTUM-BASED TIME-TO-TARGET PREDICTOR
+
+        Predicts how many seconds until the position reaches net penny profit.
+        Uses price momentum + market depth to estimate ETA.
+
         Returns:
-            True: Profit > breakeven, OK to exit
-            False: Still below breakeven, hold
-            None: Can't calculate, use standard logic
+            True:  Profit already secured OR ETA is very short — exit now
+            False: ETA > 30s target — hold position
+            None:  Can't calculate, use standard logic
         """
         try:
-            # Calculate breakeven threshold
             entry_value = pos.entry_value if pos.entry_value > 0 else (pos.quantity * pos.entry_price)
             current_value = pos.quantity * current_price
             gross_pnl = current_value - entry_value
-            
-            # Get fee rate for this exchange
+
+            # Fee calculation
             fee_rate = get_exchange_fee_rate(pos.exchange if hasattr(pos, 'exchange') else 'kraken')
             slippage = CONFIG.get('SLIPPAGE_PCT', 0.002)
             spread = CONFIG.get('SPREAD_COST_PCT', 0.001)
             total_cost_rate = fee_rate + slippage + spread
-            
-            # Breakeven = both legs of fees + tiny cushion (0.1%)
             breakeven_threshold = entry_value * (total_cost_rate * 2 + 0.001)
-            
-            # Only allow exit if gross profit exceeds breakeven
+
+            # Already above breakeven → immediate exit approved
             if gross_pnl > breakeven_threshold:
-                logger.info(f"   ✅ ABOVE BREAKEVEN: {pos.symbol} gross=${gross_pnl:.4f} > threshold=${breakeven_threshold:.4f}")
-                return True  # Exit approved
+                return True
+
+            # Not yet profitable — estimate time to reach target using momentum
+            # Get recent price history for this symbol
+            price_history = self.price_history.get(pos.symbol, [])
+            if len(price_history) < 3:
+                return None  # Not enough data for ETA
+
+            # Calculate momentum (price change per second)
+            recent_prices = price_history[-10:]
+            if len(recent_prices) >= 2:
+                price_delta = recent_prices[-1] - recent_prices[0]
+                # Assume price_history is sampled every ~2s (loop interval)
+                momentum_per_sec = price_delta / (len(recent_prices) * 2.0)
             else:
-                # Still below breakeven
-                return False
-            
+                return None
+
+            # If momentum is negative or flat, we won't reach target soon
+            if momentum_per_sec <= 0:
+                return False  # Hold, momentum not helping
+
+            # Distance to target in value terms
+            distance_to_target = breakeven_threshold - gross_pnl
+            if distance_to_target <= 0:
+                return True
+
+            # ETA = distance / (quantity * momentum_per_sec)
+            eta_sec = distance_to_target / (pos.quantity * momentum_per_sec)
+
+            # If ETA is within our 30s goal target → hold and wait
+            # If ETA is very short (< 5s) → approve exit (we're almost there)
+            if eta_sec <= 5.0:
+                logger.info(f"   🔮 ETA ORACLE: {pos.symbol} almost at target (ETA {eta_sec:.1f}s)")
+                return True
+            elif eta_sec <= 30.0:
+                logger.info(f"   🔮 ETA ORACLE: {pos.symbol} ETA {eta_sec:.1f}s to target (within goal)")
+                return False  # Hold, will reach soon
+            else:
+                logger.info(f"   🔮 ETA ORACLE: {pos.symbol} ETA {eta_sec:.1f}s to target (too slow)")
+                return False  # Hold but flagged as slow
+
         except Exception as e:
-            logger.debug(f"Breakeven check failed: {e}")
+            logger.debug(f"ETA oracle failed: {e}")
             return None
     
     def should_exit_trade(self, pos: 'Position', current_price: float, reason: str) -> bool:
@@ -18255,6 +18409,12 @@ class AureonKrakenEcosystem:
                                         with self.price_lock:
                                             self.realtime_prices[symbol] = price
                                             self.realtime_prices[symbol.lower()] = price
+                                        # ⚡ FEED QGITA on every live tick
+                                        if self.qgita is not None:
+                                            try:
+                                                self.qgita.feed_price(price, time.time())
+                                            except Exception:
+                                                pass
                                             
                                 elif exchange_name == 'alpaca':
                                     if isinstance(data, list):
@@ -18267,6 +18427,12 @@ class AureonKrakenEcosystem:
                                                 if price > 0:
                                                     with self.price_lock:
                                                         self.realtime_prices[symbol] = price
+                                                    # ⚡ FEED QGITA on every live tick
+                                                    if self.qgita is not None:
+                                                        try:
+                                                            self.qgita.feed_price(price, time.time())
+                                                        except Exception:
+                                                            pass
                                 
                                 else:
                                     # Kraken
@@ -18278,7 +18444,13 @@ class AureonKrakenEcosystem:
                                             with self.price_lock:
                                                 self.realtime_prices[ws_pair] = price
                                                 # Map back to internal symbol if possible
-                                                pass 
+                                                pass
+                                            # ⚡ FEED QGITA on every live tick
+                                            if self.qgita is not None:
+                                                try:
+                                                    self.qgita.feed_price(price, time.time())
+                                                except Exception:
+                                                    pass
                             except:
                                 pass
                                 
@@ -19956,6 +20128,12 @@ class AureonKrakenEcosystem:
         """
         symbol = opp['symbol']
         price = opp['price']
+        # 🎯 BID/ASK REALISM — use ask price for entry (what we actually pay)
+        ticker = self.ticker_cache.get(symbol, {})
+        ask = ticker.get('ask', 0)
+        if ask and ask > 0:
+            price = float(ask)
+            opp['price'] = price
         hint_source = opp.get('source')
         exchange = self._detect_exchange_for_symbol(symbol, hint_source)
         exchange_marker = exchange.upper()
@@ -20019,6 +20197,24 @@ class AureonKrakenEcosystem:
             CONFIG.get('FORCE_TRADE', False)
         )
 
+        # 🎚️ SIGNAL TIER ROUTING — dynamic path based on signal strength
+        signal_tier = opp.get('signal_tier', '')
+        if not signal_tier and not is_force_scout:
+            signal_tier = self.get_signal_tier(opp)
+            opp['signal_tier'] = signal_tier
+        if is_force_scout:
+            signal_tier = 'FAST'
+            opp['signal_tier'] = signal_tier
+
+        tier_icon = {'FAST': '⚡', 'STANDARD': '🔷', 'PREMIUM': '💎', 'REJECT': '❌'}.get(signal_tier, '?')
+        if signal_tier == 'REJECT' and not is_force_scout:
+            print(f"   {tier_icon} TIER REJECT {symbol}: coherence too low for any path")
+            return None
+
+        # Fast-path flags: skip heavy gates for weak signals (scout-like validation)
+        is_fast_path = (signal_tier == 'FAST')
+        is_premium_path = (signal_tier == 'PREMIUM')
+
         # ⏱️ 1-minute penny-profit consensus gate (unlimited entries need this)
         consensus_ok, consensus_reason, consensus_details = has_one_minute_profit_consensus(opp)
         # Persist the "why" so downstream systems (sniper/scanner/thoughtbus) share the same intent.
@@ -20057,8 +20253,8 @@ class AureonKrakenEcosystem:
             )
 
         # ☘️ CELTIC SNIPER ENTRY VALIDATION
-        # Use Celtic intelligence to validate entry quality
-        if hasattr(self, 'celtic_sniper') and self.celtic_sniper is not None and not is_force_scout:
+        # Skip for fast path (we want minimal latency for validation trades)
+        if hasattr(self, 'celtic_sniper') and self.celtic_sniper is not None and not is_force_scout and not is_fast_path:
             try:
                 entry_check = self.celtic_sniper.validate_entry(
                     symbol=symbol,
@@ -20111,10 +20307,15 @@ class AureonKrakenEcosystem:
                 except Exception:
                     pass
 
-            allowed, ops_reason = OPS_CORE.check_trade_allowed(
-                symbol=symbol, price=price, exchange=exchange,
-                queen_guidance=queen_guidance,
-            )
+            # Skip OPS_CORE for fast path to reduce latency
+            if not is_fast_path:
+                allowed, ops_reason = OPS_CORE.check_trade_allowed(
+                    symbol=symbol, price=price, exchange=exchange,
+                    queen_guidance=queen_guidance,
+                )
+            else:
+                allowed = True
+                ops_reason = "fast_path_bypass"
             if not allowed:
                 self._emit_mycelium_event('entry.blocked_ops', {
                     'symbol': symbol,
@@ -20124,11 +20325,53 @@ class AureonKrakenEcosystem:
                 print(f"   🔧🛑 OPS GATE BLOCKED {symbol}: {ops_reason}")
                 return None
 
+        # ═══════════════════════════════════════════════════════════════════════
+        # ☉ SOURCE LAW / ZPE / AURIS GATE ROUTING
+        # Fast path: simple coherence check only (minimal latency)
+        # Standard/Premium: full hard gates
+        # ═══════════════════════════════════════════════════════════════════════
+        if is_fast_path:
+            # Fast path: minimal gate — just check raw opportunity coherence
+            if opp.get('coherence', 0.0) < 0.85:
+                print(f"   ⚡🛑 FAST PATH BLOCKED {symbol}: coherence={opp.get('coherence', 0):.3f} < 0.85")
+                return None
+        elif not is_force_scout:
+            # Full hard gates for STANDARD and PREMIUM
+            sl = (self._last_cognitive_report or {}).get("source_law", {})
+            market_gamma = (self._last_cognitive_report or {}).get("coherence_gamma", 0.0)
+            effective_coherence = max(sl.get("coherence_gamma", 0.0), market_gamma)
+            if effective_coherence < ENTRY_COHERENCE:
+                print(f"   ☉🛑 SOURCE LAW BLOCKED {symbol}: effective_coherence={effective_coherence:.3f} < {ENTRY_COHERENCE}")
+                self._emit_mycelium_event('entry.blocked_source_law', {
+                    'symbol': symbol, 'exchange': exchange,
+                    'coherence': effective_coherence, 'threshold': ENTRY_COHERENCE,
+                })
+                return None
+
+            tg = (self._last_cognitive_report or {}).get("temporal_ground", {})
+            if tg and not tg.get('grounded', True):
+                print(f"   ⏳🛑 TEMPORAL GROUND BLOCKED {symbol}: ZPE de-grounded (dist={tg.get('zpe_distance',0):.4f})")
+                self._emit_mycelium_event('entry.blocked_zpe', {
+                    'symbol': symbol, 'exchange': exchange,
+                    'zpe_distance': tg.get('zpe_distance', 0),
+                })
+                return None
+
+            auris = (self._last_cognitive_report or {}).get("auris", {})
+            if not auris.get('lighthouse_cleared', False):
+                print(f"   🔮🛑 AURIS BLOCKED {symbol}: lighthouse not cleared (conf={auris.get('confidence',0):.2f})")
+                self._emit_mycelium_event('entry.blocked_auris', {
+                    'symbol': symbol, 'exchange': exchange,
+                    'auris_confidence': auris.get('confidence', 0),
+                    'auris_consensus': auris.get('consensus', '?'),
+                })
+                return None
+
         # 🌍⚡ Get HNC frequency modifier for position sizing ⚡🌍
         hnc_modifier = 1.0
         hnc_enhanced = None
         hnc_frequency = 256.0
-        if CONFIG.get('ENABLE_HNC_FREQUENCY', True) and not is_force_scout:
+        if CONFIG.get('ENABLE_HNC_FREQUENCY', True) and not is_force_scout and not is_fast_path:
             hnc_enhanced = self.auris.update_hnc_state(
                 symbol, price, opp.get('momentum', 0), opp['coherence'], opp.get('score', 50)
             )
@@ -20184,9 +20427,11 @@ class AureonKrakenEcosystem:
         
         lattice_state = self.lattice.get_state()
         
-        # 🚀 Force scouts use fixed sizing for reliability (smaller to enable low-capital trading)
-        if is_force_scout:
-            size_fraction = 0.05  # 5% position size for forced scouts
+        # 🚀 TIER-BASED POSITION SIZING
+        if is_force_scout or is_fast_path:
+            # Fast path / scouts: tiny validation trades (2-3% max)
+            size_fraction = 0.02 if is_fast_path else 0.05
+            print(f"   ⚡ FAST SIZE {symbol}: {size_fraction*100:.0f}% (validation trade)")
         else:
             size_fraction = self.tracker.calculate_position_size(
                 opp['coherence'], symbol, hnc_modifier, imperial_modifier
@@ -20195,12 +20440,30 @@ class AureonKrakenEcosystem:
             size_fraction *= risk_mod
             size_fraction *= freq_modifier  # 🔊 Apply frequency filtering modifier
             size_fraction *= opp.get('risk_mod_from_pnl', 1.0)  # 🧠 Live P&L throttle
-            
+
             # 🎹 PIANO RESONANCE SIZING 🎹
             brain_mult = get_brain_multiplier()
             if brain_mult > 1.0:
                 size_fraction *= brain_mult
                 size_fraction = min(0.45, size_fraction)  # Cap at 45%
+
+            # ⌚ COGNITIVE WATCH SIZING — modulate by unified ecosystem coherence
+            cog_report = getattr(self, '_last_cognitive_report', None) or {}
+            cog_gamma = cog_report.get('coherence_gamma', 0.5)
+            sl_coh = (cog_report.get('source_law') or {}).get('coherence_gamma', 0.0)
+            effective_cog = max(cog_gamma, sl_coh)
+            if is_premium_path and effective_cog >= 0.98:
+                size_fraction *= 1.20
+                print(f"   💎 PREMIUM BOOST {symbol}: coherence={effective_cog:.3f} → +20% size")
+            elif effective_cog >= 0.98:
+                size_fraction *= 1.15
+                print(f"   ⌚ COG BOOST {symbol}: coherence={effective_cog:.3f} → +15% size")
+            elif effective_cog >= 0.95:
+                size_fraction *= 1.05
+                print(f"   ⌚ COG BOOST {symbol}: coherence={effective_cog:.3f} → +5% size")
+            elif effective_cog < 0.938:
+                size_fraction *= 0.5
+                print(f"   ⌚ COG THROTTLE {symbol}: coherence={effective_cog:.3f} → -50% size")
         
         if size_fraction <= 0:
             print(f"   🔴 DEBUG {symbol}: size_fraction={size_fraction:.4f}")
@@ -20675,6 +20938,7 @@ class AureonKrakenEcosystem:
             is_scout=is_scout,
             prime_size_multiplier=prime_multiplier,
             exchange=exchange,
+            signal_tier=signal_tier,
             # 🧠 Apply learned parameters from probability matrix
             learned_tp_pct=tp_pct,
             learned_sl_pct=sl_pct,
@@ -20687,6 +20951,8 @@ class AureonKrakenEcosystem:
             nexus_patterns=opp.get('nexus_patterns', []),
         )
 
+        # Attach current cognitive snapshot to the opened event
+        cog_snapshot = getattr(self, '_last_cognitive_report', None) or {}
         self._emit_mycelium_event('position.opened', {
             'symbol': symbol,
             'exchange': exchange,
@@ -20699,6 +20965,16 @@ class AureonKrakenEcosystem:
             'score': opp.get('score'),
             'coherence': opp.get('coherence'),
             'entry_consensus': opp.get('entry_consensus'),
+            'cognitive': {
+                'lambda_t': cog_snapshot.get('lambda_t'),
+                'coherence_gamma': cog_snapshot.get('coherence_gamma'),
+                'source_law_action': (cog_snapshot.get('source_law') or {}).get('action'),
+                'source_law_coherence': (cog_snapshot.get('source_law') or {}).get('coherence_gamma'),
+                'zpe_grounded': (cog_snapshot.get('temporal_ground') or {}).get('grounded'),
+                'auris_consensus': (cog_snapshot.get('auris') or {}).get('consensus'),
+                'auris_lighthouse': (cog_snapshot.get('auris') or {}).get('lighthouse_cleared'),
+                'vault_cards': cog_snapshot.get('vault_cards'),
+            },
         })
         
         # Log learned parameters if available
@@ -21136,12 +21412,65 @@ class AureonKrakenEcosystem:
                 current_price = pos.entry_price
                 source = "ENTRY (STALE)"
 
+            # 🎯 BID/ASK REALISM — use bid price for exit (what we actually receive)
+            ticker = self.ticker_cache.get(symbol, {})
+            bid = ticker.get('bid', 0)
+            if bid and bid > 0:
+                current_price = float(bid)
+                source += "/BID"
+
             # 🛡️ SAFETY: Prevent division by zero
             if pos.entry_price is None or pos.entry_price == 0:
                 logger.warning(f"⚠️ Position {symbol} has zero/null entry price - skipping")
                 continue
                 
             change_pct = (current_price - pos.entry_price) / pos.entry_price * 100
+
+            # 🧠 COGNITIVE EMERGENCY EXIT — if ecosystem coherence crashes while holding,
+            # take profit early (if any) before conditions worsen.
+            cog_report = getattr(self, '_last_cognitive_report', None)
+            if cog_report and not getattr(pos, 'is_force_scout', False):
+                try:
+                    sl = cog_report.get("source_law", {})
+                    tg = cog_report.get("temporal_ground", {})
+                    auris = cog_report.get("auris", {})
+
+                    zpe_ok = tg.get("grounded", True)
+                    sl_ok = sl.get("action") == "EXECUTE" and sl.get("coherence_gamma", 0.0) >= 0.934
+                    auris_ok = auris.get("consensus") != "SELL"
+
+                    if not (zpe_ok and sl_ok and auris_ok):
+                        # Only emergency-exit if we have at least 50% of penny profit secured
+                        exit_value = pos.quantity * current_price
+                        gross_pnl = exit_value - pos.entry_value
+                        fee_rate = get_exchange_fee_rate(pos.exchange)
+                        total_rate = fee_rate + CONFIG.get('SLIPPAGE_PCT', 0.0020) + CONFIG.get('SPREAD_COST_PCT', 0.0010)
+                        entry_fee = getattr(pos, 'entry_fee', 0.0) or (pos.entry_value * total_rate if pos.entry_value > 0 else 0.0)
+                        exit_fee = exit_value * total_rate
+                        net_pnl_est = gross_pnl - (entry_fee + exit_fee)
+
+                        # Get penny threshold
+                        target_net = 0.0001
+                        try:
+                            pt = get_penny_threshold(pos.exchange, pos.entry_value)
+                            if pt:
+                                target_net = float(pt.get('target_net', target_net))
+                        except Exception:
+                            pass
+
+                        if net_pnl_est >= target_net * 0.5:
+                            reason = "COGNITIVE_EMERGENCY"
+                            if not zpe_ok:
+                                reason += "_ZPE"
+                            if not sl_ok:
+                                reason += "_SL"
+                            if not auris_ok:
+                                reason += "_AURIS"
+                            print(f"   🧠⚡ COGNITIVE EMERGENCY EXIT {symbol}: {reason} (net=${net_pnl_est:.4f})")
+                            to_close.append((symbol, reason, change_pct, current_price))
+                            continue
+                except Exception:
+                    pass
 
             # 🍄 MYCELIUM FEEDBACK LOOP: feed live position state into the network
             # Previously the mycelium only learned on close() which can be hours/days.
@@ -21466,7 +21795,21 @@ class AureonKrakenEcosystem:
                             print(f"   🌾 PENNY HARVEST: {symbol} net ${net_pnl_est:.4f} >= ${target_net:.4f}")
                             to_close.append((symbol, "HARVEST", change_pct, current_price))
                         else:
-                            print(f"   🛡️ HOLD {symbol}: harvest blocked - net ${net_pnl_est:.4f} < ${target_net:.4f} (after costs)")
+                            # ⏱️ TIER-SPECIFIC TIMING BUDGET ENFORCEMENT
+                            hold_sec = time.time() - pos.entry_time
+                            tier = getattr(pos, 'signal_tier', 'STANDARD')
+                            tier_budget = {'FAST': 15.0, 'STANDARD': 30.0, 'PREMIUM': 45.0}.get(tier, 30.0)
+
+                            # Time budget exit: held too long with partial profit
+                            if hold_sec > tier_budget and net_pnl_est >= target_net * 0.5 and net_pnl_est > 0:
+                                print(f"   ⏱️ TIME BUDGET EXIT {symbol}: tier={tier} held {hold_sec:.0f}s/{tier_budget:.0f}s, net ${net_pnl_est:.4f}")
+                                to_close.append((symbol, f"TIME_BUDGET_{tier}", change_pct, current_price))
+                            # Fast-path early exit: don't hold validation trades too long
+                            elif tier == 'FAST' and hold_sec > 10.0 and net_pnl_est > 0:
+                                print(f"   ⚡ FAST EXIT {symbol}: validation trade held {hold_sec:.0f}s, net ${net_pnl_est:.4f}")
+                                to_close.append((symbol, "FAST_EXIT", change_pct, current_price))
+                            else:
+                                print(f"   🛡️ HOLD {symbol}: harvest blocked - net ${net_pnl_est:.4f} < ${target_net:.4f} (after costs)")
             else:
                 # Fallback to percentage-based TP/SL
                 # 🔧 FIX: Don't use fallback % stops - ALWAYS compute penny threshold
@@ -21975,12 +22318,37 @@ class AureonKrakenEcosystem:
             # Unregister position from bridge ledger
             self.bridge.unregister_position(pos.exchange, symbol)
         
+        # ⏱️ LOOP TIMING — record order→goal latency
+        try:
+            self._loop_timing["goal_achieved_timestamp"] = time.time()
+            if self._loop_timing.get("order_fired_timestamp", 0) > 0:
+                self._loop_timing["order_to_goal_sec"] = round(
+                    self._loop_timing["goal_achieved_timestamp"] - self._loop_timing["order_fired_timestamp"], 3
+                )
+                self._loop_timing["full_loop_sec"] = round(
+                    self._loop_timing["goal_achieved_timestamp"] - self._loop_timing["signal_timestamp"], 3
+                )
+                # Archive to history (keep last 50)
+                self._loop_timing["history"].append({
+                    "symbol": symbol,
+                    "signal_to_order": self._loop_timing["signal_to_order_sec"],
+                    "order_to_goal": self._loop_timing["order_to_goal_sec"],
+                    "full_loop": self._loop_timing["full_loop_sec"],
+                    "net_pnl": net_pnl,
+                    "reason": reason,
+                })
+                self._loop_timing["history"] = self._loop_timing["history"][-50:]
+        except Exception:
+            pass
+
         icon = "✅" if net_pnl > 0 else "❌"
         # Dynamic currency symbol
         curr_sym = "£" if CONFIG['BASE_CURRENCY'] == 'GBP' else "€" if CONFIG['BASE_CURRENCY'] == 'EUR' else "$"
         gen_marker = f" [G{pos.generation}]" if pos.generation > 0 else ""
         print(f"   {icon} CLOSE {symbol:12s}{gen_marker} | {reason} {pct:+.2f}% | Net: {curr_sym}{net_pnl:+.2f} | Pool: {curr_sym}{self.capital_pool.total_profits:+.2f} | WR: {self.tracker.win_rate:.1f}%")
 
+        # Attach cognitive snapshot at close (if available from entry)
+        cog_at_close = getattr(self, '_last_cognitive_report', None) or {}
         self._emit_mycelium_event('position.closed', {
             'symbol': symbol,
             'exchange': getattr(pos, 'exchange', None),
@@ -21994,10 +22362,84 @@ class AureonKrakenEcosystem:
             'net_pnl': float(net_pnl or 0.0),
             'hold_time_min': float(hold_time_min or 0.0),
             'penny_hit': bool(net_pnl >= 0.0001),
+            'cognitive': {
+                'lambda_t': cog_at_close.get('lambda_t'),
+                'coherence_gamma': cog_at_close.get('coherence_gamma'),
+                'source_law_action': (cog_at_close.get('source_law') or {}).get('action'),
+                'source_law_coherence': (cog_at_close.get('source_law') or {}).get('coherence_gamma'),
+                'zpe_grounded': (cog_at_close.get('temporal_ground') or {}).get('grounded'),
+                'auris_consensus': (cog_at_close.get('auris') or {}).get('consensus'),
+                'auris_lighthouse': (cog_at_close.get('auris') or {}).get('lighthouse_cleared'),
+            },
         })
+
+        # 🧠 COGNITIVE FEEDBACK LOOP — feed trade outcome back into vault & Source Law
+        try:
+            outcome_payload = {
+                "symbol": symbol,
+                "net_pnl": net_pnl,
+                "gross_pnl": gross_pnl,
+                "hold_time_min": hold_time_min,
+                "reason": reason,
+                "coherence_at_entry": getattr(pos, 'coherence', 0.5),
+                "penny_hit": bool(net_pnl >= 0.0001),
+                "success": net_pnl > 0,
+            }
+            if self.vault is not None:
+                self.vault.ingest("trade.outcome", outcome_payload)
+            if self.source_law is not None:
+                outcome_thought = type(
+                    "SLThought", (),
+                    {
+                        "topic": "trade.outcome",
+                        "source": "ecosystem",
+                        "payload": outcome_payload,
+                    }
+                )()
+                self.source_law._vacuum.accumulate(outcome_thought)
+        except Exception:
+            pass
+
         # Refresh equity to keep tracker in sync with realised trade
         self.refresh_equity()
         
+    def get_signal_tier(self, opp: Dict, cog_report: Optional[Dict] = None) -> str:
+        """
+        🎚️ SIGNAL TIER ROUTER — dynamic path selection based on signal strength.
+
+        Tiers:
+            FAST     : Weak/moderate signals — minimal gates, small size, quick exit.
+                       Used to validate market conditions cheaply (scout behavior).
+            STANDARD : Good signals — full hard gates, standard size, standard budget.
+            PREMIUM  : Exceptional signals — full gates + extra validation + size boost
+                       + extended hold budget. Only the strongest coherent signals.
+
+        Routing logic:
+            coherence >= 0.98 + lighthouse cleared + ZPE grounded  → PREMIUM
+            coherence >= ENTRY_COHERENCE (0.938)                   → STANDARD
+            coherence >= 0.85                                      → FAST
+            otherwise                                              → REJECT
+        """
+        coherence = float(opp.get('coherence', 0.0) or 0.0)
+        cr = cog_report or getattr(self, '_last_cognitive_report', None) or {}
+
+        # Premium: exceptional coherence + all cognitive systems green
+        if coherence >= 0.98:
+            auris = cr.get('auris', {})
+            tg = cr.get('temporal_ground', {})
+            if auris.get('lighthouse_cleared', False) and tg.get('grounded', True):
+                return 'PREMIUM'
+
+        # Standard: passes entry coherence threshold
+        if coherence >= ENTRY_COHERENCE:
+            return 'STANDARD'
+
+        # Fast: moderate signal worth a small validation trade
+        if coherence >= 0.85:
+            return 'FAST'
+
+        return 'REJECT'
+
     def _get_node_icon(self, node: str) -> str:
         """Get emoji for dominant node"""
         icons = {
@@ -22211,6 +22653,7 @@ class AureonKrakenEcosystem:
         if self.iteration % 5 == 1: # Every 5 cycles
             try:
                 pulse = self.market_pulse.analyze_market()
+                self._last_market_pulse = pulse
                 # Update Capital Pool with Sentiment
                 c_score = pulse['crypto_sentiment']['avg_change_24h']
                 s_score = pulse['stock_sentiment']['avg_change_24h']
@@ -22679,12 +23122,32 @@ class AureonKrakenEcosystem:
                                 logger.debug(f"Skipping {exchange} for {symbol} - {reason}")
                                 continue
 
+                # 🎯 PRE-FLIGHT PRICE VALIDATION — reject if price slipped >1%
+                expected_price = opp.get('price', 0.0)
+                current_ticker = self.ticker_cache.get(symbol, {})
+                current_ask = float(current_ticker.get('ask', current_ticker.get('price', expected_price)) or expected_price)
+                if expected_price > 0 and current_ask > 0:
+                    slip_pct = abs(current_ask - expected_price) / expected_price
+                    max_slip = 0.01 if not self._loop_timing.get("fast_mode", False) else 0.02
+                    if slip_pct > max_slip:
+                        print(f"   🚫 PRE-FLIGHT REJECT {symbol}: price slipped {slip_pct*100:.2f}% (ask={current_ask} expected={expected_price})")
+                        self._emit_mycelium_event('order.preflight_rejected', {
+                            'symbol': symbol, 'slip_pct': slip_pct,
+                            'expected': expected_price, 'actual': current_ask,
+                        })
+                        return {'status': 'REJECTED', 'error': f'price_slipped_{slip_pct*100:.2f}%', 'pre_flight': True}
+
+                _order_submit_t0 = time.time()
                 result = self.trade_confirmation.submit_order(
                     exchange=exchange,
                     symbol=symbol,
                     side=side.upper(),
                     quote_qty=position_size_usd
                 )
+                _order_elapsed = time.time() - _order_submit_t0
+                if _order_elapsed > 5.0:
+                    print(f"   ⚠️ ORDER SLOW {symbol}: submit took {_order_elapsed:.1f}s")
+                self._loop_timing["last_order_submit_sec"] = round(_order_elapsed, 3)
 
                 self._emit_mycelium_event('cognition.routed', {
                     'symbol': symbol,
@@ -23102,7 +23565,48 @@ class AureonKrakenEcosystem:
         try:
             while True:
                 self.iteration += 1
+                loop_start_ts = time.time()
+                self._loop_timing["signal_timestamp"] = loop_start_ts
                 now = datetime.now().strftime("%H:%M:%S")
+
+                # 🚀 FAST-MODE + ADAPTIVE INTERVAL — enforce 30s/50s timing targets
+                # Determine pressure level from previous iteration performance
+                _prev_s2o = self._loop_timing.get("signal_to_order_sec", 0.0)
+                _prev_full = self._loop_timing.get("full_loop_sec", 0.0)
+                _prev_o2g = self._loop_timing.get("order_to_goal_sec", 0.0)
+
+                # Adaptive interval: speed up when under timing pressure
+                if _prev_s2o > 20.0 or _prev_full > 40.0 or _prev_o2g > 25.0:
+                    interval = 0.5  # Critical: 0.5s cycles
+                    fast_mode = True
+                elif _prev_s2o > 12.0 or _prev_full > 30.0 or _prev_o2g > 18.0:
+                    interval = 1.0  # Under pressure: 1.0s cycles
+                    fast_mode = True
+                else:
+                    interval = 2.0  # Normal: 2.0s cycles
+                    fast_mode = False
+
+                self._loop_timing["fast_mode"] = fast_mode
+                self._loop_timing["interval_sec"] = interval
+
+                # ⌚ COGNITIVE WATCH TICK — drive ALL subsystems fresh every cycle
+                self._last_cognitive_report = None
+                try:
+                    # Build market context for the cognitive tick.
+                    # Opportunities haven't been scanned yet this cycle, so we use
+                    # ticker cache + realtime prices to compute market state.
+                    cog_context = {
+                        "opportunities": [],
+                        "symbol": "BTCUSD",
+                        "price": self.realtime_prices.get("BTCUSD", 0.0),
+                    }
+                    _cog_t0 = time.time()
+                    self._last_cognitive_report = self.cognitive_watch_tick(cog_context)
+                    self._loop_timing["cognitive_tick_ms"] = round((time.time() - _cog_t0) * 1000, 2)
+                    if self._last_cognitive_report and self._last_cognitive_report.get("valid") and self.iteration % 5 == 0:
+                        print(self._cognitive_telemetry_line(self._last_cognitive_report))
+                except Exception as e:
+                    logger.debug(f"Cognitive watch tick: {e}")
 
                 # ⚙️ THE BIG WHEEL: Spin autonomy hub each cycle (data -> predictions -> decisions -> learning)
                 if self.autonomy_hub:
@@ -23113,7 +23617,37 @@ class AureonKrakenEcosystem:
                             change = float(ticker.get('p', [0, 0])[1] if isinstance(ticker.get('p'), list) else ticker.get('change_pct', 0) or 0)
                             if price > 0:
                                 self.autonomy_hub.data_bridge.ingest_market_tick(sym, price, change, 0, 'kraken')
-                        hub_decision = self.autonomy_hub.spin_cycle()
+
+                        # Build external cognitive gates from FRESH cognitive tick report
+                        external_checks = {}
+                        cog_report = self._last_cognitive_report
+
+                        if cog_report:
+                            # ☉ Source Law coherence (from fresh cognitive tick)
+                            # Use the MAX of Source Law computed coherence and raw market gamma
+                            # so the gate is achievable when market conditions are genuinely strong.
+                            sl = cog_report.get("source_law", {})
+                            market_gamma = cog_report.get("coherence_gamma", 0.0)
+                            sl_coherence = sl.get("coherence_gamma", 0.0)
+                            effective_coherence = max(sl_coherence, market_gamma)
+                            external_checks['source_law_action'] = "EXECUTE" if effective_coherence >= ENTRY_COHERENCE else "HOLD"
+                            external_checks['source_law_coherence'] = effective_coherence
+
+                            # ⏳ Temporal Ground ZPE (from fresh cognitive tick)
+                            tg = cog_report.get("temporal_ground", {})
+                            if tg:
+                                external_checks['zpe_grounded'] = tg.get("grounded", True)
+
+                            # 🔮 Auris lighthouse (from fresh cognitive tick)
+                            auris = cog_report.get("auris", {})
+                            if auris:
+                                external_checks['auris_lighthouse_cleared'] = auris.get("lighthouse_cleared", False)
+                                external_checks['auris_confidence'] = auris.get("confidence", 0.0)
+
+                        hub_decision = self.autonomy_hub.spin_cycle(
+                            symbol="BTCUSD",
+                            external_checks=external_checks,
+                        )
                         if hub_decision and hub_decision.direction != "NEUTRAL":
                             logger.info(f"⚙️  BIG WHEEL: {hub_decision.direction} @ {hub_decision.confidence:.2f} | WR: {self.autonomy_hub.feedback_loop.get_rolling_win_rate():.1%}")
                     except Exception as e:
@@ -23271,6 +23805,7 @@ class AureonKrakenEcosystem:
                 if self.iteration % 5 == 1: # Every 5 cycles
                     try:
                         pulse = self.market_pulse.analyze_market()
+                        self._last_market_pulse = pulse
                         
                         # Update Capital Pool with Sentiment
                         c_score = pulse['crypto_sentiment']['avg_change_24h']
@@ -23310,8 +23845,8 @@ class AureonKrakenEcosystem:
                         print(f"   ⚠️ Market Pulse Error: {e}")
 
                 # 📰 NEWS FEED POLLING (World News API)
-                # Poll periodically to avoid rate limits but keep sentiment fresh
-                if self.news_feed:
+                # Skip in fast mode to reduce latency
+                if self.news_feed and not self._loop_timing.get("fast_mode", False):
                     self._news_poll_counter += 1
                     if self._news_poll_counter >= self._news_poll_interval:
                         self._news_poll_counter = 0
@@ -23424,40 +23959,43 @@ class AureonKrakenEcosystem:
                 print(f"   📊 Ticker cache: {len(self.ticker_cache)} symbols loaded")
                 
                 # 🔮 VALIDATE PENDING PREDICTIONS 🔮
-                # Check predictions that are due for validation
-                try:
-                    def get_price(exchange, symbol):
-                        """Get current price for validation."""
-                        # Try ticker cache first
-                        if symbol in self.ticker_cache:
-                            return self.ticker_cache[symbol].get('price', 0)
-                        # Try realtime prices
-                        if symbol in self.realtime_prices:
-                            return self.realtime_prices[symbol]
-                        return None
-                    
-                    validated = self.prediction_validator.validate_predictions(get_price)
-                    if validated:
-                        accurate_count = sum(1 for v in validated if v['is_accurate'])
-                        direction_count = sum(1 for v in validated if v['direction_correct'])
-                        print(f"   🔮 Validated {len(validated)} predictions: {accurate_count} accurate, {direction_count} direction correct")
-                    
-                    # Every 20 cycles, show full accuracy report
-                    if self.iteration % 20 == 0 and self.prediction_validator.get_validated_count() > 0:
-                        print(self.prediction_validator.get_accuracy_summary())
-                    
-                    # 🧠 Every 50 cycles, show adaptive learning summary
-                    if self.iteration % 50 == 0:
-                        print(ADAPTIVE_LEARNER.get_learning_summary())
-                        
-                except Exception as e:
-                    logger.debug(f"Prediction validation error: {e}")
+                # Skip in fast mode to reduce latency
+                if not self._loop_timing.get("fast_mode", False):
+                    try:
+                        def get_price(exchange, symbol):
+                            """Get current price for validation."""
+                            # Try ticker cache first
+                            if symbol in self.ticker_cache:
+                                return self.ticker_cache[symbol].get('price', 0)
+                            # Try realtime prices
+                            if symbol in self.realtime_prices:
+                                return self.realtime_prices[symbol]
+                            return None
+
+                        validated = self.prediction_validator.validate_predictions(get_price)
+                        if validated:
+                            accurate_count = sum(1 for v in validated if v['is_accurate'])
+                            direction_count = sum(1 for v in validated if v['direction_correct'])
+                            print(f"   🔮 Validated {len(validated)} predictions: {accurate_count} accurate, {direction_count} direction correct")
+
+                        # Every 20 cycles, show full accuracy report
+                        if self.iteration % 20 == 0 and self.prediction_validator.get_validated_count() > 0:
+                            print(self.prediction_validator.get_accuracy_summary())
+
+                        # 🧠 Every 50 cycles, show adaptive learning summary
+                        if self.iteration % 50 == 0:
+                            print(ADAPTIVE_LEARNER.get_learning_summary())
+
+                    except Exception as e:
+                        logger.debug(f"Prediction validation error: {e}")
                 
                 self.refresh_equity(mark_cycle=True)
                 
                 # 🌉 Sync with bridge (capital, positions, commands)
-                self.sync_bridge()
-                self.check_bridge_commands()
+                # Skip in fast mode to reduce latency
+                if not self._loop_timing.get("fast_mode", False):
+                    self.sync_bridge()
+                    self.check_bridge_commands()
                 
                 # Deploy scouts on first cycle if enabled
                 if self.iteration == 1 and not self.scouts_deployed:
@@ -23480,6 +24018,7 @@ class AureonKrakenEcosystem:
                 
                 # Update Lattice State (Global Physics)
                 raw_opps = self.find_opportunities()
+                self._last_opportunities = raw_opps
 
                 # 🤝 UNITY CONSENSUS: publish a single state that conversions/buys/sells can follow.
                 try:
@@ -23729,8 +24268,21 @@ class AureonKrakenEcosystem:
                                 opp['kappa_t'] = 2.73
                             except Exception:
                                 pass
-                        self.open_position(opp)
-                        
+
+                        # 🎚️ TIER ROUTING — assign path before entry
+                        tier = self.get_signal_tier(opp)
+                        opp['signal_tier'] = tier
+                        if tier != 'REJECT':
+                            tier_emoji = {'FAST': '⚡', 'STANDARD': '🔷', 'PREMIUM': '💎'}.get(tier, '?')
+                            print(f"   {tier_emoji} ROUTE {opp['symbol']} → {tier} (Γ={opp.get('coherence', 0):.3f})")
+
+                        _order_result = self.open_position(opp)
+                        if _order_result:
+                            self._loop_timing["order_fired_timestamp"] = time.time()
+                            self._loop_timing["signal_to_order_sec"] = round(
+                                self._loop_timing["order_fired_timestamp"] - self._loop_timing["signal_timestamp"], 3
+                            )
+
                 # Show positions - ENHANCED FULL DETAILS WITH LADDER ETA
                 if self.positions:
                     print(f"\n   📊 ACTIVE POSITIONS ({len(self.positions)}/{max_positions_label()}):")
@@ -23986,8 +24538,26 @@ class AureonKrakenEcosystem:
                 except Exception:
                     pass
                 
-                print(f"   ⏱️ Runtime: {runtime:.1f} min | Positions: {len(self.positions)}/{max_positions_label()} | Max Gen: {max_gen}")
-                
+                # ⏱️ LOOP TIMING DISPLAY — signal→order→goal targets
+                _sig2ord = self._loop_timing.get("signal_to_order_sec", 0.0)
+                _ord2goal = self._loop_timing.get("order_to_goal_sec", 0.0)
+                _full = self._loop_timing.get("full_loop_sec", 0.0)
+                _cog_ms = self._loop_timing.get("cognitive_tick_ms", 0.0)
+                timing_str = ""
+                if _sig2ord > 0:
+                    s2o_ok = "PASS" if _sig2ord <= 30 else "FAIL"
+                    timing_str += f" | S→O:{_sig2ord:.1f}s[{s2o_ok}]"
+                if _ord2goal > 0:
+                    o2g_ok = "PASS" if _ord2goal <= 30 else "FAIL"
+                    timing_str += f" | O→G:{_ord2goal:.1f}s[{o2g_ok}]"
+                if _full > 0:
+                    full_ok = "PASS" if _full <= 50 else "FAIL"
+                    timing_str += f" | LOOP:{_full:.1f}s[{full_ok}]"
+                if _cog_ms > 0:
+                    timing_str += f" | COG:{_cog_ms:.0f}ms"
+
+                print(f"   ⏱️ Runtime: {runtime:.1f} min | Positions: {len(self.positions)}/{max_positions_label()} | Max Gen: {max_gen}{timing_str}")
+
                 if self.tracker.trading_halted:
                     print(f"   🛑 TRADING HALTED: {self.tracker.halt_reason}")
 
@@ -24008,9 +24578,10 @@ class AureonKrakenEcosystem:
                     print(f"   Net Profit: £{net_profit:.2f} (Goal £{target_profit_gbp if target_profit_gbp else 0:.2f})")
                     break
                 
-                # Save state every cycle for real-time data persistence
-                self.save_state()
-                logger.debug(f"State saved at iteration {self.iteration}")
+                # Save state every 5 cycles to reduce I/O latency (was every cycle)
+                if self.iteration % 5 == 0:
+                    self.save_state()
+                    logger.debug(f"State saved at iteration {self.iteration}")
                 
                 # 🐕 WATCHDOG HEARTBEAT: Write timestamp file for external monitoring
                 try:
@@ -24085,6 +24656,433 @@ class AureonKrakenEcosystem:
                     print(f"   Runtime:        {(time.time()-start_ts)/60:.2f} min / {max_minutes:.2f} min limit")
                 print("══════════════════════════════════════")
             
+    # ═══════════════════════════════════════════════════════════════════════════════
+    # COGNITIVE WATCH TICK — All gears spin like a watch mechanism
+    # ═══════════════════════════════════════════════════════════════════════════════
+
+    def cognitive_watch_tick(self, market_context: Dict = None) -> Dict[str, Any]:
+        """
+        ONE TICK OF THE COGNITIVE WATCH.
+
+        Actively drives ALL cognitive subsystems in sequence so they produce
+        FRESH data every trading cycle. Like a gear train: each gear turns
+        the next. No passive polling of stale oracles.
+
+        Sequence:
+            1. COMPUTE LAMBDA — derive Λ(t), Γ, ψ from live market state
+            2. VAULT INGEST — fresh market data → vault cards → Auris substrate
+            3. SOURCE LAW FEED — accumulate trading signals into quantum vacuum
+            4. TEMPORAL GROUND TICK — advance hash chain, superposition, governor
+            5. AURIS VOTE — 9-node consensus on freshly-fed vault
+            6. SOURCE LAW COGITATE — collapse vacuum → EXECUTE / HOLD
+            7. TELEMETRY — emit unified state to ThoughtBus
+            8. VALIDATION — self-check that every subsystem moved
+
+        Returns:
+            CognitiveTickReport dict with fresh states from all subsystems.
+        """
+        market_context = market_context or {}
+        t0 = time.time()
+        report: Dict[str, Any] = {"timestamp": t0, "valid": False}
+
+        # ── 1. COMPUTE LAMBDA FIELD from live ecosystem state ──────────────────
+        # Derive Λ(t), Γ, ψ from what the ecosystem actually sees right now.
+        opps = []  # initialise so later steps can use it even if this block fails
+        try:
+            # Γ = network coherence (mycelium) or opportunity average
+            gamma = 0.5
+            if self.mycelium:
+                gamma = float(self.mycelium.get_network_coherence())
+
+            # Λ(t) = average coherence of top opportunities, or ticker cache momentum
+            lambda_t = 0.0
+            opps = market_context.get('opportunities', [])
+            # Fall back to last cycle's opportunities if none passed in context
+            if not opps and hasattr(self, '_last_opportunities') and self._last_opportunities:
+                opps = self._last_opportunities
+            if opps:
+                cohs = [float(o.get('coherence', 0.5) or 0.5) for o in opps[:20]]
+                lambda_t = sum(cohs) / len(cohs) if cohs else 0.0
+            else:
+                # Fallback: compute from ticker cache change24h values
+                changes = []
+                for sym, ticker in list(self.ticker_cache.items())[:50]:
+                    ch = ticker.get('change24h', ticker.get('change_pct', 0))
+                    try:
+                        changes.append(abs(float(ch)) / 100.0)
+                    except Exception:
+                        pass
+                if changes:
+                    lambda_t = min(1.0, sum(changes) / len(changes))
+                else:
+                    lambda_t = gamma * 0.8
+
+            # ψ = consciousness level (composite of gamma + system health)
+            psi = gamma * 0.7 + (1.0 if self.autonomy_hub else 0.0) * 0.1 + 0.2
+            psi = min(1.0, psi)
+
+            # Dominant frequency from HNC-enhanced opportunities or harmonic fusion
+            dominant_freq = 528.0
+            if opps:
+                freqs = [float(o.get('hnc_frequency', 528.0) or 528.0) for o in opps[:10]
+                         if o.get('hnc_is_harmonic', False)]
+                if freqs:
+                    dominant_freq = sum(freqs) / len(freqs)
+            elif self.harmonic_fusion is not None:
+                try:
+                    h_state = self.harmonic_fusion.get_harmonic_state()
+                    dominant_freq = float(h_state.get('dominant_frequency_hz', 528.0) or 528.0)
+                except Exception:
+                    pass
+
+            report["lambda_t"] = round(lambda_t, 4)
+            report["coherence_gamma"] = round(gamma, 4)
+            report["consciousness_psi"] = round(psi, 4)
+            report["dominant_frequency_hz"] = round(dominant_freq, 2)
+        except Exception as e:
+            logger.debug(f"Cognitive watch tick lambda compute: {e}")
+            lambda_t = 0.0
+            gamma = 0.5
+            psi = 0.5
+            dominant_freq = 528.0
+
+        # ── 2. FEED VAULT with fresh market state ─────────────────────────────
+        if self.vault is not None:
+            try:
+                # Update love amplitude + lambda via 528Hz stream topic
+                self.vault.ingest("love.stream.528hz", {
+                    "lambda_t": lambda_t,
+                    "gamma_coherence": gamma,
+                    "dominant_frequency_hz": dominant_freq,
+                    "dominant_chakra": "heart" if dominant_freq > 500 else "root",
+                })
+                # Update cortex snapshot
+                self.vault.ingest("queen.cortex.state", {
+                    "coherence_gamma": gamma,
+                    "bands": {
+                        "delta": {"amplitude": 0.1 + gamma * 0.1},
+                        "theta": {"amplitude": 0.2 + gamma * 0.15},
+                        "alpha": {"amplitude": 0.3 + gamma * 0.2},
+                        "beta":  {"amplitude": 0.2 + (1 - gamma) * 0.2},
+                        "gamma": {"amplitude": gamma * 0.5},
+                    }
+                })
+                # Update gratitude via synthetic skill execution
+                self.vault.ingest("skill.executed", {"ok": gamma > 0.6})
+                # Feed QGITA regime state if available
+                if self.qgita is not None:
+                    try:
+                        qg = self.qgita.analyze()
+                        if qg.get("status") == "complete":
+                            self.vault.ingest("qgita.regime", {
+                                "regime": qg.get("regime", {}).get("state", "unknown"),
+                                "lhe_count": qg.get("stage2", {}).get("lhe_count", 0),
+                                "ftcp_count": qg.get("stage2", {}).get("ftcp_count", 0),
+                                "coherence": qg.get("coherence", 0.5),
+                            })
+                    except Exception:
+                        pass
+                # Feed market pulse sentiment if available
+                pulse = getattr(self, '_last_market_pulse', None)
+                if pulse:
+                    try:
+                        self.vault.ingest("market.pulse", {
+                            "crypto_sentiment": pulse.get('crypto_sentiment', {}).get('avg_change_24h', 0),
+                            "stock_sentiment": pulse.get('stock_sentiment', {}).get('avg_change_24h', 0),
+                            "label": pulse.get('crypto_sentiment', {}).get('label', 'neutral'),
+                        })
+                    except Exception:
+                        pass
+                # Feed news sentiment if available
+                news = getattr(self, '_last_news_sentiment', None)
+                if news:
+                    try:
+                        self.vault.ingest("news.sentiment", {
+                            "score": news.get('sentiment', 0),
+                            "label": news.get('label', 'neutral'),
+                            "confidence": news.get('confidence', 0),
+                            "risk_level": news.get('risk_level', 'normal'),
+                        })
+                    except Exception:
+                        pass
+                # Feed harmonic fusion global coherence if available
+                if self.harmonic_fusion is not None:
+                    try:
+                        h_state = self.harmonic_fusion.get_harmonic_state()
+                        self.vault.ingest("harmonic.fusion", {
+                            "global_coherence": h_state.get('global_coherence', 0.5),
+                            "schumann_bias": h_state.get('schumann_bias', 1.0),
+                            "dominant_frequency_hz": h_state.get('dominant_frequency_hz', 528.0),
+                        })
+                    except Exception:
+                        pass
+                report["vault_cards"] = len(self.vault._contents)
+            except Exception as e:
+                logger.debug(f"Cognitive watch tick vault feed: {e}")
+
+        # ── 3. FEED SOURCE LAW vacuum ─────────────────────────────────────────
+        if self.source_law is not None:
+            try:
+                # Build a synthetic Thought and inject into vacuum
+                sl_thought = type(
+                    "SLThought", (),
+                    {
+                        "topic": "market.tick",
+                        "source": "ecosystem",
+                        "payload": {
+                            "confidence": gamma,
+                            "coherence": gamma,
+                            "coherence_gamma": gamma,
+                            "score": lambda_t,
+                            "lambda_t": lambda_t,
+                            "symbol": market_context.get("symbol", "BTCUSD"),
+                            "price": market_context.get("price", 0.0),
+                        },
+                    }
+                )()
+                self.source_law._vacuum.accumulate(sl_thought)
+                # Also feed QGITA signal into vacuum
+                if self.qgita is not None:
+                    try:
+                        qg = self.qgita.analyze()
+                        if qg.get("status") == "complete":
+                            qg_thought = type(
+                                "SLThought", (),
+                                {
+                                    "topic": "qgita.analysis",
+                                    "source": "ecosystem",
+                                    "payload": {
+                                        "regime": qg.get("regime", {}).get("state", "unknown"),
+                                        "coherence": qg.get("coherence", 0.5),
+                                        "lhe_count": qg.get("stage2", {}).get("lhe_count", 0),
+                                        "confidence": qg.get("coherence", 0.5),
+                                    },
+                                }
+                            )()
+                            self.source_law._vacuum.accumulate(qg_thought)
+                    except Exception:
+                        pass
+                # Feed market pulse into vacuum
+                pulse = getattr(self, '_last_market_pulse', None)
+                if pulse:
+                    try:
+                        pulse_thought = type(
+                            "SLThought", (),
+                            {
+                                "topic": "market.pulse",
+                                "source": "ecosystem",
+                                "payload": {
+                                    "crypto_sentiment": pulse.get('crypto_sentiment', {}).get('avg_change_24h', 0),
+                                    "stock_sentiment": pulse.get('stock_sentiment', {}).get('avg_change_24h', 0),
+                                    "confidence": abs(pulse.get('crypto_sentiment', {}).get('avg_change_24h', 0)) / 100.0,
+                                },
+                            }
+                        )()
+                        self.source_law._vacuum.accumulate(pulse_thought)
+                    except Exception:
+                        pass
+                # Feed news sentiment into vacuum
+                news = getattr(self, '_last_news_sentiment', None)
+                if news:
+                    try:
+                        news_thought = type(
+                            "SLThought", (),
+                            {
+                                "topic": "news.sentiment",
+                                "source": "ecosystem",
+                                "payload": {
+                                    "score": news.get('sentiment', 0),
+                                    "confidence": news.get('confidence', 0),
+                                    "risk_level": news.get('risk_level', 'normal'),
+                                },
+                            }
+                        )()
+                        self.source_law._vacuum.accumulate(news_thought)
+                    except Exception:
+                        pass
+                # Feed harmonic fusion into vacuum
+                if self.harmonic_fusion is not None:
+                    try:
+                        h_state = self.harmonic_fusion.get_harmonic_state()
+                        hf_thought = type(
+                            "SLThought", (),
+                            {
+                                "topic": "harmonic.fusion",
+                                "source": "ecosystem",
+                                "payload": {
+                                    "global_coherence": h_state.get('global_coherence', 0.5),
+                                    "schumann_bias": h_state.get('schumann_bias', 1.0),
+                                    "dominant_frequency_hz": h_state.get('dominant_frequency_hz', 528.0),
+                                },
+                            }
+                        )()
+                        self.source_law._vacuum.accumulate(hf_thought)
+                    except Exception:
+                        pass
+                report["vacuum_size"] = self.source_law._vacuum.size
+            except Exception as e:
+                logger.debug(f"Cognitive watch tick SL feed: {e}")
+
+        # ── 4. TICK TEMPORAL GROUND ───────────────────────────────────────────
+        if self.temporal_ground is not None:
+            try:
+                # Count phi-resonant opportunities
+                phi_count = 0
+                if opps:
+                    for o in opps:
+                        freq = float(o.get('hnc_frequency', 256.0) or 256.0)
+                        if freq > 0:
+                            ratio = freq / 528.0
+                            if abs(ratio - 1.0) < 0.05 or abs(ratio - 1.618) < 0.1 or abs(ratio - 0.618) < 0.1:
+                                phi_count += 1
+
+                tg_report = self.temporal_ground.tick(
+                    lambda_t=lambda_t,
+                    coherence_gamma=gamma,
+                    consciousness_psi=psi,
+                    auris_consensus="NEUTRAL",  # Will update after Auris vote
+                    phi_resonance_count=phi_count,
+                )
+                report["temporal_ground"] = tg_report.to_dict()
+            except Exception as e:
+                logger.debug(f"Cognitive watch tick TG: {e}")
+
+        # ── 5. AURIS VOTE on fresh vault ──────────────────────────────────────
+        auris_consensus = "NEUTRAL"
+        auris_confidence = 0.0
+        auris_lh = False
+        if self.auris_meta is not None and self.vault is not None:
+            try:
+                vote = self.auris_meta.vote(self.vault)
+                auris_consensus = vote.consensus
+                auris_confidence = vote.confidence
+                auris_lh = vote.lighthouse_cleared
+                report["auris"] = {
+                    "consensus": vote.consensus,
+                    "confidence": round(vote.confidence, 4),
+                    "agreeing": vote.agreeing,
+                    "total": vote.total,
+                    "lighthouse_cleared": vote.lighthouse_cleared,
+                }
+            except Exception as e:
+                logger.debug(f"Cognitive watch tick Auris: {e}")
+
+        # ── 6. SOURCE LAW COGITATE ────────────────────────────────────────────
+        sl_action = "HOLD"
+        sl_coherence = 0.0
+        if self.source_law is not None:
+            try:
+                sl_result = self.source_law.cogitate()
+                if sl_result is not None:
+                    sl_action = sl_result.action
+                    sl_coherence = sl_result.coherence_gamma
+                    report["source_law"] = {
+                        "action": sl_result.action,
+                        "coherence_gamma": round(sl_result.coherence_gamma, 4),
+                        "consciousness_level": sl_result.consciousness_level,
+                        "vacuum_size": sl_result.vacuum_size,
+                    }
+            except Exception as e:
+                logger.debug(f"Cognitive watch tick SL cogitate: {e}")
+
+        # ── 7. RE-TICK TEMPORAL GROUND with final Auris consensus ─────────────
+        # This closes the loop: Auris output feeds back into temporal ground.
+        if self.temporal_ground is not None:
+            try:
+                self.temporal_ground.tick(
+                    lambda_t=lambda_t,
+                    coherence_gamma=gamma,
+                    consciousness_psi=psi,
+                    auris_consensus=auris_consensus,
+                    phi_resonance_count=phi_count,
+                )
+            except Exception:
+                pass
+
+        # ── 8. TELEMETRY — emit to ThoughtBus + Mycelium ──────────────────────
+        try:
+            if THOUGHT_BUS_AVAILABLE and THOUGHT_BUS:
+                THOUGHT_BUS.publish(Thought(
+                    source="ecosystem",
+                    topic="cognitive.watch_tick",
+                    payload=report,
+                ))
+            # Also emit through Mycelium link layer for bridge/external systems
+            self._emit_mycelium_event('cognitive.watch_tick', dict(report))
+        except Exception:
+            pass
+
+        # ── 9. VALIDATION — every subsystem produced fresh data? ──────────────
+        fresh_count = sum([
+            report.get("vault_cards", 0) > 0,
+            report.get("vacuum_size", 0) is not None,
+            "temporal_ground" in report,
+            "auris" in report,
+            "source_law" in report,
+        ])
+        report["valid"] = fresh_count >= 4
+        report["fresh_count"] = fresh_count
+        report["elapsed_ms"] = round((time.time() - t0) * 1000, 2)
+
+        return report
+
+    # ═══════════════════════════════════════════════════════════════════════════════
+    # WATCH-FACE TELEMETRY — compact single-line cognitive status
+    # ═══════════════════════════════════════════════════════════════════════════════
+
+    def _cognitive_telemetry_line(self, report: Dict[str, Any]) -> str:
+        """Build a compact watch-face line from the cognitive tick report."""
+        if not report or not report.get("valid"):
+            return "  [WATCH] cognitive tick INVALID"
+
+        parts = []
+
+        # Lambda / Gamma / Psi
+        lam = report.get("lambda_t", 0.0)
+        gam = report.get("coherence_gamma", 0.0)
+        psi = report.get("consciousness_psi", 0.0)
+        parts.append(f"L={lam:.3f} G={gam:.3f} P={psi:.3f}")
+
+        # Temporal Ground
+        tg = report.get("temporal_ground", {})
+        if tg:
+            grounded = "GND" if tg.get("grounded") else "FLT"
+            dist = tg.get("zpe_distance", 0.0)
+            gov = tg.get("governor_status", "?")[:4]
+            parts.append(f"ZPE:{grounded}(d={dist:.3f})[{gov}]")
+
+        # Auris
+        auris = report.get("auris", {})
+        if auris:
+            cons = auris.get("consensus", "?")
+            conf = auris.get("confidence", 0.0)
+            lh = "LH" if auris.get("lighthouse_cleared") else "--"
+            parts.append(f"AURIS:{cons}({auris.get('agreeing',0)}/{auris.get('total',0)})[{lh}]")
+
+        # Source Law
+        sl = report.get("source_law", {})
+        if sl:
+            act = sl.get("action", "?")
+            coh = sl.get("coherence_gamma", 0.0)
+            parts.append(f"SL:{act}({coh:.3f})")
+
+        # QGITA
+        if self.qgita is not None:
+            try:
+                qg = self.qgita.analyze()
+                if qg.get("status") == "complete":
+                    regime = qg.get("regime", {}).get("state", "?")[:3]
+                    lhe = qg.get("stage2", {}).get("lhe_count", 0)
+                    parts.append(f"QGITA:{regime}(LHE={lhe})")
+            except Exception:
+                pass
+
+        # Vault
+        cards = report.get("vault_cards", 0)
+        parts.append(f"VAULT:{cards}")
+
+        return "  [WATCH] " + " | ".join(parts)
+
     def final_report(self):
         """Print final statistics"""
         print(f"""

@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aureon Institute — Research Poster</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --navy: #07101F;
+    --navy-mid: #0D1B2E;
+    --navy-light: #152338;
+    --gold: #C8A45A;
+    --gold-light: #E2C07A;
+    --gold-dim: #8B6E3A;
+    --white: #F5F0E8;
+    --white-dim: #B8B0A0;
+    --green: #4A9E6B;
+    --green-dim: #2D6B47;
+    --border: rgba(200, 164, 90, 0.25);
+    --border-light: rgba(200, 164, 90, 0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    width: 794px;
+    min-height: 1123px;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  .poster {
+    width: 794px;
+    min-height: 1123px;
+    background: var(--navy);
+    display: grid;
+    grid-template-rows: auto auto auto 1fr auto;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Subtle background texture */
+  .poster::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 10% 15%, rgba(200,164,90,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 85%, rgba(200,164,90,0.03) 0%, transparent 40%),
+      radial-gradient(ellipse at 50% 50%, rgba(13,27,46,0.8) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 36px 48px 28px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 18px;
+  }
+
+  .institute-block { }
+
+  .institute-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  .author-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--white);
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+
+  .author-location {
+    font-size: 11px;
+    color: var(--white-dim);
+    margin-top: 5px;
+    letter-spacing: 0.05em;
+  }
+
+  .lambda-badge {
+    width: 56px;
+    height: 56px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--navy-light);
+  }
+
+  .lambda-badge span {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 300;
+    color: var(--gold);
+    font-style: italic;
+  }
+
+  .poster-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--white);
+    line-height: 1.35;
+    max-width: 620px;
+  }
+
+  .poster-subtitle {
+    font-size: 10.5px;
+    color: var(--white-dim);
+    margin-top: 6px;
+    letter-spacing: 0.04em;
+  }
+
+  /* EVIDENCE LEDGER */
+  .ledger-section {
+    padding: 28px 48px 24px;
+    border-bottom: 1px solid var(--border-light);
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-label {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 14px;
+  }
+
+  .ledger-header-row {
+    display: grid;
+    grid-template-columns: 2fr 1.4fr 0.7fr;
+    gap: 0;
+    padding: 0 0 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2px;
+  }
+
+  .ledger-col-head {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+
+  .ledger-col-head:last-child { text-align: center; }
+
+  .ledger-row {
+    display: grid;
+    grid-template-columns: 2fr 1.4fr 0.7fr;
+    gap: 0;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border-light);
+    align-items: center;
+  }
+
+  .ledger-row:last-child { border-bottom: none; }
+
+  .prediction {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--white);
+    line-height: 1.3;
+  }
+
+  .source {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--white-dim);
+    padding-left: 12px;
+  }
+
+  .confirmed {
+    text-align: center;
+  }
+
+  .check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(74, 158, 107, 0.15);
+    border: 1px solid var(--green-dim);
+    color: var(--green);
+    font-size: 11px;
+  }
+
+  .ledger-footnote {
+    font-size: 9.5px;
+    color: var(--white-dim);
+    margin-top: 12px;
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .ledger-footnote strong {
+    color: var(--gold);
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  /* TWO COLUMN MIDDLE */
+  .middle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--border-light);
+    position: relative;
+    z-index: 1;
+  }
+
+  .middle-left {
+    padding: 24px 28px 24px 48px;
+    border-right: 1px solid var(--border-light);
+  }
+
+  .middle-right {
+    padding: 24px 48px 24px 28px;
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+
+  /* EQUATION BLOCK */
+  .equation-block {
+    background: var(--navy-light);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+
+  .eq-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 8px;
+  }
+
+  .equation {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold-light);
+    line-height: 1.6;
+  }
+
+  .eq-components {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .eq-comp {
+    font-size: 9.5px;
+    color: var(--white-dim);
+    line-height: 1.4;
+  }
+
+  .eq-comp strong {
+    font-family: 'DM Mono', monospace;
+    color: var(--gold);
+    font-weight: 400;
+  }
+
+  /* METHODOLOGY */
+  .method-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .method-item { }
+
+  .method-item-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 3px;
+  }
+
+  .method-item-body {
+    font-size: 10px;
+    color: var(--white-dim);
+    line-height: 1.55;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 8.5px;
+    color: var(--gold);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 1px 5px;
+    margin-bottom: 3px;
+  }
+
+  /* BOTTOM: 3 COLUMNS */
+  .bottom {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 0.8fr;
+    gap: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .bottom-col {
+    padding: 20px 24px;
+    border-right: 1px solid var(--border-light);
+  }
+
+  .bottom-col:first-child { padding-left: 48px; }
+  .bottom-col:last-child { border-right: none; padding-right: 48px; }
+
+  .pub-item {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .pub-item:last-child { border-bottom: none; margin-bottom: 0; }
+
+  .pub-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px;
+    font-style: italic;
+    color: var(--white);
+    line-height: 1.35;
+    margin-bottom: 3px;
+  }
+
+  .pub-meta {
+    font-size: 9px;
+    color: var(--white-dim);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .corpus-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .stat-item {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .stat-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--white-dim);
+    line-height: 1.3;
+  }
+
+  .contact-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .contact-item {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .contact-label {
+    font-size: 8.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+
+  .contact-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--white-dim);
+    word-break: break-all;
+  }
+
+  /* FOOTER */
+  .footer {
+    padding: 12px 48px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .footer-left {
+    font-size: 9px;
+    color: var(--white-dim);
+    letter-spacing: 0.05em;
+  }
+
+  .footer-right {
+    font-size: 9px;
+    color: var(--gold-dim);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  /* Gold rule decoration */
+  .gold-rule {
+    width: 32px;
+    height: 1px;
+    background: var(--gold);
+    margin: 10px 0;
+    opacity: 0.6;
+  }
+
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div class="institute-block">
+        <div class="institute-name">Aureon Institute · R&A Consulting and Brokerage Services Ltd</div>
+        <div class="author-name">Gary Leckey</div>
+        <div class="author-location">Belfast, Northern Ireland, United Kingdom</div>
+      </div>
+      <div class="lambda-badge"><span>λ</span></div>
+    </div>
+    <div class="poster-title">
+      Pre-registered framework predictions during the February 2026<br>
+      geomagnetic-market convergence event: a five-prediction evidence ledger
+    </div>
+    <div class="poster-subtitle">
+      Harmonic Nexus Core Framework · Aureon Trading System · ResearchGate publication 400536498
+    </div>
+  </div>
+
+  <!-- EVIDENCE LEDGER -->
+  <div class="ledger-section">
+    <div class="section-label">February 5–6, 2026 · Pre-registered Predictions vs. Independent Public Records</div>
+
+    <div class="ledger-header-row">
+      <div class="ledger-col-head">Prediction (anchored before events)</div>
+      <div class="ledger-col-head">Independent public-record source</div>
+      <div class="ledger-col-head">Status</div>
+    </div>
+
+    <div class="ledger-row">
+      <div class="prediction">NOAA active region AR4366 produces X-class solar flare activity</div>
+      <div class="source">NOAA Space Weather Prediction Center</div>
+      <div class="confirmed"><span class="check">✓</span></div>
+    </div>
+
+    <div class="ledger-row">
+      <div class="prediction">Bitcoin trades below $70,000 on major venues</div>
+      <div class="source">Exchange close prints · CoinDesk · Bloomberg</div>
+      <div class="confirmed"><span class="check">✓</span></div>
+    </div>
+
+    <div class="ledger-row">
+      <div class="prediction">Crypto Fear &amp; Greed Index falls below 15</div>
+      <div class="source">Alternative.me Historical API</div>
+      <div class="confirmed"><span class="check">✓</span></div>
+    </div>
+
+    <div class="ledger-row">
+      <div class="prediction">More than $1 billion in 24-hour liquidations across crypto markets</div>
+      <div class="source">Coinglass liquidation feed · CoinDesk</div>
+      <div class="confirmed"><span class="check">✓</span></div>
+    </div>
+
+    <div class="ledger-row">
+      <div class="prediction">Glancing coronal mass ejection arrives in predicted window</div>
+      <div class="source">NOAA SWPC · NASA SOHO</div>
+      <div class="confirmed"><span class="check">✓</span></div>
+    </div>
+
+    <div class="ledger-footnote">
+      <strong>5/5 confirmed</strong> against independent public records.
+      Framework white paper explicitly demarcates externally-verifiable predictions from internal-proprietary metrics not yet third-party reproducible.
+      Full evidence ledger: ResearchGate publication 400536498. All predictions anchored before events commenced.
+    </div>
+  </div>
+
+  <!-- MIDDLE: Framework + Methodology -->
+  <div class="middle">
+
+    <!-- LEFT: Master Equation -->
+    <div class="middle-left">
+      <div class="section-title">The Harmonic Nexus Core Framework</div>
+
+      <div class="equation-block">
+        <div class="eq-label">Master Equation · Λ(t)</div>
+        <div class="equation">
+          Λ(t) = Σᵢ wᵢ sin(2πfᵢt + φᵢ)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ α · tanh(g · Λ̄(t))<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ β · Λ(t − τ)
+        </div>
+        <div class="eq-components">
+          <div class="eq-comp"><strong>Term 1</strong> — Harmonic substrate: superposition of weighted oscillatory modes</div>
+          <div class="eq-comp"><strong>Term 2</strong> — Saturating tanh observer: stabilises high-gain feedback loops into coherent limit cycles</div>
+          <div class="eq-comp"><strong>Term 3</strong> — Delayed self-reference: causal echo memory with retention τ</div>
+        </div>
+      </div>
+
+      <div class="method-items">
+        <div class="method-item">
+          <div class="tag">COHERENCE METRIC</div>
+          <div class="method-item-title">Γ — Cross-node coherence gate</div>
+          <div class="method-item-body">Computed across nine specialised Auris perception nodes. Acts as the primary signal-quality filter before any trade decision fires.</div>
+        </div>
+        <div class="method-item">
+          <div class="tag">CONSENSUS PROTOCOL</div>
+          <div class="method-item-title">Lighthouse 6/9</div>
+          <div class="method-item-body">A Byzantine-style threshold vote requiring agreement from six of nine Auris nodes, plus Γ above floor and |Λ| above threshold, before execution. System is flat more often than it is exposed.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Methodology -->
+    <div class="middle-right">
+      <div class="section-title">QGITA — Anomaly Detection Methodology</div>
+      <div class="gold-rule"></div>
+
+      <div class="method-items">
+        <div class="method-item">
+          <div class="tag">STAGE 1</div>
+          <div class="method-item-title">Fibonacci Time Lattice</div>
+          <div class="method-item-body">A non-uniform temporal grid derived from the Fibonacci sequence. Adjacent interval ratios converge to φ ≈ 1.618. Curvature spikes coinciding with golden-ratio timing are flagged as candidate events (FTCPs).</div>
+        </div>
+
+        <div class="method-item">
+          <div class="tag">CONTROL TEST</div>
+          <div class="method-item-title">φ versus 1/φ Direction Test</div>
+          <div class="method-item-body">FTCPs detected only under golden-ratio tuning, not under its inverse. Confirms the lattice is a specific structural probe, not an arbitrary filter.</div>
+        </div>
+
+        <div class="method-item">
+          <div class="tag">STAGE 2</div>
+          <div class="method-item-title">Lighthouse Five-Metric Consensus</div>
+          <div class="method-item-body">Five independent metrics — linear coherence C_lin, nonlinear coherence C_nonlin, cross-scale coherence C_φ, effective gravity G_eff, and anomaly pointer |Q| — fused into normalised geometric mean. Ablation study identifies G_eff and C_nonlin as most critical; |Q| acts as a synergistic suppressor.</div>
+        </div>
+
+        <div class="method-item">
+          <div class="tag">RESULT</div>
+          <div class="method-item-title">Two orders of magnitude improvement</div>
+          <div class="method-item-body">Event detection specificity over single-metric thresholding, reported across physics, finance, signal processing, and neurodynamic simulation domains.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM: Publications, Corpus, Contact -->
+  <div class="bottom">
+
+    <!-- Publications -->
+    <div class="bottom-col">
+      <div class="section-label">Selected Publications</div>
+
+      <div class="pub-item">
+        <div class="pub-title">Tandem in Unity: Unifying Resonant Fields in Physics, AI, and Consciousness</div>
+        <div class="pub-meta">Leckey, Antonson, Kolesnikov, Kindermann · 2025 · Academia.edu</div>
+      </div>
+
+      <div class="pub-item">
+        <div class="pub-title">The HNC and the Aureon Trading Framework</div>
+        <div class="pub-meta">Leckey · 2026 · ResearchGate 400536498</div>
+      </div>
+
+      <div class="pub-item">
+        <div class="pub-title">Harmonic Reality Framework and the Master Equations Tree</div>
+        <div class="pub-meta">Leckey · 2025 · ResearchGate 397885497</div>
+      </div>
+
+      <div class="pub-item">
+        <div class="pub-title">HNC and Auris Conjecture</div>
+        <div class="pub-meta">Leckey · 2025 · ResearchGate 397352612</div>
+      </div>
+
+      <div class="pub-item">
+        <div class="pub-title">Quantum Gravity in the Act (QGITA)</div>
+        <div class="pub-meta">Leckey · 2025 · ResearchGate 397355255</div>
+      </div>
+
+    </div>
+
+    <!-- Corpus Stats -->
+    <div class="bottom-col">
+      <div class="section-label">Research Corpus</div>
+      <div class="corpus-stat">
+        <div class="stat-item">
+          <div class="stat-number">54</div>
+          <div class="stat-label">papers and talks<br>Academia.edu</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">4</div>
+          <div class="stat-label">flagship preprints<br>ResearchGate</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">2,172</div>
+          <div class="stat-label">commits<br>github.com/RA-CONSULTING</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">3</div>
+          <div class="stat-label">named co-authors<br>Canada · Russia · Germany</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="bottom-col">
+      <div class="section-label">Contact and Access</div>
+      <div class="contact-block">
+        <div class="contact-item">
+          <div class="contact-label">Email</div>
+          <div class="contact-value">gaxlec@gmail.com</div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-label">Academia.edu</div>
+          <div class="contact-value">independent.academia.edu/AureonInstitute</div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-label">ResearchGate</div>
+          <div class="contact-value">Gary Anthony Leckey</div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-label">GitHub</div>
+          <div class="contact-value">github.com/RA-CONSULTING</div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-label">Organisation</div>
+          <div class="contact-value">Aureon Institute<br>R&A Consulting and Brokerage Services Ltd<br>Belfast, Northern Ireland, UK</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-left">
+      Aureon Institute · Belfast, Northern Ireland · Open access corpus · All predictions anchored before events
+    </div>
+    <div class="footer-right">
+      ResearchGate 400536498 · academia.edu/AureonInstitute · github.com/RA-CONSULTING
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

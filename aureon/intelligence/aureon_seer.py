@@ -3467,7 +3467,12 @@ class AureonTheSeer:
         def _oracle_dict(o):
             if not o:
                 return None
-            return {"score": o.score, "phase": o.phase, "signal": o.dominant_signal}
+            return {
+                "score": o.score,
+                "phase": o.phase,
+                "signal": o.dominant_signal,
+                "details": dict(o.details or {}),
+            }
 
         summary = {
             "timestamp": datetime.fromtimestamp(v.timestamp).isoformat(),
@@ -3493,6 +3498,9 @@ class AureonTheSeer:
             "margin_leverage": getattr(v, 'margin_leverage', 0),
             "margin_conviction": getattr(v, 'margin_conviction', 0.0),
         }
+        # Backward-compatible top-level alias used by bridges that consume
+        # dict summaries rather than the SeerVision dataclass.
+        summary["runes"] = summary["oracles"].get("runes")
         return summary
 
     def get_trend(self, window: int = 10) -> Dict[str, Any]:

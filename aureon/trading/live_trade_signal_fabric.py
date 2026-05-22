@@ -22,6 +22,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 LOG_PATH = Path("state/aureon_live_trade_signal_fabric_events.jsonl")
 STATE_PATH = Path("state/aureon_live_trade_signal_fabric_latest.json")
 PUBLIC_PATH = Path("frontend/public/aureon_live_trade_signal_fabric.json")
+DEDUPLICATION_BUCKET_SECONDS = 5
+DEDUPLICATION_SCAN_LIMIT = 500
 
 PHASE_SEQUENCE = [
     "signal_generated",
@@ -124,6 +126,33 @@ def _event_id(payload: Dict[str, Any]) -> str:
     raw = json.dumps(payload, sort_keys=True, default=str)
     digest = hashlib.sha256(raw.encode("utf-8", errors="replace")).hexdigest()[:18]
     return f"ltf-{digest}"
+
+
+def _timestamp_bucket(value: Any, bucket_seconds: int = DEDUPLICATION_BUCKET_SECONDS) -> int:
+    ts = _parse_ts(value)
+    if ts <= 0:
+        ts = time.time()
+    return int(ts // max(1, int(bucket_seconds)))
+
+
+def _dedupe_identity_from_event(event: Dict[str, Any], bucket_seconds: int = DEDUPLICATION_BUCKET_SECONDS) -> str:
+    phase = str(event.get("phase") or event.get("status") or event.get("event_type") or "unknown")
+    lifecycle_id = str(event.get("lifecycle_id") or "")
+    reference_id = str(event.get("event_ref") or event.get("event_id") or "")
+    if not reference_id:
+        reference_id = _event_id(
+            {
+                "phase": phase,
+                "lifecycle_id": lifecycle_id,
+                "route_key": event.get("route_key"),
+                "symbol": event.get("symbol"),
+                "side": event.get("side"),
+                "source_system": event.get("source_system"),
+            }
+        )
+    bucket = _timestamp_bucket(event.get("generated_at"), bucket_seconds=bucket_seconds)
+    identity = f"{reference_id}|{phase}|{lifecycle_id}|{bucket}"
+    return hashlib.sha256(identity.encode("utf-8", errors="replace")).hexdigest()[:32]
 
 
 def _read_json(path: Path, default: Any) -> Any:
@@ -398,6 +427,7 @@ def normalize_trade_flow_event(
         "phase": phase_key,
         "topic": PHASE_TOPIC.get(phase_key, f"trading.{phase_key}"),
         "source_system": str(data.get("source") or source_system or "unknown"),
+        "publisher_owner": str(data.get("publisher_owner") or source_system or "unknown"),
         "trace_id": trace_id,
         "lifecycle_id": lifecycle_id,
         "candidate_id": candidate_id,
@@ -451,6 +481,9 @@ def normalize_trade_flow_event(
         event["trace_health"] = "complete" if phase_key == "outcome_recorded" else "in_progress"
     event = {key: value for key, value in event.items() if value is not None and value != ""}
     event["event_id"] = _event_id(event)
+    event["dedupe_bucket"] = _timestamp_bucket(event.get("generated_at"))
+    event["dedupe_identity"] = _dedupe_identity_from_event(event)
+    event["dedupe_applied"] = False
     return event
 
 
@@ -694,9 +727,25 @@ def build_state_from_events(events: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
 def _write_state_for_event(event: Dict[str, Any], root: Optional[Path]) -> Dict[str, Any]:
     log_path = rooted(root, LOG_PATH)
     log_path.parent.mkdir(parents=True, exist_ok=True)
-    with log_path.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(event, sort_keys=True, default=str) + "\n")
-    state = build_state_from_events(_tail_jsonl(log_path, 1000))
+    tail = _tail_jsonl(log_path, DEDUPLICATION_SCAN_LIMIT)
+    dedupe_identity = str(event.get("dedupe_identity") or "")
+    duplicate = bool(
+        dedupe_identity
+        and any(str(row.get("dedupe_identity") or "") == dedupe_identity for row in tail if isinstance(row, dict))
+    )
+    event["dedupe_applied"] = duplicate
+    if not duplicate:
+        with log_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(event, sort_keys=True, default=str) + "\n")
+        tail = _tail_jsonl(log_path, 1000)
+    else:
+        tail = tail[-1000:]
+    state = build_state_from_events(tail)
+    summary = state.get("summary") if isinstance(state.get("summary"), dict) else {}
+    if isinstance(summary, dict):
+        summary["dedupe_applied_count"] = int(summary.get("dedupe_applied_count", 0) or 0) + int(1 if duplicate else 0)
+        summary["dedupe_last_identity"] = dedupe_identity
+        state["summary"] = summary
     for rel in (STATE_PATH, PUBLIC_PATH):
         _write_json_atomic(rooted(root, rel), state)
     return state
