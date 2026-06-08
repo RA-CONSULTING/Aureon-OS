@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence
 
 from aureon.autonomous.aureon_agent_creative_process_guardian import (
     build_and_write_agent_creative_process_guardian,
@@ -32,10 +33,14 @@ from aureon.autonomous.aureon_gold_capital_intelligence_company import (
 
 
 SCHEMA_VERSION = "aureon-autonomous-self-run-loop-v1"
+GOAL_DISPATCHER_SCHEMA_VERSION = "aureon-goal-contract-dispatcher-v1"
 DEFAULT_STATE_PATH = Path("state/aureon_autonomous_self_run_loop_last_run.json")
 DEFAULT_AUDIT_JSON = Path("docs/audits/aureon_autonomous_self_run_loop.json")
 DEFAULT_AUDIT_MD = Path("docs/audits/aureon_autonomous_self_run_loop.md")
 DEFAULT_PUBLIC_JSON = Path("frontend/public/aureon_autonomous_self_run_loop.json")
+DEFAULT_GOAL_DISPATCHER_STATE_PATH = Path("state/aureon_goal_contract_dispatcher_last_run.json")
+DEFAULT_GOAL_DISPATCHER_AUDIT_JSON = Path("docs/audits/aureon_goal_contract_dispatcher.json")
+DEFAULT_GOAL_DISPATCHER_PUBLIC_JSON = Path("frontend/public/aureon_goal_contract_dispatcher.json")
 CODING_BRIDGE_EVIDENCE_PATHS = [
     Path("state/aureon_coding_organism_last_run.json"),
     Path("docs/audits/aureon_coding_organism_bridge.json"),
@@ -51,6 +56,7 @@ HARD_BOUNDARY_PATTERNS = {
 }
 
 Runner = Callable[[Path, str], Dict[str, Any]]
+RouteRunner = Callable[[Path, str, Dict[str, Any]], Dict[str, Any]]
 
 
 def _default_root() -> Path:
@@ -86,6 +92,13 @@ def _write_text(path: Path, text: str) -> Dict[str, Any]:
     return {"path": str(path), "bytes": path.stat().st_size}
 
 
+def _env_bool(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return str(raw).strip().lower() in {"1", "true", "yes", "on", "y"}
+
+
 def _detect_hard_holds(prompt: str) -> List[Dict[str, Any]]:
     lower = str(prompt or "").lower()
     holds: List[Dict[str, Any]] = []
@@ -101,6 +114,320 @@ def _detect_hard_holds(prompt: str) -> List[Dict[str, Any]]:
                 }
             )
     return holds
+
+
+def _default_goal_prompt() -> str:
+    return (
+        "Continue Aureon's safe local autonomous administration, code, office, "
+        "and Azyra work by claiming the next organism contract work order."
+    )
+
+
+def _route_surfaces_from_routes(routes: Sequence[Mapping[str, Any]]) -> List[str]:
+    surfaces: List[str] = ["memory", "reasoning", "contracts", "coordination"]
+    route_surface_map = {
+        "azyra_human_operator": ["azyra_operator", "office_admin", "tools"],
+        "office_admin_workweek": ["office_admin", "tools"],
+        "safe_code_repair": ["code", "tools"],
+        "capability_growth_loop": ["capability_growth", "self_enhancement", "code"],
+        "safe_self_enhancement_lifecycle": ["self_enhancement", "capability_growth", "code"],
+        "repo_self_catalog": ["self_catalog", "research"],
+        "safe_research_corpus": ["research"],
+        "safe_accounting_context": ["accounting"],
+        "internal_contract_stack": ["contracts", "coordination"],
+    }
+    for route in routes:
+        for surface in route_surface_map.get(str(route.get("route") or ""), []):
+            if surface not in surfaces:
+                surfaces.append(surface)
+    return surfaces
+
+
+def _skills_from_routes(routes: Sequence[Mapping[str, Any]], *, limit: int = 24) -> List[str]:
+    skills: List[str] = []
+    for route in routes:
+        for system in route.get("systems") or []:
+            name = str(system or "").strip()
+            if name and name not in skills:
+                skills.append(name)
+            if len(skills) >= limit:
+                return skills
+    return skills
+
+
+def _goal_route_names(routes: Sequence[Mapping[str, Any]]) -> List[str]:
+    return [str(route.get("route") or "") for route in routes if route.get("route")]
+
+
+def _select_goal_route(route_names: Sequence[str], objective: str) -> str:
+    text = str(objective or "").lower()
+    if "azyra_human_operator" in route_names and any(token in text for token in ("azyra", "azera", "azra", "azrra", "stock", "warehouse")):
+        return "azyra_human_operator"
+    for candidate in (
+        "office_admin_workweek",
+        "safe_code_repair",
+        "capability_growth_loop",
+        "safe_self_enhancement_lifecycle",
+        "repo_self_catalog",
+        "safe_research_corpus",
+        "safe_accounting_context",
+    ):
+        if candidate in route_names:
+            return candidate
+    return "autonomous_job_executor"
+
+
+def _candidate_stock_audit_paths(root: Path) -> List[Path]:
+    base = root.parent
+    document_root = base.parent
+    candidates = [
+        base / "outputs" / "boxtop_azyra_quantity_audit" / "Boxtop_Azyra_Latest_Balances_Audit.json",
+        base / "outputs" / "boxtop_azyra_quantity_audit" / "Boxtop_Azyra_Latest_Balances_Audit.xlsx",
+        base / "outputs" / "boxtop_azyra_quantity_audit" / "Boxtop_Azyra_Quantity_Audit.json",
+        document_root / "Stock_Balances_47128334.xlsx",
+    ]
+    return [path for path in candidates if path.exists()]
+
+
+def _run_azyra_goal_route(root: Path, objective: str, context: Dict[str, Any]) -> Dict[str, Any]:
+    audits = _candidate_stock_audit_paths(root)
+    output_dir = root.parent / "outputs" / "aureon_goal_contract_dispatcher" / "azyra_warehouse_fix"
+    if audits:
+        from aureon.integrations.azyra.autonomous_warehouse_fix import run_autonomous_warehouse_fix_pass
+
+        return run_autonomous_warehouse_fix_pass(
+            audits[0],
+            output_dir=output_dir,
+            execute_live=_env_bool("AUREON_AZYRA_EXECUTE_LIVE", False),
+            create_work_orders=True,
+            max_manifest_items=250,
+        )
+
+    try:
+        from aureon.integrations.azyra.tools import get_azyra_operator_bridge
+
+        bridge = get_azyra_operator_bridge()
+        return {
+            "ok": True,
+            "schema_version": "aureon-goal-azyra-observation-v1",
+            "status": "azyra_operator_observed_no_stock_audit",
+            "objective": objective,
+            "status_snapshot": bridge.status(),
+            "capabilities": bridge.capabilities(),
+            "input_route_diagnostics": bridge.input_route_diagnostics(),
+            "next_action": "Locate the current Boxtop/Azyra stock audit or create a stock-migration work order.",
+        }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "schema_version": "aureon-goal-azyra-observation-v1",
+            "status": "azyra_operator_observation_failed",
+            "error": f"{type(exc).__name__}: {exc}",
+            "objective": objective,
+        }
+
+
+def _run_office_admin_goal_route(root: Path, objective: str, context: Dict[str, Any]) -> Dict[str, Any]:
+    from aureon.integrations.office.solo_operator import run_logistics_office_solo_cycle
+
+    watched_paths = [str(path) for path in _candidate_stock_audit_paths(root)]
+    return run_logistics_office_solo_cycle(
+        output_dir=root / "state" / "logistics_office" / "goal_contract_dispatcher",
+        proof_dir=root / "state" / "logistics_office" / "workweek_monitor",
+        watched_paths=watched_paths,
+        read_outlook=False,
+        include_read_items=False,
+        repeat_dispatch=True,
+        dispatch_specialists=True,
+        preferred_task="stock_migration" if watched_paths else "",
+        allow_live_actions=False,
+        persist=True,
+    )
+
+
+def _run_safe_code_goal_route(root: Path, objective: str, context: Dict[str, Any]) -> Dict[str, Any]:
+    from aureon.autonomous.aureon_safe_code_control import CodeProposal, SafeCodeControl
+
+    controller = SafeCodeControl(root / "state" / "safe_code_control_state.json")
+    proposal = controller.propose(
+        CodeProposal(
+            kind="autonomous_goal_code_work",
+            title=f"Implement or repair goal route: {objective[:96]}",
+            summary=(
+                "Aureon selected a code route from GoalCapabilityMap. The code work is queued "
+                "through SafeCodeControl so existing review/approval/apply paths own the mutation."
+            ),
+            target_files=[
+                "aureon/autonomous/aureon_autonomous_self_run_loop.py",
+                "aureon/core/organism_contracts.py",
+            ],
+            metadata={
+                "goal_dispatcher": context.get("route_decision", {}),
+                "codex_required_inside_cycle": False,
+            },
+            source="aureon_goal_contract_dispatcher",
+        )
+    )
+    return {
+        "ok": True,
+        "schema_version": "aureon-goal-safe-code-dispatch-v1",
+        "status": proposal.get("status", "pending_review"),
+        "pending_count": controller.status().get("pending_count", 0),
+        "proposal": proposal,
+    }
+
+
+def _run_autonomous_job_goal_route(root: Path, objective: str, context: Dict[str, Any]) -> Dict[str, Any]:
+    from aureon.autonomous.aureon_autonomous_job_executor import enqueue_and_tick_autonomous_job
+
+    return enqueue_and_tick_autonomous_job(
+        objective,
+        root=root,
+        source="aureon_goal_contract_dispatcher",
+        priority="P30",
+        attempt_budget=1,
+    )
+
+
+def _default_route_runners() -> Dict[str, RouteRunner]:
+    return {
+        "azyra_human_operator": _run_azyra_goal_route,
+        "office_admin_workweek": _run_office_admin_goal_route,
+        "safe_code_repair": _run_safe_code_goal_route,
+        "capability_growth_loop": _run_safe_code_goal_route,
+        "safe_self_enhancement_lifecycle": _run_safe_code_goal_route,
+        "autonomous_job_executor": _run_autonomous_job_goal_route,
+    }
+
+
+def _persist_goal_dispatcher(root: Path, report: Dict[str, Any]) -> Dict[str, Any]:
+    writes = [
+        _write_json(_rooted(root, DEFAULT_GOAL_DISPATCHER_STATE_PATH), report),
+        _write_json(_rooted(root, DEFAULT_GOAL_DISPATCHER_AUDIT_JSON), report),
+        _write_json(_rooted(root, DEFAULT_GOAL_DISPATCHER_PUBLIC_JSON), report),
+    ]
+    report["output_files"] = [
+        DEFAULT_GOAL_DISPATCHER_STATE_PATH.as_posix(),
+        DEFAULT_GOAL_DISPATCHER_AUDIT_JSON.as_posix(),
+        DEFAULT_GOAL_DISPATCHER_PUBLIC_JSON.as_posix(),
+    ]
+    report["write_info"] = {"evidence_writes": writes}
+    for rel in (DEFAULT_GOAL_DISPATCHER_STATE_PATH, DEFAULT_GOAL_DISPATCHER_AUDIT_JSON, DEFAULT_GOAL_DISPATCHER_PUBLIC_JSON):
+        _write_json(_rooted(root, rel), report)
+    return report
+
+
+def run_goal_contract_dispatcher(
+    *,
+    root: Optional[Path] = None,
+    prompt: str = "",
+    route_runner_overrides: Optional[Dict[str, RouteRunner]] = None,
+) -> Dict[str, Any]:
+    """Let Aureon turn a goal into a claimed contract and route-owned action."""
+    root = Path(root or _default_root()).resolve()
+    objective = str(prompt or "").strip() or _default_goal_prompt()
+    started = time.perf_counter()
+    try:
+        from aureon.autonomous.aureon_goal_capability_map import build_goal_capability_map
+        from aureon.core.aureon_thought_bus import ThoughtBus
+        from aureon.core.organism_contracts import OrganismContractStack
+
+        thought_bus = ThoughtBus(persist_path=str(root / "logs" / "aureon_goal_contract_dispatcher_thoughts.jsonl"))
+        stack = OrganismContractStack(
+            thought_bus=thought_bus,
+            state_path=root / "state" / "organism_contract_stack.json",
+            source="aureon_goal_contract_dispatcher",
+        )
+        goal_map = build_goal_capability_map(repo_root=root, current_goal=objective).compact()
+        routes = list(goal_map.get("recommended_routes") or [])
+        workflow = stack.create_goal_workflow(
+            objective,
+            skills=_skills_from_routes(routes),
+            route_surfaces=_route_surfaces_from_routes(routes),
+            source="aureon_goal_contract_dispatcher",
+        )
+        claimed = stack.claim_next(worker="aureon_goal_contract_dispatcher")
+        route_names = _goal_route_names(routes)
+        selected_route = _select_goal_route(route_names, objective)
+        route_decision = {
+            "objective": objective,
+            "route_names": route_names,
+            "selected_route": selected_route,
+            "route_surfaces": _route_surfaces_from_routes(routes),
+            "codex_required_inside_cycle": False,
+        }
+        context = {
+            "goal_map": goal_map,
+            "contract_workflow": workflow,
+            "claimed_work_order": claimed.to_dict() if claimed else {},
+            "route_decision": route_decision,
+        }
+        runners = _default_route_runners()
+        if route_runner_overrides:
+            runners.update(route_runner_overrides)
+        runner = runners.get(selected_route) or runners["autonomous_job_executor"]
+        if claimed:
+            try:
+                execution = runner(root, objective, context)
+            except Exception as exc:
+                execution = {
+                    "ok": False,
+                    "schema_version": "aureon-goal-route-runner-exception-v1",
+                    "status": "route_runner_exception",
+                    "selected_route": selected_route,
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+        else:
+            execution = {
+                "ok": False,
+                "status": "no_claimed_work_order",
+                "reason": "No queued organism.default work order was available to claim.",
+            }
+        completed = None
+        if claimed:
+            completed = stack.complete_work_order(
+                claimed.contract_id,
+                result={
+                    "route_decision": route_decision,
+                    "execution_status": execution.get("status", execution.get("schema_version", "")),
+                    "ok": bool(execution.get("ok", True)),
+                },
+                ok=bool(execution.get("ok", True)),
+                worker="aureon_goal_contract_dispatcher",
+            )
+        report: Dict[str, Any] = {
+            "ok": bool(execution.get("ok", True)) and claimed is not None,
+            "schema_version": GOAL_DISPATCHER_SCHEMA_VERSION,
+            "status": "goal_contract_dispatched" if claimed else "goal_contract_no_work_order_claimed",
+            "generated_at": _utc_now(),
+            "duration_ms": round((time.perf_counter() - started) * 1000),
+            "objective": objective,
+            "goal_map": goal_map,
+            "contract_workflow": workflow,
+            "claimed_work_order": claimed.to_dict() if claimed else {},
+            "completed_work_order": completed.to_dict() if completed else {},
+            "route_decision": route_decision,
+            "execution": execution,
+            "contract_stack_status": stack.status(),
+            "autonomy_contract": {
+                "codex_required_inside_cycle": False,
+                "uses_organism_contract_stack": True,
+                "uses_goal_capability_map": True,
+                "uses_existing_integrations": True,
+                "live_mutation_default": False,
+            },
+        }
+    except Exception as exc:
+        report = {
+            "ok": False,
+            "schema_version": GOAL_DISPATCHER_SCHEMA_VERSION,
+            "status": "goal_contract_dispatcher_exception",
+            "generated_at": _utc_now(),
+            "duration_ms": round((time.perf_counter() - started) * 1000),
+            "objective": objective,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+    return _persist_goal_dispatcher(root, report)
 
 
 def _default_self_fix_tests(root: Path) -> List[List[str]]:
@@ -124,6 +451,10 @@ def _default_self_fix_tests(root: Path) -> List[List[str]]:
 
 def _default_runners(*, include_stress: bool, max_stress_attempts: int) -> Dict[str, Runner]:
     runners: Dict[str, Runner] = {
+        "goal_contract_dispatcher": lambda root, prompt: run_goal_contract_dispatcher(
+            root=root,
+            prompt=prompt,
+        ),
         "coding_capability_unblocker": lambda root, prompt: build_and_write_coding_capability_unblocker(
             prompt, root=root
         ),
@@ -156,6 +487,11 @@ def _default_runners(*, include_stress: bool, max_stress_attempts: int) -> Dict[
 
 def _task_contract(task_id: str) -> Dict[str, Any]:
     contracts = {
+        "goal_contract_dispatcher": {
+            "title": "Goal contract dispatcher",
+            "authority": "safe_local_contract_worker",
+            "critical": True,
+        },
         "coding_capability_unblocker": {
             "title": "Autonomous coding gate refresh",
             "authority": "safe_local_autonomy",
