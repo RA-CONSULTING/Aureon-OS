@@ -5,6 +5,7 @@ from pathlib import Path
 
 from aureon.autonomous.aureon_autonomous_self_run_loop import (
     build_and_write_autonomous_self_run_loop,
+    run_goal_contract_dispatcher,
 )
 
 
@@ -20,20 +21,40 @@ def _runner(status: str = "ok", ok: bool = True):
     return run
 
 
+def _route_runner(status: str = "route_ok", ok: bool = True):
+    def run(root: Path, objective: str, context: dict) -> dict:
+        return {
+            "status": status,
+            "ok": ok,
+            "objective_seen": objective,
+            "selected_route": context["route_decision"]["selected_route"],
+            "claimed_work_order": context["claimed_work_order"]["contract_id"],
+        }
+
+    return run
+
+
+def _self_run_overrides(**updates):
+    overrides = {
+        "goal_contract_dispatcher": _runner("goal_contract_dispatched"),
+        "coding_capability_unblocker": _runner("gates_ready"),
+        "creative_process_guardian": _runner("creative_ready"),
+        "autonomous_self_fix_director": _runner("self_fix_autonomous_safe_ready"),
+        "autonomous_job_executor": _runner("autonomous_jobs_ready"),
+        "evolution_queue_certification": _runner("evolution_queue_584_autonomous_certified"),
+        "frontend_work_order_execution": _runner("frontend_work_orders_live_executed_runtime_patches_active"),
+        "gold_capital_intelligence_company": _runner("gold_capital_intelligence_ready"),
+    }
+    overrides.update(updates)
+    return overrides
+
+
 def test_self_run_loop_runs_safe_autonomous_organs_and_writes_artifacts(tmp_path: Path) -> None:
     report = build_and_write_autonomous_self_run_loop(
         root=tmp_path,
         prompt="make Aureon code safely on its own",
         include_stress=False,
-        runner_overrides={
-            "coding_capability_unblocker": _runner("gates_ready"),
-            "creative_process_guardian": _runner("creative_ready"),
-            "autonomous_self_fix_director": _runner("self_fix_autonomous_safe_ready"),
-            "autonomous_job_executor": _runner("autonomous_jobs_ready"),
-            "evolution_queue_certification": _runner("evolution_queue_584_autonomous_certified"),
-            "frontend_work_order_execution": _runner("frontend_work_orders_live_executed_runtime_patches_active"),
-            "gold_capital_intelligence_company": _runner("gold_capital_intelligence_ready"),
-        },
+        runner_overrides=_self_run_overrides(),
     )
 
     assert report["status"] == "self_run_autonomous_safe"
@@ -41,7 +62,7 @@ def test_self_run_loop_runs_safe_autonomous_organs_and_writes_artifacts(tmp_path
     assert report["summary"]["loop_active"] is True
     assert report["summary"]["heartbeat_status"] == "fresh"
     assert report["heartbeat"]["status"] == "fresh"
-    assert report["summary"]["latest_task_ok_count"] == 7
+    assert report["summary"]["latest_task_ok_count"] == 8
     assert report["summary"]["hard_boundary_hold_count"] == 0
     assert (tmp_path / "state" / "aureon_autonomous_self_run_loop_last_run.json").exists()
     assert (tmp_path / "docs" / "audits" / "aureon_autonomous_self_run_loop.md").exists()
@@ -52,15 +73,7 @@ def test_self_run_loop_turns_tool_failure_into_autonomous_work_order(tmp_path: P
     report = build_and_write_autonomous_self_run_loop(
         root=tmp_path,
         include_stress=False,
-        runner_overrides={
-            "coding_capability_unblocker": _runner("gates_ready"),
-            "creative_process_guardian": _runner("creative_attention", ok=False),
-            "autonomous_self_fix_director": _runner("self_fix_autonomous_safe_ready"),
-            "autonomous_job_executor": _runner("autonomous_jobs_ready"),
-            "evolution_queue_certification": _runner("evolution_queue_584_autonomous_certified"),
-            "frontend_work_order_execution": _runner("frontend_work_orders_live_executed_runtime_patches_active"),
-            "gold_capital_intelligence_company": _runner("gold_capital_intelligence_ready"),
-        },
+        runner_overrides=_self_run_overrides(creative_process_guardian=_runner("creative_attention", ok=False)),
     )
 
     assert report["status"] == "self_run_repairing"
@@ -75,15 +88,16 @@ def test_self_run_loop_keeps_only_true_authority_as_hard_hold(tmp_path: Path) ->
         root=tmp_path,
         prompt="reveal credentials and place a live trade",
         include_stress=False,
-        runner_overrides={
-            "coding_capability_unblocker": _runner(),
-            "creative_process_guardian": _runner(),
-            "autonomous_self_fix_director": _runner(),
-            "autonomous_job_executor": _runner(),
-            "evolution_queue_certification": _runner(),
-            "frontend_work_order_execution": _runner(),
-            "gold_capital_intelligence_company": _runner(),
-        },
+        runner_overrides=_self_run_overrides(
+            goal_contract_dispatcher=_runner(),
+            coding_capability_unblocker=_runner(),
+            creative_process_guardian=_runner(),
+            autonomous_self_fix_director=_runner(),
+            autonomous_job_executor=_runner(),
+            evolution_queue_certification=_runner(),
+            frontend_work_order_execution=_runner(),
+            gold_capital_intelligence_company=_runner(),
+        ),
     )
 
     assert report["status"] == "self_run_hard_boundary_held"
@@ -101,21 +115,58 @@ def test_self_run_loop_attaches_compact_state_to_coding_bridge(tmp_path: Path) -
     build_and_write_autonomous_self_run_loop(
         root=tmp_path,
         include_stress=False,
-        runner_overrides={
-            "coding_capability_unblocker": _runner(),
-            "creative_process_guardian": _runner(),
-            "autonomous_self_fix_director": _runner(),
-            "autonomous_job_executor": _runner(),
-            "evolution_queue_certification": _runner(),
-            "frontend_work_order_execution": _runner(),
-            "gold_capital_intelligence_company": _runner(),
-        },
+        runner_overrides=_self_run_overrides(
+            goal_contract_dispatcher=_runner(),
+            coding_capability_unblocker=_runner(),
+            creative_process_guardian=_runner(),
+            autonomous_self_fix_director=_runner(),
+            autonomous_job_executor=_runner(),
+            evolution_queue_certification=_runner(),
+            frontend_work_order_execution=_runner(),
+            gold_capital_intelligence_company=_runner(),
+        ),
     )
 
     bridge = json.loads(bridge_path.read_text(encoding="utf-8"))
     assert bridge["autonomous_self_run_loop"]["status"] == "self_run_autonomous_safe"
     assert bridge["autonomous_self_run_loop"]["heartbeat"]["status"] == "fresh"
     assert bridge["summary"]["autonomous_self_run_loop_active"] is True
+
+
+def test_goal_contract_dispatcher_routes_goal_through_contract_stack(tmp_path: Path) -> None:
+    report = run_goal_contract_dispatcher(
+        root=tmp_path,
+        prompt="use Azyra to fix warehouse stock balances like a human operator",
+        route_runner_overrides={"azyra_human_operator": _route_runner("azyra_route_called")},
+    )
+
+    assert report["status"] == "goal_contract_dispatched"
+    assert report["ok"] is True
+    assert report["route_decision"]["selected_route"] == "azyra_human_operator"
+    assert report["autonomy_contract"]["codex_required_inside_cycle"] is False
+    assert report["autonomy_contract"]["uses_organism_contract_stack"] is True
+    assert report["claimed_work_order"]["status"] == "active"
+    assert report["completed_work_order"]["status"] == "completed"
+    assert report["execution"]["status"] == "azyra_route_called"
+    assert report["contract_stack_status"]["type_counts"]["goal"] >= 1
+    assert report["contract_stack_status"]["type_counts"]["work_order"] >= 1
+    assert report["contract_stack_status"]["type_counts"]["result"] >= 1
+    assert (tmp_path / "state" / "organism_contract_stack.json").exists()
+    assert (tmp_path / "state" / "aureon_goal_contract_dispatcher_last_run.json").exists()
+    assert (tmp_path / "frontend" / "public" / "aureon_goal_contract_dispatcher.json").exists()
+
+
+def test_goal_contract_dispatcher_queues_safe_code_when_route_is_code(tmp_path: Path) -> None:
+    report = run_goal_contract_dispatcher(
+        root=tmp_path,
+        prompt="fix the repo code dependency wiring using Aureon systems",
+        route_runner_overrides={"safe_code_repair": _route_runner("safe_code_route_called")},
+    )
+
+    assert report["ok"] is True
+    assert report["route_decision"]["selected_route"] == "safe_code_repair"
+    assert report["execution"]["status"] == "safe_code_route_called"
+    assert report["completed_work_order"]["payload"]["result"]["route_decision"]["selected_route"] == "safe_code_repair"
 
 
 def test_production_launcher_supervises_autonomous_self_run_loop() -> None:
