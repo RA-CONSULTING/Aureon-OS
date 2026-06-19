@@ -37,6 +37,7 @@ Use this README as the quick operator guide. For deeper maps, see [RUNNING.md](R
 | Search and research fabric | Performs local keyword search, online research packets, screenshot/motion evidence, generated code handoff, and audit proof. | `frontend/public/aureon_swarm_search_mapping_stress_audit.json` |
 | HNC essay benchmark | Produces and verifies a 1000-word Harmonic Nexus Core essay from real local research artifacts. | `frontend/public/aureon_hnc_essay_benchmark.json` |
 | Metacognitive expansion | Routes HNC research through 18 repo metacognitive systems, including Queen, Auris, ThoughtBus, Mycelium, self-introspection, and refinement. | `frontend/public/aureon_metacognitive_systems_expansion.json` |
+| Azyra warehouse audit batch | Tracks the 2026-06-19 scanned stock-count batch package, local control workbook, held-review rows, and live-posting guardrail. | `docs/warehouse/azyra_audit_scan_batch_20260619.md` |
 
 ### Fastest Safe Startup
 
