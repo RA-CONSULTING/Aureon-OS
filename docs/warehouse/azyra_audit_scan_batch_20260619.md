@@ -19,13 +19,26 @@ The batch workbook and evidence are held locally under:
 ## Batch Counts
 
 - Decoded scan rows: `428`
-- Ready source rows: `283`
-- Batch-ready aggregate rows: `277`
-- Held review rows: `140`
+- Ready source rows: `291`
+- Batch-ready aggregate rows: `284`
+- Held review rows: `132`
 - Excluded rows: `5`
 - Pending rows: `0`
-- Ready quantity total: `725`
-- Held quantity total: `419`
+- Ready quantity total: `737`
+- Held quantity total: `407`
+
+## Review Fixes
+
+The 2026-06-19 review pass cleared eight rows that were provable from the scan and stock master:
+
+- `DN097` page 5, bay 5, `53M`, quantity `1`
+- `DN097` page 7, bay 7, `44M`, quantity `2`
+- `DN097` page 7, bay 7, `48M`, quantity `1`
+- `DN097` page 7, bay 7, `55M`, quantity `1`
+- `DN097` page 7, bay 7, `53M`, quantity `1`
+- `RPU748` page 6, bay 6, `20M`, quantity `4`
+- `RPU748` page 6, bay 6, `21M`, quantity `1`
+- `RPU748` page 6, bay 6, `17M`, quantity `1`
 
 Rows are only included in the `Azyra_Batch_File` workbook sheet when the visual/OCR decode, master-code validation, and batch status are ready. Held rows remain outside the upload file.
 
@@ -38,4 +51,3 @@ The live Azyra stock-count upload has not been submitted. Aureon restored Azyra 
 ## Guardrail
 
 Do not repurpose the current-balance adjustment runner for this batch. This audit is a stock-count upload package, not a decrease/increase adjustment batch.
-
