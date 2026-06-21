@@ -39,6 +39,17 @@ Use this README as the quick operator guide. For deeper maps, see [RUNNING.md](R
 | Metacognitive expansion | Routes HNC research through 18 repo metacognitive systems, including Queen, Auris, ThoughtBus, Mycelium, self-introspection, and refinement. | `frontend/public/aureon_metacognitive_systems_expansion.json` |
 | Azyra warehouse audit batch | Tracks the 2026-06-20 master stock-count reconciliation, fresh Azyra export, local control workbook, held-review rows, and live-posting guardrail. | `docs/warehouse/azyra_master_reconciliation_20260620.md` |
 
+### Azyra Warehouse Audit Live Status - 2026-06-21
+
+Live Azyra work was carried out through Aureon against `SFG Live`, owner `Decora Antrim`, warehouse `Antrim`.
+
+- Completed Azyra stock-check overage transaction `A1014965`, owner ref `HISTQTY-20260621`, status `Completed - 21/06/26`.
+- Posted `WL50-PS75PR` +4 units at `C26B`; after Stock Enquiry proves 8 total, 8 free, 0 picking.
+- Posted `WL50-PS165UR` +4 units at `E19A`; after Stock Enquiry proves 7 total, 7 free, 0 picking.
+- Current historical quantity ledger counts: 35 items, 2 `completed_live`, 28 `already_correct`, 5 `held_requires_review`, 0 pending, 0 remaining short post candidates.
+- Local operator evidence/workbooks are in `../outputs/aureon_goal_contract_dispatcher/historical_quantity_live_fix_20260620/`, including `live_post_ledger_20260621.json` and `Azyra_Master_Audit_Reconciliation_20260621_LIVE_STATUS.xlsx`.
+- The one-batch Opening Balances route remains held because Azyra rejected tracked stock without real tracking/rotation metadata. Do not force invented tracked-stock values.
+
 ### Fastest Safe Startup
 
 ```powershell
