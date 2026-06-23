@@ -37,7 +37,7 @@ Use this README as the quick operator guide. For deeper maps, see [RUNNING.md](R
 | Search and research fabric | Performs local keyword search, online research packets, screenshot/motion evidence, generated code handoff, and audit proof. | `frontend/public/aureon_swarm_search_mapping_stress_audit.json` |
 | HNC essay benchmark | Produces and verifies a 1000-word Harmonic Nexus Core essay from real local research artifacts. | `frontend/public/aureon_hnc_essay_benchmark.json` |
 | Metacognitive expansion | Routes HNC research through 18 repo metacognitive systems, including Queen, Auris, ThoughtBus, Mycelium, self-introspection, and refinement. | `frontend/public/aureon_metacognitive_systems_expansion.json` |
-| Azyra warehouse audit batch | Tracks the 2026-06-20 master stock-count reconciliation, fresh Azyra export, local control workbook, held-review rows, and live-posting guardrail. | `docs/warehouse/azyra_master_reconciliation_20260620.md` |
+| Azyra warehouse audit batch | Tracks the 2026-06-20 master stock-count reconciliation, fresh Azyra export, local control workbook, held-review rows, live location moves, and live-posting guardrails. | `docs/warehouse/azyra_master_reconciliation_20260620.md` |
 
 ### Azyra Warehouse Audit Live Status - 2026-06-21
 
@@ -58,6 +58,32 @@ Live Azyra work was carried out through Aureon against `SFG Live`, owner `Decora
 - Warehouse-floor location move batch status: 13 rows, 2 posted live (`T101950`, `T101951`), 1 already correct, 10 held, 0 pending, no balance adjustment pairs used.
 - Local operator evidence/workbooks are in `../outputs/aureon_goal_contract_dispatcher/historical_quantity_live_fix_20260620/`, including `live_post_ledger_20260621.json`, `live_decrease_batch_20260621.csv`, `held_historical_quantity_review_20260621.csv`, and `Azyra_Master_Audit_Reconciliation_20260621_LIVE_STATUS.xlsx`.
 - The one-batch Opening Balances route remains held because Azyra rejected tracked stock without real tracking/rotation metadata. Do not force invented tracked-stock values.
+
+### Azyra Warehouse Live Automation - 2026-06-23
+
+Aureon now has a reusable live warehouse operator suite for Azyra `SFG Live`, owner `Decora Antrim`, warehouse `Antrim`. The route is designed for controlled production mutation: prove the live Stock Enquiry state, post only through native Azyra screens, capture evidence, then verify the result before the next row.
+
+- `aureon_current_balance_fast_operator.py` performs fast read-only Stock Enquiry probes and now refills the owner field after RemoteApp relogin before querying stock codes.
+- `current_balance_evidence_capture.py`, `current_balance_stock_quantity_enquiry.py`, and `aureon_current_balance_batch_operator.py` collect source, destination, free, picking, storage-piece, and tracking evidence for batch workbooks.
+- `aureon_location_transfer_manifest_builder.py`, `aureon_location_transfer_common.py`, `aureon_location_transfer_operator.py`, and `aureon_location_transfer_batch_operator.py` run the location-transfer workflow from a manifest. They treat arrows as `from -> to`, treat `x`, `+`, and handwritten counts as move quantities, and use native Azyra WMS transfer/putaway paths instead of paired decrease/increase adjustments.
+- `aureon_wms_location_proof_operator.py` proves or creates the required WMS location route before a line is allowed into live mutation.
+- `aureon_location_transfer_hnc_ocr_audit.py` supports OCR review of handwritten audit/location evidence so HNC can mark clean, review, and blocked lines before production.
+- `aureon_held_transaction_history_capture.py`, `current_balance_live_preflight.py`, `current_balance_build_source_evidence.py`, `current_balance_next_action.py`, `current_balance_open_adjustments_screen.py`, `current_balance_wait_for_safe_screen.py`, and `execute_live_stock_adjustments_robust.py` retain the current-balance adjustment path for explicit quantity corrections only.
+
+Production guardrails:
+
+- Every manifest line must become `completed_live`, `already_correct`, or `held_requires_review`; no silent skips.
+- Live-derived sources are accepted only when exactly one Azyra source location has enough free stock. Multiple qualifying source rows, short free stock, picking quantity, SKU mismatch, or conflicting OCR evidence hold the row.
+- Location aliases from the warehouse master are normalized for the Azyra UI, including `WHBF100R`/`WHBF10OR` style OCR reads to `WHBFLOOR` and BAY digit confusion repair.
+- Non-numeric picker references such as stillage descriptions are held until the exact Azyra piece ID and Balances picker-row route are proven.
+- Destination-already-correct rows are recorded with before/after Stock Enquiry evidence and are not reposted.
+
+Common run shape:
+
+```powershell
+.\.venv\Scripts\python.exe .\aureon_current_balance_fast_operator.py --sku WL50-PS120JA --owner "Decora Antrim"
+.\.venv\Scripts\python.exe .\aureon_location_transfer_batch_operator.py --manifest ..\outputs\aureon_goal_contract_dispatcher\live_production_20260622\live_location_transfer_manifest.json --confirm-live
+```
 
 ### Fastest Safe Startup
 
