@@ -22,6 +22,36 @@ Run the production supervisor, Flameborn UI, market data, parallel strategy work
 
 Aureon is a local-first operating system for high-risk, evidence-heavy work. It is not just a trading bot and it is not just a dashboard. It is an operator layer that lets specialist systems observe, reason, prepare work, publish proof, and then route live mutation through controlled paths.
 
+### Aureon Capability CV
+
+Aureon should be read as a capability CV for systems thinkers, researchers, AI builders, algorithm designers, and live operators. The repo is not one feature list; it is a mapped organism where code, metadata, evidence, runtime state, tests, and generated interfaces make each capability discoverable and reusable.
+
+| Reader | What Aureon offers | Metadata that makes it usable |
+|---|---|---|
+| Systems thinkers | A full local operating model for feedback loops, guards, runtime readiness, state mirrors, evidence, and controlled mutation. | Capability maps, wake-up manifests, readiness audits, flight-test state, blocker reasons, and current/legacy architecture maps. |
+| Researchers | A repeatable research and proof environment for market, cognition, HNC/Auris, audit, warehouse, accounting, and system-behaviour work. | Markdown reports, JSON audit files, public proof mirrors, source references, ledgers, screenshots, and testable reproduction commands. |
+| AI and algorithm builders | Agent routing, local LLM adapters, prompt filters, adaptive skills, generated UI, code proposal queues, data-ocean scans, and trading intelligence loops. | Skill manifests, goal-to-capability maps, prompt packets, quality gates, generated component contracts, and test outputs. |
+| Live operators | One place to see what is safe, what is held, what is ready, what has been posted, and what must stay under review. | Status endpoints, batch ledgers, before/after evidence, review states, hold reasons, and explicit live-action gates. |
+| Product and UI builders | A generated React/Vite console surface that turns runtime and audit metadata into operator-readable panels. | `frontend/public` proof JSON, generated TSX consoles, service adapters, hooks, and build checks. |
+| Market and trading analysts | Multi-exchange runtime, scanners, portfolio/risk context, waveform memory, order-intent evidence, and broker-readiness checks. | Exchange registries, live cache health, scanner fusion matrix, lifecycle state, strategy worker state, and audit JSON. |
+| Back-office automation builders | Controlled warehouse, accounting, filing-support, document, workbook, OCR, and evidence workflows. | Manifest rows, reconciliation workbooks, local evidence folders, statutory-pack metadata, and redacted public summaries. |
+
+Aureon can do thousands of things because the capability is not only in individual scripts. The value is in the metadata fabric around them: which goal a script serves, which evidence it writes, which UI reads it, which tests protect it, which live gate controls it, and which review state prevents unsafe action. That is why a repo-wide scan matters: it shows the operating surface, while the metadata tells Aureon and the operator how to use that surface.
+
+### Metadata Fabric
+
+Metadata is the key layer. It lets Aureon turn many separate systems into one inspectable operator environment instead of a loose pile of tools.
+
+| Metadata layer | What it answers | Example surfaces |
+|---|---|---|
+| Runtime state | What is alive, stale, blocked, safe, or ready now? | Local status endpoints, wake-up manifests, flight-test output, reboot advice, runtime mirrors. |
+| Capability metadata | Which subsystem can handle this goal, and what route should be used? | Capability switchboard, goal-capability map, Director capability bridge, coding-agent skill base. |
+| Evidence metadata | What proof exists before and after any serious action? | JSON proofs, screenshots, ledgers, audit reports, public mirrors, workbook control tabs. |
+| Skill metadata | What reusable worker ability exists and how should it be invoked? | Adaptive skill manifests, CodeArchitect skill library, quality gates, generated operator panels. |
+| Research metadata | Which claims, reports, and experiments can be traced and re-run? | `docs/`, HNC/Auris reports, vault artifacts, research packets, reproduction commands. |
+| Safety metadata | What must be held, reviewed, redacted, or prevented from going live? | Hold states, blocker reasons, stale reasons, redaction scans, guarded executor/operator paths. |
+| Product metadata | How does the UI know what to show without hardcoding every workflow? | `frontend/public` JSON, generated TSX consoles, service adapters, hooks, and build artifacts. |
+
 The current repo has three live-capable centres:
 
 | Centre | What Aureon does | Live authority |
@@ -47,6 +77,8 @@ This README now has a front-door structure while preserving the older proof, res
 
 | Section | Use it for |
 |---|---|
+| [Aureon Capability CV](#aureon-capability-cv) | The current high-level map for systems thinkers, researchers, AI/algorithm builders, and live operators. |
+| [Metadata Fabric](#metadata-fabric) | How Aureon uses metadata to make thousands of capabilities discoverable, provable, gated, and reusable. |
 | [Start Here](#start-here) | Current production entrypoints, live status, Azyra status, and the fastest safe startup. |
 | [Azyra Warehouse Live Automation](#azyra-warehouse-live-automation---2026-06-23) | Stock Enquiry, live warehouse movement, current-balance fixes, OCR review, and batch guardrails. |
 | [Flameborn Frontend Integration](#flameborn-frontend-integration) | Human-facing UI, chat, guarded terminal, and local frontend startup. |
@@ -71,6 +103,16 @@ Current scan source: tracked Git files in `main`, checked locally on 2026-06-23 
 | `scripts/` | 302 | Launchers, diagnostics, validation, reports, runners, and helper automation. |
 | `Kings_Accounting_Suite/` | 227 | Accounting, statutory pack, HMRC support, and related evidence tooling. |
 | `supabase/` | 160 | Supabase functions/configuration and support surfaces. |
+
+Metadata and generated capability surfaces from the same scan:
+
+| Surface | Count | Why it matters |
+|---|---:|---|
+| `frontend/public/**/*.json` | 1,078 | Public-facing proof, runtime mirrors, audit outputs, generated capability records, and UI-readable metadata. |
+| `frontend/public/aureon_adaptive_skills/` | 2,844 files | Adaptive local skill library material available to the frontend/operator layer. |
+| `frontend/public/aureon_adaptive_skills/**/skill.json` | 711 | Individual skill manifests that let Aureon describe reusable abilities instead of hiding them in code. |
+| `frontend/src/components/generated/*.tsx` | 7 | Generated operator consoles built from capability/evidence contracts. |
+| `tests/**/*.py` | 326 | Regression protection for runtime, cognition, exchange, vault, generated-system, and integration behaviour. |
 
 Tracked implementation mix:
 
