@@ -60,6 +60,20 @@ Low-priority data ocean supervisor:
 | SaaS/security/local authorized audit tooling | Catalogs SaaS/frontend surfaces, security blockers, authorized local findings, and migration work orders. | `aureon/autonomous/aureon_saas_system_inventory.py`, `aureon/autonomous/hnc_authorized_attack_lab.py` |
 | Continuous self-audit | Rebuilds readiness, switchboard, catalog, and mind-wiring reports for the console and operator review. | `aureon_organism_runtime_observer.py`, `aureon_system_readiness_audit.py`, `aureon_autonomous_capability_switchboard.py`, `aureon_repo_self_catalog.py`, `mind_wiring_audit.py` |
 
+## HNC Use Cases For AI Logic
+
+The Harmonic Nexus Core is the coherence and evidence logic layer used by Aureon agents. It does not override runtime gates, tests, or human review. It makes AI work inspectable by asking whether the available metadata is coherent enough to continue, which route owns the next action, and what proof must be written before handover.
+
+| Use case | Practical meaning | Surfaces |
+|---|---|---|
+| Goal routing | Match an operator prompt to the right subsystem and capability route. | `aureon_goal_capability_map.py`, `aureon_autonomous_capability_switchboard.py` |
+| Prompt logic | Build compact source packets, HNC/Auris context, redaction, and answer contracts before LLM use. | `aureon_dynamic_prompt_filter.py`, `aureon/inhouse_ai/llm_adapter.py` |
+| Agent drift control | Hold generated work when scope, role, evidence, tests, or handover proof are incomplete. | `aureon_coding_organism_bridge.py`, `aureon_agent_creative_process_guardian.py` |
+| Evidence grading | Classify proof as ready, stale, blocked, held, completed, or already correct. | `aureon_harmonic_affect_state.py`, audit JSON, frontend public mirrors |
+| Research logic | Turn HNC research and simulations into traceable reports and reproducible commands. | `aureon_hnc_essay_benchmark.py`, `aureon/harmonic/harmonic_nexus_bridge.py`, `docs/` |
+| Security reasoning | Route authorized local/staging findings into cognitive questions, fixes, and deployment blockers. | `hnc_saas_cognitive_bridge.py`, `hnc_saas_security_architect.py`, `hnc_authorized_attack_lab.py` |
+| Knowledge memory | Preserve symbolic packets, route seals, vault state, and reusable reasoning artifacts. | `hnc_symbolic_route_seal.py`, `hnc_repo_singularity_vault.py`, `hnc_swarm_key_store.py` |
+
 ## Subsystem Atlas
 
 | Subsystem | End-user purpose | Where to start |

@@ -52,6 +52,27 @@ Metadata is the key layer. It lets Aureon turn many separate systems into one in
 | Safety metadata | What must be held, reviewed, redacted, or prevented from going live? | Hold states, blocker reasons, stale reasons, redaction scans, guarded executor/operator paths. |
 | Product metadata | How does the UI know what to show without hardcoding every workflow? | `frontend/public` JSON, generated TSX consoles, service adapters, hooks, and build artifacts. |
 
+### Harmonic Nexus Core For AI Logic
+
+The Harmonic Nexus Core is Aureon's coherence and evidence logic layer. In the current system it should be understood as a deterministic AI-support framework: it helps the organism decide whether a prompt, signal, workflow, agent output, or live-operation row is coherent enough to continue, needs more evidence, or must be held for review.
+
+HNC does not replace runtime gates, tests, human review, exchange rules, warehouse proof, or accounting boundaries. Its job is to make reasoning inspectable: what evidence exists, which system should act, what is stale, what conflicts, what role owns the next step, and which proof must be written before handover.
+
+| AI logic use case | What HNC/Auris contributes | Representative surfaces |
+|---|---|---|
+| Goal routing | Maps a human goal to the right subsystem instead of letting every agent improvise. | `aureon_goal_capability_map.py`, capability switchboard, Director capability bridge. |
+| Prompt filtering | Builds compact source packets, redacts risky content, injects HNC/Auris context, and gives local LLMs a clear answer contract. | `aureon_dynamic_prompt_filter.py`, `aureon/inhouse_ai/llm_adapter.py`. |
+| Agent drift control | Checks whether generated work still matches scope, evidence, role, and handover rules. | Coding organism proof checklist, creative process guardian, HNC/Auris drift proof. |
+| Evidence grading | Turns proof into states such as clean, stale, blocked, held, ready, completed, or already correct. | Audit JSON, harmonic affect state, warehouse ledgers, frontend proof mirrors. |
+| Multi-signal fusion | Lets market, runtime, research, cognition, and external context be compared as evidence, not as isolated guesses. | Scanner fusion matrix, data ocean, cognitive trade evidence, harmonic signal modules. |
+| Safety gating | Adds coherence/blocker metadata before live mutation paths are allowed to continue. | Runtime flight tests, guarded executor path, Azyra operator hold rules, security audit gates. |
+| Research logic | Turns symbolic, historical, market, and system-behaviour hypotheses into traceable reports and reproduction commands. | `docs/`, HNC reports, `aureon_hnc_essay_benchmark.py`, harmonic bridge simulations. |
+| Security and SaaS reasoning | Routes authorized local/staging audit findings into cognitive questions, fix plans, and deployment blockers. | `hnc_saas_cognitive_bridge.py`, `hnc_saas_security_architect.py`, authorized attack lab. |
+| UI state generation | Publishes HNC/Auris state as JSON that the frontend can show without hiding the reasoning chain. | `docs/audits/aureon_harmonic_affect_state.json`, `frontend/public/aureon_harmonic_affect_state.json`, generated consoles. |
+| Knowledge vaulting | Stores symbolic packets, route seals, voice/knowledge context, and reusable reasoning artifacts for future tasks. | `aureon/harmonic/hnc_symbolic_route_seal.py`, `aureon/vault/hnc_repo_singularity_vault.py`, `aureon/vault/hnc_swarm_key_store.py`. |
+
+In short: HNC is how Aureon turns metadata into AI logic. It gives the system a repeatable way to ask, "Do we have enough coherent evidence to proceed, and which controlled route owns the next action?"
+
 The current repo has three live-capable centres:
 
 | Centre | What Aureon does | Live authority |
@@ -79,6 +100,7 @@ This README now has a front-door structure while preserving the older proof, res
 |---|---|
 | [Aureon Capability CV](#aureon-capability-cv) | The current high-level map for systems thinkers, researchers, AI/algorithm builders, and live operators. |
 | [Metadata Fabric](#metadata-fabric) | How Aureon uses metadata to make thousands of capabilities discoverable, provable, gated, and reusable. |
+| [Harmonic Nexus Core For AI Logic](#harmonic-nexus-core-for-ai-logic) | HNC/Auris as coherence, prompt, evidence, agent-drift, research, and safety logic for AI workflows. |
 | [Start Here](#start-here) | Current production entrypoints, live status, Azyra status, and the fastest safe startup. |
 | [Azyra Warehouse Live Automation](#azyra-warehouse-live-automation---2026-06-23) | Stock Enquiry, live warehouse movement, current-balance fixes, OCR review, and batch guardrails. |
 | [Flameborn Frontend Integration](#flameborn-frontend-integration) | Human-facing UI, chat, guarded terminal, and local frontend startup. |
