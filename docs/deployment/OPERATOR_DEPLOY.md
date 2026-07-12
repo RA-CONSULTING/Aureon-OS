@@ -4,7 +4,8 @@ How to run the Aureon Operator + Cognition service in production: the switchboar
 the agentic cognition (repo-wide grounding + tools + veto), and the mobile
 proof-of-concept page — with real flagship models, and reachable from a phone.
 
-See also: [`docs/architecture/AUREON_OPERATOR_SWITCHBOARD.md`](../architecture/AUREON_OPERATOR_SWITCHBOARD.md).
+See also: [`docs/architecture/AUREON_OPERATOR_SWITCHBOARD.md`](../architecture/AUREON_OPERATOR_SWITCHBOARD.md)
+· [`docs/runbooks/PRODUCTION_GRADE.md`](../runbooks/PRODUCTION_GRADE.md) (the production-grade program: two-tier gate, serving surface, CI/Docker, ledger).
 
 ---
 

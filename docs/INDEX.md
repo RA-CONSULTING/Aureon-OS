@@ -18,6 +18,7 @@ Master table of contents for all project documentation.
 | [Module Reference](MODULES_AT_A_GLANCE.md) | All 715 modules across 24 domains |
 | [System Architecture Map](architecture/SYSTEM_ARCHITECTURE_MAP.md) | 5-phase startup hierarchy |
 | [Aureon Operator Switchboard](architecture/AUREON_OPERATOR_SWITCHBOARD.md) | Runs many AIs (ChatGPT/Grok/Gemini) through the repo: ground → consensus → veto |
+| [Production-Grade Program](runbooks/PRODUCTION_GRADE.md) | Two-tier gate, serving surface, CI/Docker, and the repo-wide hardening ledger |
 | [Intelligence Wiring Matrix](architecture/INTELLIGENCE_WIRING_MATRIX.md) | What intelligence feeds which trader |
 | [Open Market Data Matrix](architecture/OPEN_MARKET_DATA_MATRIX.md) | Data feed topology |
 | [Repo Mindmap](architecture/REPO_MINDMAP.md) | Complete file inventory |
