@@ -25,6 +25,7 @@ preserved unchanged at
 | Capability registry | [`docs/CAPABILITY_REGISTRY.md`](docs/CAPABILITY_REGISTRY.md) | Generated registry of current capabilities from `CAPABILITIES.md`, resolved surfaces, runtime refs, systems, and access routes. |
 | Frontend repo map | [`frontend/src/components/RepoNavigationPanel.tsx`](frontend/src/components/RepoNavigationPanel.tsx) | Console tab mounted at `#repo-map` for browsing public repo and capability manifests. |
 | File-level repo index | [`docs/repo_navigation_index.json`](docs/repo_navigation_index.json) | Generated `git ls-files` index mirrored to the frontend public folder for searchable repo navigation. |
+| Directory organization tree | [`docs/repo_organization_tree.json`](docs/repo_organization_tree.json) | Generated hierarchy of tracked directories, parent paths, categories, zones, and capability IDs. |
 | SaaS integration manifest | [`docs/saas_integration_manifest.json`](docs/saas_integration_manifest.json) | Generated env-name, deployment-surface, Supabase auth, and production-gate contract for SaaS shells. |
 | SaaS integration readiness | [`docs/SAAS_INTEGRATION_READINESS.md`](docs/SAAS_INTEGRATION_READINESS.md) | End-user access matrix, env/config inventory, deploy surfaces, auth boundaries, and production gates. |
 | Supabase hardening review | [`docs/SUPABASE_HARDENING_REVIEW.md`](docs/SUPABASE_HARDENING_REVIEW.md) | Generated public/JWT Edge Function classification, blocker counts, and hardening gates. |
@@ -114,29 +115,32 @@ this front-door README.
    [`frontend/src/components/RepoNavigationPanel.tsx`](frontend/src/components/RepoNavigationPanel.tsx).
 8. Search the file-level repo index:
    [`docs/repo_navigation_index.json`](docs/repo_navigation_index.json).
-9. Review the generated SaaS integration manifest:
+9. Browse the generated directory organization tree:
+   [`docs/repo_organization_tree.json`](docs/repo_organization_tree.json).
+10. Review the generated SaaS integration manifest:
    [`docs/saas_integration_manifest.json`](docs/saas_integration_manifest.json).
-10. Review the Supabase hardening review and manifest:
+11. Review the Supabase hardening review and manifest:
    [`docs/SUPABASE_HARDENING_REVIEW.md`](docs/SUPABASE_HARDENING_REVIEW.md) and
    [`docs/supabase_hardening_manifest.json`](docs/supabase_hardening_manifest.json).
-11. Review SaaS integration readiness:
+12. Review SaaS integration readiness:
    [`docs/SAAS_INTEGRATION_READINESS.md`](docs/SAAS_INTEGRATION_READINESS.md).
-12. Review architecture and capability evidence:
+13. Review architecture and capability evidence:
    [`SYSTEM_OVERVIEW.md`](SYSTEM_OVERVIEW.md),
    [`CAPABILITIES.md`](CAPABILITIES.md), and
    [`DATA_FLOW.md`](DATA_FLOW.md).
-13. Review claims and validation:
+14. Review claims and validation:
    [`docs/CLAIMS_AND_EVIDENCE.md`](docs/CLAIMS_AND_EVIDENCE.md),
    [`AUDIT_SUMMARY.md`](AUDIT_SUMMARY.md), and
    [`LIVE_PROOF.md`](LIVE_PROOF.md).
-14. Regenerate and validate the navigation contract:
+15. Regenerate and validate the navigation contract:
    `python scripts/validation/generate_repo_navigation_index.py`, then
+   `python scripts/validation/generate_repo_organization_tree.py`, then
    `python scripts/validation/generate_saas_integration_manifest.py`, then
    `python scripts/validation/generate_supabase_hardening_manifest.py`, then
    `python scripts/validation/generate_system_integration_map.py`, then
    `python scripts/validation/generate_capability_registry.py`, then
    `python scripts/validation/validate_repo_navigation_contract.py`.
-15. Inspect preserved historical context:
+16. Inspect preserved historical context:
    [`docs/archive/README_legacy_20260712.md`](docs/archive/README_legacy_20260712.md).
 
 ## Preservation Note

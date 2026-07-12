@@ -33,6 +33,7 @@ interface RepoSitemapManifest {
   machine_readable_source?: string;
   end_user_access_map?: string;
   frontend_navigation_tab?: string;
+  organization_tree?: string;
   autonomous_frontend_manifests?: string[];
   front_doors: RepoLink[];
   zones: RepoZone[];
@@ -113,6 +114,41 @@ interface NavigationIndexManifest {
     capability_counts: Record<string, number>;
   };
   entries: NavigationEntry[];
+}
+
+interface OrganizationDirectory {
+  path: string;
+  name: string;
+  parent: string;
+  depth: number;
+  category: string;
+  role: string;
+  zone_id: string;
+  capability_ids: string[];
+  file_count: number;
+  direct_file_count: number;
+  child_directory_count: number;
+  child_directories: string[];
+  direct_file_samples: string[];
+}
+
+interface OrganizationTreeManifest {
+  name: string;
+  snapshot_date: string;
+  tracked_file_count: number;
+  directory_count: number;
+  root_file_count: number;
+  max_depth: number;
+  frontend_public_mirror: string;
+  summary: {
+    top_level_directory_count: number;
+    root_file_count: number;
+    category_counts: Record<string, number>;
+    zone_counts: Record<string, number>;
+  };
+  root_files: string[];
+  top_level: OrganizationDirectory[];
+  directories: OrganizationDirectory[];
 }
 
 interface SystemIntegrationRow {
@@ -259,6 +295,7 @@ export function RepoNavigationPanel() {
   const [accessMap, setAccessMap] = useState<AccessMapManifest | null>(null);
   const [capabilityRegistry, setCapabilityRegistry] = useState<CapabilityRegistryManifest | null>(null);
   const [navigationIndex, setNavigationIndex] = useState<NavigationIndexManifest | null>(null);
+  const [organizationTree, setOrganizationTree] = useState<OrganizationTreeManifest | null>(null);
   const [systemMap, setSystemMap] = useState<SystemIntegrationMapManifest | null>(null);
   const [saasManifest, setSaasManifest] = useState<SaaSIntegrationManifest | null>(null);
   const [hardeningManifest, setHardeningManifest] = useState<SupabaseHardeningManifest | null>(null);
@@ -270,11 +307,21 @@ export function RepoNavigationPanel() {
     const controller = new AbortController();
     const refresh = async () => {
       try {
-        const [repoManifest, accessManifest, capabilityRegistryManifest, indexManifest, systemIntegrationManifest, integrationManifest, supabaseHardeningManifest] = await Promise.all([
+        const [
+          repoManifest,
+          accessManifest,
+          capabilityRegistryManifest,
+          indexManifest,
+          organizationTreeManifest,
+          systemIntegrationManifest,
+          integrationManifest,
+          supabaseHardeningManifest,
+        ] = await Promise.all([
           loadJson<RepoSitemapManifest>("/aureon_repo_sitemap.json", controller.signal),
           loadJson<AccessMapManifest>("/aureon_end_user_access_map.json", controller.signal),
           loadJson<CapabilityRegistryManifest>("/aureon_capability_registry.json", controller.signal),
           loadJson<NavigationIndexManifest>("/aureon_repo_navigation_index.json", controller.signal),
+          loadJson<OrganizationTreeManifest>("/aureon_repo_organization_tree.json", controller.signal),
           loadJson<SystemIntegrationMapManifest>("/aureon_system_integration_map.json", controller.signal),
           loadJson<SaaSIntegrationManifest>("/aureon_saas_integration_manifest.json", controller.signal),
           loadJson<SupabaseHardeningManifest>("/aureon_supabase_hardening_manifest.json", controller.signal),
@@ -293,6 +340,7 @@ export function RepoNavigationPanel() {
         setAccessMap(accessManifest);
         setCapabilityRegistry(capabilityRegistryManifest);
         setNavigationIndex(indexManifest);
+        setOrganizationTree(organizationTreeManifest);
         setSystemMap(systemIntegrationManifest);
         setSaasManifest(integrationManifest);
         setHardeningManifest(supabaseHardeningManifest);
@@ -332,6 +380,29 @@ export function RepoNavigationPanel() {
       : indexedEntries.filter((entry) => seedPrefixes.some((prefix) => entry.path === prefix.replace("/", "") || entry.path.startsWith(prefix)));
     return entries.slice(0, 120);
   }, [indexedEntries, query]);
+
+  const organizationDirectories = organizationTree?.directories || [];
+  const filteredDirectories = useMemo(() => {
+    const needle = query.trim();
+    const entries = needle
+      ? organizationDirectories.filter((directory) =>
+          matchesQuery(
+            [
+              directory.path,
+              directory.name,
+              directory.parent,
+              directory.category,
+              directory.role,
+              directory.zone_id,
+              ...directory.capability_ids,
+              ...directory.direct_file_samples,
+            ],
+            needle,
+          ),
+        )
+      : organizationDirectories.filter((directory) => directory.depth <= 2);
+    return entries.sort((left, right) => right.file_count - left.file_count).slice(0, 30);
+  }, [organizationDirectories, query]);
 
   const topCategories = useMemo(() => {
     return Object.entries(navigationIndex?.summary?.category_counts || {})
@@ -402,7 +473,7 @@ export function RepoNavigationPanel() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
               <div className="rounded-md border border-border/50 bg-background/50 p-3">
                 <div className="text-[11px] uppercase text-muted-foreground">Tracked files</div>
                 <div className="mt-1 text-2xl font-semibold">{(repoMap?.tracked_file_count || 0).toLocaleString()}</div>
@@ -410,6 +481,10 @@ export function RepoNavigationPanel() {
               <div className="rounded-md border border-border/50 bg-background/50 p-3">
                 <div className="text-[11px] uppercase text-muted-foreground">Indexed paths</div>
                 <div className="mt-1 text-2xl font-semibold">{(navigationIndex?.entry_count || 0).toLocaleString()}</div>
+              </div>
+              <div className="rounded-md border border-border/50 bg-background/50 p-3">
+                <div className="text-[11px] uppercase text-muted-foreground">Directories</div>
+                <div className="mt-1 text-2xl font-semibold">{(organizationTree?.directory_count || 0).toLocaleString()}</div>
               </div>
               <div className="rounded-md border border-border/50 bg-background/50 p-3">
                 <div className="text-[11px] uppercase text-muted-foreground">Capabilities</div>
@@ -474,6 +549,10 @@ export function RepoNavigationPanel() {
               <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_repo_navigation_index.json")} target="_blank" rel="noreferrer">
                 <FileJson className="h-4 w-4" />
                 /aureon_repo_navigation_index.json
+              </a>
+              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_repo_organization_tree.json")} target="_blank" rel="noreferrer">
+                <FileJson className="h-4 w-4" />
+                /aureon_repo_organization_tree.json
               </a>
               <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_system_integration_map.json")} target="_blank" rel="noreferrer">
                 <FileJson className="h-4 w-4" />
@@ -548,6 +627,72 @@ export function RepoNavigationPanel() {
           </CardContent>
         </Card>
       ) : null}
+
+      <Card className="border-border/60 bg-card/90">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <GitBranch className="h-5 w-5 text-sky-200" />
+            Directory Hierarchy
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">Directory nodes</div>
+              <div className="mt-1 text-2xl font-semibold">{(organizationTree?.directory_count || 0).toLocaleString()}</div>
+            </div>
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">Top-level directories</div>
+              <div className="mt-1 text-2xl font-semibold">{(organizationTree?.summary?.top_level_directory_count || 0).toLocaleString()}</div>
+            </div>
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">Max depth</div>
+              <div className="mt-1 text-2xl font-semibold">{(organizationTree?.max_depth || 0).toLocaleString()}</div>
+            </div>
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">Root files</div>
+              <div className="mt-1 text-2xl font-semibold">{(organizationTree?.root_file_count || 0).toLocaleString()}</div>
+            </div>
+          </div>
+          <ScrollArea className="h-[420px] pr-3">
+            <div className="grid gap-3 lg:grid-cols-2">
+              {filteredDirectories.map((directory) => (
+                <div key={directory.path} className="rounded-md border border-border/50 bg-background/45 p-3">
+                  <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                    <div className="min-w-0">
+                      <PathLink path={directory.path} />
+                      <div className="mt-2 text-xs text-muted-foreground">
+                        Parent: {directory.parent || "[repo root]"} / depth {directory.depth}
+                      </div>
+                    </div>
+                    <Badge variant="secondary">{directory.file_count.toLocaleString()} files</Badge>
+                  </div>
+                  <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
+                    <div className="rounded-md border border-border/40 bg-background/40 px-2 py-1">{directory.category}</div>
+                    <div className="rounded-md border border-border/40 bg-background/40 px-2 py-1">{directory.zone_id}</div>
+                    <div className="rounded-md border border-border/40 bg-background/40 px-2 py-1">
+                      {directory.child_directory_count} child dirs
+                    </div>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {directory.child_directories.slice(0, 4).map((childPath) => (
+                      <PathLink key={`${directory.path}-${childPath}`} path={childPath} />
+                    ))}
+                    {directory.capability_ids.slice(0, 3).map((capabilityId) => (
+                      <Badge key={`${directory.path}-${capabilityId}`} variant="outline" className="font-mono text-[10px]">
+                        {capabilityId}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+          <div className="text-xs text-muted-foreground">
+            Showing {filteredDirectories.length.toLocaleString()} of {(organizationTree?.directory_count || 0).toLocaleString()} directory nodes. Use search to narrow by path, zone, category, capability, or sample file.
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 xl:grid-cols-[0.85fr_1.15fr]">
         <Card className="border-border/60 bg-card/90">
