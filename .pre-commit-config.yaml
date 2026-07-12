@@ -1,0 +1,20 @@
+# Pre-commit hooks for Aureon. Ruff runs on changed files only, so the legacy
+# tree isn't reformatted wholesale — the strict tier stays clean going forward.
+# Install:  pip install pre-commit && pre-commit install
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff            # lint (autofix) changed files
+        args: [--fix]
+      - id: ruff-format     # format changed files
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.(md|txt)$'   # leave mythopoeic prose formatting untouched
+      - id: end-of-file-fixer
+        exclude: '\.(md|txt)$'
+      - id: check-yaml
+      - id: check-added-large-files
+        args: [--maxkb=2048]

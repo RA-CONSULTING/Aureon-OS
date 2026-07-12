@@ -1,0 +1,67 @@
+name: Operator CI
+
+# Gate for the production surface (aureon/operator). Blocks on a strict tier —
+# ruff-clean, mypy-clean, tests green — while the wider repo is tracked
+# informationally (the ratchet). See docs/runbooks/PRODUCTION_GRADE.md.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "aureon/operator/**"
+      - "tests/test_operator_*.py"
+      - "pyproject.toml"
+      - ".github/workflows/operator-ci.yml"
+  pull_request:
+    paths:
+      - "aureon/operator/**"
+      - "tests/test_operator_*.py"
+      - "pyproject.toml"
+      - ".github/workflows/operator-ci.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: operator-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  strict-tier:
+    name: strict tier (ruff · mypy · tests)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install (operator + dev extras)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[operator,dev]'
+      - name: Ruff (strict — aureon/operator must be clean)
+        run: ruff check aureon/operator/
+      - name: Mypy (strict — aureon/operator must be clean)
+        run: mypy aureon/operator/
+      - name: Pytest (offline — no keys/network)
+        env:
+          AUREON_LLM_OFFLINE: "1"
+        run: pytest tests/test_operator_server.py tests/test_operator_cognition.py tests/test_operator_production.py tests/test_aureon_operator.py -q
+
+  ratchet:
+    name: repo-wide lint ratchet (informational)
+    runs-on: ubuntu-latest
+    continue-on-error: true          # never blocks — a tracked baseline only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ruff
+        run: pip install ruff
+      - name: Ruff statistics (whole tree)
+        run: |
+          echo "Repo-wide ruff baseline (informational — see PRODUCTION_GRADE.md ledger):"
+          ruff check aureon/ --statistics || true
