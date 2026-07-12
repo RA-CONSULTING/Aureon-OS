@@ -1,6 +1,6 @@
 {
   "name": "Aureon End-User Access Map",
-  "snapshot_date": "2026-07-12",
+  "snapshot_date": "2026-07-13",
   "source_document": "docs/END_USER_ACCESS_MAP.md",
   "frontend_public_mirror": "frontend/public/aureon_end_user_access_map.json",
   "frontend_navigation_tab": "#repo-map",
@@ -18,9 +18,9 @@
       "id": "repo_navigation",
       "label": "Repo navigation",
       "user_action": "Browse all systems and how they relate.",
-      "primary_docs": ["docs/REPO_SITEMAP.md", "docs/SYSTEM_INTEGRATION_MAP.md", "docs/CAPABILITY_REGISTRY.md", "docs/INDEX.md", "docs/repo_navigation_index.json", "docs/system_integration_map.json", "docs/capability_registry.json"],
+      "primary_docs": ["docs/REPO_SITEMAP.md", "docs/SYSTEM_INTEGRATION_MAP.md", "docs/CAPABILITY_REGISTRY.md", "docs/INDEX.md", "docs/repo_navigation_index.json", "docs/repo_organization_tree.json", "docs/system_integration_map.json", "docs/capability_registry.json"],
       "related_systems": ["docs/", "frontend/public/", "frontend/src/components/RepoNavigationPanel.tsx"],
-      "runtime_or_api_surface": ["#repo-map", "frontend/public/aureon_repo_sitemap.json", "frontend/public/aureon_repo_navigation_index.json", "frontend/public/aureon_system_integration_map.json", "frontend/public/aureon_capability_registry.json"],
+      "runtime_or_api_surface": ["#repo-map", "frontend/public/aureon_repo_sitemap.json", "frontend/public/aureon_repo_navigation_index.json", "frontend/public/aureon_repo_organization_tree.json", "frontend/public/aureon_system_integration_map.json", "frontend/public/aureon_capability_registry.json"],
       "safety_gate": "Keep generated counts current after major moves."
     },
     {

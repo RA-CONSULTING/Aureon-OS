@@ -343,8 +343,31 @@ def main() -> int:
 
     docs_capabilities = docs_access.get("capabilities", [])
     public_capabilities = public_access.get("capabilities", [])
+    expect(docs_access == public_access, failures, "end-user access map docs/public mirrors differ")
     expect(len(docs_capabilities) == 13, failures, "docs access map capability count changed from 13")
     expect(len(public_capabilities) == len(docs_capabilities), failures, "public access map capability count differs from docs access map")
+    for capability in docs_capabilities:
+        capability_id = capability.get("id", "[missing-id]") if isinstance(capability, dict) else "[invalid-row]"
+        for field in ("id", "label", "user_action", "primary_docs", "related_systems", "runtime_or_api_surface", "safety_gate"):
+            expect(
+                bool(capability.get(field)) if isinstance(capability, dict) else False,
+                failures,
+                f"end-user access map capability {capability_id} is missing {field}",
+            )
+    repo_navigation_route = next(
+        (capability for capability in docs_capabilities if isinstance(capability, dict) and capability.get("id") == "repo_navigation"),
+        {},
+    )
+    expect(
+        "docs/repo_organization_tree.json" in repo_navigation_route.get("primary_docs", []),
+        failures,
+        "repo_navigation access route does not expose docs/repo_organization_tree.json",
+    )
+    expect(
+        "frontend/public/aureon_repo_organization_tree.json" in repo_navigation_route.get("runtime_or_api_surface", []),
+        failures,
+        "repo_navigation access route does not expose the public organization tree",
+    )
     expect(
         docs_repo.get("end_user_access", {}).get("capability_count") == len(docs_capabilities),
         failures,
@@ -489,6 +512,11 @@ def main() -> int:
         registry_summary.get("tracked_file_count") == tracked_total,
         failures,
         "capability registry tracked_file_count is stale",
+    )
+    expect(
+        registry_summary.get("navigation_index_entries") == docs_navigation_index.get("entry_count"),
+        failures,
+        "capability registry navigation_index_entries is stale",
     )
     expect(
         registry_summary.get("capability_count") == expected_capability_rows,
