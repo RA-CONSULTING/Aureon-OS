@@ -200,15 +200,88 @@ static manifests, localhost bridges.
 
 ---
 
+## Billing (Phase 6C)
+
+**The authority boundary first: the platform never initiates payments.** Metering
+is record-only; the single money-moving route ships disabled and is audited.
+
+Three layers, all reusing the wallet that already existed
+(`gas_tank_accounts` + `gas_tank_transactions`, the £-denominated performance-fee
+tank with its working `gas-tank-topup` edge function):
+
+### 1. Support the project (money in — the user's choice, on their clock)
+
+Aureon runs free. The console tracks cumulative runtime locally and, after ~4
+hours of use, shows a **small dismissible corner card** — never a modal, never a
+gate — inviting the user to support the project via the SumUp payment links
+(`VITE_SUPPORT_PAYMENT_URLS`; defaults are the project's live links). The flow
+is **self-confirmed**: the user says what they gave, the existing
+`gas-tank-topup` edge function credits their tank, and a `payment_transactions`
+row (`provider: sumup`, `status: self_confirmed`) is recorded so payouts can be
+reconciled manually against SumUp. Trust-based by design; the admin
+`verify-payment` flow remains for disputes.
+
+### 2. Usage metering (record-only — `aureon/saas/metering.py`)
+
+When `AUREON_BILLING_METERING=1`, every `/api/*` request becomes one
+`api_request` event (tenant-attributed via the Supabase JWT when present) in a
+bounded buffer, flushed by a daemon thread to the `saas_usage_events` table via
+PostgREST. Per-provider LLM token usage — parsed by the operator all along but
+previously dropped — is swept into `llm_tokens` events and the
+`aureon_llm_tokens_total` Prometheus counter. Honesty rules: drop-oldest is
+counted, flush failures are counted and dropped, and `GET /api/billing/status`
+names the true sink (`disabled` / `prometheus-only` / `supabase`). **Nothing in
+this layer debits a balance.** Per-tenant token attribution is staged (fan-out
+runs in worker threads; claiming it now would be dishonest).
+
+### 3. Billing API + the fee path's first caller (`aureon/saas/billing.py`)
+
+| Method | Route | Returns |
+|--------|-------|---------|
+| `GET`  | `/api/billing/status` | Always 200: config, metering stats, token totals, flags. |
+| `GET`  | `/api/billing/balance` | The tenant's gas-tank account (503/401/404/502 — precise, never a bare 500). |
+| `GET`  | `/api/billing/usage` | The tenant's usage events + buffer stats. |
+| `POST` | `/api/billing/charge-fee` | ⚠ **MOVES MONEY — ships OFF.** 403 unless `AUREON_BILLING_CHARGE_ENABLED=1`. |
+
+`charge-fee` is the first-ever caller for the previously dead
+`gas-tank-deduct-fee` edge function (the performance-fee math — 20%/10% on
+profit above the high-water mark — stays there, single source of truth). It
+exists for the server-side trade loop: the profit-realization step POSTs
+`{user_id, profit, trade_execution_id}` behind the operator bearer, and every
+attempt is audited as a `fee_charge` usage event. No live trader is wired to it
+yet — that hookup is a deliberate, separate decision.
+
+### Billing environment
+
+| Var | Default | Effect |
+|---|---|---|
+| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | unset | PostgREST + edge-function access |
+| `AUREON_BILLING_METERING` | off | usage-event recording/flushing |
+| `AUREON_BILLING_FLUSH_S` / `_BUFFER_MAX` / `_HTTP_TIMEOUT_S` | 10 / 5000 / 5 | tuning |
+| `AUREON_BILLING_CHARGE_ENABLED` | **off — moves money** | enables charge-fee |
+| `VITE_SUPPORT_PAYMENT_URLS` | the project's SumUp links | support links |
+| `VITE_SUPPORT_PROMPT_HOURS` / `VITE_SUPPORT_SNOOZE_HOURS` | 4 / 12 | prompt cadence |
+
+### Hardening notes (recorded, not yet fixed)
+
+- `gas_tank_accounts.fees_paid_today` is never reset by any job.
+- `payment_transactions.currency` defaults to `'EUR'` in the schema while every writer sends `'GBP'`.
+- Several older tables use permissive `USING(true)` RLS write policies (service-role reliance); `saas_usage_events` deliberately does not.
+- `REFUND` / `ADJUSTMENT` transaction types are declared but never produced.
+- `aureon_user_sessions.gas_tank_balance` is vestigial — overloaded as "harvested capital", unrelated to the wallet.
+- When the operator bearer (`AUREON_OPERATOR_API_KEY`) and the Supabase JWT bridge are both enabled they compete for the same `Authorization` header.
+
+---
+
 ## Staged ledger
 
-Phases 6A + 6B are done. The remaining SaaS work is tracked, not hidden:
+Phases 6A–6C are done. The remaining SaaS work is tracked, not hidden:
 
 | # | Phase | Item | Done? |
 |---|-------|------|-------|
 | 6A | Platform layer | Categorized catalog + domain adapters + honest status + gateway routes + Supabase JWT bridge. | ☑ |
 | 6B | Production frontend | Frontend Dockerfile + nginx one-origin proxy; auth-gated console (`VITE_REQUIRE_AUTH`); live manifest fetches via `/api/manifests` with static fallback; full-stack compose. | ☑ |
-| 6C | Billing | Extend the prepaid gas-tank credit model, or add Stripe subscription tiers (net-new). Largest/riskiest — deferred. | ☐ |
+| 6C | Billing | Support-the-project flow (SumUp, self-confirm → gas tank) + record-only usage metering + billing read API + env-gated charge-fee proxy. Staged: per-unit debits, per-tenant token attribution, automated payment capture (SumUp API/Stripe), trade-loop fee hookup, usage panel UI. | ☑ |
 
 ---
 
