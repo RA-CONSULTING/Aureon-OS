@@ -4,6 +4,15 @@ Master table of contents for all project documentation.
 
 > **New here?** Start with the [Navigation Guide](NAVIGATION_GUIDE.md) for guided paths by role.
 
+## Audience Routes
+| Audience | Document | Description |
+|----------|----------|-------------|
+| Investors | [Investor, Public, And Funder Guide](investor/README.md) | Formal diligence path, capability categories, claim discipline, and review sequence |
+| Public GitHub readers | [Repository README](../README.md) | Current front door with concise repo map and evidence posture |
+| Grant and funder reviewers | [Gary/Aureon Metadata Research Inventory](../data/research/grants/applications/GARY_AUREON_METADATA_RESEARCH_INVENTORY_20260712_20260712_203741.md) | Categorized Gary/Aureon evidence inventory and copied research set |
+| Terminology reviewers | [Formal Terminology](investor/TERMINOLOGY.md) | Translation from older internal language to investor-safe terminology |
+| Historical review | [Legacy README Archive](archive/README_legacy_20260712.md) | Verbatim preserved README content from before the formal front-door update |
+
 ## Getting Started
 | Document | Description |
 |----------|-------------|
