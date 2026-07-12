@@ -74,6 +74,18 @@ def test_manifests_refresh_route(tmp_path, monkeypatch):
     assert set(r["manifests"]) == {"aureon_saas_system_inventory.json", "aureon_organism_runtime_status.json"}
 
 
+def test_manifest_get_route():
+    c = _app(AUREON_LLM_OFFLINE="1")
+    inv = c.get("/api/manifests/aureon_saas_system_inventory.json")
+    assert inv.status_code == 200
+    assert inv.get_json()["summary"]["surface_count"] > 0
+    runtime = c.get("/api/manifests/aureon_organism_runtime_status.json").get_json()
+    assert runtime["mode"] == "live" and len(runtime["domains"]) == 6
+    missing = c.get("/api/manifests/nope.json")
+    assert missing.status_code == 404
+    assert "available" in missing.get_json()["error"]
+
+
 # ── Supabase JWT bridge ────────────────────────────────────────────────────
 
 def test_verify_supabase_jwt_unit():

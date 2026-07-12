@@ -12,6 +12,7 @@ Routes:
   GET  /api/domains            per-domain reachability report
   GET  /api/domains/<domain>   one domain: entry point + its systems
   GET  /api/status             live platform health (honest, often degraded)
+  GET  /api/manifests/<name>   a frontend manifest, rendered live (JSON)
   POST /api/manifests/refresh  rebuild catalog + rewrite frontend manifests
 
 Optional tenancy bridge: when ``AUREON_SUPABASE_JWT_SECRET`` is set, these routes
@@ -59,7 +60,7 @@ def register_saas_routes(app: Any) -> Any:
     """Mount the SaaS catalog/status routes onto an existing Flask app."""
     from flask import g, jsonify, request
 
-    from aureon.saas.catalog import build_catalog, write_frontend_manifests
+    from aureon.saas.catalog import build_catalog, render_manifests, write_frontend_manifests
     from aureon.saas.domains import PRODUCT_DOMAINS, domain_report, probe_domain
     from aureon.saas.status import get_platform_status
 
@@ -110,6 +111,17 @@ def register_saas_routes(app: Any) -> Any:
     @_guarded
     def saas_status():
         return jsonify(get_platform_status())
+
+    @app.get("/api/manifests/<name>")
+    @_guarded
+    def saas_manifest(name: str):
+        # Live manifests over HTTP so the production frontend can fetch them
+        # through the /api proxy instead of relying on baked static files.
+        manifests = render_manifests(catalog=build_catalog(use_cache=True), status=get_platform_status())
+        if name not in manifests:
+            return jsonify({"error": {"code": 404, "message": f"unknown manifest: {name}",
+                                      "available": sorted(manifests)}}), 404
+        return jsonify(manifests[name])
 
     @app.post("/api/manifests/refresh")
     @_guarded

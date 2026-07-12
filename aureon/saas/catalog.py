@@ -283,13 +283,24 @@ def _runtime_manifest(catalog: Dict[str, Any], status: Dict[str, Any] | None = N
     }
 
 
+def render_manifests(
+    catalog: Dict[str, Any] | None = None,
+    status: Dict[str, Any] | None = None,
+) -> Dict[str, Dict[str, Any]]:
+    """The frontend manifests as in-memory payloads, keyed by filename."""
+    catalog = catalog if catalog is not None else build_catalog(use_cache=True)
+    return {
+        "aureon_saas_system_inventory.json": _inventory_manifest(catalog),
+        "aureon_organism_runtime_status.json": _runtime_manifest(catalog, status),
+    }
+
+
 def write_frontend_manifests(
     out_dir: str | None = None,
     catalog: Dict[str, Any] | None = None,
     status: Dict[str, Any] | None = None,
 ) -> List[str]:
     """Emit the manifest JSONs the React console fetches. Returns written paths."""
-    catalog = catalog if catalog is not None else build_catalog(use_cache=True)
     target = Path(out_dir) if out_dir else _FRONTEND_PUBLIC
     written: List[str] = []
     try:
@@ -298,10 +309,7 @@ def write_frontend_manifests(
         logger.warning("cannot create manifest dir %s: %s", target, exc)
         return written
 
-    for filename, payload in (
-        ("aureon_saas_system_inventory.json", _inventory_manifest(catalog)),
-        ("aureon_organism_runtime_status.json", _runtime_manifest(catalog, status)),
-    ):
+    for filename, payload in render_manifests(catalog, status).items():
         path = target / filename
         try:
             path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
@@ -315,4 +323,4 @@ def _now() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 
-__all__ = ["build_catalog", "write_frontend_manifests", "REPO_ROOT"]
+__all__ = ["build_catalog", "render_manifests", "write_frontend_manifests", "REPO_ROOT"]
