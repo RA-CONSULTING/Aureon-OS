@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 
 def _env_float(name: str, default: float) -> float:
@@ -78,8 +78,31 @@ class OperatorConfig:
     metrics_enabled: bool = True
     structured_logs: bool = True
 
+    def validate(self) -> OperatorConfig:
+        """Fail-fast on nonsensical config so a bad deploy dies at boot, not mid-request."""
+        errors = []
+        if self.request_timeout_s <= 0:
+            errors.append("request_timeout_s must be > 0")
+        if self.max_retries < 0:
+            errors.append("max_retries must be >= 0")
+        if self.max_tokens <= 0:
+            errors.append("max_tokens must be > 0")
+        if not (0.0 <= self.temperature <= 2.0):
+            errors.append("temperature must be in [0, 2]")
+        if self.max_workers < 1:
+            errors.append("max_workers must be >= 1")
+        if self.breaker_threshold < 1:
+            errors.append("breaker_threshold must be >= 1")
+        if self.cache_ttl_s < 0:
+            errors.append("cache_ttl_s must be >= 0")
+        if not (0.0 <= self.consensus_min_agreement <= 1.0):
+            errors.append("consensus_min_agreement must be in [0, 1]")
+        if errors:
+            raise ValueError("Invalid OperatorConfig: " + "; ".join(errors))
+        return self
+
     @classmethod
-    def from_env(cls) -> "OperatorConfig":
+    def from_env(cls) -> OperatorConfig:
         return cls(
             request_timeout_s=_env_float("AUREON_OPERATOR_TIMEOUT_S", 30.0),
             max_retries=_env_int("AUREON_OPERATOR_MAX_RETRIES", 2),
@@ -107,8 +130,8 @@ class ModelSpec:
     name: str
     kind: str                       # openai | grok | gemini | anthropic | local | recorded | stub
     model: str = ""
-    key_env: Optional[str] = None   # env var that must be set for this line to be live
-    base_url_env: Optional[str] = None
+    key_env: str | None = None   # env var that must be set for this line to be live
+    base_url_env: str | None = None
     enabled: bool = True
     weight: float = 1.0             # consensus weight (reserved for weighted collapse)
     options: dict = field(default_factory=dict)

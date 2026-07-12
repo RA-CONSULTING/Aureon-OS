@@ -26,8 +26,7 @@ import json
 import logging
 import time
 import uuid
-from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional
+from typing import Any, Dict, Generator, List
 
 try:
     from aureon.core.aureon_baton_link import link_system as _baton_link
@@ -101,12 +100,12 @@ class AureonCognition:
 
     def __init__(
         self,
-        adapter: Optional[LLMAdapter] = None,
+        adapter: LLMAdapter | None = None,
         *,
         tools=None,
         bus: Any = None,
         conscience: Any = None,
-        config: Optional[OperatorConfig] = None,
+        config: OperatorConfig | None = None,
         allow_writes: bool = True,
         allow_shell: bool = True,
         max_turns: int = 6,
@@ -140,7 +139,7 @@ class AureonCognition:
     # Public
     # ------------------------------------------------------------------
 
-    def reason(self, prompt: str, session_id: Optional[str] = None) -> CognitionResult:
+    def reason(self, prompt: str, session_id: str | None = None) -> CognitionResult:
         started = time.time()
         res = CognitionResult(trace_id=uuid.uuid4().hex, prompt=prompt,
                               submitted_at=started, session_id=session_id)
@@ -169,7 +168,7 @@ class AureonCognition:
                                                "verdict": res.conscience_verdict, "blocked": res.blocked})
         return res
 
-    def stream_events(self, prompt: str, session_id: Optional[str] = None) -> Generator[Dict[str, Any], None, None]:
+    def stream_events(self, prompt: str, session_id: str | None = None) -> Generator[Dict[str, Any], None, None]:
         res = self.reason(prompt, session_id=session_id)
         yield {"type": "grounding", "detail": res.grounding.to_dict() if res.grounding else {}}
         for t in res.tool_calls:

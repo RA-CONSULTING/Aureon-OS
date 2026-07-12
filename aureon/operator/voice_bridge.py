@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from aureon.operator.aureon_operator import AureonOperator
 
@@ -52,7 +52,7 @@ class VoiceTurn:
 class VoiceGlassesBridge:
     """Routes a spoken utterance through the operator and returns speakable text."""
 
-    def __init__(self, operator: Optional[AureonOperator] = None, session_id: Optional[str] = None):
+    def __init__(self, operator: AureonOperator | None = None, session_id: str | None = None):
         self.operator = operator or AureonOperator()
         self.session_id = session_id
         self._voice_agent = None

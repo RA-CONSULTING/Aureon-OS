@@ -12,7 +12,7 @@ from __future__ import annotations
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 
 @dataclass
@@ -83,12 +83,12 @@ class OperatorResponse:
     trace_id: str = field(default_factory=lambda: uuid.uuid4().hex)
     prompt: str = ""
     submitted_at: float = field(default_factory=time.time)
-    session_id: Optional[str] = None
+    session_id: str | None = None
 
     text: str = ""                       # the grounded, collapsed, vetted answer
-    grounding: Optional[GroundingContext] = None
+    grounding: GroundingContext | None = None
     answers: List[ProviderAnswer] = field(default_factory=list)
-    consensus: Optional[ConsensusReading] = None
+    consensus: ConsensusReading | None = None
     conscience_verdict: str = "APPROVED"
     conscience_message: str = ""
     blocked: bool = False                # True when the conscience vetoed
@@ -134,10 +134,10 @@ class CognitionResult:
     trace_id: str = field(default_factory=lambda: uuid.uuid4().hex)
     prompt: str = ""
     submitted_at: float = field(default_factory=time.time)
-    session_id: Optional[str] = None
+    session_id: str | None = None
 
     text: str = ""
-    grounding: Optional[GroundingContext] = None
+    grounding: GroundingContext | None = None
     tool_calls: List[ToolInvocation] = field(default_factory=list)
     turns: int = 0
     conscience_verdict: str = "APPROVED"

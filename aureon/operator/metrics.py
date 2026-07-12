@@ -19,7 +19,7 @@ import json
 import logging
 import time
 from contextlib import contextmanager
-from typing import Any, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger("aureon.operator.metrics")
 
@@ -34,7 +34,7 @@ except Exception:  # noqa: BLE001
 class _NullMetric:
     """No-op stand-in when prometheus_client is unavailable."""
 
-    def labels(self, *a, **k) -> "_NullMetric":
+    def labels(self, *a, **k) -> _NullMetric:
         return self
 
     def inc(self, *a, **k) -> None:

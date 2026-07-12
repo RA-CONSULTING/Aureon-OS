@@ -24,11 +24,12 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
-from aureon.inhouse_ai.tool_registry import ToolRegistry
 from aureon.inhouse_ai.llm_adapter import _llm_http_disabled
-from aureon.operator.repo_index import REPO_ROOT, repo_search as _repo_search
+from aureon.inhouse_ai.tool_registry import ToolRegistry
+from aureon.operator.repo_index import REPO_ROOT
+from aureon.operator.repo_index import repo_search as _repo_search
 
 logger = logging.getLogger("aureon.operator.tools")
 
@@ -51,7 +52,7 @@ def _blocked(reason: str, **extra: Any) -> str:
     return json.dumps({"blocked": True, "reason": reason, **extra})
 
 
-def _resolve_in_repo(path: str) -> Optional[Path]:
+def _resolve_in_repo(path: str) -> Path | None:
     """Resolve a path and confirm it stays inside the repo. None if it escapes."""
     try:
         p = (REPO_ROOT / path).resolve() if not os.path.isabs(path) else Path(path).resolve()
@@ -82,7 +83,7 @@ class GuardedToolRegistry(ToolRegistry):
         return super().execute(name, arguments or {})
 
     @staticmethod
-    def _guard(name: str, args: Dict[str, Any]) -> Optional[str]:
+    def _guard(name: str, args: Dict[str, Any]) -> str | None:
         # Import here to avoid an import cycle (operator imports tools).
         from aureon.operator.aureon_operator import _hard_boundary_violation
 
@@ -98,9 +99,8 @@ class GuardedToolRegistry(ToolRegistry):
                 return f"write to sensitive path refused: {path}"
             if _resolve_in_repo(path) is None:
                 return f"path escapes the repository: {path}"
-        if name == "execute_shell":
-            if _DESTRUCTIVE_SHELL_RE.search(str(args.get("command", ""))):
-                return "destructive shell command refused"
+        if name == "execute_shell" and _DESTRUCTIVE_SHELL_RE.search(str(args.get("command", ""))):
+            return "destructive shell command refused"
         return None
 
 

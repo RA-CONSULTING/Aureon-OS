@@ -16,7 +16,7 @@ import hashlib
 import threading
 import time
 from collections import OrderedDict
-from typing import Any, Optional
+from typing import Any
 
 
 def cache_key(prompt: str, grounding_signature: str, model_set: str) -> str:
@@ -30,10 +30,10 @@ class ResponseCache:
     def __init__(self, ttl_s: float = 900.0, max_entries: int = 512):
         self.ttl_s = float(ttl_s)
         self.max_entries = int(max_entries)
-        self._store: "OrderedDict[str, tuple]" = OrderedDict()  # key -> (expires_at, value)
+        self._store: OrderedDict[str, tuple] = OrderedDict()  # key -> (expires_at, value)
         self._lock = threading.Lock()
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         now = time.time()
         with self._lock:
             entry = self._store.get(key)

@@ -28,7 +28,7 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional
+from typing import Any, Dict, Generator, List
 
 from aureon.inhouse_ai.llm_adapter import LLMAdapter, LLMResponse, StreamChunk
 
@@ -90,7 +90,7 @@ class RecordedAdapter(LLMAdapter):
             key = (normalise_prompt(rec.get("prompt", "")), rec.get("mode", ""), rec.get("persona", ""))
             self._index[key] = str(rec.get("answer", ""))
 
-    def _lookup(self, prompt: str) -> Optional[str]:
+    def _lookup(self, prompt: str) -> str | None:
         norm = normalise_prompt(prompt)
         for persona in (self.persona, ""):
             hit = self._index.get((norm, self.mode, persona))
@@ -102,7 +102,7 @@ class RecordedAdapter(LLMAdapter):
         self,
         messages: List[Dict[str, Any]],
         system: str = "",
-        tools: Optional[List[Dict[str, Any]]] = None,
+        tools: List[Dict[str, Any]] | None = None,
         max_tokens: int = 4096,
         temperature: float = 0.7,
         **kwargs,
@@ -122,7 +122,7 @@ class RecordedAdapter(LLMAdapter):
         self,
         messages: List[Dict[str, Any]],
         system: str = "",
-        tools: Optional[List[Dict[str, Any]]] = None,
+        tools: List[Dict[str, Any]] | None = None,
         max_tokens: int = 4096,
         temperature: float = 0.7,
         **kwargs,

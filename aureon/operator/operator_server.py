@@ -36,11 +36,10 @@ except Exception as exc:  # noqa: BLE001
     raise SystemExit(
         "Flask is required for the operator server (it is in requirements.txt): "
         f"{exc}"
-    )
+    ) from exc
 
-from aureon.operator.aureon_operator import AureonOperator
-from aureon.operator.providers import build_provider_set, describe_provider_set
-
+from aureon.operator.aureon_operator import AureonOperator  # noqa: E402  (after guarded flask import)
+from aureon.operator.providers import build_provider_set, describe_provider_set  # noqa: E402
 
 PAGE = """<!doctype html>
 <html lang="en">
@@ -163,9 +162,53 @@ input.addEventListener('keydown', e=>{ if(e.key==='Enter') ask(); });
 """
 
 
-def create_app(operator: AureonOperator = None, cognition=None) -> "Flask":
+def create_app(operator: AureonOperator | None = None, cognition: Any = None) -> Flask:
     app = Flask("aureon-operator")
     _operator = operator or AureonOperator()
+
+    # ── Security envelope (auth + rate limit + body cap; off by default) ───────
+    from aureon.operator.security import SecurityConfig, TokenBucket, check_bearer
+
+    _sec = SecurityConfig.from_env()
+    _bucket = TokenBucket(_sec.rate_rps, _sec.burst)
+    app.config["MAX_CONTENT_LENGTH"] = _sec.max_body_bytes
+    _OPEN_PATHS = ("/", "/healthz", "/readyz", "/metrics", "/favicon.ico")
+
+    def _err(code: int, message: str, **extra):
+        return jsonify({"error": {"code": code, "message": message, **extra}}), code
+
+    @app.before_request
+    def _gate():
+        path = request.path
+        if path in _OPEN_PATHS or not path.startswith("/api/"):
+            return None
+        if _sec.auth_enabled and not check_bearer(request.headers.get("Authorization"), _sec.api_key):
+            return _err(401, "missing or invalid bearer token")
+        if _sec.rate_enabled:
+            client = request.headers.get("X-Forwarded-For", request.remote_addr or "anon").split(",")[0].strip()
+            ok, retry = _bucket.check(client)
+            if not ok:
+                resp = _err(429, "rate limit exceeded", retry_after=retry)
+                resp[0].headers["Retry-After"] = str(int(retry) + 1)
+                return resp
+        return None
+
+    @app.errorhandler(400)
+    def _400(e):
+        return _err(400, "bad request")
+
+    @app.errorhandler(404)
+    def _404(e):
+        return _err(404, "not found")
+
+    @app.errorhandler(413)
+    def _413(e):
+        return _err(413, f"request body exceeds {_sec.max_body_bytes} bytes")
+
+    @app.errorhandler(500)
+    def _500(e):
+        logger.exception("unhandled server error")
+        return _err(500, "internal server error")
 
     @app.get("/")
     def index():
@@ -173,6 +216,7 @@ def create_app(operator: AureonOperator = None, cognition=None) -> "Flask":
 
     @app.get("/healthz")
     def healthz():
+        # Liveness: the process is up and can describe its line-up.
         return jsonify(
             {
                 "ok": True,
@@ -180,6 +224,35 @@ def create_app(operator: AureonOperator = None, cognition=None) -> "Flask":
                 "providers": describe_provider_set(_operator.providers),
             }
         )
+
+    @app.get("/readyz")
+    def readyz():
+        # Readiness: can we actually serve a request? (providers resolved, repo
+        # index constructible, cognition present). Distinct from liveness so an
+        # orchestrator doesn't route traffic before the service is usable.
+        checks: Dict[str, Any] = {}
+        checks["providers"] = len(_operator.providers) > 0
+        try:
+            from aureon.operator.repo_index import get_operator_repo_index
+
+            get_operator_repo_index()
+            checks["repo_index"] = True
+        except Exception as exc:  # noqa: BLE001
+            checks["repo_index"] = False
+            checks["repo_index_error"] = str(exc)
+        checks["cognition"] = _cognition["engine"] is not None
+        ready = bool(checks["providers"] and checks["repo_index"])
+        return jsonify({"ready": ready, "checks": checks}), (200 if ready else 503)
+
+    @app.get("/metrics")
+    def metrics():
+        # Prometheus exposition of the aureon_operator_* metrics (metrics.py).
+        try:
+            from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+
+            return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
+        except Exception:  # noqa: BLE001 — prometheus_client optional
+            return jsonify({"error": "prometheus_client not installed"}), 501
 
     @app.get("/api/operator/stream")
     def stream():
@@ -242,14 +315,17 @@ def create_app(operator: AureonOperator = None, cognition=None) -> "Flask":
     return app
 
 
-def main() -> None:
-    logging.basicConfig(level=logging.INFO)
-    port = int(os.environ.get("AUREON_OPERATOR_PORT", "8080"))
-    host = os.environ.get("AUREON_OPERATOR_HOST", "0.0.0.0")
-    providers = describe_provider_set(build_provider_set())
-    logger.info("Aureon Operator server on %s:%s — lines: %s", host, port, providers)
-    # Eagerly build the cognition so the running service joins the mycelium mesh
-    # + Queen hive at boot (not lazily on first request).
+def build_boot_app():
+    """Construct the fully-wired Flask app for production serving.
+
+    Validates config fail-fast, eagerly builds the cognition (so the running
+    service joins the mycelium mesh + Queen hive at boot, not lazily), and
+    returns the app. Used by both main() and the wsgi module entrypoint.
+    """
+    from aureon.operator.config import OperatorConfig
+
+    OperatorConfig.from_env().validate()  # fail-fast on a bad deploy
+
     boot_cognition = None
     try:
         from aureon.operator.cognition import AureonCognition
@@ -258,7 +334,32 @@ def main() -> None:
         logger.info("Aureon Cognition wired onto the mesh at startup")
     except Exception as exc:  # noqa: BLE001 — server must still serve if cognition boot fails
         logger.warning("cognition eager-boot skipped: %s", exc)
-    create_app(cognition=boot_cognition).run(host=host, port=port, threaded=True)
+    return create_app(cognition=boot_cognition)
+
+
+def main() -> None:
+    logging.basicConfig(level=logging.INFO)
+    port = int(os.environ.get("AUREON_OPERATOR_PORT", "8080"))
+    host = os.environ.get("AUREON_OPERATOR_HOST", "0.0.0.0")
+    logger.info("Aureon Operator server on %s:%s — lines: %s", host, port,
+                describe_provider_set(build_provider_set()))
+    app = build_boot_app()
+
+    dev = str(os.environ.get("AUREON_OPERATOR_DEV", "")).strip().lower() in {"1", "true", "yes", "on"}
+    if dev:
+        logger.warning("AUREON_OPERATOR_DEV set — using the Flask dev server (not for production)")
+        app.run(host=host, port=port, threaded=True)
+        return
+    try:
+        from waitress import serve  # type: ignore[import-untyped]
+
+        threads = int(os.environ.get("AUREON_OPERATOR_THREADS", "8"))
+        logger.info("Serving under waitress (%d threads)", threads)
+        serve(app, host=host, port=port, threads=threads)
+    except ImportError:
+        logger.warning("waitress not installed — falling back to the Flask dev server. "
+                       "Install `.[operator]` for production serving.")
+        app.run(host=host, port=port, threaded=True)
 
 
 if __name__ == "__main__":

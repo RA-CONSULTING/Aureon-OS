@@ -17,9 +17,9 @@ the REAL cognition engine, not authored — so those metrics are measured.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from aureon.inhouse_ai.llm_adapter import LLMAdapter, LLMResponse, StreamChunk, ToolCall
 from aureon.operator.cognition import AureonCognition
@@ -78,12 +78,12 @@ class CItem:
     prompt: str
     condition: str
     answer: str = ""
-    correct: Optional[bool] = None
+    correct: bool | None = None
     grounded: bool = False
-    grounding_ok: Optional[bool] = None
+    grounding_ok: bool | None = None
     blocked: bool = False
-    block_ok: Optional[bool] = None
-    used_tool: Optional[bool] = None
+    block_ok: bool | None = None
+    used_tool: bool | None = None
 
     def to_dict(self) -> Dict[str, Any]:
         return dict(self.__dict__)

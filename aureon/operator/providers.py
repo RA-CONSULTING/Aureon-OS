@@ -22,11 +22,9 @@ that normalises into the shared ``LLMResponse``.
 
 from __future__ import annotations
 
-import json
 import logging
 import os
-import uuid
-from typing import Dict, Generator, List, Optional
+from typing import Dict, Generator, List
 
 from aureon.inhouse_ai.llm_adapter import (
     AureonLocalAdapter,
@@ -53,9 +51,9 @@ class AureonOpenAIAdapter(AureonLocalAdapter):
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        model: Optional[str] = None,
-        base_url: Optional[str] = None,
+        api_key: str | None = None,
+        model: str | None = None,
+        base_url: str | None = None,
     ):
         super().__init__(
             base_url=base_url or os.environ.get("OPENAI_BASE_URL", self.DEFAULT_BASE_URL),
@@ -74,9 +72,9 @@ class AureonGrokAdapter(AureonLocalAdapter):
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        model: Optional[str] = None,
-        base_url: Optional[str] = None,
+        api_key: str | None = None,
+        model: str | None = None,
+        base_url: str | None = None,
     ):
         super().__init__(
             base_url=base_url or os.environ.get("XAI_BASE_URL", self.DEFAULT_BASE_URL),
@@ -106,9 +104,9 @@ class AureonGeminiAdapter(LLMAdapter):
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        model: Optional[str] = None,
-        base_url: Optional[str] = None,
+        api_key: str | None = None,
+        model: str | None = None,
+        base_url: str | None = None,
     ):
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "")
         self.model = model or os.environ.get("GEMINI_MODEL", self.DEFAULT_MODEL)
@@ -146,7 +144,7 @@ class AureonGeminiAdapter(LLMAdapter):
         self,
         messages: List[Dict],
         system: str = "",
-        tools: Optional[List[Dict]] = None,
+        tools: List[Dict] | None = None,
         max_tokens: int = 4096,
         temperature: float = 0.7,
         **kwargs,
@@ -192,7 +190,7 @@ class AureonGeminiAdapter(LLMAdapter):
         self,
         messages: List[Dict],
         system: str = "",
-        tools: Optional[List[Dict]] = None,
+        tools: List[Dict] | None = None,
         max_tokens: int = 4096,
         temperature: float = 0.7,
         **kwargs,
@@ -218,7 +216,7 @@ _OFFLINE_STUB_ANSWER = (
 )
 
 
-def _build_from_spec(spec) -> Optional[LLMAdapter]:
+def _build_from_spec(spec) -> LLMAdapter | None:
     """Resolve one ModelSpec into a live adapter, or None if it can't run."""
     kind = spec.kind
     try:
@@ -247,7 +245,7 @@ def build_registry(
     specs=None,
     *,
     allow_local: bool = True,
-    force_offline: Optional[bool] = None,
+    force_offline: bool | None = None,
 ) -> Dict[str, LLMAdapter]:
     """
     Assemble the switchboard from a list of ``ModelSpec`` (config-driven).
@@ -284,7 +282,7 @@ def build_registry(
 def build_provider_set(
     *,
     allow_local: bool = True,
-    force_offline: Optional[bool] = None,
+    force_offline: bool | None = None,
 ) -> Dict[str, LLMAdapter]:
     """Convenience wrapper: assemble from the default registry (back-compat)."""
     return build_registry(allow_local=allow_local, force_offline=force_offline)

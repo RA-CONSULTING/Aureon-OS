@@ -6,7 +6,7 @@
 # Run:   docker run -it --name aureon -p 8888:8888 aureon-trading:latest
 # ═══════════════════════════════════════════════════════════════════════════
 
-FROM python:3.11-slim AS builder
+FROM python:3.12-slim AS builder
 
 # Build args
 ARG BUILD_DATE
@@ -54,7 +54,7 @@ RUN pip install --upgrade pip setuptools wheel && \
 # ═══════════════════════════════════════════════════════════════════════════
 # Production image
 # ═══════════════════════════════════════════════════════════════════════════
-FROM python:3.11-slim AS production
+FROM python:3.12-slim AS production
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -81,7 +81,7 @@ RUN mkdir -p /aureon /aureon/data /aureon/logs /aureon/config && \
 WORKDIR /aureon
 
 # Copy installed packages from builder
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code

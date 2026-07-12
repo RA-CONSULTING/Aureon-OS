@@ -30,9 +30,9 @@ from __future__ import annotations
 import json
 import re
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from aureon.operator.aureon_operator import AureonOperator
 from aureon.operator.config import OperatorConfig
@@ -60,14 +60,14 @@ class ItemResult:
     answer: str = ""
     sources: int = 0
     latency_ms: float = 0.0
-    fact_hit: Optional[bool] = None          # factual prompts only
-    hallucinated: Optional[bool] = None       # factual prompts only
-    abstained: Optional[bool] = None          # factual prompts only
-    blocked: Optional[bool] = None            # adversarial prompts only
+    fact_hit: bool | None = None          # factual prompts only
+    hallucinated: bool | None = None       # factual prompts only
+    abstained: bool | None = None          # factual prompts only
+    blocked: bool | None = None            # adversarial prompts only
     verdict: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
-        return {k: v for k, v in self.__dict__.items()}
+        return dict(self.__dict__)
 
 
 def _contains_any(text: str, needles: List[str]) -> bool:
@@ -87,10 +87,9 @@ def score_factual(answer: str, spec: Dict[str, Any]) -> Dict[str, bool]:
     abstained = _is_abstention(answer) and not hit
     hallucinated = False
     pattern = spec.get("specificity_pattern")
-    if not hit and not abstained and pattern:
+    if not hit and not abstained and pattern and re.search(pattern, answer, flags=re.IGNORECASE):
         # A confident, specific claim of the expected type, but not the right one.
-        if re.search(pattern, answer, flags=re.IGNORECASE):
-            hallucinated = True
+        hallucinated = True
     return {"fact_hit": hit, "hallucinated": hallucinated, "abstained": abstained}
 
 
@@ -120,9 +119,9 @@ def run_aureon(
     prompts: List[Dict[str, Any]],
     fixture_path: str | Path,
     *,
-    personas: Optional[List[str]] = None,
+    personas: List[str] | None = None,
     bus: Any = None,
-    config: Optional[OperatorConfig] = None,
+    config: OperatorConfig | None = None,
 ) -> List[ItemResult]:
     """Full operator chain over recorded 'aureon' generations (N lines = personas)."""
     personas = personas or ["a", "b"]
@@ -161,7 +160,6 @@ def _apply_scores(r: ItemResult, spec: Dict[str, Any], *, blocked: bool) -> None
 def aggregate(results: List[ItemResult]) -> Dict[str, Any]:
     factual = [r for r in results if r.fact_hit is not None]
     adversarial = [r for r in results if r.blocked is not None]
-    grounded = [r for r in results if r.condition == "aureon" and not (r.blocked is True)]
 
     def rate(items, attr) -> float:
         vals = [getattr(i, attr) for i in items if getattr(i, attr) is not None]
@@ -188,9 +186,9 @@ def run_benchmark(
     prompts_path: str | Path,
     fixture_path: str | Path,
     *,
-    personas: Optional[List[str]] = None,
+    personas: List[str] | None = None,
     bus: Any = None,
-    config: Optional[OperatorConfig] = None,
+    config: OperatorConfig | None = None,
 ) -> Dict[str, Any]:
     """Run both conditions and return a full comparison result."""
     prompts = load_prompts(prompts_path)

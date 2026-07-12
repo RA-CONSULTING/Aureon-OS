@@ -18,7 +18,7 @@ from __future__ import annotations
 import logging
 import threading
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 from aureon.queen.research_corpus_index import ResearchCorpusIndex, Snippet
 
@@ -39,7 +39,7 @@ _EXCLUDE = (
 
 _INGEST = (".md", ".py", ".txt", ".pdf")
 
-_instance: Optional[ResearchCorpusIndex] = None
+_instance: ResearchCorpusIndex | None = None
 _lock = threading.Lock()
 
 

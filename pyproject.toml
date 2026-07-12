@@ -1,0 +1,116 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Aureon — packaging + tooling (additive; does NOT change the run-in-place model).
+#
+# The repo still resolves bare imports (e.g. `from aureon_nexus import ...`) via
+# conftest.py / aureon/_path_setup.py sys.path walking. This file adds:
+#   • an installable `aureon` package (pip install -e .),
+#   • optional extras (operator, dev),
+#   • one home for ruff / mypy / pytest config.
+#
+# Lint/type are two-tier: the whole tree is informational (a ratchet), while the
+# product surface `aureon.operator.*` is held strict (0 ruff errors, mypy clean)
+# and is what CI gates on. See docs/runbooks/PRODUCTION_GRADE.md.
+# ─────────────────────────────────────────────────────────────────────────────
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aureon"
+version = "1.0.0"
+description = "Aureon / Harmonic Nexus Core — live quantitative trading system + grounded agentic operator."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Gary Leckey, R&A Consulting" }]
+# Core runtime kept intentionally light; heavy/optional deps live in extras so a
+# minimal install (e.g. the operator service container) stays lean.
+dependencies = [
+  "requests>=2.32.0",
+  "python-dotenv>=1.0.0",
+  "rich>=13.7.0",
+]
+
+[project.optional-dependencies]
+# The operator / cognition front-door service.
+operator = [
+  "flask>=3.0",
+  "waitress>=3.0",
+  "prometheus-client>=0.24.0",
+  "anthropic>=0.40.0",
+]
+# Developer + CI toolchain.
+dev = [
+  "ruff>=0.6",
+  "mypy>=1.10",
+  "black>=24.0",
+  "pytest>=8.0",
+  "pre-commit>=3.7",
+  "types-requests",
+]
+
+[project.scripts]
+aureon-operator = "aureon.operator.operator_server:main"
+
+# Discover the `aureon` package only. Top-level bare modules stay importable via
+# the existing sys.path shims — packaging is additive, not a rewrite.
+[tool.setuptools.packages.find]
+include = ["aureon*"]
+namespaces = false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Ruff — repo-wide config. CI gates ONLY on aureon/operator (strict tier); the
+# rest is an informational ratchet (`ruff check aureon/ --statistics`).
+# ─────────────────────────────────────────────────────────────────────────────
+[tool.ruff]
+target-version = "py311"
+line-length = 110
+extend-exclude = ["imports", "archive", "frontend", "node_modules", "state", "**/queen_backups"]
+
+[tool.ruff.lint]
+# Pragmatic set: real-bug rules (F), style (E/W), imports (I), modernization (UP),
+# bugbears (B), comprehensions (C4), simplifications (SIM).
+select = ["E", "W", "F", "I", "UP", "B", "C4", "SIM"]
+ignore = [
+  "E501",   # line length — enforced loosely; long mythic strings abound
+  "E741",   # ambiguous var names (l, I) — pervasive in legacy math code
+  "B008",   # function calls in defaults — used deliberately in a few adapters
+  "SIM105", # contextlib.suppress — try/except pass is clearer in guards here
+  "UP035",  # typing.Dict/List import deprecation — mass annotation churn, no runtime value
+  "UP006",  # Dict[...] → dict[...] — same; keep typing generics for readability
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["E402", "F401", "B011"]
+"scripts/**" = ["E402"]
+"**/__init__.py" = ["F401"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Mypy — gradual everywhere; strict on the product surface.
+# ─────────────────────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+# Gradual: the operator is type-checked in isolation; the untyped legacy tree
+# (2500 files, some with 3.11-incompatible syntax) is not parsed — cross-module
+# imports resolve to Any. Tighten domain-by-domain as the strict tier expands.
+follow_imports = "skip"
+warn_unused_ignores = false
+warn_redundant_casts = true
+# Untyped third-party imports (requests, waitress, …) resolve to Any — expected
+# in a gradual setup; don't flag them.
+disable_error_code = ["import-untyped"]
+exclude = "(^|/)(imports|archive|frontend|node_modules|build|dist)/"
+
+[[tool.mypy.overrides]]
+module = ["aureon.operator.*"]
+check_untyped_defs = true
+no_implicit_optional = true
+# warn_return_any stays OFF: with follow_imports=skip, cross-module returns are
+# Any, so it would flag skip-artifacts, not real issues.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]

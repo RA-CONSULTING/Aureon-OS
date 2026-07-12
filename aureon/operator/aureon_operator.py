@@ -27,9 +27,10 @@ import logging
 import re
 import time
 import uuid
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FutureTimeout
 from threading import Lock
-from typing import Any, Dict, Generator, List, Optional
+from typing import Any, Dict, Generator, List
 
 try:  # optional wiring hook other modules self-register with
     from aureon.core.aureon_baton_link import link_system as _baton_link
@@ -127,7 +128,7 @@ _HARD_BOUNDARY_PATTERNS = (
 )
 
 
-def _hard_boundary_violation(prompt: str) -> Optional[str]:
+def _hard_boundary_violation(prompt: str) -> str | None:
     low = str(prompt or "").lower()
     for pat in _HARD_BOUNDARY_PATTERNS:
         if re.search(pat, low):
@@ -182,12 +183,12 @@ class AureonOperator:
 
     def __init__(
         self,
-        providers: Optional[Dict[str, LLMAdapter]] = None,
+        providers: Dict[str, LLMAdapter] | None = None,
         *,
         bus: Any = None,
         conscience: Any = None,
-        config: Optional[OperatorConfig] = None,
-        cache: Optional[ResponseCache] = None,
+        config: OperatorConfig | None = None,
+        cache: ResponseCache | None = None,
         source: str = "aureon.operator",
         join_mesh: bool = False,
     ) -> None:
@@ -206,19 +207,20 @@ class AureonOperator:
         self._conscience = conscience
         self._conscience_loaded = conscience is not None
         self._breaker = _CircuitBreaker(self.config.breaker_threshold, self.config.breaker_cooldown_s)
+        self.cache: ResponseCache | None
         if cache is not None:
             self.cache = cache
         elif self.config.cache_enabled:
             self.cache = ResponseCache(self.config.cache_ttl_s, self.config.cache_max_entries)
         else:
             self.cache = None
-        self._metrics: Optional[OperatorMetrics] = None
+        self._metrics: OperatorMetrics | None = None
 
     # ------------------------------------------------------------------
     # Public entrypoints
     # ------------------------------------------------------------------
 
-    def respond(self, prompt: str, session_id: Optional[str] = None) -> OperatorResponse:
+    def respond(self, prompt: str, session_id: str | None = None) -> OperatorResponse:
         """Run a prompt through all five phases. Returns the grounded answer."""
         started = time.time()
         resp = OperatorResponse(
@@ -280,16 +282,16 @@ class AureonOperator:
     # Cache helpers
     # ------------------------------------------------------------------
 
-    def _cache_signature(self, resp: OperatorResponse) -> Optional[str]:
+    def _cache_signature(self, resp: OperatorResponse) -> str | None:
         if self.cache is None:
             return None
         grounding_sig = ",".join(sorted(s.get("path", "") for s in (resp.grounding.sources if resp.grounding else [])))
         model_set = ",".join(sorted(self.providers.keys()))
         return cache_key(resp.prompt, grounding_sig, model_set)
 
-    def _cache_get(self, resp: OperatorResponse) -> Optional[OperatorResponse]:
+    def _cache_get(self, resp: OperatorResponse) -> OperatorResponse | None:
         sig = self._cache_signature(resp)
-        if not sig:
+        if not sig or self.cache is None:
             return None
         payload = self.cache.get(sig)
         if payload is None:
@@ -306,7 +308,7 @@ class AureonOperator:
 
     def _cache_set(self, resp: OperatorResponse) -> None:
         sig = self._cache_signature(resp)
-        if not sig or resp.blocked:  # don't cache vetoed answers
+        if not sig or resp.blocked or self.cache is None:  # don't cache vetoed answers
             return
         self.cache.set(
             sig,
@@ -320,7 +322,7 @@ class AureonOperator:
             },
         )
 
-    def stream(self, prompt: str, session_id: Optional[str] = None) -> Generator[StreamChunk, None, None]:
+    def stream(self, prompt: str, session_id: str | None = None) -> Generator[StreamChunk, None, None]:
         """LLMAdapter-style stream of the final grounded answer (word chunks)."""
         for event in self.stream_events(prompt, session_id=session_id):
             if event.get("type") == "token":
@@ -329,7 +331,7 @@ class AureonOperator:
                 yield StreamChunk(done=True, stop_reason="end_turn")
 
     def stream_events(
-        self, prompt: str, session_id: Optional[str] = None
+        self, prompt: str, session_id: str | None = None
     ) -> Generator[Dict[str, Any], None, None]:
         """
         Rich event stream for the phone/SSE surface. Yields dict events:
@@ -414,14 +416,16 @@ class AureonOperator:
                     for name, adapter in lines
                 }
                 # gather in submission order for deterministic output
-                results = {name: None for name, _ in lines}
+                results: Dict[str, ProviderAnswer | None] = {name: None for name, _ in lines}
                 for fut, name in futures.items():
                     try:
                         results[name] = fut.result(timeout=self.config.request_timeout_s + 5)
                     except Exception as exc:  # noqa: BLE001
                         results[name] = self._error_answer(name, self.providers[name], 0.0, f"fan_out_error: {exc}")
                 for name, _ in lines:
-                    resp.answers.append(results[name])
+                    answer = results[name]
+                    if answer is not None:
+                        resp.answers.append(answer)
         else:
             for name, adapter in lines:
                 resp.answers.append(self._call_line(name, adapter, messages, system_prompt))
@@ -561,7 +565,9 @@ class AureonOperator:
         self._publish(resp, "consensus", resp.consensus.to_dict())
 
     def _emit_consensus(self, resp: OperatorResponse) -> None:
-        if self._metrics is not None and resp.consensus is not None:
+        if resp.consensus is None:
+            return
+        if self._metrics is not None:
             self._metrics.consensus(resp.consensus.agreement, resp.consensus.winner, resp.consensus.n_answers)
         self._publish(resp, "consensus", resp.consensus.to_dict())
 
@@ -694,14 +700,14 @@ class AureonOperator:
             resp.phase_thought_ids[phase_key] = ""
 
     @staticmethod
-    def _last_thought_id(resp: OperatorResponse) -> Optional[str]:
+    def _last_thought_id(resp: OperatorResponse) -> str | None:
         for key in reversed(list(resp.phase_thought_ids.keys())):
             if resp.phase_thought_ids[key]:
                 return resp.phase_thought_ids[key]
         return None
 
 
-def run_operator(prompt: str, bus: Any = None, session_id: Optional[str] = None) -> OperatorResponse:
+def run_operator(prompt: str, bus: Any = None, session_id: str | None = None) -> OperatorResponse:
     """Convenience one-shot: build the switchboard and answer one prompt."""
     return AureonOperator(bus=bus).respond(prompt, session_id=session_id)
 
