@@ -27,6 +27,8 @@ import logging
 import re
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
+from threading import Lock
 from typing import Any, Dict, Generator, List, Optional
 
 try:  # optional wiring hook other modules self-register with
@@ -37,6 +39,9 @@ except Exception:  # noqa: BLE001 — never fail import over a tracing hook
     pass
 
 from aureon.inhouse_ai.llm_adapter import LLMAdapter, StreamChunk
+from aureon.operator.cache import ResponseCache, cache_key
+from aureon.operator.config import OperatorConfig
+from aureon.operator.metrics import OperatorMetrics
 from aureon.operator.providers import build_provider_set, describe_provider_set
 from aureon.operator.schemas import (
     ConsensusReading,
@@ -46,6 +51,38 @@ from aureon.operator.schemas import (
 )
 
 logger = logging.getLogger("aureon.operator")
+
+
+class _CircuitBreaker:
+    """Per-line failure tracker. Trips a line after N consecutive failures."""
+
+    def __init__(self, threshold: int, cooldown_s: float) -> None:
+        self.threshold = threshold
+        self.cooldown_s = cooldown_s
+        self._fails: Dict[str, int] = {}
+        self._open_until: Dict[str, float] = {}
+        self._lock = Lock()
+
+    def is_open(self, line: str) -> bool:
+        with self._lock:
+            until = self._open_until.get(line, 0.0)
+            if until and until > time.time():
+                return True
+            if until:
+                # cooldown elapsed — half-open: clear so the line gets one more try
+                self._open_until.pop(line, None)
+                self._fails[line] = 0
+            return False
+
+    def record(self, line: str, ok: bool) -> None:
+        with self._lock:
+            if ok:
+                self._fails[line] = 0
+                self._open_until.pop(line, None)
+                return
+            self._fails[line] = self._fails.get(line, 0) + 1
+            if self._fails[line] >= self.threshold:
+                self._open_until[line] = time.time() + self.cooldown_s
 
 # ── Thought bus (fail-safe) ───────────────────────────────────────────────────
 try:
@@ -75,6 +112,26 @@ _OPERATOR_PERSONA = (
     "trade executions, balances, filings, or credentials."
 )
 
+# Hard authority boundaries (mirrors PUBLIC_BOUNDARIES in the dynamic prompt
+# filter). These are deterministic, prompt-level refusals: the operator will not
+# emit an answer that helps cross them, regardless of the soft conscience verdict.
+_HARD_BOUNDARY_PATTERNS = (
+    r"\b(disable|bypass|ignore|override|turn off|switch off|remove)\b[^.]{0,40}\b(safety|gate|gates|guard|guardrail|risk limit|risk-limit|limits|conscience|governance|veto)\b",
+    r"\b(execute|place|open|run|make|do)\b[^.]{0,40}\b(live|real|all[- ]?in|leveraged)\b[^.]{0,20}\btrade\b",
+    r"\b(move|withdraw|send|transfer|wire|pay out|payout)\b[^.]{0,40}\b(payment|funds|money|balance|account)\b",
+    r"\b(reveal|expose|print|show|leak)\b[^.]{0,30}\b(api[_ -]?key|secret|password|credential|private key)\b",
+    r"\b(submit|file|lodge)\b[^.]{0,30}\b(official|regulatory|tax|legal)\b[^.]{0,20}\b(filing|return|document)\b",
+)
+
+
+def _hard_boundary_violation(prompt: str) -> Optional[str]:
+    low = str(prompt or "").lower()
+    for pat in _HARD_BOUNDARY_PATTERNS:
+        if re.search(pat, low):
+            return pat
+    return None
+
+
 _STOPWORDS = {
     "the", "a", "an", "and", "or", "of", "to", "in", "is", "are", "for", "on",
     "with", "as", "by", "it", "this", "that", "be", "at", "from", "how", "does",
@@ -91,8 +148,11 @@ class AureonOperator:
         *,
         bus: Any = None,
         conscience: Any = None,
+        config: Optional[OperatorConfig] = None,
+        cache: Optional[ResponseCache] = None,
         source: str = "aureon.operator",
     ) -> None:
+        self.config = config or OperatorConfig.from_env()
         self.providers = providers if providers is not None else build_provider_set()
         if bus is not None:
             self.bus = bus
@@ -103,6 +163,14 @@ class AureonOperator:
         self.source = source
         self._conscience = conscience
         self._conscience_loaded = conscience is not None
+        self._breaker = _CircuitBreaker(self.config.breaker_threshold, self.config.breaker_cooldown_s)
+        if cache is not None:
+            self.cache = cache
+        elif self.config.cache_enabled:
+            self.cache = ResponseCache(self.config.cache_ttl_s, self.config.cache_max_entries)
+        else:
+            self.cache = None
+        self._metrics: Optional[OperatorMetrics] = None
 
     # ------------------------------------------------------------------
     # Public entrypoints
@@ -117,20 +185,89 @@ class AureonOperator:
             submitted_at=started,
             session_id=session_id,
         )
+        self._metrics = OperatorMetrics(
+            enabled=self.config.metrics_enabled,
+            structured_logs=self.config.structured_logs,
+            trace_id=resp.trace_id,
+        )
         self._publish(
             resp,
             "boot",
             {"prompt": prompt, "session_id": session_id, "providers": describe_provider_set(self.providers)},
         )
 
-        system_prompt = self._ground(prompt, resp)
-        self._fan_out(prompt, system_prompt, resp)
-        self._consensus(resp)
-        self._veto(prompt, resp)
+        with self._metrics.phase("ground"):
+            system_prompt = self._ground(prompt, resp)
+
+        # Cache is keyed by the FULL determinants of an answer: prompt + grounding
+        # signature + the exact model set. Grounding is cheap/local so we always
+        # run it, then short-circuit fan-out + consensus + veto on a hit.
+        cached = self._cache_get(resp)
+        if cached is not None:
+            resp.elapsed_ms = (time.time() - started) * 1000.0
+            self._metrics.cache("hit")
+            self._metrics.request("cache_hit", resp.elapsed_ms)
+            self._publish(resp, "complete", resp.to_dict())
+            return resp
+        if self.cache is not None:
+            self._metrics.cache("miss")
+
+        with self._metrics.phase("fan_out"):
+            self._fan_out(prompt, system_prompt, resp)
+        with self._metrics.phase("consensus"):
+            self._consensus(resp)
+        with self._metrics.phase("veto"):
+            self._veto(prompt, resp)
 
         resp.elapsed_ms = (time.time() - started) * 1000.0
+        self._cache_set(resp)
+        self._metrics.request("blocked" if resp.blocked else "ok", resp.elapsed_ms)
         self._publish(resp, "complete", resp.to_dict())
         return resp
+
+    # ------------------------------------------------------------------
+    # Cache helpers
+    # ------------------------------------------------------------------
+
+    def _cache_signature(self, resp: OperatorResponse) -> Optional[str]:
+        if self.cache is None:
+            return None
+        grounding_sig = ",".join(sorted(s.get("path", "") for s in (resp.grounding.sources if resp.grounding else [])))
+        model_set = ",".join(sorted(self.providers.keys()))
+        return cache_key(resp.prompt, grounding_sig, model_set)
+
+    def _cache_get(self, resp: OperatorResponse) -> Optional[OperatorResponse]:
+        sig = self._cache_signature(resp)
+        if not sig:
+            return None
+        payload = self.cache.get(sig)
+        if payload is None:
+            return None
+        # Re-hydrate the cached answer onto THIS response (fresh trace_id preserved).
+        resp.text = payload.get("text", "")
+        resp.answers = [ProviderAnswer(**a) for a in payload.get("answers", [])]
+        resp.consensus = ConsensusReading(**payload["consensus"]) if payload.get("consensus") else None
+        resp.conscience_verdict = payload.get("conscience_verdict", "APPROVED")
+        resp.conscience_message = payload.get("conscience_message", "")
+        resp.blocked = payload.get("blocked", False)
+        resp.errors.append({"phase": "cache", "note": "served from cache"})
+        return resp
+
+    def _cache_set(self, resp: OperatorResponse) -> None:
+        sig = self._cache_signature(resp)
+        if not sig or resp.blocked:  # don't cache vetoed answers
+            return
+        self.cache.set(
+            sig,
+            {
+                "text": resp.text,
+                "answers": [a.to_dict() for a in resp.answers],
+                "consensus": resp.consensus.to_dict() if resp.consensus else None,
+                "conscience_verdict": resp.conscience_verdict,
+                "conscience_message": resp.conscience_message,
+                "blocked": resp.blocked,
+            },
+        )
 
     def stream(self, prompt: str, session_id: Optional[str] = None) -> Generator[StreamChunk, None, None]:
         """LLMAdapter-style stream of the final grounded answer (word chunks)."""
@@ -216,43 +353,103 @@ class AureonOperator:
 
     def _fan_out(self, prompt: str, system_prompt: str, resp: OperatorResponse) -> None:
         messages = [{"role": "user", "content": prompt}]
-        for name, adapter in self.providers.items():
-            t0 = time.time()
-            try:
-                out = adapter.prompt(messages, system=system_prompt, max_tokens=800, temperature=0.5)
-                text = (out.text or "").strip()
-                ok = out.stop_reason != "error" and bool(text)
-                resp.answers.append(
-                    ProviderAnswer(
-                        provider=name,
-                        model=str(out.model or getattr(adapter, "model", "") or ""),
-                        text=text,
-                        ok=ok,
-                        latency_ms=(time.time() - t0) * 1000.0,
-                        error="" if ok else (text or "empty response"),
-                    )
-                )
-            except Exception as exc:  # noqa: BLE001 — one dead line must not sink the board
-                resp.answers.append(
-                    ProviderAnswer(
-                        provider=name,
-                        model=str(getattr(adapter, "model", "") or ""),
-                        text="",
-                        ok=False,
-                        latency_ms=(time.time() - t0) * 1000.0,
-                        error=str(exc),
-                    )
-                )
-                resp.errors.append({"phase": "fan_out", "provider": name, "error": str(exc)})
+        lines = list(self.providers.items())
+
+        if self.config.parallel and len(lines) > 1:
+            workers = min(self.config.max_workers, len(lines))
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                futures = {
+                    pool.submit(self._call_line, name, adapter, messages, system_prompt): name
+                    for name, adapter in lines
+                }
+                # gather in submission order for deterministic output
+                results = {name: None for name, _ in lines}
+                for fut, name in futures.items():
+                    try:
+                        results[name] = fut.result(timeout=self.config.request_timeout_s + 5)
+                    except Exception as exc:  # noqa: BLE001
+                        results[name] = self._error_answer(name, self.providers[name], 0.0, f"fan_out_error: {exc}")
+                for name, _ in lines:
+                    resp.answers.append(results[name])
+        else:
+            for name, adapter in lines:
+                resp.answers.append(self._call_line(name, adapter, messages, system_prompt))
+
+        for a in resp.answers:
+            self._metrics_provider_call(a)
+            if not a.ok:
+                resp.errors.append({"phase": "fan_out", "provider": a.provider, "error": a.error})
+
         self._publish(
             resp,
             "fan_out",
             {
                 "n_providers": len(self.providers),
                 "n_ok": sum(1 for a in resp.answers if a.ok),
+                "parallel": bool(self.config.parallel and len(lines) > 1),
                 "answers": [a.to_dict() for a in resp.answers],
             },
         )
+
+    def _call_line(self, name, adapter, messages, system_prompt) -> ProviderAnswer:
+        """One switchboard line, with circuit-breaker + retry + hard timeout."""
+        if self._breaker.is_open(name):
+            return self._error_answer(name, adapter, 0.0, "circuit_open")
+
+        t0 = time.time()
+        last_err = "empty response"
+        attempts = max(1, self.config.max_retries + 1)
+        for attempt in range(attempts):
+            try:
+                out = self._call_with_timeout(adapter, messages, system_prompt)
+                text = (out.text or "").strip()
+                ok = out.stop_reason != "error" and bool(text)
+                if ok:
+                    self._breaker.record(name, True)
+                    return ProviderAnswer(
+                        provider=name,
+                        model=str(out.model or getattr(adapter, "model", "") or ""),
+                        text=text,
+                        ok=True,
+                        latency_ms=(time.time() - t0) * 1000.0,
+                    )
+                last_err = text or "empty response"
+            except FutureTimeout:
+                last_err = f"timeout>{self.config.request_timeout_s}s"
+            except Exception as exc:  # noqa: BLE001
+                last_err = str(exc)
+            if attempt < attempts - 1:
+                time.sleep(self.config.retry_backoff_s * (2 ** attempt))
+
+        self._breaker.record(name, False)
+        return self._error_answer(name, adapter, (time.time() - t0) * 1000.0, last_err)
+
+    def _call_with_timeout(self, adapter, messages, system_prompt):
+        """Enforce a hard wall-clock timeout around any adapter, even blocking ones."""
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            fut = pool.submit(
+                adapter.prompt,
+                messages,
+                system=system_prompt,
+                max_tokens=self.config.max_tokens,
+                temperature=self.config.temperature,
+            )
+            return fut.result(timeout=self.config.request_timeout_s)
+
+    @staticmethod
+    def _error_answer(name, adapter, latency_ms, err) -> ProviderAnswer:
+        return ProviderAnswer(
+            provider=name,
+            model=str(getattr(adapter, "model", "") or ""),
+            text="",
+            ok=False,
+            latency_ms=latency_ms,
+            error=str(err),
+        )
+
+    def _metrics_provider_call(self, a: ProviderAnswer) -> None:
+        if self._metrics is not None:
+            self._metrics.provider_call(a.provider, a.ok, a.latency_ms)
 
     # ------------------------------------------------------------------
     # Phase 3 — Consensus collapse (agreement → one answer)
@@ -267,7 +464,7 @@ class AureonOperator:
                 "Check provider keys and connectivity, or run offline for a grounded stub."
             )
             resp.consensus = ConsensusReading(n_answers=0, agreement=0.0, winner="", synthesized=False)
-            self._publish(resp, "consensus", resp.consensus.to_dict())
+            self._emit_consensus(resp)
             return
 
         if len(good) == 1:
@@ -276,7 +473,7 @@ class AureonOperator:
             resp.consensus = ConsensusReading(
                 n_answers=1, agreement=1.0, winner=winner.provider, synthesized=False
             )
-            self._publish(resp, "consensus", resp.consensus.to_dict())
+            self._emit_consensus(resp)
             return
 
         # Medoid collapse: the answer most similar to all the others wins.
@@ -312,6 +509,11 @@ class AureonOperator:
         )
         self._publish(resp, "consensus", resp.consensus.to_dict())
 
+    def _emit_consensus(self, resp: OperatorResponse) -> None:
+        if self._metrics is not None and resp.consensus is not None:
+            self._metrics.consensus(resp.consensus.agreement, resp.consensus.winner, resp.consensus.n_answers)
+        self._publish(resp, "consensus", resp.consensus.to_dict())
+
     @staticmethod
     def _tokens(text: str) -> set:
         words = re.findall(r"[a-z0-9]+", str(text).lower())
@@ -330,9 +532,35 @@ class AureonOperator:
     # ------------------------------------------------------------------
 
     def _veto(self, prompt: str, resp: OperatorResponse) -> None:
+        if not self.config.veto_enabled:
+            resp.conscience_verdict = "SKIPPED"
+            self._publish(resp, "veto", {"verdict": "SKIPPED", "available": False})
+            return
+
+        # ── Hard authority boundary: deterministic refusal, no soft override ──
+        boundary = _hard_boundary_violation(prompt)
+        if boundary is not None:
+            resp.blocked = True
+            resp.conscience_verdict = "VETO"
+            resp.conscience_message = (
+                "This request crosses a hard Aureon authority boundary "
+                "(live trading, payment movement, safety-gate bypass, credential reveal, "
+                "or official filing). The operator will not assist with it."
+            )
+            resp.text = f"🦗 Blocked at the Aureon authority boundary.\nReason: {resp.conscience_message}"
+            if self._metrics is not None:
+                self._metrics.veto("VETO", True)
+            self._publish(
+                resp, "veto",
+                {"verdict": "VETO", "blocked": True, "boundary": True, "message": resp.conscience_message},
+            )
+            return
+
         conscience = self._get_conscience()
         if conscience is None:
             resp.conscience_verdict = "APPROVED"
+            if self._metrics is not None:
+                self._metrics.veto("APPROVED", False)
             self._publish(resp, "veto", {"verdict": "APPROVED", "available": False})
             return
 
@@ -358,6 +586,8 @@ class AureonOperator:
             logger.debug("conscience unavailable: %s", exc)
             resp.conscience_verdict = "APPROVED"
             resp.errors.append({"phase": "veto", "error": str(exc)})
+        if self._metrics is not None:
+            self._metrics.veto(resp.conscience_verdict, resp.blocked)
         self._publish(
             resp,
             "veto",

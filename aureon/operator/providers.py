@@ -218,17 +218,67 @@ _OFFLINE_STUB_ANSWER = (
 )
 
 
-def _provider_specs() -> List[tuple]:
-    """(name, env_key, adapter_factory) for every cloud line, in switchboard order."""
-    return [
-        ("openai", "OPENAI_API_KEY", AureonOpenAIAdapter),
-        ("grok", "XAI_API_KEY", AureonGrokAdapter),
-        ("gemini", "GEMINI_API_KEY", AureonGeminiAdapter),
-    ]
+def _build_from_spec(spec) -> Optional[LLMAdapter]:
+    """Resolve one ModelSpec into a live adapter, or None if it can't run."""
+    kind = spec.kind
+    try:
+        if kind == "openai":
+            return AureonOpenAIAdapter(model=spec.model or None)
+        if kind == "grok":
+            return AureonGrokAdapter(model=spec.model or None)
+        if kind == "gemini":
+            return AureonGeminiAdapter(model=spec.model or None)
+        if kind == "anthropic":
+            from aureon.inhouse_ai.llm_adapter import AureonAnthropicAdapter
+
+            adapter = AureonAnthropicAdapter(model=spec.model or None)
+            return adapter if adapter.health_check() else None
+        if kind == "local":
+            adapter = AureonLocalAdapter(model=spec.model or None)
+            return adapter if adapter.health_check() else None
+        if kind == "stub":
+            return AureonStubAdapter(spec.options.get("message", _OFFLINE_STUB_ANSWER), model=spec.model or "stub")
+    except Exception as exc:  # noqa: BLE001 — a bad line must never sink the board
+        logger.warning("provider %s (%s) failed to initialise: %s", spec.name, kind, exc)
+    return None
 
 
-def _has_key(env_key: str) -> bool:
-    return bool(str(os.environ.get(env_key, "") or "").strip())
+def build_registry(
+    specs=None,
+    *,
+    allow_local: bool = True,
+    force_offline: Optional[bool] = None,
+) -> Dict[str, LLMAdapter]:
+    """
+    Assemble the switchboard from a list of ``ModelSpec`` (config-driven).
+
+    Only rows that are enabled, key-present, and successfully initialised are
+    included — so the registry can list every flagship model you *might* use and
+    the runtime dials only the ones actually configured. With none live (or under
+    the repo's offline/audit guards) it degrades to a local model or a single
+    offline stub, so the operator always has at least one working line.
+    """
+    from aureon.operator.config import default_registry
+
+    if specs is None:
+        specs = default_registry()
+    offline = _llm_http_disabled() if force_offline is None else bool(force_offline)
+
+    providers: Dict[str, LLMAdapter] = {}
+    if not offline:
+        for spec in specs:
+            if not spec.enabled or not spec.key_present():
+                continue
+            if spec.kind == "local" and not allow_local:
+                continue
+            adapter = _build_from_spec(spec)
+            if adapter is not None:
+                providers[spec.name] = adapter
+
+    if providers:
+        return providers
+
+    return {"offline": AureonStubAdapter(_OFFLINE_STUB_ANSWER, model="aureon-operator-offline")}
 
 
 def build_provider_set(
@@ -236,39 +286,8 @@ def build_provider_set(
     allow_local: bool = True,
     force_offline: Optional[bool] = None,
 ) -> Dict[str, LLMAdapter]:
-    """
-    Assemble the provider switchboard from the environment.
-
-    Returns a mapping of ``provider_name -> LLMAdapter``. Only providers whose
-    API keys are present are included. When none are configured (or the repo's
-    offline/audit guards are set) the set degrades — first to a reachable local
-    model, otherwise to a single offline stub — so callers always get at least
-    one working line and never hang on the network.
-    """
-    offline = _llm_http_disabled() if force_offline is None else bool(force_offline)
-
-    providers: Dict[str, LLMAdapter] = {}
-    if not offline:
-        for name, env_key, factory in _provider_specs():
-            if _has_key(env_key):
-                try:
-                    providers[name] = factory()
-                except Exception as exc:  # noqa: BLE001 — a bad line must not sink the board
-                    logger.warning("provider %s failed to initialise: %s", name, exc)
-
-    if providers:
-        return providers
-
-    # ── Degraded paths ────────────────────────────────────────────────────────
-    if allow_local and not offline and str(os.environ.get("AUREON_LLM_BASE_URL", "")).strip():
-        try:
-            local = AureonLocalAdapter()
-            if local.health_check():
-                return {"local": local}
-        except Exception as exc:  # noqa: BLE001
-            logger.debug("local adapter unavailable: %s", exc)
-
-    return {"offline": AureonStubAdapter(_OFFLINE_STUB_ANSWER, model="aureon-operator-offline")}
+    """Convenience wrapper: assemble from the default registry (back-compat)."""
+    return build_registry(allow_local=allow_local, force_offline=force_offline)
 
 
 def describe_provider_set(providers: Dict[str, LLMAdapter]) -> List[Dict[str, str]]:
@@ -289,6 +308,7 @@ __all__ = [
     "AureonOpenAIAdapter",
     "AureonGrokAdapter",
     "AureonGeminiAdapter",
+    "build_registry",
     "build_provider_set",
     "describe_provider_set",
 ]
