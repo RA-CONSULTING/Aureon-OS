@@ -1,0 +1,49 @@
+# Aureon SaaS — the full platform: console (nginx) + operator/SaaS gateway.
+#   docker compose -f deploy/docker-compose.saas.yml up --build
+#
+# Browser → frontend:80 → (static console) + /api proxy → aureon-operator:8790.
+# Supply the Supabase project values so the console can auth (VITE_* are baked
+# into the bundle at build time); set AUREON_SUPABASE_JWT_SECRET to make the
+# gateway verify those sessions server-side.
+services:
+  aureon-operator:
+    build:
+      context: ..
+      dockerfile: deploy/operator.Dockerfile
+    image: aureon-operator:latest
+    environment:
+      AUREON_OPERATOR_PORT: "8790"
+      AUREON_OPERATOR_THREADS: "8"
+      # Server-side tenancy bridge (recommended in production):
+      AUREON_SUPABASE_JWT_SECRET: "${AUREON_SUPABASE_JWT_SECRET:-}"
+      # Inbound service auth / rate-limit (optional, layered):
+      AUREON_OPERATOR_API_KEY: "${AUREON_OPERATOR_API_KEY:-}"
+      AUREON_OPERATOR_RATE_RPS: "${AUREON_OPERATOR_RATE_RPS:-}"
+      # Model keys (optional — omit for offline):
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      XAI_API_KEY: "${XAI_API_KEY:-}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8790/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: deploy/frontend.Dockerfile
+      args:
+        VITE_REQUIRE_AUTH: "${VITE_REQUIRE_AUTH:-1}"
+        VITE_AUREON_MANIFEST_BASE: "${VITE_AUREON_MANIFEST_BASE:-/api/manifests}"
+        VITE_SUPABASE_URL: "${VITE_SUPABASE_URL:-}"
+        VITE_SUPABASE_PUBLISHABLE_KEY: "${VITE_SUPABASE_PUBLISHABLE_KEY:-}"
+        VITE_NEXUS_SOCKET_URL: "${VITE_NEXUS_SOCKET_URL:-}"
+    image: aureon-frontend:latest
+    ports:
+      - "${AUREON_FRONTEND_PORT:-8088}:80"
+    depends_on:
+      - aureon-operator
+    restart: unless-stopped
