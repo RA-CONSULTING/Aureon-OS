@@ -60,6 +60,9 @@ interface CapabilityRegistryRow {
   surface_refs: string[];
   resolved_paths: string[];
   runtime_refs: string[];
+  generated_refs: string[];
+  command_refs: string[];
+  code_symbol_refs: Array<{ ref: string; paths: string[] }>;
   unresolved_refs: string[];
   system_paths: string[];
   access_route_ids: string[];
@@ -75,6 +78,9 @@ interface CapabilityRegistryManifest {
     capability_count: number;
     resolved_surface_ref_count: number;
     runtime_surface_ref_count: number;
+    generated_artifact_ref_count: number;
+    command_surface_ref_count: number;
+    code_symbol_ref_count: number;
     unresolved_surface_ref_count: number;
     access_route_count: number;
     system_count: number;
@@ -323,6 +329,9 @@ export function RepoNavigationPanel() {
             ...capability.surface_refs,
             ...capability.resolved_paths,
             ...capability.runtime_refs,
+            ...capability.generated_refs,
+            ...capability.command_refs,
+            ...capability.code_symbol_refs.flatMap((symbol) => [symbol.ref, ...symbol.paths]),
             ...capability.unresolved_refs,
             ...capability.system_paths,
             ...capability.access_route_ids,
@@ -511,7 +520,7 @@ export function RepoNavigationPanel() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <div className="rounded-md border border-border/50 bg-background/45 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">Current capabilities</div>
               <div className="mt-1 text-2xl font-semibold">{(capabilityRegistry?.summary?.capability_count || 0).toLocaleString()}</div>
@@ -523,6 +532,10 @@ export function RepoNavigationPanel() {
             <div className="rounded-md border border-border/50 bg-background/45 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">Runtime refs</div>
               <div className="mt-1 text-2xl font-semibold">{(capabilityRegistry?.summary?.runtime_surface_ref_count || 0).toLocaleString()}</div>
+            </div>
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">Generated refs</div>
+              <div className="mt-1 text-2xl font-semibold">{(capabilityRegistry?.summary?.generated_artifact_ref_count || 0).toLocaleString()}</div>
             </div>
             <div className="rounded-md border border-border/50 bg-background/45 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">Review refs</div>
@@ -549,6 +562,16 @@ export function RepoNavigationPanel() {
                   {capability.runtime_refs.slice(0, 2).map((ref) => (
                     <Badge key={`${capability.id}-runtime-${ref}`} variant="secondary" className="font-mono text-[10px]">
                       {ref}
+                    </Badge>
+                  ))}
+                  {capability.generated_refs.slice(0, 2).map((ref) => (
+                    <Badge key={`${capability.id}-generated-${ref}`} variant="outline" className="border-emerald-500/30 bg-emerald-500/10 font-mono text-[10px] text-emerald-100">
+                      {ref}
+                    </Badge>
+                  ))}
+                  {capability.code_symbol_refs.slice(0, 2).map((symbol) => (
+                    <Badge key={`${capability.id}-symbol-${symbol.ref}`} variant="outline" className="border-sky-500/30 bg-sky-500/10 font-mono text-[10px] text-sky-100">
+                      {symbol.ref}
                     </Badge>
                   ))}
                 </div>

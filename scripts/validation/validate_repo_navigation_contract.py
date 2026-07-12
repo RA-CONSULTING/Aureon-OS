@@ -380,13 +380,20 @@ def main() -> int:
     expect(docs_system_integration == public_system_integration, failures, "system integration map docs/public mirrors differ")
     capability_registry_rows = docs_capability_registry.get("capabilities", []) if isinstance(docs_capability_registry, dict) else []
     expected_capability_rows = parse_capabilities_table_count()
+    registry_summary = docs_capability_registry.get("summary", {}) if isinstance(docs_capability_registry, dict) else {}
+    registry_resolved_count = sum(len(row.get("resolved_paths", [])) for row in capability_registry_rows if isinstance(row, dict))
+    registry_runtime_count = sum(len(row.get("runtime_refs", [])) for row in capability_registry_rows if isinstance(row, dict))
+    registry_generated_count = sum(len(row.get("generated_refs", [])) for row in capability_registry_rows if isinstance(row, dict))
+    registry_command_count = sum(len(row.get("command_refs", [])) for row in capability_registry_rows if isinstance(row, dict))
+    registry_symbol_count = sum(len(row.get("code_symbol_refs", [])) for row in capability_registry_rows if isinstance(row, dict))
+    registry_unresolved_count = sum(len(row.get("unresolved_refs", [])) for row in capability_registry_rows if isinstance(row, dict))
     expect(
-        docs_capability_registry.get("summary", {}).get("tracked_file_count") == tracked_total,
+        registry_summary.get("tracked_file_count") == tracked_total,
         failures,
         "capability registry tracked_file_count is stale",
     )
     expect(
-        docs_capability_registry.get("summary", {}).get("capability_count") == expected_capability_rows,
+        registry_summary.get("capability_count") == expected_capability_rows,
         failures,
         "capability registry capability_count differs from CAPABILITIES.md",
     )
@@ -394,6 +401,36 @@ def main() -> int:
         len(capability_registry_rows) == expected_capability_rows,
         failures,
         "capability registry row count differs from CAPABILITIES.md",
+    )
+    expect(
+        registry_summary.get("runtime_surface_ref_count") == registry_runtime_count,
+        failures,
+        "capability registry runtime_surface_ref_count differs from rows",
+    )
+    expect(
+        registry_summary.get("generated_artifact_ref_count") == registry_generated_count,
+        failures,
+        "capability registry generated_artifact_ref_count differs from rows",
+    )
+    expect(
+        registry_summary.get("command_surface_ref_count") == registry_command_count,
+        failures,
+        "capability registry command_surface_ref_count differs from rows",
+    )
+    expect(
+        registry_summary.get("code_symbol_ref_count") == registry_symbol_count,
+        failures,
+        "capability registry code_symbol_ref_count differs from rows",
+    )
+    expect(
+        registry_summary.get("unresolved_surface_ref_count") == registry_unresolved_count,
+        failures,
+        "capability registry unresolved_surface_ref_count differs from rows",
+    )
+    expect(
+        registry_summary.get("resolved_surface_ref_count", 0) <= registry_resolved_count,
+        failures,
+        "capability registry resolved_surface_ref_count exceeds row path count",
     )
     expect(
         docs_capability_registry.get("public_contract", {}).get("contains_file_contents") is False,

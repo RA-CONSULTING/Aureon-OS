@@ -18,6 +18,9 @@ DOCS_MANIFEST = REPO_ROOT / "docs" / "capability_registry.json"
 PUBLIC_MANIFEST = REPO_ROOT / "frontend" / "public" / "aureon_capability_registry.json"
 
 RUNTIME_PREFIXES = ("http://", "https://", "/api/", "POST http://")
+GENERATED_REF_PREFIXES = ("state/", "docs/audits/", "frontend/public/", "ws_cache/")
+SYMBOL_SEARCH_ROOTS = ("aureon", "frontend/src", "scripts", "Kings_Accounting_Suite", "tests")
+SYMBOL_SOURCE_EXTENSIONS = {".py", ".ts", ".tsx", ".js", ".mjs", ".cjs"}
 
 ACCESS_ROUTE_RULES = [
     ("accounting_filing_support", ("accounting", "hmrc", "filing", "statutory")),
@@ -95,34 +98,101 @@ def surface_refs(surface_text: str) -> list[str]:
 
 
 def normalize_ref(ref: str) -> str:
-    return ref.split("#", 1)[0].strip().strip("/")
+    normalized = ref.split("#", 1)[0].strip().lstrip("/")
+    if " " in normalized:
+        command_target = normalized.split()[0].strip()
+        if "/" in command_target and Path(command_target).suffix:
+            return command_target.lstrip("/")
+    return normalized
 
 
-def resolve_ref(ref: str, tracked_paths: list[str], basename_lookup: dict[str, list[str]]) -> tuple[list[str], bool]:
+def is_generated_ref(ref: str) -> bool:
+    normalized = normalize_ref(ref)
+    return normalized.startswith(GENERATED_REF_PREFIXES)
+
+
+def is_symbol_like(ref: str) -> bool:
+    normalized = ref.strip()
+    if "/" in normalized or normalized.startswith((".", "-")):
+        return False
+    return bool(re.match(r"^[A-Za-z_][A-Za-z0-9_.]*$", normalized))
+
+
+def symbol_terms(ref: str) -> list[str]:
+    normalized = ref.strip()
+    terms = [normalized]
+    if "." in normalized:
+        terms.append(normalized.rsplit(".", 1)[-1])
+    return [term for index, term in enumerate(terms) if term and term not in terms[:index]]
+
+
+def find_symbol_paths(ref: str, tracked_paths: set[str]) -> list[str]:
+    if not is_symbol_like(ref):
+        return []
+
+    matches: list[str] = []
+    for term in symbol_terms(ref):
+        result = subprocess.run(
+            ["git", "grep", "-l", term, "--", *SYMBOL_SEARCH_ROOTS],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode not in (0, 1):
+            continue
+        for raw_path in result.stdout.splitlines():
+            path = raw_path.strip().replace("\\", "/")
+            if path not in tracked_paths:
+                continue
+            if Path(path).suffix not in SYMBOL_SOURCE_EXTENSIONS:
+                continue
+            if path not in matches:
+                matches.append(path)
+
+    def priority(path: str) -> tuple[int, str]:
+        if path.startswith("aureon/"):
+            return (0, path)
+        if path.startswith("frontend/src/"):
+            return (1, path)
+        if path.startswith("scripts/"):
+            return (2, path)
+        if path.startswith("Kings_Accounting_Suite/"):
+            return (3, path)
+        if path.startswith("tests/"):
+            return (4, path)
+        return (5, path)
+
+    return sorted(matches, key=priority)[:8]
+
+
+def resolve_ref(ref: str, tracked_paths: list[str], basename_lookup: dict[str, list[str]]) -> tuple[list[str], bool, bool, bool]:
     if ref.startswith(RUNTIME_PREFIXES) or ref.startswith("/api/") or ref.startswith("POST "):
-        return [], True
+        return [], True, False, False
 
     normalized = normalize_ref(ref)
     if not normalized:
-        return [], True
+        return [], True, False, False
+
+    if is_generated_ref(ref):
+        return [], False, True, False
 
     if normalized in tracked_paths:
-        return [normalized], False
+        return [normalized], False, False, False
 
     if normalized.endswith("/") and any(path.startswith(normalized) for path in tracked_paths):
-        return [normalized], False
+        return [normalized], False, False, False
 
     basename = Path(normalized).name
     matches = basename_lookup.get(basename, [])
     if matches:
-        return matches[:8], False
+        return matches[:8], False, False, False
 
     if "/" not in normalized:
         partial = [path for path in tracked_paths if Path(path).stem == normalized or normalized in Path(path).stem]
         if partial:
-            return partial[:8], False
+            return partial[:8], False, False, False
 
-    return [], False
+    return [], False, False, is_symbol_like(ref)
 
 
 def access_routes_for(label: str, description: str, refs: list[str]) -> list[str]:
@@ -156,6 +226,9 @@ def build_manifest() -> dict:
     capabilities = []
     resolved_ref_count = 0
     runtime_ref_count = 0
+    generated_ref_count = 0
+    command_ref_count = 0
+    code_symbol_ref_count = 0
     unresolved_ref_count = 0
     route_counts: Counter[str] = Counter()
     system_counts: Counter[str] = Counter()
@@ -164,16 +237,37 @@ def build_manifest() -> dict:
         refs = surface_refs(row["surface_text"])
         resolved_paths: list[str] = []
         runtime_refs: list[str] = []
+        generated_refs: list[str] = []
+        command_refs: list[str] = []
+        code_symbol_refs: list[dict] = []
         unresolved_refs: list[str] = []
 
         for ref in refs:
-            matches, is_runtime = resolve_ref(ref, tracked_paths, basename_lookup)
+            matches, is_runtime, is_generated, may_be_symbol = resolve_ref(ref, tracked_paths, basename_lookup)
             if is_runtime:
                 runtime_refs.append(ref)
                 runtime_ref_count += 1
+            elif is_generated:
+                generated_refs.append(ref)
+                generated_ref_count += 1
             elif matches:
                 resolved_paths.extend(path for path in matches if path not in resolved_paths)
                 resolved_ref_count += 1
+                if normalize_ref(ref) != ref.split("#", 1)[0].strip().lstrip("/"):
+                    command_refs.append(ref)
+                    command_ref_count += 1
+            elif may_be_symbol:
+                symbol_paths = find_symbol_paths(ref, tracked_set)
+                if symbol_paths:
+                    code_symbol_refs.append({"ref": ref, "paths": symbol_paths})
+                    code_symbol_ref_count += 1
+                    for path in symbol_paths:
+                        if path not in resolved_paths:
+                            resolved_paths.append(path)
+                    resolved_ref_count += 1
+                else:
+                    unresolved_refs.append(ref)
+                    unresolved_ref_count += 1
             else:
                 unresolved_refs.append(ref)
                 unresolved_ref_count += 1
@@ -194,10 +288,17 @@ def build_manifest() -> dict:
                 "surface_refs": refs,
                 "resolved_paths": resolved_paths[:20],
                 "runtime_refs": runtime_refs,
+                "generated_refs": generated_refs,
+                "command_refs": command_refs,
+                "code_symbol_refs": code_symbol_refs,
                 "unresolved_refs": unresolved_refs,
                 "system_paths": systems,
                 "access_route_ids": routes,
-                "public_artifacts": [path for path in resolved_paths if path.startswith("frontend/public/") or path.startswith("docs/audits/")],
+                "public_artifacts": [
+                    path
+                    for path in [*resolved_paths, *generated_refs]
+                    if path.startswith("frontend/public/") or path.startswith("docs/audits/")
+                ],
             }
         )
 
@@ -224,6 +325,9 @@ def build_manifest() -> dict:
             "capability_count": len(capabilities),
             "resolved_surface_ref_count": resolved_ref_count,
             "runtime_surface_ref_count": runtime_ref_count,
+            "generated_artifact_ref_count": generated_ref_count,
+            "command_surface_ref_count": command_ref_count,
+            "code_symbol_ref_count": code_symbol_ref_count,
             "unresolved_surface_ref_count": unresolved_ref_count,
             "access_route_count": len(route_counts),
             "system_count": len(system_counts),
