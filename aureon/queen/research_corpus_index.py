@@ -212,10 +212,16 @@ class ResearchCorpusIndex:
         root: str = DEFAULT_CORPUS_ROOT,
         cache_path: Optional[str] = DEFAULT_CACHE_PATH,
         exclude: Optional[Sequence[str]] = None,
+        ingest_exts: Optional[Sequence[str]] = None,
     ):
         self.root = root
         self.cache_path = cache_path
         self.exclude = tuple(exclude or ())
+        # Widen the ingestible extension set per-instance (shadows the class
+        # attribute) so a repo-wide index can index .py/.txt source too, while
+        # the default docs index stays markdown+pdf only. Backward-compatible.
+        if ingest_exts:
+            self._INGEST_EXTS = tuple(e.lower() for e in ingest_exts)
         self._docs: Dict[str, _Document] = {}        # doc_id → _Document
         self._postings: Dict[str, List[Tuple[str, int]]] = {}  # token → [(doc_id, para_idx)]
         self._idf: Dict[str, float] = {}             # token → idf weight
@@ -321,16 +327,17 @@ class ResearchCorpusIndex:
         could not be loaded (PDF without pypdf, read error, etc.).
         """
         lower = abs_path.lower()
-        if lower.endswith(".md"):
-            try:
-                with open(abs_path, "r", encoding="utf-8", errors="replace") as f:
-                    return f.read()
-            except Exception as e:
-                logger.debug("md read failed %s: %s", abs_path, e)
-                return None
         if lower.endswith(".pdf"):
             return self._load_pdf(abs_path)
-        return None
+        # Markdown and any other widened plaintext extension (.py/.txt/.rst…)
+        # are read as UTF-8 text. Code files index their docstrings, comments,
+        # and identifiers — enough for keyword grounding across the whole repo.
+        try:
+            with open(abs_path, "r", encoding="utf-8", errors="replace") as f:
+                return f.read()
+        except Exception as e:
+            logger.debug("source read failed %s: %s", abs_path, e)
+            return None
 
     _pdf_backend: Optional[str] = None
     _pdf_backend_logged: bool = False

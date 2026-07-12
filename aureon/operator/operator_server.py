@@ -88,7 +88,10 @@ PAGE = """<!doctype html>
   <header>
     <span class="dot"></span>
     <h1>Aureon Operator</h1>
-    <small id="lineup">switchboard…</small>
+    <label style="margin-left:auto;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer">
+      <input type="checkbox" id="mode"> 🧠 cognition
+    </label>
+    <small id="lineup" style="margin-left:12px">switchboard…</small>
   </header>
   <div id="log">
     <div class="ai msg">Ask me anything about Aureon. I fan your question across every AI line,
@@ -118,13 +121,16 @@ function ask(){
   el('me msg', q);
   input.value=''; send.disabled=true; input.disabled=true;
 
+  const cognition = document.getElementById('mode').checked;
   const chips = el('phases');
   const chipEls = {};
-  PHASES.forEach(p=>{ const c=document.createElement('span'); c.className='chip'; c.textContent=p; chips.appendChild(c); chipEls[p]=c; });
+  const steps = cognition ? ['grounding','tool','veto'] : PHASES;
+  steps.forEach(p=>{ const c=document.createElement('span'); c.className='chip'; c.textContent=p; chips.appendChild(c); chipEls[p]=c; });
   const bubble = el('ai msg', '');
   let answer = '';
 
-  const es = new EventSource('/api/operator/stream?prompt='+encodeURIComponent(q));
+  const base = cognition ? '/api/cognition/stream' : '/api/operator/stream';
+  const es = new EventSource(base+'?prompt='+encodeURIComponent(q));
   es.addEventListener('phase', e=>{
     const d = JSON.parse(e.data);
     if(chipEls[d.phase]){ chipEls[d.phase].classList.add('on');
@@ -133,6 +139,9 @@ function ask(){
     }
     log.scrollTop=log.scrollHeight;
   });
+  es.addEventListener('grounding', e=>{ const d=JSON.parse(e.data).detail||{}; if(chipEls.grounding){chipEls.grounding.classList.add('on'); chipEls.grounding.textContent='grounding '+(d.source_count||0)+' src';} });
+  es.addEventListener('tool', e=>{ const d=JSON.parse(e.data).detail||{}; if(chipEls.tool){chipEls.tool.classList.add('on'); chipEls.tool.textContent='🔧 '+(d.tool||'tool');} });
+  es.addEventListener('veto', e=>{ const d=JSON.parse(e.data).detail||{}; if(chipEls.veto){chipEls.veto.classList.add('on'); chipEls.veto.textContent='veto '+(d.verdict||'');} });
   es.addEventListener('token', e=>{ answer += JSON.parse(e.data).text; bubble.textContent = answer; log.scrollTop=log.scrollHeight; });
   es.addEventListener('complete', e=>{
     const d = JSON.parse(e.data).response||{};
@@ -198,6 +207,37 @@ def create_app(operator: AureonOperator = None) -> "Flask":
             return jsonify({"error": "missing prompt"}), 400
         resp = _operator.respond(prompt, session_id=body.get("session_id"))
         return jsonify(resp.to_dict())
+
+    # ── Agentic cognition mode (tools + repo-wide grounding + veto) ────────────
+    _cognition = {"engine": None}
+
+    def _get_cognition():
+        if _cognition["engine"] is None:
+            from aureon.operator.cognition import AureonCognition
+
+            _cognition["engine"] = AureonCognition(join_mesh=True)
+        return _cognition["engine"]
+
+    @app.get("/api/cognition/stream")
+    def cognition_stream():
+        prompt = request.args.get("prompt", "").strip()
+        if not prompt:
+            return jsonify({"error": "missing prompt"}), 400
+
+        def gen():
+            for event in _get_cognition().stream_events(prompt, session_id=request.args.get("session_id")):
+                yield f"event: {event.get('type','message')}\ndata: {json.dumps(event, default=str)}\n\n"
+
+        return Response(gen(), mimetype="text/event-stream",
+                        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+    @app.post("/api/cognition/reason")
+    def cognition_reason():
+        body: Dict[str, Any] = request.get_json(silent=True) or {}
+        prompt = str(body.get("prompt", "")).strip()
+        if not prompt:
+            return jsonify({"error": "missing prompt"}), 400
+        return jsonify(_get_cognition().reason(prompt, session_id=body.get("session_id")).to_dict())
 
     return app
 

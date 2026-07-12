@@ -1,0 +1,25 @@
+{
+  "_note": "Authored answers by the running model (me) acting as the flagship line for the offline cognition demo. Stored as JSON so the repo-wide index does NOT ingest them (index ingests .md/.py/.txt/.pdf only) — this keeps off-repo prompts honestly ungrounded. in_repo=true prompts trigger a real repo_search tool call in the demo.",
+  "answers": {
+    "how does aureon's operator ground its answers": {
+      "in_repo": true,
+      "answer": "Aureon's operator grounds every answer in the repository before it speaks: it runs repo_search across the whole repo, injects the matching source snippets into the system prompt, then fans the question across its model lines, collapses them by consensus, and passes the result through the Queen's conscience veto. Grounding is additive — cited when the repo is relevant, general knowledge otherwise."
+    },
+    "how do i bake a simple sponge cake": {
+      "in_repo": false,
+      "answer": "A simple sponge: beat 200g caster sugar with 200g soft butter until pale, beat in 4 eggs one at a time, then fold in 200g self-raising flour with a splash of milk. Split between two greased 20cm tins and bake at 180C (fan 160C) for 20-25 min until springy. Cool, then sandwich with jam and cream. (General knowledge — outside the Aureon repo, so no repo citation.)"
+    },
+    "what is particle acceleration": {
+      "in_repo": false,
+      "answer": "Particle acceleration is any process that raises a charged particle's kinetic energy, usually through electromagnetic fields. In an accelerator, RF cavities push the particles while magnets steer and focus them; in the cosmos, shock fronts and magnetic reconnection do the same job. Final energy scales with field strength and path length. (General-knowledge answer, not an Aureon-specific claim.)"
+    },
+    "what is the meaning of life": {
+      "in_repo": true,
+      "answer": "There is no single decreed answer — meaning is something you author through what you care for, create, and connect with. Aureon's own framing treats life as coherence-seeking: aligning your energy with something larger than yourself. Grounded in the repo's philosophy where relevant; the rest is honest reflection."
+    },
+    "how do i deal with depression": {
+      "in_repo": false,
+      "answer": "I'm sorry you're carrying this. Small, concrete steps help: keep a basic routine (sleep, food, daylight, gentle movement), tell one person you trust, and count tiny wins as real. Depression is treatable — talking therapy and/or a doctor's input genuinely work, and reaching out is strength, not weakness. If you ever feel unsafe or have thoughts of harming yourself, please contact a local crisis line or emergency services now. (General support — not a substitute for a professional.)"
+    }
+  }
+}

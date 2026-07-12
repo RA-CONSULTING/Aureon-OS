@@ -195,6 +195,75 @@ AUREON_LLM_OFFLINE=1 python scripts/run_operator_demo.py "…"   # offline guard
 
 ---
 
+## 🧠 Cognition mode — the agentic mind
+
+The switchboard answers one question with many models. **Cognition mode**
+(`aureon/operator/cognition.py`, `AureonCognition`) is the other half: a single
+mind that does what a flagship model does — reaches for tools, writes code,
+searches the web — while staying grounded in the whole repo and gated by the
+same conscience.
+
+```
+[ prompt ] → ground (repo-wide) → agentic tool-loop → veto → [ answer ]
+                  │                      │               │
+            repo_search over        AgentRunner +    hard boundary +
+            all docs + .py          guarded tools    QueenConscience
+```
+
+- **Ground (repo-wide).** `aureon/operator/repo_index.py` widens the reused
+  `ResearchCorpusIndex` to the **entire repository** — every `.md` and every
+  `.py` (2000+ docs), its own cache at `state/operator_repo_index.json`. A
+  relevance floor separates a real repo hit (Aureon topics score 70–110) from an
+  off-repo brush (e.g. "bake a cake" ≈ 10), so grounding is **additive, never a
+  cage**: cited when the repo is relevant, honest general knowledge otherwise.
+- **Tool loop.** Reuses `AgentRunner` (the exact tool_use/tool_result protocol)
+  over a `GuardedToolRegistry` (`aureon/operator/tools.py`).
+- **Veto.** The prompt is boundary-checked before any model runs; the answer
+  passes `QueenConscience`; every consequential tool call is vetted before it
+  executes.
+
+### Tool catalogue
+
+| Tool | Kind | Guard |
+|---|---|---|
+| `repo_search` · `read_repo_file` · `list_repo` | repo-wide read | read-only |
+| `web_search` · `web_fetch` | online | offline/audit guard (`AUREON_LLM_OFFLINE`) |
+| `code_validate` | code | ast syntax + optional sandbox static-check |
+| `read_state` · `read_positions` · `read_prices` | trading state | read-only |
+| `write_repo_file` · `patch_repo_file` | write | path/secret guard + `.py` syntax + backup |
+| `execute_shell` | shell | denylist + destructive-command refusal |
+
+Every dispatch runs through the **hard authority boundary** first: live trading,
+payment movement, safety-gate bypass, credential reveal, and official filing are
+refused deterministically — regardless of the model, the prompt, or the
+autonomy level.
+
+### Touching every piece of the repo — the mesh
+
+Cognition (and the operator) join the organism's two fabrics so their paths reach
+the rest of the system, not just their own module:
+
+- **Thought bus** — every phase publishes a `Thought` (`operator.cognition.*`,
+  `cognition.complete`) under one `trace_id`.
+- **Mycelium mesh** — `join_organism()` calls `get_mycelium().connect_subsystem(...)`
+  and registers with the Queen hive; answers and tool calls `broadcast_signal(...)`
+  outward, and `receive_mycelium_message(...)` takes signals inward.
+
+### Try it
+
+```bash
+python scripts/run_cognition_demo.py "How does Aureon's operator ground its answers?"   # in-repo → tool + citation
+python scripts/run_cognition_demo.py "<any off-repo question>"                          # general knowledge, no citation
+python scripts/run_cognition_demo.py "<a boundary-crossing request>"                    # blocked at the boundary
+# server: cognition toggle on the phone page + POST /api/cognition/reason, GET /api/cognition/stream
+```
+
+Same design as the switchboard: with no key the loop runs offline (the local
+model can be the one you're already talking to); add an OpenAI/xAI/Gemini key and
+the identical loop drives that flagship model.
+
+---
+
 ## 📚 Related Documentation
 
 - [`docs/cognition`](../../aureon/cognition/pipeline.py) — `CognitionPipeline`, the seven-pane prism this operator's phase shape is patterned on

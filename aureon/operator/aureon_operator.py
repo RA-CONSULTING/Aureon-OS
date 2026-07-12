@@ -105,11 +105,14 @@ _PHASE_TOPICS = {
 }
 
 _OPERATOR_PERSONA = (
-    "You are Aureon, an operator routing a question through the Harmonic Nexus "
-    "Core (HNC) trading system. Answer from the grounded Aureon repository context "
-    "below. Be precise and falsifiable: cite the system or document a claim comes "
-    "from, and say plainly when the context does not cover something. Do not invent "
-    "trade executions, balances, filings, or credentials."
+    "You are Aureon, a cognition built on the Harmonic Nexus Core (HNC). You can "
+    "answer anything — from particle acceleration to cosmology, from the meaning of "
+    "life to dealing with depression to baking a cake. Ground yourself in the Aureon "
+    "repository context when it is relevant and cite the system or document you drew "
+    "from; NEVER fabricate a repo citation. When the repository does not cover the "
+    "question, answer honestly and helpfully from general knowledge and say so — the "
+    "grounding is additive, not a cage. Be precise and falsifiable with Aureon's own "
+    "claims. Do not invent trade executions, balances, filings, or credentials."
 )
 
 # Hard authority boundaries (mirrors PUBLIC_BOUNDARIES in the dynamic prompt
@@ -132,6 +135,41 @@ def _hard_boundary_violation(prompt: str) -> Optional[str]:
     return None
 
 
+def join_organism(subsystem: Any, name: str) -> Dict[str, bool]:
+    """
+    Wire ``subsystem`` into the whole organism so its cognitive paths touch the
+    rest of the repo: register on the mycelium mesh and with the Queen hive.
+    Fully guarded — any missing/degraded hub is skipped, never fatal. Returns a
+    small report of which fabrics were joined.
+    """
+    report = {"mycelium": False, "queen": False}
+    try:
+        from aureon.core.aureon_mycelium import get_mycelium
+
+        get_mycelium().connect_subsystem(name, subsystem)
+        report["mycelium"] = True
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("mycelium join skipped for %s: %s", name, exc)
+    try:
+        from aureon.utils.aureon_queen_hive_mind import get_queen
+
+        get_queen()._register_child(name, "OPERATOR", subsystem)
+        report["queen"] = True
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("queen register skipped for %s: %s", name, exc)
+    return report
+
+
+def broadcast_to_mesh(topic: str, payload: Dict[str, Any]) -> None:
+    """Broadcast a signal outward on the mycelium mesh (guarded, non-fatal)."""
+    try:
+        from aureon.core.aureon_mycelium import get_mycelium
+
+        get_mycelium().broadcast_signal(topic, dict(payload))
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("mesh broadcast skipped (%s): %s", topic, exc)
+
+
 _STOPWORDS = {
     "the", "a", "an", "and", "or", "of", "to", "in", "is", "are", "for", "on",
     "with", "as", "by", "it", "this", "that", "be", "at", "from", "how", "does",
@@ -151,8 +189,12 @@ class AureonOperator:
         config: Optional[OperatorConfig] = None,
         cache: Optional[ResponseCache] = None,
         source: str = "aureon.operator",
+        join_mesh: bool = False,
     ) -> None:
         self.config = config or OperatorConfig.from_env()
+        self.last_mesh_message: Dict[str, Any] = {}
+        if join_mesh:
+            join_organism(self, "aureon_operator")
         self.providers = providers if providers is not None else build_provider_set()
         if bus is not None:
             self.bus = bus
@@ -223,7 +265,16 @@ class AureonOperator:
         self._cache_set(resp)
         self._metrics.request("blocked" if resp.blocked else "ok", resp.elapsed_ms)
         self._publish(resp, "complete", resp.to_dict())
+        broadcast_to_mesh(
+            "operator.answer",
+            {"trace_id": resp.trace_id, "blocked": resp.blocked, "verdict": resp.conscience_verdict},
+        )
         return resp
+
+    def receive_mycelium_message(self, message_type: str, payload: Dict[str, Any]) -> None:
+        """Mesh inbound hook — other subsystems propagate signals here."""
+        self.last_mesh_message = {"type": message_type, "payload": payload}
+        logger.debug("operator received mesh message: %s", message_type)
 
     # ------------------------------------------------------------------
     # Cache helpers
