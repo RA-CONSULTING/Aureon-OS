@@ -16,10 +16,12 @@ DOCS_REPO_SITEMAP = REPO_ROOT / "docs" / "repo_sitemap.json"
 DOCS_ACCESS_MAP = REPO_ROOT / "docs" / "end_user_access_map.json"
 DOCS_NAVIGATION_INDEX = REPO_ROOT / "docs" / "repo_navigation_index.json"
 DOCS_SAAS_MANIFEST = REPO_ROOT / "docs" / "saas_integration_manifest.json"
+DOCS_SUPABASE_HARDENING = REPO_ROOT / "docs" / "supabase_hardening_manifest.json"
 PUBLIC_REPO_SITEMAP = REPO_ROOT / "frontend" / "public" / "aureon_repo_sitemap.json"
 PUBLIC_ACCESS_MAP = REPO_ROOT / "frontend" / "public" / "aureon_end_user_access_map.json"
 PUBLIC_NAVIGATION_INDEX = REPO_ROOT / "frontend" / "public" / "aureon_repo_navigation_index.json"
 PUBLIC_SAAS_MANIFEST = REPO_ROOT / "frontend" / "public" / "aureon_saas_integration_manifest.json"
+PUBLIC_SUPABASE_HARDENING = REPO_ROOT / "frontend" / "public" / "aureon_supabase_hardening_manifest.json"
 SUPABASE_CONFIG = REPO_ROOT / "supabase" / "config.toml"
 ENV_SOURCES = [".env.example", "deploy/env.example", "app.yaml"]
 
@@ -35,13 +37,17 @@ REQUIRED_PATHS = [
     "docs/end_user_access_map.json",
     "docs/repo_navigation_index.json",
     "docs/saas_integration_manifest.json",
+    "docs/SUPABASE_HARDENING_REVIEW.md",
+    "docs/supabase_hardening_manifest.json",
     "frontend/src/components/RepoNavigationPanel.tsx",
     "frontend/public/aureon_repo_sitemap.json",
     "frontend/public/aureon_end_user_access_map.json",
     "frontend/public/aureon_repo_navigation_index.json",
     "frontend/public/aureon_saas_integration_manifest.json",
+    "frontend/public/aureon_supabase_hardening_manifest.json",
     "scripts/validation/generate_repo_navigation_index.py",
     "scripts/validation/generate_saas_integration_manifest.py",
+    "scripts/validation/generate_supabase_hardening_manifest.py",
 ]
 
 MARKDOWN_FILES = [
@@ -50,6 +56,7 @@ MARKDOWN_FILES = [
     "docs/REPO_SITEMAP.md",
     "docs/END_USER_ACCESS_MAP.md",
     "docs/SAAS_INTEGRATION_READINESS.md",
+    "docs/SUPABASE_HARDENING_REVIEW.md",
     "docs/investor/README.md",
     "docs/investor/TERMINOLOGY.md",
 ]
@@ -216,10 +223,12 @@ def main() -> int:
     docs_access = load_json(DOCS_ACCESS_MAP)
     docs_navigation_index = load_json(DOCS_NAVIGATION_INDEX)
     docs_saas_manifest = load_json(DOCS_SAAS_MANIFEST)
+    docs_supabase_hardening = load_json(DOCS_SUPABASE_HARDENING)
     public_repo = load_json(PUBLIC_REPO_SITEMAP)
     public_access = load_json(PUBLIC_ACCESS_MAP)
     public_navigation_index = load_json(PUBLIC_NAVIGATION_INDEX)
     public_saas_manifest = load_json(PUBLIC_SAAS_MANIFEST)
+    public_supabase_hardening = load_json(PUBLIC_SUPABASE_HARDENING)
 
     for rel_path in REQUIRED_PATHS:
         expect((REPO_ROOT / rel_path).exists(), failures, f"required path missing: {rel_path}")
@@ -284,6 +293,22 @@ def main() -> int:
         failures,
         "frontend public sitemap does not expose the SaaS integration manifest",
     )
+    expect(
+        docs_repo.get("saas_readiness", {}).get("supabase_hardening_manifest") == "docs/supabase_hardening_manifest.json",
+        failures,
+        "repo sitemap does not expose the docs Supabase hardening manifest",
+    )
+    expect(
+        docs_repo.get("saas_readiness", {}).get("frontend_public_supabase_hardening_manifest")
+        == "frontend/public/aureon_supabase_hardening_manifest.json",
+        failures,
+        "repo sitemap does not expose the public Supabase hardening manifest",
+    )
+    expect(
+        public_repo.get("supabase_hardening_manifest") == "frontend/public/aureon_supabase_hardening_manifest.json",
+        failures,
+        "frontend public sitemap does not expose the Supabase hardening manifest",
+    )
     expect(docs_navigation_index == public_navigation_index, failures, "repo navigation index docs/public mirrors differ")
     navigation_entries = docs_navigation_index.get("entries", [])
     expect(len(navigation_entries) == tracked_total, failures, "repo navigation index entry count differs from git ls-files")
@@ -303,6 +328,7 @@ def main() -> int:
         "repo sitemap Supabase auth counts differ from supabase/config.toml",
     )
     expect(docs_saas_manifest == public_saas_manifest, failures, "SaaS integration manifest docs/public mirrors differ")
+    expect(docs_supabase_hardening == public_supabase_hardening, failures, "Supabase hardening manifest docs/public mirrors differ")
     env_names = parse_env_variable_names()
     expect(
         docs_saas_manifest.get("environment", {}).get("variable_count") == len(env_names),
@@ -324,12 +350,50 @@ def main() -> int:
         failures,
         "SaaS integration manifest public contract must not contain env values",
     )
+    hardening_summary = docs_supabase_hardening.get("summary", {}) if isinstance(docs_supabase_hardening, dict) else {}
+    public_high_risk_routes = docs_supabase_hardening.get("public_high_risk_routes", []) if isinstance(docs_supabase_hardening, dict) else []
+    expect(
+        hardening_summary.get("function_count") == supabase_counts["verify_jwt_true"] + supabase_counts["verify_jwt_false"],
+        failures,
+        "Supabase hardening manifest function_count differs from supabase/config.toml",
+    )
+    expect(
+        hardening_summary.get("verify_jwt_true") == supabase_counts["verify_jwt_true"],
+        failures,
+        "Supabase hardening manifest verify_jwt_true differs from supabase/config.toml",
+    )
+    expect(
+        hardening_summary.get("verify_jwt_false") == supabase_counts["verify_jwt_false"],
+        failures,
+        "Supabase hardening manifest verify_jwt_false differs from supabase/config.toml",
+    )
+    expect(
+        hardening_summary.get("public_high_risk_count") == len(public_high_risk_routes),
+        failures,
+        "Supabase hardening manifest public_high_risk_count is stale",
+    )
+    expect(
+        hardening_summary.get("production_blocker_count") == len(public_high_risk_routes),
+        failures,
+        "Supabase hardening manifest production_blocker_count is stale",
+    )
+    expect(
+        docs_supabase_hardening.get("public_contract", {}).get("contains_file_contents") is False,
+        failures,
+        "Supabase hardening manifest public contract must not contain file contents",
+    )
+    expect(
+        docs_supabase_hardening.get("public_contract", {}).get("contains_secrets") is False,
+        failures,
+        "Supabase hardening manifest public contract must not contain secrets",
+    )
 
     for label, manifest in (
         ("frontend/public/aureon_repo_sitemap.json", public_repo),
         ("frontend/public/aureon_end_user_access_map.json", public_access),
         ("frontend/public/aureon_repo_navigation_index.json", public_navigation_index),
         ("frontend/public/aureon_saas_integration_manifest.json", public_saas_manifest),
+        ("frontend/public/aureon_supabase_hardening_manifest.json", public_supabase_hardening),
     ):
         for finding in collect_json_secret_findings(manifest):
             failures.append(f"{label}: {finding}")
@@ -347,6 +411,7 @@ def main() -> int:
     print(f"OK repo_navigation_index_entries={len(navigation_entries)}")
     print(f"OK saas_env_variable_count={len(env_names)}")
     print(f"OK supabase_auth_counts={supabase_counts}")
+    print(f"OK supabase_hardening_public_blockers={len(public_high_risk_routes)}")
     print("OK public navigation manifests contain no credential-like values")
     print("OK key Markdown links resolve")
     return 0

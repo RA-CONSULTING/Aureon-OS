@@ -98,6 +98,25 @@ interface SaaSIntegrationManifest {
   production_gates: string[];
 }
 
+interface SupabaseHardeningManifest {
+  name: string;
+  snapshot_date: string;
+  production_status: string;
+  summary: {
+    function_count: number;
+    verify_jwt_true: number;
+    verify_jwt_false: number;
+    public_high_risk_count: number;
+    public_medium_risk_count: number;
+    jwt_review_required_count: number;
+    production_blocker_count: number;
+  };
+  public_high_risk_routes: string[];
+  public_medium_risk_routes: string[];
+  jwt_review_required_routes: string[];
+  production_gates: string[];
+}
+
 const REPO_BASE_URL = "https://github.com/RA-CONSULTING/aureon-trading";
 
 function repoUrl(path: string): string {
@@ -153,6 +172,7 @@ export function RepoNavigationPanel() {
   const [accessMap, setAccessMap] = useState<AccessMapManifest | null>(null);
   const [navigationIndex, setNavigationIndex] = useState<NavigationIndexManifest | null>(null);
   const [saasManifest, setSaasManifest] = useState<SaaSIntegrationManifest | null>(null);
+  const [hardeningManifest, setHardeningManifest] = useState<SupabaseHardeningManifest | null>(null);
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
 
@@ -160,16 +180,18 @@ export function RepoNavigationPanel() {
     const controller = new AbortController();
     const refresh = async () => {
       try {
-        const [repoManifest, accessManifest, indexManifest, integrationManifest] = await Promise.all([
+        const [repoManifest, accessManifest, indexManifest, integrationManifest, supabaseHardeningManifest] = await Promise.all([
           loadJson<RepoSitemapManifest>("/aureon_repo_sitemap.json", controller.signal),
           loadJson<AccessMapManifest>("/aureon_end_user_access_map.json", controller.signal),
           loadJson<NavigationIndexManifest>("/aureon_repo_navigation_index.json", controller.signal),
           loadJson<SaaSIntegrationManifest>("/aureon_saas_integration_manifest.json", controller.signal),
+          loadJson<SupabaseHardeningManifest>("/aureon_supabase_hardening_manifest.json", controller.signal),
         ]);
         setRepoMap(repoManifest);
         setAccessMap(accessManifest);
         setNavigationIndex(indexManifest);
         setSaasManifest(integrationManifest);
+        setHardeningManifest(supabaseHardeningManifest);
         setError("");
       } catch (loadError) {
         if (!controller.signal.aborted) {
@@ -304,6 +326,10 @@ export function RepoNavigationPanel() {
                 <FileJson className="h-4 w-4" />
                 /aureon_saas_integration_manifest.json
               </a>
+              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_supabase_hardening_manifest.json")} target="_blank" rel="noreferrer">
+                <FileJson className="h-4 w-4" />
+                /aureon_supabase_hardening_manifest.json
+              </a>
               {repoMap?.validation_command ? (
                 <div className="mt-1 rounded-md border border-border/50 bg-background/50 px-3 py-2 font-mono text-[11px] text-muted-foreground">
                   {repoMap.validation_command}
@@ -375,6 +401,65 @@ export function RepoNavigationPanel() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-border/60 bg-card/90">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <ShieldCheck className="h-5 w-5 text-amber-200" />
+            Supabase Hardening Review
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-md border border-red-500/30 bg-red-500/10 p-3">
+              <div className="text-[11px] uppercase text-red-100/80">Production blockers</div>
+              <div className="mt-1 text-2xl font-semibold text-red-50">
+                {(hardeningManifest?.summary?.production_blocker_count || 0).toLocaleString()}
+              </div>
+            </div>
+            <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3">
+              <div className="text-[11px] uppercase text-yellow-100/80">High-risk public</div>
+              <div className="mt-1 text-2xl font-semibold text-yellow-50">
+                {(hardeningManifest?.summary?.public_high_risk_count || 0).toLocaleString()}
+              </div>
+            </div>
+            <div className="rounded-md border border-cyan-500/30 bg-cyan-500/10 p-3">
+              <div className="text-[11px] uppercase text-cyan-100/80">Medium public</div>
+              <div className="mt-1 text-2xl font-semibold text-cyan-50">
+                {(hardeningManifest?.summary?.public_medium_risk_count || 0).toLocaleString()}
+              </div>
+            </div>
+            <div className="rounded-md border border-violet-500/30 bg-violet-500/10 p-3">
+              <div className="text-[11px] uppercase text-violet-100/80">JWT review</div>
+              <div className="mt-1 text-2xl font-semibold text-violet-50">
+                {(hardeningManifest?.summary?.jwt_review_required_count || 0).toLocaleString()}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">Production status</div>
+              <div className="mt-2 font-mono text-xs text-yellow-100">
+                {hardeningManifest?.production_status || "pending"}
+              </div>
+              <div className="mt-3 text-xs text-muted-foreground">
+                Generated from Supabase function auth settings and source presence. High-risk public routes must be gated or proven anonymous-safe before hosted production.
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-[11px] uppercase text-muted-foreground">High-risk public routes</div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {(hardeningManifest?.public_high_risk_routes || []).map((route) => (
+                  <div key={route} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 font-mono text-xs text-red-100">
+                    {route}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 xl:grid-cols-[0.75fr_1.25fr]">
         <Card className="border-border/60 bg-card/90">

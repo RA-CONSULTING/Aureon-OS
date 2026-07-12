@@ -25,6 +25,7 @@ preserved unchanged at
 | File-level repo index | [`docs/repo_navigation_index.json`](docs/repo_navigation_index.json) | Generated `git ls-files` index mirrored to the frontend public folder for searchable repo navigation. |
 | SaaS integration manifest | [`docs/saas_integration_manifest.json`](docs/saas_integration_manifest.json) | Generated env-name, deployment-surface, Supabase auth, and production-gate contract for SaaS shells. |
 | SaaS integration readiness | [`docs/SAAS_INTEGRATION_READINESS.md`](docs/SAAS_INTEGRATION_READINESS.md) | End-user access matrix, env/config inventory, deploy surfaces, auth boundaries, and production gates. |
+| Supabase hardening review | [`docs/SUPABASE_HARDENING_REVIEW.md`](docs/SUPABASE_HARDENING_REVIEW.md) | Generated public/JWT Edge Function classification, production blockers, and hardening gates. |
 | Navigation contract check | [`scripts/validation/validate_repo_navigation_contract.py`](scripts/validation/validate_repo_navigation_contract.py) | Checks public manifests, repo counts, Supabase auth counts, and key navigation links. |
 | Grant or funder review | [`data/research/grants/applications/GARY_AUREON_METADATA_RESEARCH_INVENTORY_20260712_20260712_203741.md`](data/research/grants/applications/GARY_AUREON_METADATA_RESEARCH_INVENTORY_20260712_20260712_203741.md) | Catalogued Gary/Aureon metadata and research evidence gathered for funder-safe review. |
 | Technical review | [`SYSTEM_OVERVIEW.md`](SYSTEM_OVERVIEW.md), [`DATA_FLOW.md`](DATA_FLOW.md), [`CAPABILITIES.md`](CAPABILITIES.md) | System architecture, data flow, and capability inventory. |
@@ -109,21 +110,25 @@ this front-door README.
    [`docs/repo_navigation_index.json`](docs/repo_navigation_index.json).
 7. Review the generated SaaS integration manifest:
    [`docs/saas_integration_manifest.json`](docs/saas_integration_manifest.json).
-8. Review SaaS integration readiness:
+8. Review the Supabase hardening review and manifest:
+   [`docs/SUPABASE_HARDENING_REVIEW.md`](docs/SUPABASE_HARDENING_REVIEW.md) and
+   [`docs/supabase_hardening_manifest.json`](docs/supabase_hardening_manifest.json).
+9. Review SaaS integration readiness:
    [`docs/SAAS_INTEGRATION_READINESS.md`](docs/SAAS_INTEGRATION_READINESS.md).
-9. Review architecture and capability evidence:
+10. Review architecture and capability evidence:
    [`SYSTEM_OVERVIEW.md`](SYSTEM_OVERVIEW.md),
    [`CAPABILITIES.md`](CAPABILITIES.md), and
    [`DATA_FLOW.md`](DATA_FLOW.md).
-10. Review claims and validation:
+11. Review claims and validation:
    [`docs/CLAIMS_AND_EVIDENCE.md`](docs/CLAIMS_AND_EVIDENCE.md),
    [`AUDIT_SUMMARY.md`](AUDIT_SUMMARY.md), and
    [`LIVE_PROOF.md`](LIVE_PROOF.md).
-11. Regenerate and validate the navigation contract:
+12. Regenerate and validate the navigation contract:
    `python scripts/validation/generate_repo_navigation_index.py`, then
    `python scripts/validation/generate_saas_integration_manifest.py`, then
+   `python scripts/validation/generate_supabase_hardening_manifest.py`, then
    `python scripts/validation/validate_repo_navigation_contract.py`.
-12. Inspect preserved historical context:
+13. Inspect preserved historical context:
    [`docs/archive/README_legacy_20260712.md`](docs/archive/README_legacy_20260712.md).
 
 ## Preservation Note

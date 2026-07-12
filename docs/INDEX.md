@@ -15,6 +15,8 @@ Master table of contents for all project documentation.
 | File-level repo index | [Repo Navigation Index](repo_navigation_index.json) | Generated `git ls-files` index with categories, zones, capability IDs, and frontend public mirror |
 | SaaS integrators | [SaaS Integration Readiness](SAAS_INTEGRATION_READINESS.md) | End-user access matrix, env/config inventory, deploy surfaces, auth boundaries, and production gates |
 | SaaS integration manifest | [SaaS Integration Manifest](saas_integration_manifest.json) | Generated env-name, deployment-surface, Supabase auth, and production-gate contract for SaaS shells |
+| Supabase hardening review | [Supabase Hardening Review](SUPABASE_HARDENING_REVIEW.md) | Production blocker review for public and JWT-gated Supabase Edge Functions |
+| Supabase hardening manifest | [Supabase Hardening Manifest](supabase_hardening_manifest.json) | Generated Edge Function hardening contract mirrored to the frontend public folder |
 | Grant and funder reviewers | [Gary/Aureon Metadata Research Inventory](../data/research/grants/applications/GARY_AUREON_METADATA_RESEARCH_INVENTORY_20260712_20260712_203741.md) | Categorized Gary/Aureon evidence inventory and copied research set |
 | Terminology reviewers | [Formal Terminology](investor/TERMINOLOGY.md) | Translation from older internal language to investor-safe terminology |
 | Historical review | [Legacy README Archive](archive/README_legacy_20260712.md) | Verbatim preserved README content from before the formal front-door update |
@@ -28,6 +30,8 @@ Master table of contents for all project documentation.
 | [Repo Navigation Index](repo_navigation_index.json) | File-level repo index generated from `git ls-files` for searchable navigation |
 | [SaaS Integration Readiness](SAAS_INTEGRATION_READINESS.md) | End-user access matrix, env/config inventory, deploy surfaces, auth boundaries, and production gates |
 | [SaaS Integration Manifest](saas_integration_manifest.json) | Machine-readable SaaS integration contract generated from repo config |
+| [Supabase Hardening Review](SUPABASE_HARDENING_REVIEW.md) | Human-readable blocker review for public Edge Functions and JWT-gated mutation routes |
+| [Supabase Hardening Manifest](supabase_hardening_manifest.json) | Machine-readable Supabase hardening contract used by the frontend repo map |
 | [Navigation Contract Validator](../scripts/validation/validate_repo_navigation_contract.py) | Verifies public manifests, repo counts, Supabase auth counts, and key navigation links |
 | [Navigation Guide](NAVIGATION_GUIDE.md) | Learning paths for traders, developers, researchers |
 | [Quick Start](QUICK_START.md) | Get running in 10 minutes |

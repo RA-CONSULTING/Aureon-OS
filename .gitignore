@@ -149,6 +149,7 @@ frontend/public/aureon_*.json
 !frontend/public/aureon_end_user_access_map.json
 !frontend/public/aureon_repo_navigation_index.json
 !frontend/public/aureon_saas_integration_manifest.json
+!frontend/public/aureon_supabase_hardening_manifest.json
 frontend/public/aureon_visual_artifacts/
 frontend/test-results/
 frontend/vite.config.ts.timestamp-*.mjs

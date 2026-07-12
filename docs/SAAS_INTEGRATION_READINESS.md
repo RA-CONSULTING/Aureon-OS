@@ -12,6 +12,11 @@ Primary map: [`REPO_SITEMAP.md`](REPO_SITEMAP.md). Machine-readable map:
 Machine-readable SaaS integration manifest:
 [`saas_integration_manifest.json`](saas_integration_manifest.json), mirrored to
 [`../frontend/public/aureon_saas_integration_manifest.json`](../frontend/public/aureon_saas_integration_manifest.json).
+Supabase hardening review:
+[`SUPABASE_HARDENING_REVIEW.md`](SUPABASE_HARDENING_REVIEW.md), with generated
+manifest [`supabase_hardening_manifest.json`](supabase_hardening_manifest.json)
+mirrored to
+[`../frontend/public/aureon_supabase_hardening_manifest.json`](../frontend/public/aureon_supabase_hardening_manifest.json).
 End-user task map: [`END_USER_ACCESS_MAP.md`](END_USER_ACCESS_MAP.md).
 Frontend console route: `#repo-map`, implemented by
 [`../frontend/src/components/RepoNavigationPanel.tsx`](../frontend/src/components/RepoNavigationPanel.tsx).
@@ -20,6 +25,7 @@ File-level navigation index:
 [`../frontend/public/aureon_repo_navigation_index.json`](../frontend/public/aureon_repo_navigation_index.json).
 Manifest generation and validation, from repo root:
 `python scripts/validation/generate_saas_integration_manifest.py`, then
+`python scripts/validation/generate_supabase_hardening_manifest.py`, then
 `python scripts/validation/validate_repo_navigation_contract.py`.
 
 ## Canonical Integration Shape
@@ -49,7 +55,7 @@ gated.
 | Browse all capabilities | [`../CAPABILITIES.md`](../CAPABILITIES.md), [`REPO_SITEMAP.md`](REPO_SITEMAP.md) | `aureon/`, `frontend/`, `data/`, `Kings_Accounting_Suite/` | Public docs | Keep capability status current. |
 | Run locally | [`../RUNNING.md`](../RUNNING.md) | Root launchers, `aureon/`, `frontend/` | Local operator | Validate `.env` and dry-run/live flags. |
 | Use the web console | `frontend/` | `frontend/src/`, `frontend/public/`, `public/` | Browser app | Confirm build env and runtime data source. |
-| Navigate capabilities in a SaaS shell | [`END_USER_ACCESS_MAP.md`](END_USER_ACCESS_MAP.md), [`repo_navigation_index.json`](repo_navigation_index.json), [`saas_integration_manifest.json`](saas_integration_manifest.json), frontend `#repo-map` | `docs/`, `frontend/public/`, `frontend/src/components/RepoNavigationPanel.tsx` | Static JSON manifests, file-level index, SaaS integration contract, and console tab | Keep public manifests secret-free. |
+| Navigate capabilities in a SaaS shell | [`END_USER_ACCESS_MAP.md`](END_USER_ACCESS_MAP.md), [`repo_navigation_index.json`](repo_navigation_index.json), [`saas_integration_manifest.json`](saas_integration_manifest.json), [`supabase_hardening_manifest.json`](supabase_hardening_manifest.json), frontend `#repo-map` | `docs/`, `frontend/public/`, `frontend/src/components/RepoNavigationPanel.tsx` | Static JSON manifests, file-level index, SaaS integration contract, Supabase hardening contract, and console tab | Keep public manifests secret-free. |
 | Read runtime state | `http://127.0.0.1:8791/api/terminal-state` | `aureon/exchanges/`, status server | Local HTTP | Do not expose publicly without auth and redaction. |
 | Read thought/action state | `http://127.0.0.1:13002/api/thoughts` | Mind hub, self-questioning loop | Local HTTP | Do not expose publicly without auth and redaction. |
 | Trigger coding workflow | `/api/coding/prompt` and `/api/coding/status` | `aureon/autonomous/`, `aureon/code_architect/`, `skills/` | Local operator/API | Keep code proposals review-gated. |
@@ -84,7 +90,7 @@ evidence exports.
 |---|---|---|---|
 | Local Windows operator | `AUREON_PRODUCTION_LIVE.cmd`, `AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1`, `RUNNING.md` | Current primary local run path. | Best current source of truth for operator startup. |
 | Frontend app | `frontend/package.json`, `frontend/src/`, `frontend/public/` | React/Vite product surface. | Build with `npm run build`; confirm env values before hosted use. |
-| Supabase backend | `supabase/config.toml`, `supabase/functions/`, `supabase/migrations/` | Hosted functions, auth settings, schema migrations. | Auth matrix below must be reviewed before production. |
+| Supabase backend | `supabase/config.toml`, `supabase/functions/`, `supabase/migrations/` | Hosted functions, auth settings, schema migrations. | Auth matrix and hardening review below must be resolved before production. |
 | DigitalOcean App Platform | `app.yaml`, `deploy/` | App spec and startup scripts. | Already names `main` and env keys; secrets must be configured in platform. |
 | Docker/production package | `Dockerfile`, `docker-compose.yml`, `production/` | Container and installer assets. | Current production docs include older language; use sitemap/readiness docs as current public framing. |
 | Node/server bridge | `server/` | Optional WebSocket/server bridge. | Treat as component surface, not canonical product API until reviewed. |
@@ -98,6 +104,11 @@ Current `supabase/config.toml` declares 87 functions:
 |---|---:|---|
 | `verify_jwt = true` | 66 | Auth-gated; still needs role-level and payload validation review. |
 | `verify_jwt = false` | 21 | Public at Supabase edge; must be read-only, anonymous-safe, or separately protected in function code before production. |
+
+The generated hardening manifest classifies those functions by public exposure,
+mutation/ingest/sensitive-state signals, and required controls. The current
+manifest identifies 7 high-risk public routes that block production until gated
+or proven safe: [`supabase_hardening_manifest.json`](supabase_hardening_manifest.json).
 
 Public functions currently configured with `verify_jwt = false`:
 
@@ -123,6 +134,8 @@ Public endpoint production gates:
 - Auth-gated trade, balance, gas-tank, emergency-stop, credential, monitor, and
   user-market routes must remain JWT-gated and need role/payload checks inside
   each function.
+- Regenerate the hardening manifest after any Supabase function auth change so
+  the docs and frontend public mirror keep the same blocker count.
 
 ## Generated Artifact Policy
 
@@ -130,7 +143,7 @@ Public endpoint production gates:
 |---|---|---|
 | Source docs | `README.md`, `docs/REPO_SITEMAP.md`, `docs/SAAS_INTEGRATION_READINESS.md` | Tracked and reviewed. |
 | Public static/generated assets | `frontend/public/` | Tracked when intentionally published; runtime mirrors may be generated. |
-| Public navigation manifests | `frontend/public/aureon_repo_sitemap.json`, `frontend/public/aureon_end_user_access_map.json`, `frontend/public/aureon_repo_navigation_index.json`, `frontend/public/aureon_saas_integration_manifest.json` | Tracked, secret-free access contracts, file-level index, and SaaS integration manifest for UI/SaaS shells. |
+| Public navigation manifests | `frontend/public/aureon_repo_sitemap.json`, `frontend/public/aureon_end_user_access_map.json`, `frontend/public/aureon_repo_navigation_index.json`, `frontend/public/aureon_saas_integration_manifest.json`, `frontend/public/aureon_supabase_hardening_manifest.json` | Tracked, secret-free access contracts, file-level index, SaaS integration manifest, and Supabase hardening manifest for UI/SaaS shells. |
 | Runtime state | `state/aureon_wake_up_manifest.json`, `state/aureon_data_ocean_status.json`, local SQLite registries | Generated locally unless explicitly committed. Do not treat absence from git as missing source. |
 | Audit outputs | `docs/audits/*` named in run docs | Generated by runtime/audit jobs; commit only curated public-safe outputs. |
 | Private evidence | Screenshots, customer data, credentials, transaction records, local live ledgers | Keep private unless redacted and intentionally published. |
@@ -143,8 +156,9 @@ Before calling a hosted deployment production-ready, complete these gates:
 1. Choose one canonical target for the hosted product surface.
 2. Confirm all required environment variables for that target and store secrets
    in the platform secret store.
-3. Review every public Supabase function and either prove it is anonymous-safe
-   or gate it with JWT plus role checks.
+3. Review every public Supabase function using
+   `python scripts/validation/generate_supabase_hardening_manifest.py`; either
+   prove it is anonymous-safe or gate it with JWT plus role checks.
 4. Define CORS, rate limits, payload limits, logging, and redaction policy for
    hosted API routes.
 5. Decide which runtime JSON artifacts are generated locally, mirrored to
@@ -153,9 +167,11 @@ Before calling a hosted deployment production-ready, complete these gates:
    security-testing actions operator-controlled.
 7. Run `python scripts/validation/generate_repo_navigation_index.py` after broad
    file moves. Run `python scripts/validation/generate_saas_integration_manifest.py`
-   after env, deployment, or Supabase auth changes. Then run
+   after env or deployment changes. Run
+   `python scripts/validation/generate_supabase_hardening_manifest.py` after
+   Supabase auth or function changes. Then run
    `python scripts/validation/validate_repo_navigation_contract.py` after
-   navigation, public manifest, file-index, SaaS-manifest, or Supabase
-   auth-setting changes.
+   navigation, public manifest, file-index, SaaS-manifest, hardening-manifest,
+   or Supabase auth-setting changes.
 8. Run the relevant local checks in `RUNNING.md` and the target deployment smoke
    checks before publishing an external URL.

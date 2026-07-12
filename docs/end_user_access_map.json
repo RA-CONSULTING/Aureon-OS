@@ -27,9 +27,9 @@
       "id": "saas_integration",
       "label": "SaaS integration",
       "user_action": "See deploy surfaces, env groups, and auth boundaries.",
-      "primary_docs": ["docs/SAAS_INTEGRATION_READINESS.md", "docs/saas_integration_manifest.json"],
+      "primary_docs": ["docs/SAAS_INTEGRATION_READINESS.md", "docs/saas_integration_manifest.json", "docs/SUPABASE_HARDENING_REVIEW.md", "docs/supabase_hardening_manifest.json"],
       "related_systems": ["frontend/", "supabase/", "api/", "server/", "functions/", "netlify/", "deploy/", "production/"],
-      "runtime_or_api_surface": ["docs/repo_sitemap.json", "frontend/public/aureon_repo_sitemap.json", "frontend/public/aureon_saas_integration_manifest.json"],
+      "runtime_or_api_surface": ["docs/repo_sitemap.json", "frontend/public/aureon_repo_sitemap.json", "frontend/public/aureon_saas_integration_manifest.json", "frontend/public/aureon_supabase_hardening_manifest.json"],
       "safety_gate": "Public endpoints require review before production."
     },
     {
