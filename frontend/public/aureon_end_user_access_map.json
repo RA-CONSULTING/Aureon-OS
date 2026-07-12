@@ -1,0 +1,20 @@
+{
+  "name": "Aureon End-User Access Map",
+  "snapshot_date": "2026-07-12",
+  "source_document": "docs/END_USER_ACCESS_MAP.md",
+  "capabilities": [
+    {"id": "product_overview", "label": "Product overview", "primary_docs": ["README.md", "docs/REPO_SITEMAP.md"], "related_systems": ["docs/", "docs/investor/"], "safety_gate": "Claims must remain evidence-backed."},
+    {"id": "repo_navigation", "label": "Repo navigation", "primary_docs": ["docs/REPO_SITEMAP.md", "docs/INDEX.md"], "related_systems": ["docs/", "frontend/public/"], "safety_gate": "Keep generated counts current after major moves."},
+    {"id": "saas_integration", "label": "SaaS integration", "primary_docs": ["docs/SAAS_INTEGRATION_READINESS.md"], "related_systems": ["frontend/", "supabase/", "api/", "server/", "functions/", "netlify/", "deploy/", "production/"], "safety_gate": "Public endpoints require review before production."},
+    {"id": "local_runtime", "label": "Local runtime", "primary_docs": ["RUNNING.md", "QUICK_START.md"], "related_systems": ["AUREON_PRODUCTION_LIVE.cmd", "AUREON_DATA_OCEAN.cmd", "aureon/", "scripts/"], "safety_gate": "Validate env and dry-run/live mode first."},
+    {"id": "operator_console", "label": "Operator console", "primary_docs": ["docs/FLAMEBORN_INTEGRATION.md", "docs/dashboards/DASHBOARD_GUIDE.md"], "related_systems": ["frontend/", "frontend/public/", "public/", "templates/"], "safety_gate": "Runtime data must be redacted before public hosting."},
+    {"id": "trading_readiness", "label": "Trading readiness", "primary_docs": ["CAPABILITIES.md", "docs/LIVE_TRADING_RUNBOOK.md"], "related_systems": ["aureon/exchanges/", "aureon/trading/", "aureon/portfolio/", "aureon/strategies/"], "safety_gate": "Live action requires credentials, fresh data, and operator approval."},
+    {"id": "research_evidence", "label": "Research and evidence", "primary_docs": ["docs/CLAIMS_AND_EVIDENCE.md", "docs/investor/README.md"], "related_systems": ["data/", "docs/research/", "VERIFICATION AND VALIDATION/", "imports/"], "safety_gate": "Private evidence must be redacted before sharing."},
+    {"id": "grant_funder_review", "label": "Grant/funder review", "primary_docs": ["docs/investor/README.md", "data/research/grants/applications/GARY_AUREON_METADATA_RESEARCH_INVENTORY_20260712_20260712_203741.md"], "related_systems": ["data/research/grants/", "docs/investor/"], "safety_gate": "Do not imply unsupported eligibility or submission status."},
+    {"id": "accounting_filing_support", "label": "Accounting and filing support", "primary_docs": ["SYSTEM_OVERVIEW.md", "CAPABILITIES.md"], "related_systems": ["Kings_Accounting_Suite/", "aureon/"], "safety_gate": "Filing and payment remain manual unless separately authorized."},
+    {"id": "coding_skills", "label": "Coding and skills", "primary_docs": ["CAPABILITIES.md", "SYSTEM_OVERVIEW.md"], "related_systems": ["aureon/code_architect/", "aureon/inhouse_ai/", "aureon/autonomous/", "skills/"], "safety_gate": "Code proposals and desktop actions stay review-gated."},
+    {"id": "deployment", "label": "Deployment", "primary_docs": ["docs/SAAS_INTEGRATION_READINESS.md", "docs/deployment/"], "related_systems": ["app.yaml", "deploy/", "production/", "supabase/", "netlify/"], "safety_gate": "Pick one target and store secrets outside git."},
+    {"id": "validation", "label": "Validation", "primary_docs": ["docs/STATE_FILES.md", "docs/INTEGRATION_TEST_STATUS.md"], "related_systems": ["tests/", "scripts/validation/", "VERIFICATION AND VALIDATION/"], "safety_gate": "Checks must match the capability being claimed."},
+    {"id": "archive_provenance", "label": "Archive and provenance", "primary_docs": ["docs/archive/README_legacy_20260712.md"], "related_systems": ["archive/", "docs/archive/", "imports/"], "safety_gate": "Archive is history, not current product copy."}
+  ]
+}

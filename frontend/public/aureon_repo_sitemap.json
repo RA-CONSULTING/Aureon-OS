@@ -1,0 +1,29 @@
+{
+  "name": "Aureon Public Repo Sitemap",
+  "snapshot_date": "2026-07-12",
+  "source_document": "docs/REPO_SITEMAP.md",
+  "machine_readable_source": "docs/repo_sitemap.json",
+  "end_user_access_map": "frontend/public/aureon_end_user_access_map.json",
+  "tracked_file_count": 11910,
+  "front_doors": [
+    {"label": "Repository README", "path": "README.md"},
+    {"label": "Repo-wide sitemap", "path": "docs/REPO_SITEMAP.md"},
+    {"label": "End-user access map", "path": "docs/END_USER_ACCESS_MAP.md"},
+    {"label": "SaaS integration readiness", "path": "docs/SAAS_INTEGRATION_READINESS.md"},
+    {"label": "Capabilities", "path": "CAPABILITIES.md"},
+    {"label": "Running locally", "path": "RUNNING.md"}
+  ],
+  "zones": [
+    {"id": "front_door", "label": "Front door and diligence", "paths": ["README.md", "docs/INDEX.md", "docs/investor/", "docs/archive/"]},
+    {"id": "operator_runtime", "label": "Operator runtime", "paths": ["AUREON_PRODUCTION_LIVE.cmd", "AUREON_DATA_OCEAN.cmd", "aureon/", "scripts/", "cli/"]},
+    {"id": "product_surfaces", "label": "Product surfaces", "paths": ["frontend/", "public/", "flameborn/", "api/", "server/", "functions/", "netlify/", "supabase/"]},
+    {"id": "evidence_research", "label": "Evidence and research", "paths": ["data/", "docs/research/", "VERIFICATION AND VALIDATION/", "imports/", "archive/"]},
+    {"id": "operations_packaging", "label": "Operations and packaging", "paths": ["Kings_Accounting_Suite/", "deploy/", "production/", "packaging/", "tests/", ".github/", "templates/"]}
+  ],
+  "public_contract": {
+    "contains_secrets": false,
+    "contains_private_runtime_state": false,
+    "contains_customer_data": false,
+    "purpose": "Static navigation data for frontend and SaaS shell integration."
+  }
+}

@@ -8,6 +8,8 @@ and which integration surfaces matter when the repo is packaged into a product,
 dashboard, SaaS workflow, or external diligence process.
 
 Machine-readable companion: [`repo_sitemap.json`](repo_sitemap.json).
+End-user task map: [`END_USER_ACCESS_MAP.md`](END_USER_ACCESS_MAP.md) and
+[`end_user_access_map.json`](end_user_access_map.json).
 
 ## How To Use This Sitemap
 
@@ -17,6 +19,7 @@ Machine-readable companion: [`repo_sitemap.json`](repo_sitemap.json).
 | Evaluate capabilities | [`../CAPABILITIES.md`](../CAPABILITIES.md) | Capability groups below |
 | Run or validate locally | [`../RUNNING.md`](../RUNNING.md) | [`../QUICK_START.md`](../QUICK_START.md) |
 | Review investor/funder posture | [`investor/README.md`](investor/README.md) | [`investor/TERMINOLOGY.md`](investor/TERMINOLOGY.md) |
+| Navigate by end-user task | [`END_USER_ACCESS_MAP.md`](END_USER_ACCESS_MAP.md) | Capability-to-docs, systems, runtime/API surfaces, and safety gates |
 | Inspect all docs | [`INDEX.md`](INDEX.md) | Existing deep-dive docs by audience |
 | Integrate as a product surface | [`SAAS_INTEGRATION_READINESS.md`](SAAS_INTEGRATION_READINESS.md) | `frontend/`, `api/`, `server/`, `functions/`, `supabase/`, `netlify/`, `deploy/`, `production/` |
 
@@ -119,6 +122,7 @@ The repo should be read in five zones:
 | Security and controls | `docs/SECURITY.md`, guarded runtime routes, tests | Keep credentials out of tracked docs; live actions remain operator-controlled. |
 
 Detailed readiness checklist: [`SAAS_INTEGRATION_READINESS.md`](SAAS_INTEGRATION_READINESS.md).
+Task-based access map: [`END_USER_ACCESS_MAP.md`](END_USER_ACCESS_MAP.md).
 
 ## End-User Navigation Paths
 
@@ -128,7 +132,7 @@ Detailed readiness checklist: [`SAAS_INTEGRATION_READINESS.md`](SAAS_INTEGRATION
 | Investor | `README.md` -> `docs/investor/README.md` -> this sitemap -> `AUDIT_SUMMARY.md`. |
 | Grant or funder reviewer | `README.md` -> `docs/investor/README.md` -> `data/research/grants/` inventory. |
 | Operator | `RUNNING.md` -> `QUICK_START.md` -> `CAPABILITIES.md` -> runtime endpoints. |
-| Frontend/SaaS integrator | this sitemap -> `frontend/` -> `api/`/`server/`/`functions/` -> `supabase/` -> `deploy/`. |
+| Frontend/SaaS integrator | this sitemap -> `END_USER_ACCESS_MAP.md` -> `frontend/` -> `api/`/`server/`/`functions/` -> `supabase/` -> `deploy/`. |
 | Backend/data integrator | this sitemap -> `aureon/` -> `data/` -> `supabase/` -> tests. |
 | Maintainer | this sitemap -> `docs/INDEX.md` -> `tests/` -> `scripts/validation/`. |
 

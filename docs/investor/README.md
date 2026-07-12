@@ -25,7 +25,7 @@ The repository is broad, but the current investment thesis is narrow:
 | Audience | What to inspect | Recommended path |
 |---|---|---|
 | Investor diligence | Capability categories, evidence discipline, current product surfaces, and risk boundaries. | Start with this guide, then read [`../../SYSTEM_OVERVIEW.md`](../../SYSTEM_OVERVIEW.md), [`../../CAPABILITIES.md`](../../CAPABILITIES.md), and [`../../AUDIT_SUMMARY.md`](../../AUDIT_SUMMARY.md). |
-| Public GitHub reader | Setup, architecture, module map, research history, contribution route, and preserved archive. | Start with [`../INDEX.md`](../INDEX.md), [`../REPO_SITEMAP.md`](../REPO_SITEMAP.md), [`../SAAS_INTEGRATION_READINESS.md`](../SAAS_INTEGRATION_READINESS.md), [`../../QUICK_START.md`](../../QUICK_START.md), and [`../../RUNNING.md`](../../RUNNING.md). |
+| Public GitHub reader | Setup, architecture, module map, research history, contribution route, and preserved archive. | Start with [`../INDEX.md`](../INDEX.md), [`../REPO_SITEMAP.md`](../REPO_SITEMAP.md), [`../END_USER_ACCESS_MAP.md`](../END_USER_ACCESS_MAP.md), [`../SAAS_INTEGRATION_READINESS.md`](../SAAS_INTEGRATION_READINESS.md), [`../../QUICK_START.md`](../../QUICK_START.md), and [`../../RUNNING.md`](../../RUNNING.md). |
 | Grant or funder reviewer | Gary/Aureon evidence inventory, grant ledgers, funder-safe research packets, and claim support. | Start with [`../../data/research/grants/applications/GARY_AUREON_METADATA_RESEARCH_INVENTORY_20260712_20260712_203741.md`](../../data/research/grants/applications/GARY_AUREON_METADATA_RESEARCH_INVENTORY_20260712_20260712_203741.md), then review [`../../data/research/grants/pipeline.json`](../../data/research/grants/pipeline.json) and [`../../data/research/grants/autopilot_status.json`](../../data/research/grants/autopilot_status.json). |
 
 ## Capability Categories
@@ -70,16 +70,19 @@ the repository.
    formal review language.
 3. Read the repo-wide sitemap in [`../REPO_SITEMAP.md`](../REPO_SITEMAP.md) to
    see capability groups, related systems, and SaaS integration surfaces.
-4. Read [`../SAAS_INTEGRATION_READINESS.md`](../SAAS_INTEGRATION_READINESS.md)
+4. Read [`../END_USER_ACCESS_MAP.md`](../END_USER_ACCESS_MAP.md) to see
+   task-based capability access, related systems, runtime/API surfaces, and
+   safety gates.
+5. Read [`../SAAS_INTEGRATION_READINESS.md`](../SAAS_INTEGRATION_READINESS.md)
    for access paths, env/config groups, deploy surfaces, auth boundaries, and
    production gates.
-5. Review architecture in [`../../SYSTEM_OVERVIEW.md`](../../SYSTEM_OVERVIEW.md)
+6. Review architecture in [`../../SYSTEM_OVERVIEW.md`](../../SYSTEM_OVERVIEW.md)
    and [`../../DATA_FLOW.md`](../../DATA_FLOW.md).
-6. Review claims through [`../CLAIMS_AND_EVIDENCE.md`](../CLAIMS_AND_EVIDENCE.md)
+7. Review claims through [`../CLAIMS_AND_EVIDENCE.md`](../CLAIMS_AND_EVIDENCE.md)
    and audit/proof documents.
-7. Review the Gary/Aureon evidence inventory under
+8. Review the Gary/Aureon evidence inventory under
    [`../../data/research/grants/`](../../data/research/grants/).
-8. Use the archived README only for project history:
+9. Use the archived README only for project history:
    [`../archive/README_legacy_20260712.md`](../archive/README_legacy_20260712.md).
 
 ## Investor-Ready Summary Language

@@ -6,6 +6,7 @@
   "primary_documents": [
     "README.md",
     "docs/REPO_SITEMAP.md",
+    "docs/END_USER_ACCESS_MAP.md",
     "docs/SAAS_INTEGRATION_READINESS.md",
     "docs/INDEX.md",
     "RUNNING.md",
@@ -137,6 +138,19 @@
       "keep sensitive mutation routes operator-controlled",
       "run local and deployment smoke checks"
     ]
+  },
+  "end_user_access": {
+    "document": "docs/END_USER_ACCESS_MAP.md",
+    "machine_readable": "docs/end_user_access_map.json",
+    "frontend_public_mirror": "frontend/public/aureon_end_user_access_map.json",
+    "frontend_public_sitemap": "frontend/public/aureon_repo_sitemap.json",
+    "capability_count": 13,
+    "purpose": "Task-based access contract that connects each end-user capability to docs, related systems, runtime or API surfaces, and safety gates.",
+    "public_contract": {
+      "contains_secrets": false,
+      "contains_private_runtime_state": false,
+      "contains_customer_data": false
+    }
   },
   "organizational_rules": [
     "Keep README.md concise and investor-readable.",
