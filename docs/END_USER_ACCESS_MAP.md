@@ -14,6 +14,9 @@ and
 [`../frontend/public/aureon_repo_sitemap.json`](../frontend/public/aureon_repo_sitemap.json).
 Frontend console route: `#repo-map`, implemented by
 [`../frontend/src/components/RepoNavigationPanel.tsx`](../frontend/src/components/RepoNavigationPanel.tsx).
+File-level public index:
+[`repo_navigation_index.json`](repo_navigation_index.json) and
+[`../frontend/public/aureon_repo_navigation_index.json`](../frontend/public/aureon_repo_navigation_index.json).
 Contract validation command, from repo root:
 `python scripts/validation/validate_repo_navigation_contract.py`.
 
@@ -32,7 +35,7 @@ Contract validation command, from repo root:
 | Capability | End-user action | Primary docs | Related systems | Runtime or API surface | Safety gate |
 |---|---|---|---|---|---|
 | Product overview | Understand what Aureon is and where to start. | [`../README.md`](../README.md), [`REPO_SITEMAP.md`](REPO_SITEMAP.md) | `docs/`, `docs/investor/` | Public docs and frontend public manifest | Claims must remain evidence-backed. |
-| Repo navigation | Browse all systems and how they relate. | [`REPO_SITEMAP.md`](REPO_SITEMAP.md), [`INDEX.md`](INDEX.md) | `docs/`, root docs, `frontend/public/`, `frontend/src/components/RepoNavigationPanel.tsx` | `#repo-map`, `frontend/public/aureon_repo_sitemap.json` | Keep generated counts current after major moves. |
+| Repo navigation | Browse all systems and how they relate. | [`REPO_SITEMAP.md`](REPO_SITEMAP.md), [`INDEX.md`](INDEX.md), [`repo_navigation_index.json`](repo_navigation_index.json) | `docs/`, root docs, `frontend/public/`, `frontend/src/components/RepoNavigationPanel.tsx` | `#repo-map`, `frontend/public/aureon_repo_sitemap.json`, `frontend/public/aureon_repo_navigation_index.json` | Keep generated counts current after major moves. |
 | SaaS integration | See deploy surfaces, env groups, and auth boundaries. | [`SAAS_INTEGRATION_READINESS.md`](SAAS_INTEGRATION_READINESS.md) | `frontend/`, `supabase/`, `api/`, `server/`, `functions/`, `netlify/`, `deploy/`, `production/` | `docs/repo_sitemap.json`, frontend public manifests | Public endpoints require review before production. |
 | Local runtime | Start and validate the local operator runtime. | [`../RUNNING.md`](../RUNNING.md), [`../QUICK_START.md`](../QUICK_START.md) | Root launchers, `aureon/`, `scripts/` | `http://127.0.0.1:8791/api/terminal-state` | Validate env and dry-run/live mode first. |
 | Operator console | Use the browser console and public artifacts. | [`FLAMEBORN_INTEGRATION.md`](FLAMEBORN_INTEGRATION.md), [`dashboards/DASHBOARD_GUIDE.md`](dashboards/DASHBOARD_GUIDE.md) | `frontend/`, `frontend/public/`, `public/`, `templates/` | `http://127.0.0.1:8081/`, `frontend/public/*` | Runtime data must be redacted before public hosting. |
@@ -53,6 +56,7 @@ The frontend can read these static files without needing repo traversal:
 |---|---|
 | `frontend/public/aureon_repo_sitemap.json` | Public navigation manifest for top-level systems, docs, and SaaS surfaces. |
 | `frontend/public/aureon_end_user_access_map.json` | Capability-to-access map for task-driven UI navigation. |
+| `frontend/public/aureon_repo_navigation_index.json` | File-level repo index generated from `git ls-files` for searchable end-user navigation. |
 | `frontend/src/components/RepoNavigationPanel.tsx` | End-user console surface that renders the public manifests at `#repo-map`. |
 
 These files contain paths, labels, and safety notes only. They do not contain

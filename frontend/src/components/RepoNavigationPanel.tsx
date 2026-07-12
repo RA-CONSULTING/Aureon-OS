@@ -53,6 +53,31 @@ interface AccessMapManifest {
   capabilities: CapabilityRoute[];
 }
 
+interface NavigationEntry {
+  path: string;
+  top_level: string;
+  zone_id: string;
+  category: string;
+  role: string;
+  kind: string;
+  extension: string;
+  capability_ids: string[];
+}
+
+interface NavigationIndexManifest {
+  name: string;
+  snapshot_date: string;
+  tracked_file_count: number;
+  entry_count: number;
+  frontend_public_mirror: string;
+  summary: {
+    category_counts: Record<string, number>;
+    zone_counts: Record<string, number>;
+    capability_counts: Record<string, number>;
+  };
+  entries: NavigationEntry[];
+}
+
 const REPO_BASE_URL = "https://github.com/RA-CONSULTING/aureon-trading";
 
 function repoUrl(path: string): string {
@@ -106,6 +131,7 @@ function ContractPill({ label, clear }: { label: string; clear: boolean }) {
 export function RepoNavigationPanel() {
   const [repoMap, setRepoMap] = useState<RepoSitemapManifest | null>(null);
   const [accessMap, setAccessMap] = useState<AccessMapManifest | null>(null);
+  const [navigationIndex, setNavigationIndex] = useState<NavigationIndexManifest | null>(null);
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
 
@@ -113,12 +139,14 @@ export function RepoNavigationPanel() {
     const controller = new AbortController();
     const refresh = async () => {
       try {
-        const [repoManifest, accessManifest] = await Promise.all([
+        const [repoManifest, accessManifest, indexManifest] = await Promise.all([
           loadJson<RepoSitemapManifest>("/aureon_repo_sitemap.json", controller.signal),
           loadJson<AccessMapManifest>("/aureon_end_user_access_map.json", controller.signal),
+          loadJson<NavigationIndexManifest>("/aureon_repo_navigation_index.json", controller.signal),
         ]);
         setRepoMap(repoManifest);
         setAccessMap(accessManifest);
+        setNavigationIndex(indexManifest);
         setError("");
       } catch (loadError) {
         if (!controller.signal.aborted) {
@@ -143,6 +171,24 @@ export function RepoNavigationPanel() {
     );
   }, [accessMap, query]);
 
+  const indexedEntries = navigationIndex?.entries || [];
+  const filteredEntries = useMemo(() => {
+    const needle = query.trim();
+    const seedPrefixes = ["README.md", "docs/", "frontend/", "aureon/", "supabase/", "scripts/validation/"];
+    const entries = needle
+      ? indexedEntries.filter((entry) =>
+          matchesQuery([entry.path, entry.top_level, entry.zone_id, entry.category, entry.role, entry.kind, entry.extension, ...entry.capability_ids], needle),
+        )
+      : indexedEntries.filter((entry) => seedPrefixes.some((prefix) => entry.path === prefix.replace("/", "") || entry.path.startsWith(prefix)));
+    return entries.slice(0, 120);
+  }, [indexedEntries, query]);
+
+  const topCategories = useMemo(() => {
+    return Object.entries(navigationIndex?.summary?.category_counts || {})
+      .sort((left, right) => right[1] - left[1])
+      .slice(0, 8);
+  }, [navigationIndex]);
+
   const contract = repoMap?.public_contract;
 
   return (
@@ -160,6 +206,10 @@ export function RepoNavigationPanel() {
               <div className="rounded-md border border-border/50 bg-background/50 p-3">
                 <div className="text-[11px] uppercase text-muted-foreground">Tracked files</div>
                 <div className="mt-1 text-2xl font-semibold">{(repoMap?.tracked_file_count || 0).toLocaleString()}</div>
+              </div>
+              <div className="rounded-md border border-border/50 bg-background/50 p-3">
+                <div className="text-[11px] uppercase text-muted-foreground">Indexed paths</div>
+                <div className="mt-1 text-2xl font-semibold">{(navigationIndex?.entry_count || 0).toLocaleString()}</div>
               </div>
               <div className="rounded-md border border-border/50 bg-background/50 p-3">
                 <div className="text-[11px] uppercase text-muted-foreground">Capability routes</div>
@@ -209,11 +259,78 @@ export function RepoNavigationPanel() {
                 <FileJson className="h-4 w-4" />
                 /aureon_end_user_access_map.json
               </a>
+              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_repo_navigation_index.json")} target="_blank" rel="noreferrer">
+                <FileJson className="h-4 w-4" />
+                /aureon_repo_navigation_index.json
+              </a>
               {repoMap?.validation_command ? (
                 <div className="mt-1 rounded-md border border-border/50 bg-background/50 px-3 py-2 font-mono text-[11px] text-muted-foreground">
                   {repoMap.validation_command}
                 </div>
               ) : null}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[0.75fr_1.25fr]">
+        <Card className="border-border/60 bg-card/90">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <FileJson className="h-5 w-5 text-cyan-200" />
+              Index Categories
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {topCategories.map(([category, count]) => (
+              <div key={category} className="flex items-center justify-between rounded-md border border-border/50 bg-background/45 px-3 py-2 text-sm">
+                <span className="capitalize">{category}</span>
+                <Badge variant="secondary">{count.toLocaleString()}</Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/60 bg-card/90">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Search className="h-5 w-5 text-cyan-200" />
+              Indexed Files
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[430px] pr-3">
+              <div className="space-y-2">
+                {filteredEntries.map((entry) => (
+                  <div key={entry.path} className="rounded-md border border-border/50 bg-background/45 p-3">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                      <PathLink path={entry.path} />
+                      <div className="flex flex-wrap gap-2">
+                        <Badge variant="outline" className="font-mono text-[10px]">
+                          {entry.kind}
+                        </Badge>
+                        <Badge variant="secondary" className="font-mono text-[10px]">
+                          {entry.category}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <span>{entry.role}</span>
+                      <span>/</span>
+                      <span>{entry.zone_id}</span>
+                      {entry.capability_ids.length ? (
+                        <>
+                          <span>/</span>
+                          <span>{entry.capability_ids.slice(0, 4).join(", ")}</span>
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+            <div className="mt-3 text-xs text-muted-foreground">
+              Showing {filteredEntries.length.toLocaleString()} of {(navigationIndex?.entry_count || 0).toLocaleString()} indexed paths. Use the search field to narrow by file, folder, category, zone, or capability ID.
             </div>
           </CardContent>
         </Card>

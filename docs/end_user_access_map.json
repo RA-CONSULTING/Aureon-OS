@@ -18,9 +18,9 @@
       "id": "repo_navigation",
       "label": "Repo navigation",
       "user_action": "Browse all systems and how they relate.",
-      "primary_docs": ["docs/REPO_SITEMAP.md", "docs/INDEX.md"],
+      "primary_docs": ["docs/REPO_SITEMAP.md", "docs/INDEX.md", "docs/repo_navigation_index.json"],
       "related_systems": ["docs/", "frontend/public/", "frontend/src/components/RepoNavigationPanel.tsx"],
-      "runtime_or_api_surface": ["#repo-map", "frontend/public/aureon_repo_sitemap.json"],
+      "runtime_or_api_surface": ["#repo-map", "frontend/public/aureon_repo_sitemap.json", "frontend/public/aureon_repo_navigation_index.json"],
       "safety_gate": "Keep generated counts current after major moves."
     },
     {

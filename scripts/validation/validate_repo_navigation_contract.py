@@ -14,8 +14,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 DOCS_REPO_SITEMAP = REPO_ROOT / "docs" / "repo_sitemap.json"
 DOCS_ACCESS_MAP = REPO_ROOT / "docs" / "end_user_access_map.json"
+DOCS_NAVIGATION_INDEX = REPO_ROOT / "docs" / "repo_navigation_index.json"
 PUBLIC_REPO_SITEMAP = REPO_ROOT / "frontend" / "public" / "aureon_repo_sitemap.json"
 PUBLIC_ACCESS_MAP = REPO_ROOT / "frontend" / "public" / "aureon_end_user_access_map.json"
+PUBLIC_NAVIGATION_INDEX = REPO_ROOT / "frontend" / "public" / "aureon_repo_navigation_index.json"
 SUPABASE_CONFIG = REPO_ROOT / "supabase" / "config.toml"
 
 REQUIRED_PATHS = [
@@ -28,9 +30,12 @@ REQUIRED_PATHS = [
     "docs/investor/TERMINOLOGY.md",
     "docs/repo_sitemap.json",
     "docs/end_user_access_map.json",
+    "docs/repo_navigation_index.json",
     "frontend/src/components/RepoNavigationPanel.tsx",
     "frontend/public/aureon_repo_sitemap.json",
     "frontend/public/aureon_end_user_access_map.json",
+    "frontend/public/aureon_repo_navigation_index.json",
+    "scripts/validation/generate_repo_navigation_index.py",
 ]
 
 MARKDOWN_FILES = [
@@ -182,8 +187,10 @@ def main() -> int:
 
     docs_repo = load_json(DOCS_REPO_SITEMAP)
     docs_access = load_json(DOCS_ACCESS_MAP)
+    docs_navigation_index = load_json(DOCS_NAVIGATION_INDEX)
     public_repo = load_json(PUBLIC_REPO_SITEMAP)
     public_access = load_json(PUBLIC_ACCESS_MAP)
+    public_navigation_index = load_json(PUBLIC_NAVIGATION_INDEX)
 
     for rel_path in REQUIRED_PATHS:
         expect((REPO_ROOT / rel_path).exists(), failures, f"required path missing: {rel_path}")
@@ -191,6 +198,8 @@ def main() -> int:
     tracked_total = git_file_count()
     expect(docs_repo.get("tracked_file_count") == tracked_total, failures, "docs/repo_sitemap.json tracked_file_count is stale")
     expect(public_repo.get("tracked_file_count") == tracked_total, failures, "frontend public sitemap tracked_file_count is stale")
+    expect(docs_navigation_index.get("tracked_file_count") == tracked_total, failures, "docs repo navigation index tracked_file_count is stale")
+    expect(public_navigation_index.get("tracked_file_count") == tracked_total, failures, "frontend repo navigation index tracked_file_count is stale")
 
     systems = {entry["path"]: entry["files"] for entry in docs_repo.get("top_level_systems", [])}
     for path, recorded_count in systems.items():
@@ -216,6 +225,32 @@ def main() -> int:
         failures,
         "frontend public sitemap does not expose #repo-map",
     )
+    expect(
+        docs_repo.get("end_user_access", {}).get("repo_navigation_index") == "docs/repo_navigation_index.json",
+        failures,
+        "repo sitemap does not expose the docs repo navigation index",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("frontend_public_navigation_index") == "frontend/public/aureon_repo_navigation_index.json",
+        failures,
+        "repo sitemap does not expose the public repo navigation index",
+    )
+    expect(
+        public_repo.get("navigation_index") == "frontend/public/aureon_repo_navigation_index.json",
+        failures,
+        "frontend public sitemap does not expose the repo navigation index",
+    )
+    expect(docs_navigation_index == public_navigation_index, failures, "repo navigation index docs/public mirrors differ")
+    navigation_entries = docs_navigation_index.get("entries", [])
+    expect(len(navigation_entries) == tracked_total, failures, "repo navigation index entry count differs from git ls-files")
+    expect(docs_navigation_index.get("entry_count") == tracked_total, failures, "repo navigation index entry_count is stale")
+    entry_paths = [entry.get("path") for entry in navigation_entries if isinstance(entry, dict)]
+    expect(len(set(entry_paths)) == tracked_total, failures, "repo navigation index paths are missing or duplicated")
+    expect(
+        docs_navigation_index.get("public_contract", {}).get("contains_file_contents") is False,
+        failures,
+        "repo navigation index public contract must not contain file contents",
+    )
 
     supabase_counts = parse_supabase_auth_counts()
     expect(
@@ -227,6 +262,7 @@ def main() -> int:
     for label, manifest in (
         ("frontend/public/aureon_repo_sitemap.json", public_repo),
         ("frontend/public/aureon_end_user_access_map.json", public_access),
+        ("frontend/public/aureon_repo_navigation_index.json", public_navigation_index),
     ):
         for finding in collect_json_secret_findings(manifest):
             failures.append(f"{label}: {finding}")
@@ -241,6 +277,7 @@ def main() -> int:
 
     print(f"OK tracked_file_count={tracked_total}")
     print(f"OK capability_count={len(docs_capabilities)}")
+    print(f"OK repo_navigation_index_entries={len(navigation_entries)}")
     print(f"OK supabase_auth_counts={supabase_counts}")
     print("OK public navigation manifests contain no credential-like values")
     print("OK key Markdown links resolve")

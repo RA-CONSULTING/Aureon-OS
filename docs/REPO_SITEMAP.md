@@ -8,6 +8,7 @@ and which integration surfaces matter when the repo is packaged into a product,
 dashboard, SaaS workflow, or external diligence process.
 
 Machine-readable companion: [`repo_sitemap.json`](repo_sitemap.json).
+File-level navigation index: [`repo_navigation_index.json`](repo_navigation_index.json).
 End-user task map: [`END_USER_ACCESS_MAP.md`](END_USER_ACCESS_MAP.md) and
 [`end_user_access_map.json`](end_user_access_map.json).
 Frontend console surface: [`../frontend/src/components/RepoNavigationPanel.tsx`](../frontend/src/components/RepoNavigationPanel.tsx)
@@ -24,6 +25,7 @@ Navigation contract validator, from repo root:
 | Run or validate locally | [`../RUNNING.md`](../RUNNING.md) | [`../QUICK_START.md`](../QUICK_START.md) |
 | Review investor/funder posture | [`investor/README.md`](investor/README.md) | [`investor/TERMINOLOGY.md`](investor/TERMINOLOGY.md) |
 | Navigate by end-user task | [`END_USER_ACCESS_MAP.md`](END_USER_ACCESS_MAP.md) | Capability-to-docs, systems, runtime/API surfaces, and safety gates |
+| Search the tracked repo index | [`repo_navigation_index.json`](repo_navigation_index.json) | File-level categories, zones, capability IDs, and public frontend mirror |
 | Inspect all docs | [`INDEX.md`](INDEX.md) | Existing deep-dive docs by audience |
 | Integrate as a product surface | [`SAAS_INTEGRATION_READINESS.md`](SAAS_INTEGRATION_READINESS.md) | `frontend/`, `api/`, `server/`, `functions/`, `supabase/`, `netlify/`, `deploy/`, `production/` |
 
@@ -56,9 +58,9 @@ The repo should be read in five zones:
 | [`daemon_codes/`](../daemon_codes/) | 36 | Background automation code. | Service/background route review. |
 | [`data/`](../data/) | 3,526 | Research, grants, datasets, copied evidence. | Evidence and funder review. |
 | [`deploy/`](../deploy/) | 14 | Deployment scripts and service configs. | Infrastructure setup. |
-| [`docs/`](../docs/) | 377 | Documentation, runbooks, research, architecture. | Primary reading system. |
+| [`docs/`](../docs/) | 378 | Documentation, runbooks, research, architecture. | Primary reading system. |
 | [`flameborn/`](../flameborn/) | 59 | Companion UI/runtime material. | Product surface review. |
-| [`frontend/`](../frontend/) | 4,289 | React/Vite console and public artifacts. | End-user browser experience. |
+| [`frontend/`](../frontend/) | 4,290 | React/Vite console and public artifacts. | End-user browser experience. |
 | [`functions/`](../functions/) | 1 | Serverless function surface. | Hosted integration route. |
 | [`imports/`](../imports/) | 1,242 | Imported historical/source bundles. | Migration and provenance review. |
 | [`integrations/`](../integrations/) | 21 | External integration support. | Connector review. |
@@ -68,7 +70,7 @@ The repo should be read in five zones:
 | [`packaging/`](../packaging/) | 2 | Package/build helpers. | Release packaging. |
 | [`production/`](../production/) | 15 | Production install/runtime assets. | Product deployment path. |
 | [`public/`](../public/) | 58 | Public static assets. | Browser/static publishing. |
-| [`scripts/`](../scripts/) | 303 | Diagnostics, runners, reports, validation scripts. | Operator and maintainer tasks. |
+| [`scripts/`](../scripts/) | 304 | Diagnostics, runners, reports, validation scripts. | Operator and maintainer tasks. |
 | [`server/`](../server/) | 7 | Node/server bridge surface. | Backend integration route. |
 | [`skills/`](../skills/) | 12 | Local skill registries and interactions. | Capability extension route. |
 | [`supabase/`](../supabase/) | 160 | Supabase config, migrations, functions. | SaaS data/backend integration. |
@@ -122,7 +124,7 @@ The repo should be read in five zones:
 | Database/backend-as-a-service | `supabase/config.toml`, `supabase/migrations/`, `supabase/functions/` | SaaS data plane and edge-function surface. Treat migrations as schema authority. |
 | Deployment | `deploy/`, `production/`, `.do/`, `Dockerfile`, `docker-compose.yml`, `app.yaml`, `Procfile` | Multiple deployment paths exist; pick one target and document env vars before production. |
 | Generated state | `state/` paths named in docs, runtime manifests, audit JSON | Often generated locally and intentionally not tracked. Do not assume absent generated files are missing source code. |
-| Public generated mirrors | `frontend/public/` | Tracked adaptive skills and the repo-navigation manifests exist here; runtime JSON mirrors may be generated here during local operation. |
+| Public generated mirrors | `frontend/public/` | Tracked adaptive skills, repo-navigation manifests, and the file-level navigation index exist here; runtime JSON mirrors may be generated here during local operation. |
 | Security and controls | `docs/SECURITY.md`, guarded runtime routes, tests | Keep credentials out of tracked docs; live actions remain operator-controlled. |
 
 Detailed readiness checklist: [`SAAS_INTEGRATION_READINESS.md`](SAAS_INTEGRATION_READINESS.md).
@@ -147,8 +149,10 @@ Task-based access map: [`END_USER_ACCESS_MAP.md`](END_USER_ACCESS_MAP.md).
 - Put run commands in `RUNNING.md`, not scattered across new docs.
 - Put capability claims in `CAPABILITIES.md` or link them to evidence.
 - Put formal terminology in `docs/investor/TERMINOLOGY.md`.
-- Run `python scripts/validation/validate_repo_navigation_contract.py` after
-  changing navigation docs, public manifests, or Supabase function auth settings.
+- Run `python scripts/validation/generate_repo_navigation_index.py` after broad
+  file moves, then run `python scripts/validation/validate_repo_navigation_contract.py`
+  after changing navigation docs, public manifests, file indexes, or Supabase
+  function auth settings.
 - Preserve historical language under `archive/`, `docs/archive/`, or `imports/`.
 - Treat `state/`, `docs/audits/`, and named runtime JSON files as generated
   outputs unless they are present in `git ls-files`.
