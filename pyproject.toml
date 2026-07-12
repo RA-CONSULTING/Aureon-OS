@@ -39,6 +39,7 @@ operator = [
   "waitress>=3.0",
   "prometheus-client>=0.24.0",
   "anthropic>=0.40.0",
+  "psutil>=5.9.0",
 ]
 # Developer + CI toolchain.
 dev = [

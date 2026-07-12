@@ -312,6 +312,14 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
             return jsonify({"error": "missing prompt"}), 400
         return jsonify(_get_cognition().reason(prompt, session_id=body.get("session_id")).to_dict())
 
+    # ── SaaS platform surface (catalog / domains / status) ─────────────────────
+    try:
+        from aureon.saas.gateway import register_saas_routes
+
+        register_saas_routes(app)
+    except Exception as exc:  # noqa: BLE001 — the operator must serve even if SaaS routes fail
+        logger.warning("SaaS gateway routes not registered: %s", exc)
+
     return app
 
 
@@ -334,6 +342,13 @@ def build_boot_app():
         logger.info("Aureon Cognition wired onto the mesh at startup")
     except Exception as exc:  # noqa: BLE001 — server must still serve if cognition boot fails
         logger.warning("cognition eager-boot skipped: %s", exc)
+    # Write the frontend catalog manifests at boot so the console has data.
+    try:
+        from aureon.saas.catalog import write_frontend_manifests
+
+        write_frontend_manifests()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("frontend manifest write skipped: %s", exc)
     return create_app(cognition=boot_cognition)
 
 
