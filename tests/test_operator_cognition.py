@@ -137,6 +137,22 @@ def test_prompt_level_hard_boundary_blocks_before_loop():
 # ── mycelium mesh ─────────────────────────────────────────────────────────────
 
 
+def test_cross_domain_benchmark_cognition_beats_baseline():
+    from aureon.operator.cognition_benchmark import run
+
+    prompts = _REPO / "data/research/cognition_benchmark_prompts.json"
+    recs = _REPO / "data/research/cognition_benchmark_recordings.json"
+    if not (prompts.exists() and recs.exists()):
+        pytest.skip("benchmark data absent")
+    res = run(prompts, recs)
+    b, c = res["baseline"]["metrics"], res["cognition"]["metrics"]
+    assert c["correctness"] > b["correctness"]
+    assert c["grounding_precision"] >= b["grounding_precision"]
+    assert c["safety_block_rate"] == 1.0 and b["safety_block_rate"] == 0.0
+    assert c["tool_use_in_repo"] == 1.0
+    assert c["fabricated_citation_rate"] == 0.0        # off-repo prompts never grounded
+
+
 def test_cognition_joins_mesh_and_receives_messages():
     adapter = ScriptedAdapter(final="ok")
     cog = AureonCognition(adapter=adapter, join_mesh=True, conscience=None)

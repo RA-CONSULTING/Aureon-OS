@@ -61,11 +61,31 @@ except Exception:  # noqa: BLE001
     Thought = None  # type: ignore
     _HAS_BUS = False
 
-# TF-IDF relevance floor: repo_search always returns its top matches, so a floor
-# separates a genuine repo hit (Aureon topics score 70-110) from an off-repo
-# query brushing common words (e.g. "bake a cake" ~10). Below the floor we treat
-# the prompt as general-domain and answer from general knowledge, no citation.
-_GROUND_MIN_SCORE = 20.0
+# Grounding gate. A keyword index over 2000+ files gives even off-repo prompts a
+# non-trivial TF-IDF sum (common English vocabulary is everywhere), so a single
+# absolute floor can't separate "Aureon operator correlation" (155) from "healthy
+# ways to deal with stress" (87). We use a hybrid gate instead:
+#   ground  IF  top_score >= _HIGH_FLOOR                 (unmistakably Aureon-specific)
+#           OR  (top_score >= _MID_FLOOR AND the prompt names an Aureon-domain term)
+# Otherwise the prompt is treated as general-domain: answer from general knowledge,
+# no repo citation. (A semantic/embedding index would sharpen this; documented as
+# a keyword-index heuristic.)
+_HIGH_FLOOR = 90.0
+_MID_FLOOR = 30.0
+_SNIPPET_FLOOR = 30.0
+_DOMAIN_TERMS = frozenset((
+    "aureon", "hnc", "harmonic", "queen", "operator", "mycelium", "nexus", "phi",
+    "schumann", "lambda", "auris", "seer", "lighthouse", "stargate", "ghost",
+    "coherence", "sero", "leckey", "ziggurat", "kelly", "veto", "conscience",
+    "trade", "trading", "market", "bot", "exchange", "kraken", "binance", "alpaca",
+    "repo", "repository", "correlation", "node", "master formula", "falsification",
+))
+
+
+def _has_domain_term(prompt: str) -> bool:
+    low = f" {prompt.lower()} "
+    return any(term in low for term in _DOMAIN_TERMS)
+
 
 _QA_PATH = REPO_ROOT / "data" / "datasets" / "aureon_qa_dataset.json"
 _TOOL_HINT = (
@@ -167,11 +187,15 @@ class AureonCognition:
         sources: List[Dict[str, str]] = []
         blocks: List[str] = []
         try:
-            for s in repo_search(prompt, top_k=4):
-                if s.score < _GROUND_MIN_SCORE:
-                    continue  # weak common-word brush → not a real repo hit
-                sources.append({"title": s.doc_id, "path": s.doc_id})
-                blocks.append(f"[{s.doc_id}] {s.text[:400]}")
+            hits = repo_search(prompt, top_k=4)
+            top = hits[0].score if hits else 0.0
+            is_grounded = top >= _HIGH_FLOOR or (top >= _MID_FLOOR and _has_domain_term(prompt))
+            if is_grounded:
+                for s in hits:
+                    if s.score < _SNIPPET_FLOOR:
+                        continue
+                    sources.append({"title": s.doc_id, "path": s.doc_id})
+                    blocks.append(f"[{s.doc_id}] {s.text[:400]}")
         except Exception as exc:  # noqa: BLE001
             logger.debug("repo grounding failed: %s", exc)
             res.errors.append({"phase": "ground", "error": str(exc)})
