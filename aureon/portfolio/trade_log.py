@@ -58,7 +58,7 @@ def get_kraken_trades():
 def get_binance_trades():
     """Get all trades from Binance."""
     try:
-        from aureon.exchanges.binance_client import BinanceClient
+        from aureon.exchanges.binance_client import BinanceClient, get_binance_client
         
         binance_key = os.getenv('BINANCE_API_KEY')
         binance_secret = os.getenv('BINANCE_API_SECRET')

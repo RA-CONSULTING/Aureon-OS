@@ -3580,6 +3580,7 @@ class AggressiveReclaimer:
 
                 pnl_pct = (price - entry) / entry * 100
 
+                pos_symbol = self._normalize_symbol(asset)
                 is_target = target_symbol and pos_symbol == self._normalize_symbol(target_symbol)
                 if is_target:
                     should_sell = pnl_pct > 0.0
@@ -4293,6 +4294,7 @@ class AggressiveReclaimer:
 
                 pnl_pct = (price - entry) / entry * 100
 
+                pos_symbol = self._normalize_symbol(asset)
                 is_target = target_symbol and pos_symbol == self._normalize_symbol(target_symbol)
                 if is_target:
                     should_sell = pnl_pct > 0.0

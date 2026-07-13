@@ -42,7 +42,7 @@ def fetch_uk_allowed_pairs() -> Dict[str, Any]:
         pass
     
     try:
-        from aureon.exchanges.binance_client import BinanceClient
+        from aureon.exchanges.binance_client import BinanceClient, get_binance_client
         client = get_binance_client()
     except Exception as e:
         print(f"❌ Failed to create Binance client: {e}")

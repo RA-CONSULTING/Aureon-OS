@@ -8,7 +8,7 @@ import numpy as np
 
 os.environ.setdefault('LIVE','1')
 
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 from aureon.strategies.hnc_probability_matrix import HNCProbabilityIntegration
 
 # 🔶 COMPREHENSIVE BINANCE SYMBOLS (70+)

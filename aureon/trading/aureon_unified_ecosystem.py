@@ -23123,7 +23123,7 @@ class AureonKrakenEcosystem:
                                 continue
 
                 # 🎯 PRE-FLIGHT PRICE VALIDATION — reject if price slipped >1%
-                expected_price = opp.get('price', 0.0)
+                expected_price = 0.0  # intent path carries no opportunity dict; slip check applies only when a price is known
                 current_ticker = self.ticker_cache.get(symbol, {})
                 current_ask = float(current_ticker.get('ask', current_ticker.get('price', expected_price)) or expected_price)
                 if expected_price > 0 and current_ask > 0:

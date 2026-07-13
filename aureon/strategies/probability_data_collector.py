@@ -34,7 +34,7 @@ import random
 # Import trading components
 # Mocking imports if they fail to ensure the collector runs
 try:
-    from aureon.exchanges.binance_client import BinanceClient
+    from aureon.exchanges.binance_client import BinanceClient, get_binance_client
     
     # Add get_ticker method to BinanceClient if missing
     def _get_ticker(self, symbol):

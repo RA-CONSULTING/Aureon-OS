@@ -18,7 +18,7 @@ import sys
 
 os.environ['LIVE'] = '1'
 
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 
 def get_price(client, symbol):
     """Get current price"""

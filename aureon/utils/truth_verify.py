@@ -36,7 +36,7 @@ TRUTH_FILE = "truth_checkpoints.json"
 
 def get_binance_truth() -> Tuple[float, Dict]:
     """Get REAL Binance balance - no lies"""
-    from aureon.exchanges.binance_client import BinanceClient
+    from aureon.exchanges.binance_client import BinanceClient, get_binance_client
     try:
         b = get_binance_client()
         total = 0

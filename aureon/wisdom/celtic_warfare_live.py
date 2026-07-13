@@ -65,7 +65,7 @@ from aureon.wisdom.multi_battlefront_coordinator import (
 
 # Existing Aureon systems
 try:
-    from aureon.exchanges.binance_client import BinanceClient
+    from aureon.exchanges.binance_client import BinanceClient, get_binance_client
     BINANCE_AVAILABLE = True
 except ImportError:
     BINANCE_AVAILABLE = False

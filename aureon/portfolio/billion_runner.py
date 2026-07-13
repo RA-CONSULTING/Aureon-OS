@@ -37,7 +37,7 @@ import requests
 from datetime import datetime
 from dataclasses import dataclass, asdict
 from typing import Dict, Optional, List
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 
 # =============================================================================
 # CONFIGURATION

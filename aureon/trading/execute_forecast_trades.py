@@ -29,7 +29,7 @@ from collections import deque
 os.environ['LIVE'] = '1'
 os.environ['DRY_RUN'] = '0'
 
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 from aureon.trading.aureon_unified_ecosystem import get_platform_fee
 
 # ═══════════════════════════════════════════════════════════════

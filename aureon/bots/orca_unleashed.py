@@ -95,7 +95,7 @@ except ImportError:
     KrakenClient = None
 
 try:
-    from aureon.exchanges.binance_client import BinanceClient
+    from aureon.exchanges.binance_client import BinanceClient, get_binance_client
     BINANCE_AVAILABLE = True
 except ImportError:
     BINANCE_AVAILABLE = False

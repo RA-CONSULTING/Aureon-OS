@@ -133,7 +133,7 @@ except Exception as e:
 # ════════════════════════════════════════════════════════════════════════════
 print("\n🟡 BINANCE: Testing SELL with existing balance...")
 try:
-    from aureon.exchanges.binance_client import BinanceClient
+    from aureon.exchanges.binance_client import BinanceClient, get_binance_client
     
     binance = get_binance_client()
     print(f"   Dry Run Mode: {binance.dry_run}")

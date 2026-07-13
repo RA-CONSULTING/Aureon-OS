@@ -64,7 +64,7 @@ class OrcaSnowballLean:
     @property  
     def binance(self):
         if self._binance is None:
-            from aureon.exchanges.binance_client import BinanceClient
+            from aureon.exchanges.binance_client import BinanceClient, get_binance_client
             self._binance = get_binance_client()
         return self._binance
         

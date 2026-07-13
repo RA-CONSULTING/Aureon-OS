@@ -54,7 +54,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any, Tuple
 from decimal import Decimal, ROUND_DOWN
 from dataclasses import dataclass, field, asdict
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 
 try:
     from dotenv import load_dotenv

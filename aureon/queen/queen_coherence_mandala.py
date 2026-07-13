@@ -719,7 +719,7 @@ async def run_live_coherence():
     Run coherence analysis on live market data.
     """
     try:
-        from aureon.exchanges.binance_client import BinanceClient
+        from aureon.exchanges.binance_client import BinanceClient, get_binance_client
         from aureon.exchanges.kraken_client import KrakenClient
     except ImportError:
         print("Market clients not available. Running demo instead.")

@@ -91,7 +91,7 @@ except ImportError as e:
 try:
     from aureon.exchanges.kraken_client import KrakenClient, get_kraken_client
     from aureon.exchanges.alpaca_client import AlpacaClient
-    from aureon.exchanges.binance_client import BinanceClient
+    from aureon.exchanges.binance_client import BinanceClient, get_binance_client
     EXCHANGES_AVAILABLE = True
     print("✅ Exchange Clients: AVAILABLE")
 except ImportError as e:
@@ -756,7 +756,7 @@ class AureonHistoricalLive:
             if hit_target or hit_stop:
                 await self.close_position(position, current_price)
     
-    async def close_position(self, position: LivePosition, close_price: float):
+    async def close_position(self, position: LivePosition, close_price: float, reason: str = "TP"):
         """Close a position and record the outcome"""
         # Calculate final P&L
         if position.side == 'buy':

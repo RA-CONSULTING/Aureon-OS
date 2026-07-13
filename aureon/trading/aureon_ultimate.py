@@ -30,7 +30,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Any
 from decimal import Decimal, ROUND_DOWN
 from dataclasses import dataclass, field
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 try:
     from aureon.exchanges.kraken_client import KrakenClient, get_kraken_client
 except Exception:

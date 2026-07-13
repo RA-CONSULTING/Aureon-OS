@@ -42,7 +42,7 @@ from aiohttp import web
 import json
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Set, Optional
 from collections import deque, defaultdict
 from pathlib import Path
@@ -2643,6 +2643,7 @@ class AureonUnifiedMasterHub:
         # Initialize exchange clients
         if KrakenClient:
             try:
+                from aureon.exchanges.kraken_client import get_kraken_client
                 self.exchange_clients['Kraken'] = get_kraken_client()
                 self.systems_status['Kraken'] = {
                     'status': 'ONLINE', 'confidence': 1.0, 'accuracy': 0.0,

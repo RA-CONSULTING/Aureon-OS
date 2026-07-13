@@ -58,6 +58,9 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from pathlib import Path
 
+ANTHROPIC_AVAILABLE = bool(os.getenv("ANTHROPIC_API_KEY"))
+
+
 # Windows UTF-8 fix
 if sys.platform == 'win32':
     os.environ['PYTHONIOENCODING'] = 'utf-8'

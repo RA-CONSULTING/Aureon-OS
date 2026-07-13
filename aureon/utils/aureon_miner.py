@@ -7591,7 +7591,7 @@ class MiningSession:
     def _init_binance_api(self):
         """Initialize Binance Pool API client if this is a Binance pool"""
         try:
-            from aureon.exchanges.binance_client import BinancePoolAPI
+            from aureon.exchanges.binance_client import BinancePoolAPI, get_binance_client
             self._binance_pool_api = BinancePoolAPI()
             logger.info(f"[{self.session_id}] Binance Pool API connected")
         except Exception as e:
@@ -7849,7 +7849,7 @@ class AureonMiner:
     def _load_binance_pool(self):
         """Load Binance Pool client for live earnings tracking"""
         try:
-            from aureon.exchanges.binance_client import BinancePoolClient, BinanceClient
+            from aureon.exchanges.binance_client import BinancePoolClient, BinanceClient, get_binance_client
             
             # Check if Binance API keys are configured
             api_key = os.getenv('BINANCE_API_KEY')

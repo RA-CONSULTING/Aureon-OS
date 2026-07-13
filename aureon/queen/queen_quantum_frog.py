@@ -9281,7 +9281,7 @@ class OrcaKillCycle:
             print(f"👑💰 IRA SNIPER KILL APPROVED FOR THE QUEEN: {symbol} (Profit Target SECURED). Bypassing prediction window.")
         
         if not pred_ok and not is_sniper_kill:
-            pnl_pct_log = (net_pnl / entry_cost * 100) if entry_cost > 0 else 0
+            pnl_pct_log = (est_pnl / entry_cost * 100) if entry_cost > 0 else 0
             reason_msg = pred_info.get('reason')
             print(f"🔮❌ PREDICTION WINDOW BLOCKED SELL: {symbol} [{exchange}]")
             print(f"     Reason: {reason_msg}")

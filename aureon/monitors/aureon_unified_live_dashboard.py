@@ -312,7 +312,7 @@ class AureonUnifiedDashboard:
         """Lazy load Binance client."""
         if self._binance is None:
             try:
-                from aureon.exchanges.binance_client import BinanceClient
+                from aureon.exchanges.binance_client import BinanceClient, get_binance_client
                 self._binance = get_binance_client()
                 logger.info("✓ Binance client loaded")
             except Exception as e:

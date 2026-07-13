@@ -35,6 +35,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from aureon.intelligence.aureon_taste_sense import MolecularData, MolecularSequencer, TasteSense, TasteExperience
+import logging
+logger = logging.getLogger(__name__)
+
 
 # ─── Category frequency discrimination bands ──────────────────────────────────
 # The sequencer maps taste_score → Hz.  We expect each category to populate

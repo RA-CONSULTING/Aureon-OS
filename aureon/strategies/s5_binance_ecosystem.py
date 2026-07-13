@@ -31,7 +31,7 @@ from decimal import Decimal
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from aureon.exchanges.binance_client import BinanceClient, BinancePoolClient
+from aureon.exchanges.binance_client import BinanceClient, BinancePoolClient, get_binance_client
 
 
 @dataclass

@@ -41,7 +41,7 @@ logging.getLogger('urllib3').setLevel(logging.WARNING)
 CHIRP_BUS_AVAILABLE = False
 get_chirp_bus = None
 try:
-    from aureon.core.aureon_chirp_bus import get_chirp_bus
+    from aureon.core.aureon_chirp_bus import ChirpDirection, ChirpType, get_chirp_bus
     CHIRP_BUS_AVAILABLE = True
     logger.info("🐦 Chirp Bus CONNECTED - Momentum scanners can hear Orca whale signals!")
 except ImportError:

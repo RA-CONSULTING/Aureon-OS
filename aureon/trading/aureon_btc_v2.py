@@ -19,7 +19,7 @@ import os, sys, time, logging, argparse, random, math, json
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from decimal import Decimal, ROUND_DOWN
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 
 # 🪙 PENNY PROFIT ENGINE
 try:

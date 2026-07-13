@@ -440,7 +440,7 @@ def load_all_systems():
         SYSTEMS_STATUS['Kraken Exchange'] = False
     
     try:
-        from aureon.exchanges.binance_client import BinanceClient
+        from aureon.exchanges.binance_client import BinanceClient, get_binance_client
         SYSTEMS_STATUS['Binance Exchange'] = True
     except ImportError:
         SYSTEMS_STATUS['Binance Exchange'] = False
@@ -766,7 +766,7 @@ def run_flight_check() -> Dict[str, FlightCheckResult]:
     # BINANCE EXCHANGE CHECK
     try:
         start = time.perf_counter()
-        from aureon.exchanges.binance_client import BinanceClient
+        from aureon.exchanges.binance_client import get_binance_client
         client = get_binance_client()
         ping_ts = datetime.now().isoformat()
         ping_ms = (time.perf_counter() - start) * 1000
@@ -6162,7 +6162,7 @@ async def update_balances_task():
         if SYSTEMS_STATUS.get('Binance Exchange'):
             try:
                 if binance_client is None:
-                    from aureon.exchanges.binance_client import BinanceClient
+                    from aureon.exchanges.binance_client import get_binance_client
                     binance_client = get_binance_client()
                 acct = binance_client.account()
                 fiat = {}

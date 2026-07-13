@@ -1,41 +1,9 @@
 {
-  "created_at": "2026-05-21T09:56:45.223626",
+  "created_at": "2026-07-13T08:26:59.743562",
   "total_predicted_edge": 0.0,
   "days": [
     {
-      "date": "2026-05-21T09:56:45.223626",
-      "daily_edge": 0.0,
-      "day_of_week": 3,
-      "is_optimal_day": false,
-      "is_avoid_day": false,
-      "windows": []
-    },
-    {
-      "date": "2026-05-22T09:56:45.223626",
-      "daily_edge": 0.0,
-      "day_of_week": 4,
-      "is_optimal_day": false,
-      "is_avoid_day": false,
-      "windows": []
-    },
-    {
-      "date": "2026-05-23T09:56:45.223626",
-      "daily_edge": 0.0,
-      "day_of_week": 5,
-      "is_optimal_day": false,
-      "is_avoid_day": false,
-      "windows": []
-    },
-    {
-      "date": "2026-05-24T09:56:45.223626",
-      "daily_edge": 0.0,
-      "day_of_week": 6,
-      "is_optimal_day": false,
-      "is_avoid_day": false,
-      "windows": []
-    },
-    {
-      "date": "2026-05-25T09:56:45.223626",
+      "date": "2026-07-13T08:26:59.743562",
       "daily_edge": 0.0,
       "day_of_week": 0,
       "is_optimal_day": false,
@@ -43,7 +11,7 @@
       "windows": []
     },
     {
-      "date": "2026-05-26T09:56:45.223626",
+      "date": "2026-07-14T08:26:59.743562",
       "daily_edge": 0.0,
       "day_of_week": 1,
       "is_optimal_day": false,
@@ -51,9 +19,41 @@
       "windows": []
     },
     {
-      "date": "2026-05-27T09:56:45.223626",
+      "date": "2026-07-15T08:26:59.743562",
       "daily_edge": 0.0,
       "day_of_week": 2,
+      "is_optimal_day": false,
+      "is_avoid_day": false,
+      "windows": []
+    },
+    {
+      "date": "2026-07-16T08:26:59.743562",
+      "daily_edge": 0.0,
+      "day_of_week": 3,
+      "is_optimal_day": false,
+      "is_avoid_day": false,
+      "windows": []
+    },
+    {
+      "date": "2026-07-17T08:26:59.743562",
+      "daily_edge": 0.0,
+      "day_of_week": 4,
+      "is_optimal_day": false,
+      "is_avoid_day": false,
+      "windows": []
+    },
+    {
+      "date": "2026-07-18T08:26:59.743562",
+      "daily_edge": 0.0,
+      "day_of_week": 5,
+      "is_optimal_day": false,
+      "is_avoid_day": false,
+      "windows": []
+    },
+    {
+      "date": "2026-07-19T08:26:59.743562",
+      "daily_edge": 0.0,
+      "day_of_week": 6,
       "is_optimal_day": false,
       "is_avoid_day": false,
       "windows": []

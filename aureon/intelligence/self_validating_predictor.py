@@ -33,7 +33,7 @@ from collections import deque
 
 os.environ['LIVE'] = '1'
 
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 from aureon.exchanges.kraken_client import KrakenClient, get_kraken_client
 
 # Constants

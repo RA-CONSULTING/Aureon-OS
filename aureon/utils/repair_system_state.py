@@ -71,7 +71,7 @@ def repair():
     # 4. Final Connectivity Check
     print("\n📡 100% CONNECTIVITY VERIFICATION...")
     try:
-        from aureon.exchanges.binance_client import BinanceClient
+        from aureon.exchanges.binance_client import BinanceClient, get_binance_client
         bc = get_binance_client()
         print("   ✅ BINANCE: Connected")
     except: print("   ❌ BINANCE: Failed")

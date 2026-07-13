@@ -31,7 +31,7 @@ os.environ['LIVE'] = '1'
 os.environ['DRY_RUN'] = '0'
 
 # Import all prediction systems
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 from aureon.harmonic.earth_resonance_engine import EarthResonanceEngine
 from aureon.strategies.hnc_imperial_predictability import CosmicStateEngine, PredictabilityEngine, CosmicPhase
 

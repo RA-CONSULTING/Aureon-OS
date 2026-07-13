@@ -19,7 +19,7 @@ import math
 import logging
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 
 logging.basicConfig(
     level=logging.INFO,

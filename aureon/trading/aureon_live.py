@@ -35,7 +35,7 @@ try:
 except Exception:
     pass
 from datetime import datetime
-from aureon.exchanges.binance_client import BinanceClient, safe_trade, load_risk_config
+from aureon.exchanges.binance_client import BinanceClient, safe_trade, load_risk_config, get_binance_client
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # LOGGING SETUP

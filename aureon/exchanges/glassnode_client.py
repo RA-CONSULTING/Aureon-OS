@@ -343,7 +343,7 @@ class GlassnodeClient:
             if price and price > 0:
                 return float(price)
         except Exception as exc:
-            logger.warning("[glassnode] _get_btc_price_at_timestamp fallback "
+            self.logger.warning("[glassnode] _get_btc_price_at_timestamp fallback "
                            "chain raised: %s; returning 0.0", exc)
         # Every real source failed — return 0.0 sentinel rather than
         # hardcoded $45,000. Downstream whale_flow_usd will be 0, which

@@ -5,7 +5,7 @@ Executes trades and compounds profits automatically.
 """
 
 from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 import time
 import json
 from datetime import datetime

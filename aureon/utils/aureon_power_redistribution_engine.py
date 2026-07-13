@@ -73,7 +73,7 @@ from datetime import datetime
 from enum import Enum
 
 # Exchange clients
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 from aureon.exchanges.kraken_client import KrakenClient, get_kraken_client
 from aureon.exchanges.alpaca_client import AlpacaClient
 from aureon.exchanges.capital_client import CapitalClient

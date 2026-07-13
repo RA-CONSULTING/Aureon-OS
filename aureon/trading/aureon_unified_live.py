@@ -29,7 +29,7 @@ if sys.platform == 'win32':
     sys.stdout.reconfigure(encoding='utf-8')
     sys.stderr.reconfigure(encoding='utf-8')
 
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 from aureon.strategies.hnc_probability_matrix import HNCProbabilityIntegration
 from aureon.core.aureon_memory_core import memory as spiral_memory
 

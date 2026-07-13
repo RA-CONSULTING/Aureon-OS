@@ -16,7 +16,7 @@ try:
     load_dotenv()
 except Exception:
     pass
-from aureon.exchanges.binance_client import BinanceClient, safe_trade, load_risk_config, position_size_from_balance
+from aureon.exchanges.binance_client import BinanceClient, safe_trade, load_risk_config, position_size_from_balance, get_binance_client
 
 
 def main():

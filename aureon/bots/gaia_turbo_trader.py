@@ -48,7 +48,7 @@ class GaiaTurboTrader:
         # Connect to exchanges
         print("🔌 Connecting to ALL platforms...")
         
-        from aureon.exchanges.binance_client import BinanceClient
+        from aureon.exchanges.binance_client import BinanceClient, get_binance_client
         from aureon.exchanges.alpaca_client import AlpacaClient
         from aureon.exchanges.kraken_client import KrakenClient, get_kraken_client
         

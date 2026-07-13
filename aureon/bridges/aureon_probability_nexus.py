@@ -49,6 +49,7 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
 import requests
 import asyncio
+import aiohttp
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # 🤖 Dr Auris Throne AI Agent Integration (Harmonic/Quantum validation)

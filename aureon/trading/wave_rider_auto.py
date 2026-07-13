@@ -17,7 +17,7 @@ import requests
 import time
 import os
 from datetime import datetime, timezone
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 
 class WaveRiderAuto:
     """Continuous wave riding system"""

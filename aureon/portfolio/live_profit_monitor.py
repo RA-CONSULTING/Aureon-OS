@@ -18,7 +18,7 @@ def get_current_price(symbol, exchange):
             ticker = client.get_ticker(symbol)
             return float(ticker.get('last', 0)) if ticker else 0
         elif exchange == 'binance':
-            from aureon.exchanges.binance_client import BinanceClient
+            from aureon.exchanges.binance_client import BinanceClient, get_binance_client
             client = get_binance_client()
             ticker = client.get_ticker(symbol)
             return float(ticker.get('price', 0)) if ticker else 0

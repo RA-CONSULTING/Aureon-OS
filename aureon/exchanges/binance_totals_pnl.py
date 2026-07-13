@@ -6,7 +6,7 @@ import sys
 from datetime import datetime, timezone
 from typing import Dict, Tuple
 
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 
 BASELINE_FILE = "pnl_baseline.json"
 

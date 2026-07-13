@@ -91,7 +91,7 @@ except ImportError:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # The single execution layer - no duplicate imports!
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SACRED CONSTANTS (Shared across all modules)

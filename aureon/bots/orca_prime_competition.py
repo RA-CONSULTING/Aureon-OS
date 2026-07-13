@@ -41,7 +41,7 @@ from queue import Queue, Empty
 if sys.platform == 'win32':
     os.environ['PYTHONIOENCODING'] = 'utf-8'
 
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 
 # =============================================================================
 # CONFIGURATION

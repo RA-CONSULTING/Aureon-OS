@@ -26,7 +26,7 @@ from collections import deque
 
 # Try to import all clients
 try:
-    from aureon.exchanges.binance_client import BinanceClient
+    from aureon.exchanges.binance_client import BinanceClient, get_binance_client
     BINANCE_OK = True
 except:
     BINANCE_OK = False

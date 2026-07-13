@@ -245,6 +245,7 @@ class OrcaCommandCenter:
         
         try:
             if KrakenClient:
+                from aureon.exchanges.kraken_client import get_kraken_client
                 self.kraken = get_kraken_client()
                 logger.info("✅ Kraken connected")
         except Exception as e:

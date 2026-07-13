@@ -35,7 +35,7 @@ import logging
 import time
 import math
 from typing import Dict, List, Optional, Tuple
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from collections import deque
 
 # 🚌 Communication Buses

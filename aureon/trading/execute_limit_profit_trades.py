@@ -19,7 +19,7 @@ import time
 os.environ['LIVE'] = '1'
 os.environ['DRY_RUN'] = '0'
 
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 from aureon.trading.aureon_unified_ecosystem import CONFIG, get_platform_fee
 
 def get_ticker(client, symbol: str):

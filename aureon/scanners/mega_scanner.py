@@ -39,7 +39,7 @@ except ImportError:
     KRAKEN_OK = False
 
 try:
-    from aureon.exchanges.binance_client import BinanceClient
+    from aureon.exchanges.binance_client import BinanceClient, get_binance_client
     BINANCE_OK = True
 except ImportError:
     BinanceClient = None

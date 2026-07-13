@@ -39,7 +39,7 @@ import logging
 import random
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 
 # 🪙 PENNY PROFIT ENGINE
 try:

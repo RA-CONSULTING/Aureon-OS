@@ -33,7 +33,7 @@ from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_lin
 import os, sys, json, time, logging, argparse, threading
 from datetime import datetime
 from typing import List, Dict, Any
-from aureon.exchanges.binance_client import BinanceClient
+from aureon.exchanges.binance_client import BinanceClient, get_binance_client
 
 try:
     from dotenv import load_dotenv
