@@ -18,7 +18,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aureon"
-version = "1.0.0"
+version = "2.1.0"
 description = "Aureon OS — Harmonic Nexus Core: a grounded AI operating layer for evidence-heavy, high-control work (trading research, autonomous operator, HNC research, coding organism)."
 readme = "README.md"
 requires-python = ">=3.11"
