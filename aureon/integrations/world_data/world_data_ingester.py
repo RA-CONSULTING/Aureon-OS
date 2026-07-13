@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import threading
 import time
 import urllib.error
@@ -95,6 +96,8 @@ class WorldDataIngester:
             "arxiv_calls": 0,
             "world_bank_calls": 0,
             "fred_calls": 0,
+            "noaa_cdo_calls": 0,
+            "usgs_water_calls": 0,
             "open_library_calls": 0,
             "wikidata_calls": 0,
             "duckduckgo_calls": 0,
@@ -122,6 +125,96 @@ class WorldDataIngester:
             with self._lock:
                 self._stats["errors"] += 1
             return None
+
+    def _http_get_headers(self, url: str, headers: Dict[str, str]) -> Optional[Any]:
+        """Like ``_http_get`` but with caller-supplied headers (API-key auth).
+
+        Used by the keyed feeds (NOAA CDO ``token``, USGS Water ``X-Api-Key``).
+        Returns None on any error — never raises into the daemon loop.
+        """
+        try:
+            merged = {"User-Agent": self.USER_AGENT, "Accept": "application/json"}
+            merged.update(headers)
+            req = urllib.request.Request(url, headers=merged)
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                return json.loads(resp.read().decode("utf-8"))
+        except Exception as exc:
+            logger.debug("HTTP GET (headers) failed (%s): %s", url, exc)
+            with self._lock:
+                self._stats["errors"] += 1
+            return None
+
+    # ─────────────────────────────────────────────────────────────────────
+    # NOAA NCEI — Climate Data Online (keyed: header `token` = NOAA_API_KEY)
+    # ─────────────────────────────────────────────────────────────────────
+    def fetch_noaa_climate(self, limit: int = 5) -> Optional[WorldDataItem]:
+        """NCEI Climate Data Online dataset catalogue (a keyed reachability read).
+
+        Keyed feed: reads ``NOAA_API_KEY`` lazily from the environment (the
+        bootstrap populates it). The ``/datasets`` endpoint needs only the token
+        (the ``/data`` endpoint requires a station + date range), so it is the
+        reliable "is the CDO key live" signal for the HNC field. Returns None —
+        a clean keyless-skip — when the key is absent, so a keyless deploy boots.
+        """
+        with self._lock:
+            self._stats["noaa_cdo_calls"] += 1
+        token = os.environ.get("NOAA_API_KEY", "").strip()
+        if not token:
+            return None
+        url = f"https://www.ncei.noaa.gov/cdo-web/api/v2/datasets?limit={int(limit)}"
+        data = self._http_get_headers(url, {"token": token})
+        if not data:
+            return None
+        results = data.get("results", []) if isinstance(data, dict) else []
+        if not results:
+            return None
+        first = results[0]
+        name = first.get("name") or first.get("id", "")
+        return WorldDataItem(
+            source="noaa_cdo",
+            topic="datasets",
+            title=f"NOAA CDO {name}",
+            text=f"NOAA Climate Data Online: {len(results)} datasets (top: {name})",
+            url="https://www.ncei.noaa.gov/cdo-web/",
+            raw={"count": len(results), "first": first},
+            category="environmental",
+        )
+
+    # ─────────────────────────────────────────────────────────────────────
+    # USGS — Water Data OGC API (keyed: header `X-Api-Key` = USGS_API_KEY)
+    # ─────────────────────────────────────────────────────────────────────
+    def fetch_usgs_water(self, limit: int = 5) -> Optional[WorldDataItem]:
+        """USGS Water Data collections snapshot.
+
+        Keyed feed: reads ``USGS_API_KEY`` lazily from the environment. Returns
+        None (keyless-skip) when the key is absent.
+        """
+        with self._lock:
+            self._stats["usgs_water_calls"] += 1
+        key = os.environ.get("USGS_API_KEY", "").strip()
+        if not key:
+            return None
+        url = (
+            "https://api.waterdata.usgs.gov/ogcapi/v0/collections"
+            f"?limit={int(limit)}"
+        )
+        data = self._http_get_headers(url, {"X-Api-Key": key})
+        if not data:
+            return None
+        collections = data.get("collections", []) if isinstance(data, dict) else []
+        if not collections:
+            return None
+        first = collections[0]
+        title = first.get("title") or first.get("id", "")
+        return WorldDataItem(
+            source="usgs_water",
+            topic="collections",
+            title=f"USGS Water {title}",
+            text=f"USGS Water Data: {len(collections)} collections (top: {title})",
+            url="https://api.waterdata.usgs.gov/ogcapi/v0/",
+            raw={"count": len(collections), "first": first},
+            category="environmental",
+        )
 
     # ─────────────────────────────────────────────────────────────────────
     # Wikipedia REST API (no key)

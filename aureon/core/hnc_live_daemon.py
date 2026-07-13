@@ -70,6 +70,9 @@ MACRO_INTERVAL = 60             # GlobalFinancialFeed has its own 60s cache
 COINGECKO_INTERVAL = 300        # CoinGecko free tier ~50 calls/min
 COMMUNITY_INTERVAL = 900        # Reddit + HN community sentiment
 FRED_INTERVAL = 3600            # FRED economic releases are sparse
+# Phase 16 — keyed science feeds (skip cleanly when the key is unset):
+NOAA_CDO_INTERVAL = 3600        # NCEI Climate Data Online — slow daily records
+USGS_WATER_INTERVAL = 1800      # USGS Water Data collections — slow feed
 
 # Compute cadence — how often the engine takes a step against the latest
 # readings. The kernel is cheap (<1 ms/step) so 5 s gives the field high
@@ -291,6 +294,51 @@ def _map_fred(item) -> SubsystemReading:
     )
 
 
+def _map_noaa_climate(item) -> SubsystemReading:
+    """NOAA NCEI Climate Data Online record → SubsystemReading.
+
+    The daily climate record is an environmental-context input: a *present,
+    authoritative* reading is a stable, high-confidence signal (value 0.75).
+    A missing key/record degrades to a neutral, zero-confidence reading so the
+    field simply ignores it. State carries the datatype + latest value.
+    """
+    if item is None:
+        return SubsystemReading(
+            name="noaa_climate", value=0.5, confidence=0.0, state="unavailable",
+        )
+    raw = getattr(item, "raw", None) or {}
+    count = int(raw.get("count", 0)) if isinstance(raw, dict) else 0
+    return SubsystemReading(
+        name="noaa_climate",
+        value=0.75,
+        confidence=0.8,
+        state=f"{count}_datasets",
+    )
+
+
+def _map_usgs_water(item) -> SubsystemReading:
+    """USGS Water Data collections snapshot → SubsystemReading.
+
+    Reachable, keyed water-data service = a stable environmental-context input.
+    value scales gently with how many collections responded (tanh-saturated),
+    so a richer response reads as marginally higher coherence. Absent → neutral.
+    """
+    if item is None:
+        return SubsystemReading(
+            name="usgs_water", value=0.5, confidence=0.0, state="unavailable",
+        )
+    raw = getattr(item, "raw", None) or {}
+    count = int(raw.get("count", 0)) if isinstance(raw, dict) else 0
+    import math
+    value = 0.5 + 0.5 * math.tanh(count / 20.0)
+    return SubsystemReading(
+        name="usgs_water",
+        value=float(value),
+        confidence=0.8,
+        state=f"{count}_collections",
+    )
+
+
 # ─── The daemon ───────────────────────────────────────────────────
 
 class HNCLiveDaemon:
@@ -493,6 +541,32 @@ class HNCLiveDaemon:
         except Exception as exc:
             logger.warning("HNC daemon: fred_unrate not wired (%s)", exc)
 
+        # ─── Phase 16: NOAA NCEI climate (keyed — NOAA_API_KEY) ───
+        try:
+            from aureon.integrations.world_data.world_data_ingester import WorldDataIngester
+            noaa_ingester = WorldDataIngester()
+
+            async def fetch_noaa_climate():
+                item = await asyncio.to_thread(noaa_ingester.fetch_noaa_climate)
+                return _map_noaa_climate(item)
+
+            self.register_source("noaa_climate", NOAA_CDO_INTERVAL, fetch_noaa_climate)
+        except Exception as exc:
+            logger.warning("HNC daemon: noaa_climate not wired (%s)", exc)
+
+        # ─── Phase 16: USGS Water Data (keyed — USGS_API_KEY) ─────
+        try:
+            from aureon.integrations.world_data.world_data_ingester import WorldDataIngester
+            usgs_ingester = WorldDataIngester()
+
+            async def fetch_usgs_water():
+                item = await asyncio.to_thread(usgs_ingester.fetch_usgs_water)
+                return _map_usgs_water(item)
+
+            self.register_source("usgs_water", USGS_WATER_INTERVAL, fetch_usgs_water)
+        except Exception as exc:
+            logger.warning("HNC daemon: usgs_water not wired (%s)", exc)
+
     # ─── per-source pull loop ──────────────────────────────────
 
     async def _source_loop(self, name: str) -> None:
@@ -668,5 +742,16 @@ if __name__ == "__main__":
         level=os.environ.get("AUREON_LOG_LEVEL", "INFO"),
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
+    # Bring every credential into the environment before the sources wire — the
+    # daemon otherwise loads nothing, so NASA_API_KEY (DONKI enrichment) and the
+    # NOAA/USGS keys would be invisible to the fetchers. Presence-only self-check.
+    try:
+        from aureon.core.aureon_env import bootstrap_credentials
+
+        _boot = bootstrap_credentials()
+        _keys = " ".join(f"{k.split('_')[0]}={'on' if v else 'off'}" for k, v in _boot["present"].items())
+        logger.info("HNC daemon credentials: %s", _keys)
+    except Exception as exc:  # noqa: BLE001 - never block the daemon on env setup
+        logger.warning("HNC daemon: credential bootstrap skipped (%s)", exc)
     duration = float(os.environ.get("AUREON_HNC_DAEMON_DURATION", "0")) or None
     asyncio.run(HNCLiveDaemon().run(duration_s=duration))
