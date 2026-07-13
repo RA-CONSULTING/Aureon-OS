@@ -9490,4 +9490,8 @@ const App = () => (
   </ThemeProvider>
 );
 
+// The inner nine-tab console, mountable inside the unified shell (which
+// provides its own theme/query/tooltip/toaster providers).
+export { AppShell as LegacyConsole };
+
 export default App;
