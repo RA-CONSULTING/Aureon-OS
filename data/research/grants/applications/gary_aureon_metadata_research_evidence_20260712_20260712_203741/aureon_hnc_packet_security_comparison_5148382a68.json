@@ -1,0 +1,269 @@
+{
+  "generated_at": "2026-05-14T19:56:14.337040+00:00",
+  "hnc_packet_self_breaker": {
+    "checks": [
+      {
+        "name": "ciphertext_bit_flip",
+        "passed": true,
+        "result": "packet_contract_failed:packet_hash_mismatch"
+      },
+      {
+        "name": "geometry_frequency_tamper",
+        "passed": true,
+        "result": "packet_contract_failed:hnc_alignment_hash_mismatch,packet_hash_mismatch"
+      },
+      {
+        "name": "purpose_tamper",
+        "passed": true,
+        "result": "packet_contract_failed:packet_hash_mismatch"
+      },
+      {
+        "name": "operator_aad_tamper",
+        "passed": true,
+        "result": "packet_contract_failed:packet_hash_mismatch"
+      },
+      {
+        "name": "packet_hash_tamper",
+        "passed": true,
+        "result": "packet_contract_failed:packet_hash_mismatch"
+      },
+      {
+        "name": "temporal_fragment_missing",
+        "passed": true,
+        "result": "missing_fragments"
+      },
+      {
+        "name": "temporal_fragment_tamper",
+        "passed": true,
+        "result": "fragment_chunk_hash_mismatch"
+      }
+    ],
+    "generated_at": "2026-05-14T19:56:14.299296+00:00",
+    "packet_sha256": "336568e98aa10befb73a6f82f38ebc247a05d7313e2a5d05d19cae73f32103ee",
+    "passed": true,
+    "schema_version": 1,
+    "secret_policy": "breaker_does_not_emit_plaintext"
+  },
+  "hnc_swarm_self_breaker": {
+    "checks": [
+      {
+        "name": "valid_two_agent_pair_decode",
+        "passed": true,
+        "result": "decoded"
+      },
+      {
+        "name": "single_agent_decode_blocked",
+        "passed": true,
+        "result": "two_agent_locknotes_required"
+      },
+      {
+        "name": "wrong_agent_secret_blocked",
+        "passed": true,
+        "result": "no_valid_two_agent_locknote_pair:swarm_locknote_authentication_failed,swarm_locknote_authentication_failed,swarm_locknote_authentication_failed"
+      },
+      {
+        "name": "locknote_tamper_blocked",
+        "passed": true,
+        "result": "packet_contract_failed:packet_hash_mismatch"
+      },
+      {
+        "name": "missing_pair_locknote_blocked",
+        "passed": true,
+        "result": "no_valid_two_agent_locknote_pair:"
+      }
+    ],
+    "generated_at": "2026-05-14T19:56:14.310510+00:00",
+    "packet_sha256": "e7d1e2d4a5426464d961af28cba88bc41b81e85227979f1b6b2b92465ebed491",
+    "passed": true,
+    "schema_version": 1,
+    "secret_policy": "breaker_does_not_emit_plaintext",
+    "swarm_mode": "hnc_swarm_two_way_locknotes_v1"
+  },
+  "next_upgrades": [
+    "Move AUREON_HNC_PACKET_MASTER_KEY and swarm agent keys out of .env and into Windows Credential Manager or an equivalent local secret store.",
+    "Use two-way swarm locknotes for high-value credentials and keep single-master HNC packets for lower-risk local bootstrap values.",
+    "Add key rotation: decrypt old hncqp1 tokens, re-encrypt with a new master key, and write a rotation evidence report.",
+    "Add optional KMS/HSM envelope mode for hosted or multi-user deployments.",
+    "Keep breaker checks in CI so tampered geometry, fragments, or AAD never decode.",
+    "Keep the symbolic route catalogs under audit so rune/star route seals stay reproducible and evidence-linked."
+  ],
+  "references": [
+    {
+      "title": "NIST SP 800-38D: Galois/Counter Mode",
+      "url": "https://nvlpubs.nist.gov/nistpubs/legacy/sp/nistspecialpublication800-38d.pdf",
+      "used_for": "AES-GCM authenticated encryption expectations"
+    },
+    {
+      "title": "RFC 5869: HMAC-based Extract-and-Expand Key Derivation Function",
+      "url": "https://datatracker.ietf.org/doc/html/rfc5869",
+      "used_for": "HKDF-SHA256 key derivation basis"
+    },
+    {
+      "title": "NIST FIPS 180-4: Secure Hash Standard",
+      "url": "https://csrc.nist.gov/pubs/fips/180-4/upd1/final",
+      "used_for": "SHA-256 digest/fingerprint basis"
+    },
+    {
+      "title": "NIST SP 800-57 Part 1 Rev. 5: Recommendation for Key Management",
+      "url": "https://csrc.nist.gov/pubs/sp/800/57/pt1/r5/final",
+      "used_for": "split knowledge, dual control, and key custody basis"
+    }
+  ],
+  "rows": [
+    {
+      "aureon_fit": "bootstrap only; acceptable for local dev, weak for live credentials",
+      "category": "local_file",
+      "confidentiality": "none",
+      "integrity": "none",
+      "key_management": "none",
+      "limitation": "any process or user reading the file sees the secret",
+      "method": "Plaintext .env values",
+      "score": 8,
+      "tamper_detection": "none"
+    },
+    {
+      "aureon_fit": "not acceptable for real credential protection",
+      "category": "obfuscation",
+      "confidentiality": "none",
+      "integrity": "none",
+      "key_management": "none",
+      "limitation": "encoding is reversible without a key",
+      "method": "Base64/encoding only",
+      "score": 12,
+      "tamper_detection": "none"
+    },
+    {
+      "aureon_fit": "good for packet fingerprints, not for storing API keys Aureon must reuse",
+      "category": "digest",
+      "confidentiality": "one-way fingerprint only",
+      "integrity": "detects equality when original is known",
+      "key_management": "none",
+      "limitation": "cannot decrypt; API clients need the original secret",
+      "method": "SHA-256 hash only",
+      "score": 24,
+      "tamper_detection": "partial"
+    },
+    {
+      "aureon_fit": "not preferred because tamper detection is easy to get wrong",
+      "category": "legacy_encryption",
+      "confidentiality": "medium when implemented correctly",
+      "integrity": "weak unless paired with a MAC",
+      "key_management": "operator-managed",
+      "limitation": "malleability and padding risks without authenticated design",
+      "method": "AES-CBC without separate authentication",
+      "score": 46,
+      "tamper_detection": "weak"
+    },
+    {
+      "aureon_fit": "future transport upgrade; not required for local symmetric .env protection today",
+      "category": "future_hybrid",
+      "confidentiality": "depends on selected standardized/hybrid scheme",
+      "integrity": "scheme dependent",
+      "key_management": "more complex",
+      "limitation": "does not remove the need for AEAD payload encryption and key custody",
+      "method": "Post-quantum / hybrid public-key envelope",
+      "score": 76,
+      "tamper_detection": "strong when paired with AEAD"
+    },
+    {
+      "aureon_fit": "strong local upgrade for .env credential-at-rest protection and HNC decode proof",
+      "breaker_passed": true,
+      "category": "authenticated_local_envelope",
+      "confidentiality": "AES-GCM payload secrecy",
+      "fragment_count_in_self_test": 20,
+      "integrity": "packet hash, AES-GCM authentication, HNC geometry, and symbolic route seal",
+      "key_management": "operator-managed AUREON_HNC_PACKET_MASTER_KEY",
+      "limitation": "security depends on keeping the master key outside git and away from leaked logs/process dumps",
+      "live_evidence_present": true,
+      "master_key_env_present": false,
+      "method": "Aureon HNC harmonic packet v1",
+      "score": 78,
+      "symbolic_route_present": true,
+      "tamper_detection": "strong packet, geometry, symbolic route, AAD, and fragment checks"
+    },
+    {
+      "aureon_fit": "excellent baseline; HNC packet adds Aureon-specific authenticated context",
+      "category": "authenticated_local_envelope",
+      "confidentiality": "AES-GCM payload secrecy",
+      "integrity": "AES-GCM authentication",
+      "key_management": "operator-managed or app-managed",
+      "limitation": "still only as strong as key storage and nonce discipline",
+      "method": "Generic AES-GCM envelope encryption",
+      "score": 82,
+      "tamper_detection": "strong"
+    },
+    {
+      "agent_count_in_self_test": 3,
+      "aureon_fit": "best local HNC design for high-value secrets because a single agent/key cannot decode alone",
+      "breaker_passed": true,
+      "category": "split_knowledge_dual_control_envelope",
+      "confidentiality": "AES-GCM payload secrecy with two-agent key-share reconstruction",
+      "integrity": "packet hash, AES-GCM authentication, locknote authentication, HNC geometry, and symbolic route contract",
+      "key_management": "two independent agent master keys required per decode",
+      "limitation": "still depends on keeping agent master keys separate and protected outside git/logs/process dumps",
+      "method": "Aureon HNC swarm two-way locknote packet v1",
+      "score": 86,
+      "single_agent_can_decode": false,
+      "symbolic_route_present": true,
+      "tamper_detection": "strong packet, locknote, AAD, geometry, symbolic route, and missing-pair checks"
+    },
+    {
+      "aureon_fit": "best next local upgrade: store the HNC master key outside .env",
+      "category": "local_secret_store",
+      "confidentiality": "OS-protected secret storage",
+      "integrity": "OS-managed",
+      "key_management": "user/session/OS-managed",
+      "limitation": "less portable across headless/server deployments",
+      "method": "OS keychain / Windows Credential Manager",
+      "score": 88,
+      "tamper_detection": "strong through OS APIs"
+    },
+    {
+      "aureon_fit": "best production/server target when multiple users or hosted SaaS are involved",
+      "category": "managed_key_infrastructure",
+      "confidentiality": "strong with hardware or managed key custody",
+      "integrity": "managed audit and policy controls",
+      "key_management": "centralized, rotatable, auditable",
+      "limitation": "requires external account, permissions, cost, and network availability",
+      "method": "Cloud KMS / HSM-backed envelope encryption",
+      "score": 94,
+      "tamper_detection": "strong"
+    }
+  ],
+  "schema_version": "aureon-hnc-packet-security-comparison-v1",
+  "secret_policy": "metadata_only_no_secret_values",
+  "security_boundary": {
+    "cryptographic_secret_role": "AES-GCM payload secrecy under a master key or two-agent swarm key-share reconstruction",
+    "hnc_geometry_role": "authenticated decode contract and evidence context",
+    "swarm_locknote_role": "split-knowledge dual-control gate where one agent key cannot decode alone",
+    "symbolic_route_role": "authenticated rune/star/Maeshowe context seal; proves route intent and catalog provenance but is not secret key material",
+    "what_hnc_does_not_replace": "key custody, OS permissions, KMS/HSM policy, endpoint authentication, and process memory protection"
+  },
+  "status": "comparison_ready",
+  "summary": {
+    "beats_base64_by": 66,
+    "beats_plaintext_by": 70,
+    "beats_sha_only_by": 54,
+    "below_kms_hsm_by": 16,
+    "below_os_keychain_by": 10,
+    "breaker_passed": true,
+    "compared_methods": 10,
+    "current_hnc_rating": "strong_local_envelope_when_master_key_is_protected",
+    "current_hnc_score": 78,
+    "current_swarm_rating": "stronger_split_knowledge_local_envelope_when_agent_keys_are_separated",
+    "current_swarm_score": 86,
+    "fragment_self_test_count": 20,
+    "live_packet_evidence_present": true,
+    "main_weakness": "operator-managed key custody",
+    "master_key_env_present": false,
+    "swarm_agent_self_test_count": 3,
+    "swarm_beats_hnc_by": 8,
+    "swarm_below_kms_hsm_by": 8,
+    "swarm_below_os_keychain_by": 2,
+    "swarm_breaker_passed": true,
+    "symbolic_route_bound_to_packets": true,
+    "symbolic_route_catalogs_present": 5,
+    "symbolic_route_symbol_count": 114,
+    "top_recommendation": "store HNC/swarm agent keys in Windows Credential Manager or another OS secret store, keep only hncqp1 packets and public locknotes in .env/state, and require two agent keys for high-value decode"
+  }
+}

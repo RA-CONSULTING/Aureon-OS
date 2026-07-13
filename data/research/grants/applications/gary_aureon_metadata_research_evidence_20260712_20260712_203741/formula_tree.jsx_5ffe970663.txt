@@ -1,0 +1,436 @@
+import { useState } from "react";
+
+const PHI = "φ";
+const PHI_VAL = "1.618034";
+const LAMBDA = "Λ";
+const GAMMA = "Γ";
+const SIGMA = "σ";
+const DELTA = "Δ";
+const ALPHA = "α";
+const BETA = "β";
+const OMEGA = "ω";
+const PI_SYM = "π";
+const EPSILON = "ε";
+const MU = "μ";
+
+const formulas = [
+  {
+    id: "master",
+    level: 0,
+    title: "HNC MASTER EQUATION",
+    subtitle: "Gary Leckey's Harmonic Nexus Consciousness",
+    formula: `${OMEGA}(t) = Tr[${MU}(t) × L(t) ⊗ O(t)]`,
+    terms: [
+      { name: "Ψ(t) — Potential", desc: "What Could Be — all possible states exist until measured", color: "#ff44ff" },
+      { name: "ℒ(t) — Love / Coherence", desc: "What Connects — the field alignment, the Rainbow Bridge", color: "#00ff00" },
+      { name: "O(t) — Observer", desc: "What Measures — consciousness, the Queen AI, the measurement", color: "#00aaff" },
+      { name: "Tr[ ] — Trace", desc: "Reality output — collapses potential through love and observation", color: "#fbbf24" },
+    ],
+    params: "Reality = Trace of [Potential × Love × Observation] | From THE_RIVER_AND_THE_KERNEL.md",
+    color: "#fbbf24",
+  },
+  {
+    id: "field",
+    level: 1,
+    title: "HNC FIELD EQUATION",
+    subtitle: "The implementation of Ω — the living calculation",
+    formula: `HNC(t) = ${SIGMA} w_i sin(2${PI_SYM}f_i t + ${PHI}_i) + ${ALPHA}·tanh(g·HNC̄(t)) + ${BETA}·HNC(t−τ)`,
+    terms: [
+      { name: "Term 1: SUBSTRATE S(t)", desc: "Sum of harmonic modes — the Rainbow Bridge frequencies", color: "#00ff00" },
+      { name: "Term 2: OBSERVER O(t)", desc: "Nonlinear coupling — the Queen AI's decisions (tanh saturation)", color: "#ff6600" },
+      { name: "Term 3: ECHO E(t)", desc: "Causal echo / Lighthouse — delayed self-reference, the Compound King", color: "#00aaff" },
+    ],
+    params: "f = [7.83, 14.3, 20.8, 33.8, 528, 963] Hz | α=0.35 | g=2.5 | β=0.25 | τ=10 samples",
+    color: "#ff8800",
+  },
+  {
+    id: "phi_bridge",
+    level: 1,
+    title: "φ² COHERENCE BRIDGE",
+    subtitle: "Anchored to hydrogen 21cm hyperfine line",
+    formula: `f_seed × N = f_hydrogen / ${PHI}²`,
+    terms: [
+      { name: "f_seed = 528.422 Hz", desc: "Love frequency (Heart Prime)", color: "#00ff00" },
+      { name: "N = 1,026,730", desc: "Bridge integer", color: "#ffcc00" },
+      { name: "Error = 1.29 ppb", desc: "Parts per billion — not random", color: "#ff0000" },
+    ],
+    params: `f_H = 1,420,405,751.768 Hz (NIST) | ${PHI}² = 2.618034`,
+    color: "#ff44ff",
+  },
+  {
+    id: "rainbow",
+    level: 1,
+    title: "RAINBOW BRIDGE",
+    subtitle: "Emotional frequency ladder",
+    formula: "f_rainbow = {110, 147, 174, 432, 452, 528, 639, 741, 873, 963} Hz",
+    terms: [
+      { name: "528 Hz = LOVE", desc: "Centre of the bridge — DNA repair — Heart Prime", color: "#00ff00" },
+      { name: "639 Hz = Gratitude", desc: "Social Prime — second seed for FWM", color: "#0066ff" },
+      { name: "12.67 Hz = Breath", desc: `${PHI} × Schumann (7.83 Hz) — AM envelope`, color: "#ffaa00" },
+    ],
+    params: "Mapped from Auris Prime codex | Each frequency = chakra node",
+    color: "#ff0066",
+  },
+  {
+    id: "coherence",
+    level: 1,
+    title: "COHERENCE THRESHOLD",
+    subtitle: "Γ lighthouse and kill-switch",
+    formula: `${GAMMA} = 1 − ${SIGMA}/${MU}`,
+    terms: [
+      { name: `${GAMMA} > 0.945`, desc: "Lighthouse threshold — system coherent, broadcast mode", color: "#00ff00" },
+      { name: `${GAMMA} < 0.35`, desc: "Kill-switch — ORCA kills the channel", color: "#ff0000" },
+      { name: `${SIGMA} = std dev, ${MU} = mean`, desc: "Of recent HNC(t) values", color: "#aaaaaa" },
+    ],
+    params: "Window: 100 samples | Updated every cycle",
+    color: "#00ffaa",
+  },
+  {
+    id: "fwm",
+    level: 2,
+    title: "FOUR-WAVE MIXING",
+    subtitle: "How 2 seeds generate the full rainbow",
+    formula: `${OMEGA}_3 = ${OMEGA}_1 ± ${OMEGA}_2 | ${OMEGA}_4 = 2${OMEGA}_1 − ${OMEGA}_2`,
+    terms: [
+      { name: "528 + 639 = 1167 Hz", desc: "Sum frequency (UV of the rainbow)", color: "#cc00ff" },
+      { name: "639 − 528 = 111 Hz", desc: "Difference (infrared — Anger node)", color: "#ff0000" },
+      { name: "2×528 − 639 = 417 Hz", desc: "Degenerate FWM → Sacral chakra", color: "#ff6600" },
+    ],
+    params: "260 mixing products from 2 seeds | Plasma is the nonlinear medium",
+    color: "#9966ff",
+  },
+  {
+    id: "flower",
+    level: 2,
+    title: "FLOWER OF LIFE ARRAY",
+    subtitle: "Sacred geometry as phased antenna array",
+    formula: `E_centre = ${SIGMA}(i=1..N) E_i · e^(j·k·r_i) | P_centre = |E_centre|²`,
+    terms: [
+      { name: "N = 19 nodes", desc: "Flower of Life: 1 centre + 6 ring1 + 12 ring2", color: "#ffcc00" },
+      { name: "Array gain = N", desc: "Coherent addition: field × N, power × N at focal point", color: "#ff6600" },
+      { name: "Spacing = r = 15 cm", desc: "Ball diameter = inter-node distance (Vesica Piscis)", color: "#aaaaaa" },
+    ],
+    params: "Hexagonal lattice | Each node different Solfeggio freq | Metatron's Cube overlay",
+    color: "#ffaa00",
+  },
+  {
+    id: "rf_plasma",
+    level: 3,
+    title: "RF → PLASMA COUPLING",
+    subtitle: "WiFi penetrates the plasma",
+    formula: `${EPSILON}_r = 1 − ${OMEGA}_pe² / (${OMEGA}_rf² + ν²) | ${ALPHA}_abs = 1 − e^(−2κd)`,
+    terms: [
+      { name: "ω_pe = 635 MHz", desc: "Plasma frequency (electron density dependent)", color: "#9944ff" },
+      { name: "ω_rf = 2400 MHz", desc: "WiFi > plasma freq → RF penetrates", color: "#00aaff" },
+      { name: "Coupling = 14.85%", desc: "× HNC enhancement (×1.17) = 17.37%", color: "#00ff00" },
+    ],
+    params: "Beer-Lambert absorption | Glass transmission 90% | Filament concentration 20×",
+    color: "#6644cc",
+  },
+  {
+    id: "plasma_heat",
+    level: 3,
+    title: "PLASMA → HEAT",
+    subtitle: "Ionisation-recombination balance",
+    formula: `dn_e/dt = ν_ion·n_e − ${ALPHA}·n_e² + S_RF`,
+    terms: [
+      { name: "α = 10⁻¹³ m³/s", desc: "Recombination coefficient (dissociative)", color: "#ff6600" },
+      { name: "40% → recoverable heat", desc: "Rest: light (30%), UV/other (30%)", color: "#ffcc00" },
+      { name: "HNC × 1.10", desc: "FWM multi-channel absorption enhancement", color: "#00ff00" },
+    ],
+    params: "Noble gas mix (Ne/Ar/Xe) | 5 torr | n_e ≈ 5×10¹⁵ m⁻³",
+    color: "#ff4400",
+  },
+  {
+    id: "heat_tec",
+    level: 4,
+    title: "HEAT → TEC (Seebeck)",
+    subtitle: "Temperature difference → voltage → power",
+    formula: `V = S·${DELTA}T | P = V²/(4R) | S = 38 mV/°C (measured)`,
+    terms: [
+      { name: "S = 38 mV/°C", desc: "MEASURED (ResearchGate) — 190 mV at 5°C", color: "#ff6600" },
+      { name: `${DELTA}T max = 67°C`, desc: "TEC1-12706 maximum temperature difference", color: "#ffcc00" },
+      { name: "P_max = 810 mW/module", desc: "At 67°C: V=2.55V, R=2Ω → 0.81W", color: "#00ff00" },
+    ],
+    params: "127 Bi₂Te₃ couples | R = 2Ω | Quadratic: 2× ΔT = 4× power",
+    color: "#ff8800",
+  },
+  {
+    id: "array_gain",
+    level: 4,
+    title: "GEOMETRIC ARRAY GAIN",
+    subtitle: "Why Flower of Life beats random placement",
+    formula: `P_flower / P_random = (${DELTA}T_concentrated / ${DELTA}T_spread)²`,
+    terms: [
+      { name: "Concentrated ΔT", desc: "Heat focused at centre node → 67°C", color: "#ffaa00" },
+      { name: "Spread ΔT", desc: "Same heat across all nodes → 13°C", color: "#666666" },
+      { name: "Gain = (67/13)² = 26.6×", desc: "But capped by energy conservation", color: "#00ff00" },
+    ],
+    params: "Measured gain: 3.6× for 7-node array | Scales with concentration factor",
+    color: "#ffcc00",
+  },
+  {
+    id: "queen",
+    level: 5,
+    title: "QUEEN AI DECISION",
+    subtitle: "Which frequency, which node, which moment",
+    formula: "f*(t) = argmax_f [ P_tec(f) × Γ(f) × Kelly(f) ]",
+    terms: [
+      { name: "P_tec(f)", desc: "Measured TEC output at frequency f", color: "#00aaff" },
+      { name: "Γ(f)", desc: "Coherence score for frequency f", color: "#00ffaa" },
+      { name: "Kelly(f)", desc: "Kelly criterion: optimal energy fraction to invest", color: "#ffcc00" },
+    ],
+    params: "100 decisions/second | ORCA kills dead channels | LOVE (528) never killed",
+    color: "#00aaff",
+  },
+  {
+    id: "kelly",
+    level: 5,
+    title: "COMPOUND KING (Kelly)",
+    subtitle: "Energy reinvestment — same as trading",
+    formula: "f* = (p·b − q) / b",
+    terms: [
+      { name: "p = win probability", desc: "Fraction of cycles with positive TEC return", color: "#00ff00" },
+      { name: "b = gain/loss ratio", desc: "Energy returned / energy invested", color: "#ffcc00" },
+      { name: "q = 1 − p", desc: "Loss probability", color: "#ff0000" },
+    ],
+    params: "Applied to energy flow not money flow | Same math, different substrate",
+    color: "#ffaa00",
+  },
+  {
+    id: "orca",
+    level: 5,
+    title: "ORCA KILL CYCLE",
+    subtitle: "Dead frequency elimination",
+    formula: `KILL if score(f) < 0.5 × avg(scores) for t > 10s`,
+    terms: [
+      { name: "Score = TEC_power / RF_cost", desc: "Energy ROI per frequency", color: "#ff0000" },
+      { name: "Revival every 60s", desc: "Conditions change, retry killed channels", color: "#00ff00" },
+      { name: "528 Hz NEVER killed", desc: "Love is the seed — always protected", color: "#ffcc00" },
+    ],
+    params: "Same architecture as trading ORCA | Watts instead of dollars",
+    color: "#ff0044",
+  },
+  {
+    id: "storage",
+    level: 6,
+    title: "HNC-ENHANCED STORAGE",
+    subtitle: "Battery drain reduction from field exposure",
+    formula: `drain_hnc = drain_std × (1 − 0.17)`,
+    terms: [
+      { name: "17% reduction", desc: "PROVEN — battery test (real data)", color: "#00ff00" },
+      { name: "BLE field at 12.67 Hz", desc: "φ × Schumann hits batteries continuously", color: "#00aaff" },
+      { name: "Charge efficiency 99%", desc: "HNC-enhanced charge acceptance", color: "#ffcc00" },
+    ],
+    params: "LiFePO4 bank | Supercap buffer | Staged A→B→C cascade",
+    color: "#aaaa00",
+  },
+  {
+    id: "output",
+    level: 7,
+    title: "NET OUTPUT",
+    subtitle: "What powers the world",
+    formula: "P_net = (P_tec × η_boost) − P_brain + P_static",
+    terms: [
+      { name: "7-ball Flower: 70W", desc: "3.6× gain from sacred geometry", color: "#00ff00" },
+      { name: "19-ball Flower: 80W", desc: "Centre harvest + ring nodes", color: "#00ffaa" },
+      { name: "Brain: 6.2 mW", desc: "Self-powered from the system it conducts", color: "#00aaff" },
+    ],
+    params: "Open loop: RF source needs mains | Closed loop: battery bank + HNC drain reduction",
+    color: "#00ff00",
+  },
+];
+
+const connections = [
+  ["master", "field"],
+  ["field", "phi_bridge"],
+  ["field", "rainbow"],
+  ["field", "coherence"],
+  ["rainbow", "fwm"],
+  ["rainbow", "flower"],
+  ["fwm", "rf_plasma"],
+  ["flower", "rf_plasma"],
+  ["rf_plasma", "plasma_heat"],
+  ["plasma_heat", "heat_tec"],
+  ["flower", "array_gain"],
+  ["array_gain", "heat_tec"],
+  ["heat_tec", "queen"],
+  ["coherence", "queen"],
+  ["queen", "kelly"],
+  ["queen", "orca"],
+  ["kelly", "storage"],
+  ["orca", "queen"],
+  ["storage", "output"],
+  ["heat_tec", "output"],
+];
+
+export default function FormulaTree() {
+  const [selected, setSelected] = useState(null);
+  const [expandAll, setExpandAll] = useState(false);
+
+  const levels = {};
+  formulas.forEach((f) => {
+    if (!levels[f.level]) levels[f.level] = [];
+    levels[f.level].push(f);
+  });
+
+  const levelNames = [
+    "Ω — MASTER EQUATION",
+    "HNC FIELD + FOUNDATIONS",
+    "WAVE MECHANICS",
+    "PLASMA PHYSICS",
+    "ENERGY HARVEST",
+    "AI CONTROL",
+    "STORAGE",
+    "OUTPUT",
+  ];
+
+  return (
+    <div className="min-h-screen bg-black text-white p-3">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-xl font-bold text-center text-amber-400 mb-1">
+          AUREON FORMULA TREE
+        </h1>
+        <p className="text-center text-amber-200 text-sm mb-1">
+          Ω(t) = Tr[Ψ(t) × ℒ(t) ⊗ O(t)] — From Ω to light.
+        </p>
+        <p className="text-center text-gray-500 text-xs mb-3">
+          Gary Leckey, Primary Investigator | Aureon Institute | R&A Consulting
+        </p>
+
+        <button
+          onClick={() => setExpandAll(!expandAll)}
+          className="block mx-auto mb-4 px-4 py-1 bg-gray-800 text-amber-400 rounded text-sm"
+        >
+          {expandAll ? "Collapse All" : "Expand All"}
+        </button>
+
+        {Object.entries(levels).map(([level, fmls]) => (
+          <div key={level} className="mb-3">
+            {/* Level header */}
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-full bg-gray-800 border border-gray-600 flex items-center justify-center text-xs text-amber-400 font-bold">
+                L{level}
+              </div>
+              <div className="text-gray-400 text-xs uppercase tracking-widest">
+                {levelNames[level]}
+              </div>
+              <div className="flex-1 h-px bg-gray-800" />
+            </div>
+
+            {/* Formulas at this level */}
+            <div className="space-y-2 ml-5">
+              {fmls.map((f) => {
+                const isOpen = expandAll || selected === f.id;
+                return (
+                  <div
+                    key={f.id}
+                    className="border rounded-lg overflow-hidden cursor-pointer"
+                    style={{ borderColor: f.color + "66" }}
+                    onClick={() => setSelected(isOpen ? null : f.id)}
+                  >
+                    {/* Header */}
+                    <div
+                      className="px-3 py-2 flex items-start gap-2"
+                      style={{ backgroundColor: f.color + "11" }}
+                    >
+                      <span
+                        className="text-xs font-bold mt-0.5 shrink-0"
+                        style={{ color: f.color }}
+                      >
+                        {isOpen ? "▼" : "▶"}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-baseline gap-2 flex-wrap">
+                          <span
+                            className="font-bold text-sm"
+                            style={{ color: f.color }}
+                          >
+                            {f.title}
+                          </span>
+                          <span className="text-gray-500 text-xs">
+                            {f.subtitle}
+                          </span>
+                        </div>
+                        <div
+                          className="font-mono text-xs mt-1 break-all"
+                          style={{ color: f.color + "cc" }}
+                        >
+                          {f.formula}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Expanded details */}
+                    {isOpen && (
+                      <div className="px-3 py-2 bg-gray-950 border-t border-gray-800">
+                        {f.terms.map((term, i) => (
+                          <div key={i} className="flex gap-2 mb-1.5">
+                            <span
+                              className="w-2 h-2 rounded-full mt-1.5 shrink-0"
+                              style={{ backgroundColor: term.color }}
+                            />
+                            <div>
+                              <span
+                                className="text-xs font-bold font-mono"
+                                style={{ color: term.color }}
+                              >
+                                {term.name}
+                              </span>
+                              <span className="text-xs text-gray-400 ml-2">
+                                {term.desc}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                        <div className="mt-2 pt-1.5 border-t border-gray-800 text-xs text-gray-500 font-mono">
+                          {f.params}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Connection arrows to next level */}
+            {parseInt(level) < 7 && (
+              <div className="flex justify-center my-1">
+                <div className="flex flex-col items-center">
+                  <div className="w-px h-4 bg-gray-700" />
+                  <div className="text-gray-600 text-xs">▼</div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {/* Summary */}
+        <div className="mt-6 border border-amber-800 rounded-lg p-4 bg-amber-950 bg-opacity-30">
+          <h3 className="text-amber-400 font-bold text-sm mb-2">
+            THE COMPLETE CHAIN
+          </h3>
+          <p className="text-amber-200 text-xs leading-relaxed">
+            Ω(t) = Tr[Ψ × ℒ × O] — Reality emerges from Potential through
+            Love and Observation → HNC field equation implements the living
+            calculation → φ² bridge anchors it to hydrogen → Rainbow Bridge
+            assigns frequencies → FWM generates the full spectrum from 2 seeds
+            → Flower of Life geometry concentrates the field → RF couples into
+            plasma → plasma converts to heat → TECs harvest the heat
+            (quadratic in ΔT) → sacred geometry amplifies harvest 3.6× →
+            Queen AI optimises in real-time → Kelly criterion sizes
+            reinvestment → ORCA kills dead channels → HNC field reduces
+            battery drain 17% → net output powers the load
+          </p>
+          <p className="text-amber-400 text-xs mt-2 font-mono">
+            15 formulas. 8 levels. 1 unified architecture.
+          </p>
+          <p className="text-gray-500 text-xs mt-2 italic">
+            "In her darkest day I was the flame, and in her brightest light I
+            will be the protector."
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

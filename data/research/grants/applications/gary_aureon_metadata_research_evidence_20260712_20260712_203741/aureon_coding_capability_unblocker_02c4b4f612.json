@@ -1,0 +1,484 @@
+{
+  "autonomous_gates": [
+    {
+      "authority": "autonomous_with_recorded_assumptions",
+      "evidence": "task family coding; assumptions allowed when non-destructive",
+      "id": "scope_defaulting_gate",
+      "next_action": "If the prompt is incomplete, choose safe defaults and write assumptions into evidence.",
+      "open": true,
+      "purpose": "Turn incomplete client prompts into assumed safe defaults instead of stopping the coding lane.",
+      "status": "ready",
+      "title": "Scope Defaulting Gate"
+    },
+    {
+      "authority": "autonomous_apply_generated_artifacts",
+      "evidence": "capability forge module present",
+      "id": "local_forge_gate",
+      "next_action": "Route build/app/media requests through aureon_capability_forge before declaring blocked.",
+      "open": true,
+      "purpose": "Build app/tool/media/UI artifacts locally when AgentCore-style tools are unavailable.",
+      "status": "ready",
+      "title": "Local Capability Forge Gate"
+    },
+    {
+      "authority": "autonomous_safe_repo_apply",
+      "evidence": "SafeCodeControl present",
+      "id": "safe_code_authoring_gate",
+      "next_action": "Create proposals and apply only scoped repo patches through safe local routes.",
+      "open": true,
+      "purpose": "Apply repo code only through scoped local proposal/apply routes and keep diff evidence.",
+      "status": "ready",
+      "title": "Safe Code Authoring Gate"
+    },
+    {
+      "authority": "autonomous_skill_build",
+      "evidence": "adaptive skill generator present",
+      "id": "adaptive_skill_acquisition_gate",
+      "next_action": "When a skill is missing, create a domain worker, run tests, and publish a quality report.",
+      "open": true,
+      "purpose": "When a domain worker is missing, research the pattern and create a new local worker with tests.",
+      "status": "ready",
+      "title": "Adaptive Skill Acquisition Gate"
+    },
+    {
+      "authority": "autonomous_project_local_install",
+      "evidence": "repo-local dependency surfaces detected",
+      "id": "dependency_install_gate",
+      "next_action": "Use project-local venv/npm only; record installs and rerun verification.",
+      "open": true,
+      "purpose": "Install or validate dependencies inside the repo environment only, then test the result.",
+      "status": "ready",
+      "title": "Project Dependency Gate"
+    },
+    {
+      "authority": "read_only_external_research",
+      "evidence": "GitHub/open-source routes are read-only reference routes",
+      "id": "open_source_research_gate",
+      "next_action": "Search sources, capture source packets, review license/security, then build Aureon's own implementation.",
+      "open": true,
+      "purpose": "Search GitHub, docs, and package sources as read-only reference material before implementing Aureon's own code.",
+      "status": "ready",
+      "title": "Open Source Research Gate"
+    },
+    {
+      "authority": "autonomous_local_validation",
+      "evidence": "pytest or Playwright surfaces present",
+      "id": "test_and_run_gate",
+      "next_action": "Run focused tests/build/smoke after each generated artifact or repo patch.",
+      "open": true,
+      "purpose": "Run focused pytest, frontend builds, Playwright smoke checks, and generated artifact probes.",
+      "status": "ready",
+      "title": "Test And Run Gate"
+    },
+    {
+      "authority": "autonomous_quality_hold",
+      "evidence": "capability_forge_quality_blocked",
+      "id": "quality_handover_gate",
+      "next_action": "Run complex stress certification and hold handover until fake passes are zero.",
+      "open": false,
+      "purpose": "Hide or hold weak outputs until quality reports, previews, tests, and snags pass.",
+      "status": "needs_repair",
+      "title": "No Half-Baked Handover Gate"
+    },
+    {
+      "authority": "manual_only_boundary",
+      "evidence": "manual-only boundaries remain active",
+      "id": "manual_authority_boundary_gate",
+      "next_action": "Never convert trading, payment, filing, credential, or destructive OS authority into coding autonomy.",
+      "open": true,
+      "purpose": "Keep live trading, payments, official filing, credential reveal, and destructive OS actions out of coding autonomy.",
+      "status": "manual_hold_ready",
+      "title": "Manual Authority Boundary Gate"
+    }
+  ],
+  "autonomous_work_orders": [
+    {
+      "acceptance": "Aureon produces a source-linked implementation, local tests/build/browser proof, quality report, and zero fake passes.",
+      "action": "research_build_test_publish",
+      "authority": "autonomous_skill_build",
+      "gate": "adaptive_skill_acquisition_gate",
+      "id": "unblock_missing_domain_worker_1",
+      "priority": "P80",
+      "source_blocker": "blocker_1"
+    },
+    {
+      "acceptance": "Aureon produces a source-linked implementation, local tests/build/browser proof, quality report, and zero fake passes.",
+      "action": "research_build_test_publish",
+      "authority": "autonomous_safe_repo_apply",
+      "gate": "safe_code_authoring_gate",
+      "id": "unblock_unknown_attention_2",
+      "priority": "P60",
+      "source_blocker": "blocker_2"
+    },
+    {
+      "acceptance": "Aureon produces a source-linked implementation, local tests/build/browser proof, quality report, and zero fake passes.",
+      "action": "research_build_test_publish",
+      "authority": "autonomous_safe_repo_apply",
+      "gate": "safe_code_authoring_gate",
+      "id": "unblock_unknown_attention_3",
+      "priority": "P60",
+      "source_blocker": "blocker_3"
+    },
+    {
+      "acceptance": "Aureon produces a source-linked implementation, local tests/build/browser proof, quality report, and zero fake passes.",
+      "action": "research_build_test_publish",
+      "authority": "autonomous_safe_repo_apply",
+      "gate": "safe_code_authoring_gate",
+      "id": "unblock_unknown_attention_4",
+      "priority": "P60",
+      "source_blocker": "blocker_4"
+    },
+    {
+      "acceptance": "Aureon produces a source-linked implementation, local tests/build/browser proof, quality report, and zero fake passes.",
+      "action": "research_build_test_publish",
+      "authority": "autonomous_safe_repo_apply",
+      "gate": "safe_code_authoring_gate",
+      "id": "unblock_unknown_attention_5",
+      "priority": "P60",
+      "source_blocker": "blocker_5"
+    },
+    {
+      "acceptance": "Aureon produces a source-linked implementation, local tests/build/browser proof, quality report, and zero fake passes.",
+      "action": "research_build_test_publish",
+      "authority": "autonomous_safe_repo_apply",
+      "gate": "safe_code_authoring_gate",
+      "id": "unblock_unknown_attention_6",
+      "priority": "P60",
+      "source_blocker": "blocker_6"
+    },
+    {
+      "acceptance": "Aureon produces a source-linked implementation, local tests/build/browser proof, quality report, and zero fake passes.",
+      "action": "research_build_test_publish",
+      "authority": "autonomous_safe_repo_apply",
+      "gate": "safe_code_authoring_gate",
+      "id": "unblock_unknown_attention_7",
+      "priority": "P60",
+      "source_blocker": "blocker_7"
+    }
+  ],
+  "detected_blockers": [
+    {
+      "autonomous_resolution": "repair_or_reroute_through_gate",
+      "classification": "autonomous_coding_gate",
+      "coding_blocker": true,
+      "gate": "adaptive_skill_acquisition_gate",
+      "id": "blocker_1",
+      "kind": "missing_domain_worker",
+      "source_text": "missing_domain_specific_worker"
+    },
+    {
+      "autonomous_resolution": "convert_to_explicit_work_order",
+      "classification": "attention_review",
+      "coding_blocker": true,
+      "gate": "safe_code_authoring_gate",
+      "id": "blocker_2",
+      "kind": "unknown_attention",
+      "source_text": "capability_forge_quality_blocked"
+    },
+    {
+      "autonomous_resolution": "convert_to_explicit_work_order",
+      "classification": "attention_review",
+      "coding_blocker": true,
+      "gate": "safe_code_authoring_gate",
+      "id": "blocker_3",
+      "kind": "unknown_attention",
+      "source_text": "capability_stress_audit_needs_attention"
+    },
+    {
+      "autonomous_resolution": "convert_to_explicit_work_order",
+      "classification": "attention_review",
+      "coding_blocker": true,
+      "gate": "safe_code_authoring_gate",
+      "id": "blocker_4",
+      "kind": "unknown_attention",
+      "source_text": "missing preview URL"
+    },
+    {
+      "autonomous_resolution": "convert_to_explicit_work_order",
+      "classification": "attention_review",
+      "coding_blocker": true,
+      "gate": "safe_code_authoring_gate",
+      "id": "blocker_5",
+      "kind": "unknown_attention",
+      "source_text": "Create a local operator report generator that explains a complex build result with summary, proof, snags, and next action."
+    },
+    {
+      "autonomous_resolution": "convert_to_explicit_work_order",
+      "classification": "attention_review",
+      "coding_blocker": true,
+      "gate": "safe_code_authoring_gate",
+      "id": "blocker_6",
+      "kind": "unknown_attention",
+      "source_text": "complex_build_stress_needs_attention"
+    },
+    {
+      "autonomous_resolution": "convert_to_explicit_work_order",
+      "classification": "attention_review",
+      "coding_blocker": true,
+      "gate": "safe_code_authoring_gate",
+      "id": "blocker_7",
+      "kind": "unknown_attention",
+      "source_text": "['route capability', 'missing wire']"
+    }
+  ],
+  "generated_at": "2026-05-22T18:17:22.170905+00:00",
+  "ok": false,
+  "output_files": [
+    "state/aureon_coding_capability_unblocker_last_run.json",
+    "docs/audits/aureon_coding_capability_unblocker.json",
+    "docs/audits/aureon_coding_capability_unblocker.md",
+    "frontend/public/aureon_coding_capability_unblocker.json"
+  ],
+  "principle": "Missing coding skills, tools, dependencies, and proof become autonomous gates; unsafe authority remains manual.",
+  "prompt": "",
+  "provider_policy": "local_first_with_read_only_external_research",
+  "runtime_contract": {
+    "on_agentcore_missing": "reroute to local capability forge and safe code authoring gate",
+    "on_dependency_missing": "install only into repo-local venv/node_modules where safe, then rerun validation",
+    "on_external_code_found": "analyze patterns and license; do not paste large/raw third-party code into Aureon without review",
+    "on_manual_boundary": "hold and explain the human-only gate",
+    "on_missing_skill": "search local repo, build source packet, read GitHub/open-source references, implement a local worker, test, then publish quality evidence"
+  },
+  "safety_boundaries": [
+    "no live trading mutation",
+    "no payment mutation",
+    "no official filing mutation",
+    "no credential reveal",
+    "no destructive OS action",
+    "no unreviewed license-unknown code import"
+  ],
+  "schema_version": "aureon-coding-capability-unblocker-v1",
+  "source_discovery_routes": [
+    {
+      "allowed_inputs": [
+        "repo files",
+        "docs/audits",
+        "docs/research",
+        "frontend/public evidence"
+      ],
+      "allowed_outputs": [
+        "source packets",
+        "implementation hints",
+        "gap list"
+      ],
+      "id": "local_repo_first",
+      "mode": "read_only",
+      "name": "Local repo and vault search"
+    },
+    {
+      "allowed_inputs": [
+        "public repos",
+        "README",
+        "docs",
+        "examples",
+        "package metadata",
+        "license files"
+      ],
+      "allowed_outputs": [
+        "source-linked research packets",
+        "license notes",
+        "design patterns"
+      ],
+      "blocked_outputs": [
+        "raw credential capture",
+        "large copied code dumps",
+        "unreviewed vendored code",
+        "license-unknown import"
+      ],
+      "id": "github_open_source_reference",
+      "mode": "read_only_reference",
+      "name": "GitHub and open-source reference scan"
+    },
+    {
+      "allowed_inputs": [
+        "official docs",
+        "API references",
+        "framework guides"
+      ],
+      "allowed_outputs": [
+        "implementation constraints",
+        "version notes",
+        "test expectations"
+      ],
+      "id": "official_docs_reference",
+      "mode": "read_only_reference",
+      "name": "Official documentation reference scan"
+    },
+    {
+      "allowed_inputs": [
+        "source packets",
+        "local repo patterns",
+        "client prompt"
+      ],
+      "allowed_outputs": [
+        "new local worker",
+        "scoped patch",
+        "tests",
+        "quality report"
+      ],
+      "blocked_outputs": [
+        "unattributed copied source",
+        "unsafe mutation",
+        "secret material"
+      ],
+      "id": "local_adaptation_build",
+      "mode": "autonomous_local_apply",
+      "name": "Aureon local adaptation build"
+    }
+  ],
+  "source_packets": [
+    {
+      "confidence": 0.45,
+      "prompt_use_guidance": "Use as a compact local source packet; do not stuff the whole file into the prompt.",
+      "source_path": "docs\\research\\ANCIENT_CONVERGENCE.md",
+      "summary": "# Ancient Convergence Research *Extracted from the main README for easier navigation. This is the full research on 12 ancient civilisations and their mathematical convergences.* --- ## \ud83c\udf0d THE ANCIENT CONVERGENCE: THEY WERE NEVER SEPARATED ### The Lie We Were To",
+      "topic_tags": [
+        "local_research"
+      ]
+    },
+    {
+      "confidence": 0.45,
+      "prompt_use_guidance": "Use as a compact local source packet; do not stuff the whole file into the prompt.",
+      "source_path": "docs\\research\\AUREON_WHITE_PAPER_RESEARCH_HUB.md",
+      "summary": "# The Aureon Digital Immune System: A Quantitative Analysis of Geopolitical Stress-Induced Node Activation in Distributed Code Repositories ## A White Paper on Harmonic Nexus Core (HNC) Framework Applications --- **Authors:** The Aureon Institute Research Coll",
+      "topic_tags": [
+        "local_research"
+      ]
+    },
+    {
+      "confidence": 0.45,
+      "prompt_use_guidance": "Use as a compact local source packet; do not stuff the whole file into the prompt.",
+      "source_path": "docs\\research\\BOT_INTELLIGENCE.md",
+      "summary": "# Bot Intelligence & Global Predator System *Extracted from the main README. Complete bot detection methodology, 37 firm profiles, and scanner documentation.* --- ## \ud83e\udd16 THE BOT ARMY: 23 ALGORITHMS EXPOSED ### Who Controls the Bots ```mermaid xychart-beta title ",
+      "topic_tags": [
+        "local_research"
+      ]
+    },
+    {
+      "confidence": 0.45,
+      "prompt_use_guidance": "Use as a compact local source packet; do not stuff the whole file into the prompt.",
+      "source_path": "docs\\research\\COUNTER_STRATEGIES.md",
+      "summary": "# Counter-Strategies: How to Fight Back *Extracted from the main README. Timing, phase, and strategic counter-measures against market manipulation.* --- ## \u2694\ufe0f COUNTER-STRATEGIES: HOW TO FIGHT BACK ### 1. Timing Counter-Measures | Their Pattern | Our Counter | ",
+      "topic_tags": [
+        "local_research"
+      ]
+    },
+    {
+      "confidence": 0.45,
+      "prompt_use_guidance": "Use as a compact local source packet; do not stuff the whole file into the prompt.",
+      "source_path": "docs\\research\\EMERGENT_COGNITION.md",
+      "summary": "# \ud83e\udde0\u26a1 **HOW THE MINER'S BRAIN ACHIEVES COGNITION** \u26a1\ud83e\udde0 --- ## \ud83c\udfaf **THE CORE CONCEPT: EMERGENT COGNITION** **Your miner doesn't have \"traditional\" cognition programmed in.** **Instead, cognition EMERGES from the interaction of multiple feedback systems.** Think of",
+      "topic_tags": [
+        "local_research"
+      ]
+    },
+    {
+      "confidence": 0.6,
+      "prompt_use_guidance": "Use as a compact local source packet; do not stuff the whole file into the prompt.",
+      "source_path": "docs\\research\\EPAS_ZPE_RESEARCH_PAPER.md",
+      "summary": "# Electro-Plasma-Acoustic Shield (EPAS) Zero-Point Energy Extraction via Bluetooth Low Energy Sacred Frequency Coupling ## A Unified Research Paper on Harmonic Nexus Core Implementation, Experimental Validation, and Project Druid Framework **Authors:** Gary Le",
+      "topic_tags": [
+        "local_research"
+      ]
+    },
+    {
+      "confidence": 0.45,
+      "prompt_use_guidance": "Use as a compact local source packet; do not stuff the whole file into the prompt.",
+      "source_path": "docs\\research\\FINANCIAL_EXPOSURE.md",
+      "summary": "# Financial Exposure Report *Extracted from the main README. Documented wealth extraction events, perpetrator networks, and evidence files.* --- ## \ud83d\udc80 THE COMPLETE EXPOSURE: $33.5 TRILLION EXTRACTED FROM HUMANITY ## \ud83d\udcca THE NUMBERS DON'T LIE | Metric | Value | So",
+      "topic_tags": [
+        "local_research"
+      ]
+    },
+    {
+      "confidence": 0.45,
+      "prompt_use_guidance": "Use as a compact local source packet; do not stuff the whole file into the prompt.",
+      "source_path": "docs\\research\\HNC_WHITEPAPER_VERIFIED.md",
+      "summary": "# HNC TECHNOLOGY WHITEPAPER ## Human Neural Coherence: A Verified and Falsifiable Framework for Cognitive Enhancement **Document Classification:** Technical Whitepaper **Version:** 1.0 **Date:** April 2025 **Verification Authority:** Kimi AI Systems (Moonshot ",
+      "topic_tags": [
+        "local_research"
+      ]
+    },
+    {
+      "confidence": 0.45,
+      "prompt_use_guidance": "Use as a compact local source packet; do not stuff the whole file into the prompt.",
+      "source_path": "docs\\research\\INDEX.md",
+      "summary": "# Aureon Research Index Central catalog of research materials, white papers, and supporting evidence for the Aureon Trading System and the Harmonic Nexus Core (HNC) framework. > \ud83d\udc4b **New here?** Start with **[READING_PATHS.md](READING_PATHS.md)** \u2014 13 curated c",
+      "topic_tags": [
+        "local_research"
+      ]
+    },
+    {
+      "confidence": 0.6,
+      "prompt_use_guidance": "Use as a compact local source packet; do not stuff the whole file into the prompt.",
+      "source_path": "docs\\research\\PLATYPUS.md",
+      "summary": "# Platypus / Song of the Sphaerae **Mathematical Coherence Framework for Planetary Ephemeris Validation** --- ## Overview Platypus is a coherence analysis engine that computes normalized coupling scores between planetary configurations and geomagnetic indices.",
+      "topic_tags": [
+        "local_research"
+      ]
+    },
+    {
+      "confidence": 0.45,
+      "prompt_use_guidance": "Use as a compact local source packet; do not stuff the whole file into the prompt.",
+      "source_path": "docs\\research\\READING_PATHS.md",
+      "summary": "# Reading Paths \u2014 The Canon *Curated routes through the 54 whitepapers so you don't have to guess where to start.* > **The problem:** [docs/research/whitepapers/](whitepapers/) holds 54 papers. Many have `_v1` / `_v2` / `_rev2` variants. A new reader cannot te",
+      "topic_tags": [
+        "local_research"
+      ]
+    },
+    {
+      "confidence": 0.45,
+      "prompt_use_guidance": "Use as a compact local source packet; do not stuff the whole file into the prompt.",
+      "source_path": "docs\\research\\THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_Now.md",
+      "summary": "# THE \u03c6\u00b2 CHAIN *From Sumerian Ziggurats to Roman Roads to GitHub Nodes* *How the Same Pattern Has Expressed for 4,100 Years* **The Aureon Institute Research Collective** Aureon Institute \u00b7 R&A Consulting and Brokerage Services Ltd. 2026 --- > *The gods do not ",
+      "topic_tags": [
+        "local_research"
+      ]
+    }
+  ],
+  "status": "coding_capabilities_need_gate_repairs",
+  "summary": {
+    "converted_coding_blocker_count": 1,
+    "detected_blocker_count": 7,
+    "external_research_routes_ready": 2,
+    "gate_count": 9,
+    "gate_repair_count": 1,
+    "manual_authority_hold_count": 0,
+    "ready_gate_count": 8,
+    "source_packet_count": 12,
+    "work_order_count": 7
+  },
+  "task_family": {
+    "detected_families": [
+      "coding"
+    ],
+    "local_only": true,
+    "primary_family": "coding",
+    "task_family": "coding"
+  },
+  "write_info": {
+    "coding_bridge_evidence_writes": [],
+    "evidence_writes": [
+      {
+        "bytes": 20595,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\state\\aureon_coding_capability_unblocker_last_run.json"
+      },
+      {
+        "bytes": 20595,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_coding_capability_unblocker.json"
+      },
+      {
+        "bytes": 1807,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_coding_capability_unblocker.md"
+      },
+      {
+        "bytes": 20595,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_coding_capability_unblocker.json"
+      }
+    ]
+  }
+}

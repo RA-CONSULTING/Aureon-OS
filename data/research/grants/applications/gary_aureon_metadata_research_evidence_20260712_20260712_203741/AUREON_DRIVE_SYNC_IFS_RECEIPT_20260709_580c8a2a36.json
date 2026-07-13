@@ -1,0 +1,38 @@
+{
+  "schema_version": "aureon-drive-sync-status-v1",
+  "generated_at": "2026-07-09T04:45:45+01:00",
+  "account": "gaxlec@gmail.com",
+  "target_folder": {
+    "id": "1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr",
+    "name": "Aureon Grant War Room - 2026-07-04",
+    "url": "https://drive.google.com/drive/folders/1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr"
+  },
+  "local_artifact": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\IFS_NEXT_WAVE_SUBMISSION_RECEIPT_20260709.pdf",
+  "desired_drive_file_name": "IFS_NEXT_WAVE_SUBMISSION_RECEIPT_20260709.pdf",
+  "status": "NOT_UPLOADED_CONNECTOR_SCOPE_MISSING",
+  "attempts": [
+    {
+      "method": "google_drive_connector_upload_file",
+      "result": "failed",
+      "error_code": "ACCESS_TOKEN_SCOPE_INSUFFICIENT",
+      "required_method": "google.apps.drive.v3.DriveFiles.Create"
+    },
+    {
+      "method": "google_drive_connector_create_native_doc",
+      "result": "failed",
+      "error_code": "ACCESS_TOKEN_SCOPE_INSUFFICIENT",
+      "required_action": "TRIGGER_REAUTHENTICATION"
+    },
+    {
+      "method": "local_google_drive_desktop_sync",
+      "result": "unavailable",
+      "observed": "No Google Drive for desktop filesystem mount found on C:; only OneDrive is mounted."
+    }
+  ],
+  "fallback_completed": {
+    "email_sent_to_self": true,
+    "email_receipt": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\SELF_UPDATE_IFS_NEXT_WAVE_SUBMITTED_20260709_SENT_RECEIPT.json",
+    "email_attachment": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\IFS_NEXT_WAVE_SUBMISSION_RECEIPT_20260709.pdf"
+  },
+  "next_action": "Reauthenticate the Google Drive connector with Drive file-create scope or upload through Drive UI; do not regenerate the receipt."
+}

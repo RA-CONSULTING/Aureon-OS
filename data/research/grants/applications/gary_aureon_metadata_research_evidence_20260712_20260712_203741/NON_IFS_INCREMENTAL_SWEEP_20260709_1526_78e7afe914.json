@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-07-09T15:26:00+01:00",
+  "operator": "Aureon",
+  "result": "No additional non-IFS grant application was truthfully submit-ready after Business Explorer reached email-verification state.",
+  "routes": [
+    {
+      "id": "APP-INTERTRADEIRELAND-BUSINESS-EXPLORER-EXPLORE-20260709",
+      "route": "InterTradeIreland Business Explorer - Explore",
+      "status": "ACCOUNT_CREATED_EMAIL_VERIFICATION_REQUIRED",
+      "next_action": "Verify gaxlec@gmail.com email, then submit prepared Explore application."
+    },
+    {
+      "route": "InterTradeIreland Business Explorer - One-to-One Session",
+      "status": "NO_UPCOMING_EVENTS",
+      "next_action": "Monitor only."
+    },
+    {
+      "route": "Digital Transformation Flexible Fund",
+      "status": "EOI_CLOSED",
+      "next_action": "Monitor for next call; do not submit closed call."
+    },
+    {
+      "route": "Invest NI Business Innovation Grant",
+      "status": "CLOSED",
+      "next_action": "Monitor for reopening."
+    },
+    {
+      "route": "Invest NI Innovation/R&D Support",
+      "status": "PROVIDER_CONTACT_CAPTCHA_REQUIRED",
+      "next_action": "Use browser/contact route only when CAPTCHA can be completed."
+    },
+    {
+      "route": "InterTradeIreland Funding Advisory Service",
+      "status": "TURNOVER_EVIDENCE_REQUIRED",
+      "next_action": "Gather finance evidence before submitting."
+    }
+  ]
+}
+

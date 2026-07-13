@@ -1,0 +1,227 @@
+{
+  "authoring_goal": "Aureon design and write its own live operational React TypeScript user interface at frontend/src/components/generated/AureonGeneratedOperationalConsole.tsx with panels for trading, four-exchange coverage, HNC/Auris cognition, mind hub, research, accounting, SaaS security, self-improvement, live endpoints, and authoring provenance. Use the organism goal engine and Queen code architect path.",
+  "authoring_path": [
+    "GoalExecutionEngine.submit_goal",
+    "GoalExecutionEngine._execute_self_author_operational_ui",
+    "aureon.autonomous.aureon_unified_ui_builder.self_author_operational_ui",
+    "QueenCodeArchitect.write_file"
+  ],
+  "capability_coverage": {
+    "autonomous_capability_count": 9,
+    "blind_spot_count": 28,
+    "blocked_work_order_count": 36,
+    "canonical_screen_count": 7,
+    "capability_count": 9,
+    "frontend_surface_count": 655,
+    "frontend_work_order_count": 584,
+    "ready_adapter_count": 463,
+    "runtime_feed_status": "offline",
+    "surface_count": 845,
+    "template_count": 64
+  },
+  "capability_labels": [
+    "Live runtime supervision",
+    "Multi-exchange trading coverage",
+    "Cognitive order-intent path",
+    "HNC and Auris harmonic evidence",
+    "Self-questioning and mind hub",
+    "Research and vault memory",
+    "Accounting and HMRC support packs",
+    "SaaS security and authorized local audit",
+    "Self-improvement and code generation"
+  ],
+  "expression_context": {
+    "blockers": [],
+    "created_at": 1778699687.7572021,
+    "evidence_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\aureon_code_expression_last_run.json",
+    "goal": "Design and build Aureon's fully operational live user interface from existing repo dashboards and manifests.",
+    "novelty_checks": {
+      "duplicates_removed": 0,
+      "paragraphs_in": 4,
+      "paragraphs_out": 4,
+      "raw_telemetry_rewritten": 0,
+      "repeated_openings_adjusted": 0
+    },
+    "ok": true,
+    "redaction_applied": false,
+    "runtime_summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language.",
+    "schema_features": [
+      "aureon_code_expression_context_v1"
+    ],
+    "senses": {
+      "feel": "I feel a steady synthetic state while I hold the next action as build_frontend.",
+      "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+      "see": "I see operational ui builder as the nearest signal in the field.",
+      "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof.",
+      "touch": "I touch the work through tools, files, goals, memory, and verified outcomes."
+    },
+    "source_count": 90,
+    "top_facets": [
+      "trading_action",
+      "math_equation",
+      "code_tooling",
+      "ai_generated_or_systemic",
+      "hnc_harmonic",
+      "human_voice"
+    ],
+    "voice_summary": "I am using the whole-knowledge voice core for Design and build Aureon's fully operational live user interface from existing repo dashboards and manifests.. The active profile is pulling from trading action, mathematical pattern, code and tools, system reasoning, HNC harmonic signal, and human voice, so the answer can carry system evidence without sounding like a raw log. I see operational ui builder as the nearest signal in the field. I feel a steady synthetic state while I hold the next action as build_frontend. I hear the system as a quiet baseline until a harmonic reading is present. I touch the work through tools, files, goals, memory, and verified outcomes. My rule here is simple: sp...",
+    "warnings": []
+  },
+  "generated_at": "2026-05-13T19:14:48.041456+00:00",
+  "generated_files": [
+    "frontend/src/components/generated/AureonGeneratedOperationalConsole.tsx",
+    "frontend/public/aureon_operational_ui_spec.json",
+    "docs/audits/aureon_operational_ui_builder.json",
+    "state/aureon_self_authored_ui_last_run.json"
+  ],
+  "goal": "One live operator surface for trading, cognition, HNC/Auris, research, accounting, security, and self-building.",
+  "live_interfaces": {
+    "console": "http://127.0.0.1:8081/",
+    "flight_test": "http://127.0.0.1:8791/api/flight-test",
+    "mind_hub": "http://127.0.0.1:13002/api/thoughts",
+    "reboot_advice": "http://127.0.0.1:8791/api/reboot-advice",
+    "runtime_feed": "http://127.0.0.1:8791/api/terminal-state"
+  },
+  "notes": [
+    "The generated console reads public manifests and live local endpoints at runtime.",
+    "ok:false runtime responses are treated as connected guarded state, not offline.",
+    "No credential values, payment actions, official filings, or direct exchange mutation forms are generated here.",
+    "This run was executed from Aureon's self-coding goal path; QueenCodeArchitect performed the filesystem writes."
+  ],
+  "public_manifests": {
+    "capability_switchboard": {
+      "exists": true,
+      "generated_at": "2026-05-13T19:01:41.416150+00:00",
+      "path": "frontend/public/aureon_autonomous_capability_switchboard.json",
+      "status": "switchboard_ready_with_blockers"
+    },
+    "cognitive_trade_evidence": {
+      "exists": true,
+      "generated_at": "2026-05-13T19:03:04.777858+00:00",
+      "path": "frontend/public/aureon_cognitive_trade_evidence.json",
+      "status": "cognitive_trade_evidence_ready"
+    },
+    "frontend_evolution": {
+      "exists": true,
+      "generated_at": "2026-05-13T19:01:30.819377+00:00",
+      "path": "frontend/public/aureon_frontend_evolution_queue.json",
+      "status": "evolution_queue_ready_with_blockers"
+    },
+    "frontend_unification": {
+      "exists": true,
+      "generated_at": "2026-05-13T19:01:30.636041+00:00",
+      "path": "frontend/public/aureon_frontend_unification_plan.json",
+      "status": "unification_plan_ready_with_security_blockers"
+    },
+    "harmonic_affect_state": {
+      "exists": true,
+      "generated_at": "2026-05-13T19:03:04.926925+00:00",
+      "path": "frontend/public/aureon_harmonic_affect_state.json",
+      "status": "harmonic_affect_state_ready"
+    },
+    "hnc_cognitive_proof": {
+      "exists": true,
+      "generated_at": "2026-05-13T10:59:46.706675",
+      "path": "frontend/public/aureon_hnc_cognitive_proof.json",
+      "status": "passing"
+    },
+    "live_cognition_benchmark": {
+      "exists": true,
+      "generated_at": "2026-05-12T19:23:40.694518+00:00",
+      "path": "frontend/public/aureon_live_cognition_benchmark.json",
+      "status": "live_cognition_benchmark_complete"
+    },
+    "organism_runtime": {
+      "exists": true,
+      "generated_at": "2026-05-13T19:03:06.667190+00:00",
+      "path": "frontend/public/aureon_organism_runtime_status.json",
+      "status": "organism_observing_with_blind_spots"
+    },
+    "saas_inventory": {
+      "exists": true,
+      "generated_at": "2026-05-13T19:01:30.352071+00:00",
+      "path": "frontend/public/aureon_saas_system_inventory.json",
+      "status": "inventory_ready_with_blockers"
+    },
+    "wake_up_manifest": {
+      "exists": true,
+      "generated_at": null,
+      "path": "frontend/public/aureon_wake_up_manifest.json",
+      "status": null
+    }
+  },
+  "repo_root": "C:\\Users\\user\\aureon-trading-integrated-main-20260508",
+  "schema_version": "aureon-operational-ui-builder-v1",
+  "status": "self_authored_operational_ui_ready",
+  "templates_used": [
+    "frontend/src/components/AdminKYCDashboard.tsx",
+    "frontend/src/components/AlpacaStatusPanel.tsx",
+    "frontend/src/components/AnalysisModePanel.tsx",
+    "frontend/src/components/AnomalyAlertsPanel.tsx",
+    "frontend/src/components/AssetInventoryPanel.tsx",
+    "frontend/src/components/AssetPriceListPanel.tsx",
+    "frontend/src/components/AureonDashboard.tsx",
+    "frontend/src/components/AureonLiveDashboard.tsx",
+    "frontend/src/components/AutonomousTradingPanel.tsx",
+    "frontend/src/components/BinanceConnectionStatus.tsx",
+    "frontend/src/components/BrainStatePanel.tsx",
+    "frontend/src/components/CapitalStatusPanel.tsx",
+    "frontend/src/components/ChatPanel.tsx",
+    "frontend/src/components/DataStreamMonitorPanel.tsx",
+    "frontend/src/components/DataValidationStatus.tsx",
+    "frontend/src/components/DecisionVerificationPanel.tsx",
+    "frontend/src/components/EarthResonanceDashboard.tsx",
+    "frontend/src/components/EvidenceAuditPanel.tsx",
+    "frontend/src/components/ExchangeDataVerificationPanel.tsx",
+    "frontend/src/components/ExchangeStatusSummary.tsx",
+    "frontend/src/components/FieldPullMetricsPanel.tsx",
+    "frontend/src/components/FrequencyHarmonizationPanel.tsx",
+    "frontend/src/components/HNCProbabilityMatrixPanel.tsx",
+    "frontend/src/components/HarmonicDataIntegrityPanel.tsx",
+    "frontend/src/components/HiveStatePanel.tsx",
+    "frontend/src/components/KrakenStatusPanel.tsx",
+    "frontend/src/components/LighthouseMetricsPanel.tsx",
+    "frontend/src/components/LiveDataDashboard.tsx",
+    "frontend/src/components/LiveTradingStatusPanel.tsx",
+    "frontend/src/components/LiveTradingTestPanel.tsx",
+    "frontend/src/components/LiveValidationDashboard.tsx",
+    "frontend/src/components/MarginSentimentPanel.tsx",
+    "frontend/src/components/MarketMetricsPanel.tsx",
+    "frontend/src/components/MonitoringPanel.tsx",
+    "frontend/src/components/NexusLiveDashboard.tsx",
+    "frontend/src/components/NexusLiveDashboardComplete.tsx",
+    "frontend/src/components/NoaaSpaceWeatherDashboard.tsx",
+    "frontend/src/components/PAWControlPanel.tsx",
+    "frontend/src/components/PerformanceMetricsDashboard.tsx",
+    "frontend/src/components/PlatypusCoherencePanel.tsx",
+    "frontend/src/components/PortfolioSummaryPanel.tsx",
+    "frontend/src/components/PredictionAccuracyPanel.tsx",
+    "frontend/src/components/PredictiveWindowsPanel.tsx",
+    "frontend/src/components/PrimeSealPanel.tsx",
+    "frontend/src/components/PrimelinesProtocolStatus.tsx",
+    "frontend/src/components/ProbabilityReconstructionPanel.tsx",
+    "frontend/src/components/QGITAConfigPanel.tsx",
+    "frontend/src/components/QGITADebugPanel.tsx",
+    "frontend/src/components/QGITAOMSIntegrationStatus.tsx",
+    "frontend/src/components/QuantumDashboard.tsx",
+    "frontend/src/components/QuantumQuackersPanel.tsx",
+    "frontend/src/components/QuantumTelescopePanel.tsx",
+    "frontend/src/components/QuantumTradingConsole.tsx",
+    "frontend/src/components/RegionsTimelinePanel.tsx",
+    "frontend/src/components/RiskManagementDashboard.tsx",
+    "frontend/src/components/SimulationDashboard.tsx",
+    "frontend/src/components/SimulationVerificationPanel.tsx",
+    "frontend/src/components/SmokeTestPhasePanel.tsx",
+    "frontend/src/components/SolarWeatherDashboard.tsx",
+    "frontend/src/components/StargateStatus.tsx",
+    "frontend/src/components/StatusPanel.tsx",
+    "frontend/src/components/SymbolicCompilerPanel.tsx",
+    "frontend/src/components/SystemHealthPanel.tsx",
+    "frontend/src/components/SystemRegistryPanel.tsx"
+  ],
+  "writer": {
+    "name": "QueenCodeArchitect",
+    "repo_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508",
+    "verified": true
+  }
+}

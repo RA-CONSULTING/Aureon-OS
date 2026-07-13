@@ -1,0 +1,13 @@
+{
+  "schema_version": "aureon-drive-sync-receipt-v1",
+  "generated_at": "2026-07-06T07:05:07+01:00",
+  "drive_folder": "https://drive.google.com/drive/folders/1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr",
+  "status": "CHROME_UI_UPLOAD_COMPLETE_OBSERVED",
+  "observed_message": "2 uploads complete",
+  "uploaded_files": [
+    "AUREON_AIRR_PORTAL_STAGED_20260706_0702.tar.gz",
+    "AUREON_AIRR_PORTAL_STAGED_MANIFEST_20260706_0702.json"
+  ],
+  "evidence_screenshot": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\rendered\\drive_airr_upload_progress_20260706.png",
+  "connector_upload_attempt": "Drive connector upload_file failed with insufficient DriveFiles.Create scope; Chrome Drive UI fallback succeeded."
+}

@@ -1,0 +1,2 @@
+﻿"Category","SourcePath","Name","Extension","Length","LastWriteTime","SHA256","HubTreatment","UseRule"
+"private_large_runtime_state","C:\Users\user\project-rainbow\state\aureon_repo_singularity_vault_packet.json","aureon_repo_singularity_vault_packet.json",".json","747488746","14/05/2026 20:59:27","96C9BAD70D6BD67A791A50C0972AD8CBF3FE2E64ECC8E03E12E8AD8B6A3292EB","referenced_not_copied","Private local-state artifact; contains secret_policy/accounting labels; do not use in grants, emails, or partner packs without explicit action-time approval."

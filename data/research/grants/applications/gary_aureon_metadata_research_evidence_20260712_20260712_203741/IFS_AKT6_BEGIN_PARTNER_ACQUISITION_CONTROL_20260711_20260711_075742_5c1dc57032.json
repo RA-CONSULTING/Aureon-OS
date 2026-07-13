@@ -1,0 +1,62 @@
+{
+  "schema_version": "aureon-ifs-akt6-begin-partner-acquisition-control-v1",
+  "generated_at": "2026-07-11T07:57:42.042300+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_akt6_begin_partner_acquisition",
+  "application_id": "APP-IFS-AKT6-2473-20260709",
+  "competition": "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+  "result": "AKT6_PARTNER_ACQUISITION_BEGUN_SEND_BLOCKED_NO_MAIL_TRANSPORT",
+  "user_instruction": "Begin",
+  "source_route_pack": "applications/IFS_AKT6_COMPANY_RESEARCH_PARTNER_ROUTE_PACK_20260711_20260711_075305.json",
+  "source_route_pack_markdown": "applications/IFS_AKT6_COMPANY_RESEARCH_PARTNER_ROUTE_PACK_20260711_20260711_075305.md",
+  "send_status": {
+    "external_send_attempted": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "blocker": "No Gmail/mail connector, SMTP transport, SendGrid/Mailgun token, Microsoft Graph mail transport, or Outlook automation route is exposed to this Codex environment. Only primary email addresses were found in env files.",
+    "drafts_ready": [
+      {
+        "target": "Queen's University Belfast KTP",
+        "to": "ktp@qub.ac.uk",
+        "draft": "applications/IFS_AKT6_QUB_KTP_EVIDENCE_REQUEST_20260711_20260711_075305.eml",
+        "status": "READY_DRAFT_NOT_SENT"
+      },
+      {
+        "target": "Ulster University KTP",
+        "to": "a.fullerton@ulster.ac.uk, p.gilpin@ulster.ac.uk",
+        "draft": "applications/IFS_AKT6_ULSTER_KTP_EVIDENCE_REQUEST_20260711_20260711_075305.eml",
+        "status": "READY_DRAFT_NOT_SENT"
+      }
+    ]
+  },
+  "required_evidence_from_knowledge_base": [
+    "eligible Knowledge Base lead or referral",
+    "authorised KTP/TTO/research-office contact",
+    "Digital and Technologies scope acceptance",
+    "work package, Associate role, costing route and contribution requirements",
+    "IFS lead process and AKT Monitoring Officer invite route",
+    "decision on whether R&A business-partner four-FTE eligibility can be satisfied or whether another route is required"
+  ],
+  "next_monitor_actions": [
+    "Monitor Gmail, Drive and local Downloads/Documents/Desktop for QUB, Ulster, KTP, AKT6, knowledge-base lead, four-FTE, contribution, and route-referral evidence.",
+    "If a reply confirms a Knowledge Base lead and business eligibility evidence, prepare the partner-led IFS invite/portal completion pack.",
+    "If replies decline or route remains ineligible, move immediately to the next grant route by deadline."
+  ],
+  "decision": {
+    "direct_submit_ready": false,
+    "safe_portal_action_now": false,
+    "new_browser_submission_available": false,
+    "external_send_ready_now": false,
+    "why_not_sent": "Action began, but no permitted mail transport is available in this execution environment. Sending via Chrome/webmail requires explicit Chrome fallback approval or user-side send from the prepared EML drafts."
+  },
+  "controls": [
+    "No plaintext password or secret was stored.",
+    "No email or contact form was sent.",
+    "No IFS AKT6 portal draft was opened or changed.",
+    "No unsupported Knowledge Base lead, four-FTE, contribution, fEC/non-fEC, Monitoring Officer invite, terms acceptance, or submission claim was made.",
+    "No final submission, upload, partner invite, or provider-control bypass was performed."
+  ]
+}

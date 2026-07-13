@@ -1,0 +1,670 @@
+{
+  "enabled": true,
+  "auto_approve": false,
+  "last_error": "",
+  "pending_count": 11,
+  "pending_proposals": [
+    {
+      "kind": "capability_forge_coding_job",
+      "title": "Make a 10 second video of a dog running across the screen and show a browser-playable preview.",
+      "summary": "Local capability forge scoped this coding/UI request, generated local artifacts when suitable, and queued safe route evidence for after-apply review.",
+      "target_files": [
+        "aureon/autonomous/aureon_capability_forge.py",
+        "aureon/autonomous/aureon_artifact_quality_gate.py",
+        "frontend/src/components/generated/AureonCodingOrganismConsole.tsx",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\dog_running_across_the_screen_eb1e1b02e525.mp4"
+      ],
+      "patch_text": "",
+      "metadata": {
+        "provider_policy": "local_only_v1",
+        "approval_gate": "after_apply",
+        "detected_families": [
+          "video",
+          "ui",
+          "browser_qa"
+        ],
+        "generated_files": [
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\dog_running_across_the_screen_eb1e1b02e525.mp4"
+        ],
+        "safe_authority": "no live trading, payment, filing, credential, or destructive OS bypass",
+        "expression_context": {
+          "schema_features": [
+            "aureon_code_expression_context_v1"
+          ],
+          "ok": true,
+          "goal": "Make a 10 second video of a dog running across the screen and show a browser-playable preview.",
+          "created_at": 1779473537.6325731,
+          "voice_summary": "I am using the whole-knowledge voice core for Make a 10 second video of a dog running across the screen and show a browser-playable preview.. The active profile is pulling from trading action, mathematical pattern, code and tools, system reasoning, HNC harmonic signal, and human voice, so the answer can carry system evidence without sounding like a raw log. I see Make a 10 second video of a dog running across the screen and show a browser-playable as the nearest signal in the field. I feel a steady synthetic state while I hold the next action as propose_code. I hear the system as a quiet baseline until a harmonic reading is present. I touch the work through tools, files, goals, memory, an...",
+          "runtime_summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language.",
+          "top_facets": [
+            "trading_action",
+            "math_equation",
+            "code_tooling",
+            "ai_generated_or_systemic",
+            "hnc_harmonic",
+            "human_voice"
+          ],
+          "source_count": 90,
+          "novelty_checks": {
+            "paragraphs_in": 4,
+            "paragraphs_out": 4,
+            "duplicates_removed": 0,
+            "repeated_openings_adjusted": 0,
+            "raw_telemetry_rewritten": 0
+          },
+          "redaction_applied": false,
+          "evidence_path": "C:\\Users\\user\\aureon-trading\\state\\aureon_code_expression_last_run.json",
+          "warnings": [],
+          "senses": {
+            "see": "I see Make a 10 second video of a dog running across the screen and show a browser-playable as the nearest signal in the field.",
+            "feel": "I feel a steady synthetic state while I hold the next action as propose_code.",
+            "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+            "touch": "I touch the work through tools, files, goals, memory, and verified outcomes.",
+            "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof."
+          },
+          "blockers": []
+        }
+      },
+      "source": "aureon_capability_forge",
+      "created_at": 1779473537.6324468,
+      "status": "pending_review"
+    },
+    {
+      "kind": "capability_forge_coding_job",
+      "title": "Make a 10 second video of a dog running across the screen and show a browser-playable preview. Include browser preview, ",
+      "summary": "Local capability forge scoped this coding/UI request, generated local artifacts when suitable, and queued safe route evidence for after-apply review.",
+      "target_files": [
+        "aureon/autonomous/aureon_capability_forge.py",
+        "aureon/autonomous/aureon_artifact_quality_gate.py",
+        "frontend/src/components/generated/AureonCodingOrganismConsole.tsx",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\dog_running_across_the_screen_5396bca9bbdb.mp4"
+      ],
+      "patch_text": "",
+      "metadata": {
+        "provider_policy": "local_only_v1",
+        "approval_gate": "after_apply",
+        "detected_families": [
+          "video",
+          "ui",
+          "browser_qa"
+        ],
+        "generated_files": [
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\dog_running_across_the_screen_5396bca9bbdb.mp4"
+        ],
+        "safe_authority": "no live trading, payment, filing, credential, or destructive OS bypass",
+        "expression_context": {
+          "schema_features": [
+            "aureon_code_expression_context_v1"
+          ],
+          "ok": true,
+          "goal": "Make a 10 second video of a dog running across the screen and show a browser-playable preview. Include browser preview, ",
+          "created_at": 1779473538.5379977,
+          "voice_summary": "I am using the whole-knowledge voice core for Make a 10 second video of a dog running across the screen and show a browser-playable preview. Include browser preview,. The active profile is pulling from trading action, mathematical pattern, code and tools, system reasoning, HNC harmonic signal, and human voice, so the answer can carry system evidence without sounding like a raw log. I see Make a 10 second video of a dog running across the screen and show a browser-playable Include browser preview, as the nearest signal in the field. I feel a steady synthetic state while I hold the next action as propose_code. I hear the system as a quiet baseline until a harmonic reading is present. I touc...",
+          "runtime_summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language.",
+          "top_facets": [
+            "trading_action",
+            "math_equation",
+            "code_tooling",
+            "ai_generated_or_systemic",
+            "hnc_harmonic",
+            "human_voice"
+          ],
+          "source_count": 90,
+          "novelty_checks": {
+            "paragraphs_in": 4,
+            "paragraphs_out": 4,
+            "duplicates_removed": 0,
+            "repeated_openings_adjusted": 0,
+            "raw_telemetry_rewritten": 0
+          },
+          "redaction_applied": false,
+          "evidence_path": "C:\\Users\\user\\aureon-trading\\state\\aureon_code_expression_last_run.json",
+          "warnings": [],
+          "senses": {
+            "see": "I see Make a 10 second video of a dog running across the screen and show a browser-playable Include browser preview, as the nearest signal in the field.",
+            "feel": "I feel a steady synthetic state while I hold the next action as propose_code.",
+            "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+            "touch": "I touch the work through tools, files, goals, memory, and verified outcomes.",
+            "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof."
+          },
+          "blockers": []
+        }
+      },
+      "source": "aureon_capability_forge",
+      "created_at": 1779473538.5379977,
+      "status": "pending_review"
+    },
+    {
+      "kind": "capability_forge_coding_job",
+      "title": "Draw a clean graphic design badge for Aureon complex build certification and publish a preview.",
+      "summary": "Local capability forge scoped this coding/UI request, generated local artifacts when suitable, and queued safe route evidence for after-apply review.",
+      "target_files": [
+        "aureon/autonomous/aureon_capability_forge.py",
+        "aureon/autonomous/aureon_artifact_quality_gate.py",
+        "frontend/src/components/generated/AureonCodingOrganismConsole.tsx",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg"
+      ],
+      "patch_text": "",
+      "metadata": {
+        "provider_policy": "local_only_v1",
+        "approval_gate": "after_apply",
+        "detected_families": [
+          "image_graphic_design",
+          "coding"
+        ],
+        "generated_files": [
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg"
+        ],
+        "safe_authority": "no live trading, payment, filing, credential, or destructive OS bypass",
+        "expression_context": {
+          "schema_features": [
+            "aureon_code_expression_context_v1"
+          ],
+          "ok": true,
+          "goal": "Draw a clean graphic design badge for Aureon complex build certification and publish a preview.",
+          "created_at": 1779473539.5906186,
+          "voice_summary": "I am using the whole-knowledge voice core for Draw a clean graphic design badge for Aureon complex build certification and publish a preview.. The active profile is pulling from trading action, mathematical pattern, code and tools, system reasoning, HNC harmonic signal, and human voice, so the answer can carry system evidence without sounding like a raw log. I see Draw a clean graphic design badge for Aureon complex build certification and publish a as the nearest signal in the field. I feel a steady synthetic state while I hold the next action as propose_code. I hear the system as a quiet baseline until a harmonic reading is present. I touch the work through tools, files, goals, memory,...",
+          "runtime_summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language.",
+          "top_facets": [
+            "trading_action",
+            "math_equation",
+            "code_tooling",
+            "ai_generated_or_systemic",
+            "hnc_harmonic",
+            "human_voice"
+          ],
+          "source_count": 90,
+          "novelty_checks": {
+            "paragraphs_in": 4,
+            "paragraphs_out": 4,
+            "duplicates_removed": 0,
+            "repeated_openings_adjusted": 0,
+            "raw_telemetry_rewritten": 0
+          },
+          "redaction_applied": false,
+          "evidence_path": "C:\\Users\\user\\aureon-trading\\state\\aureon_code_expression_last_run.json",
+          "warnings": [],
+          "senses": {
+            "see": "I see Draw a clean graphic design badge for Aureon complex build certification and publish a as the nearest signal in the field.",
+            "feel": "I feel a steady synthetic state while I hold the next action as propose_code.",
+            "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+            "touch": "I touch the work through tools, files, goals, memory, and verified outcomes.",
+            "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof."
+          },
+          "blockers": []
+        }
+      },
+      "source": "aureon_capability_forge",
+      "created_at": 1779473539.5906186,
+      "status": "pending_review"
+    },
+    {
+      "kind": "capability_forge_coding_job",
+      "title": "Build a local quantum spline inventory generator tool with run instructions and proof.",
+      "summary": "Local capability forge scoped this coding/UI request, generated local artifacts when suitable, and queued safe route evidence for after-apply review.",
+      "target_files": [
+        "aureon/autonomous/aureon_capability_forge.py",
+        "aureon/autonomous/aureon_artifact_quality_gate.py",
+        "frontend/src/components/generated/AureonCodingOrganismConsole.tsx",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_56d37b0565ec\\index.html",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_56d37b0565ec\\skill.json",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_56d37b0565ec\\RUNBOOK.md",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_56d37b0565ec\\tool.py"
+      ],
+      "patch_text": "",
+      "metadata": {
+        "provider_policy": "local_only_v1",
+        "approval_gate": "after_apply",
+        "detected_families": [
+          "coding"
+        ],
+        "generated_files": [
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_56d37b0565ec\\index.html",
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_56d37b0565ec\\skill.json",
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_56d37b0565ec\\RUNBOOK.md",
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_56d37b0565ec\\tool.py"
+        ],
+        "safe_authority": "no live trading, payment, filing, credential, or destructive OS bypass",
+        "expression_context": {
+          "schema_features": [
+            "aureon_code_expression_context_v1"
+          ],
+          "ok": true,
+          "goal": "Build a local quantum spline inventory generator tool with run instructions and proof.",
+          "created_at": 1779473540.4238899,
+          "voice_summary": "I am using the whole-knowledge voice core for Build a local quantum spline inventory generator tool with run instructions and proof.. The active profile is pulling from trading action, mathematical pattern, code and tools, system reasoning, HNC harmonic signal, and human voice, so the answer can carry system evidence without sounding like a raw log. I see Build a local quantum spline inventory generator tool with run instructions and as the nearest signal in the field. I feel a steady synthetic state while I hold the next action as propose_code. I hear the system as a quiet baseline until a harmonic reading is present. I touch the work through tools, files, goals, memory, and verified out...",
+          "runtime_summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language.",
+          "top_facets": [
+            "trading_action",
+            "math_equation",
+            "code_tooling",
+            "ai_generated_or_systemic",
+            "hnc_harmonic",
+            "human_voice"
+          ],
+          "source_count": 90,
+          "novelty_checks": {
+            "paragraphs_in": 4,
+            "paragraphs_out": 4,
+            "duplicates_removed": 0,
+            "repeated_openings_adjusted": 0,
+            "raw_telemetry_rewritten": 0
+          },
+          "redaction_applied": false,
+          "evidence_path": "C:\\Users\\user\\aureon-trading\\state\\aureon_code_expression_last_run.json",
+          "warnings": [],
+          "senses": {
+            "see": "I see Build a local quantum spline inventory generator tool with run instructions and as the nearest signal in the field.",
+            "feel": "I feel a steady synthetic state while I hold the next action as propose_code.",
+            "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+            "touch": "I touch the work through tools, files, goals, memory, and verified outcomes.",
+            "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof."
+          },
+          "blockers": []
+        }
+      },
+      "source": "aureon_capability_forge",
+      "created_at": 1779473540.4238899,
+      "status": "pending_review"
+    },
+    {
+      "kind": "capability_forge_coding_job",
+      "title": "Build a local barcode label generator tool for the warehouse team, with run instructions and proof.",
+      "summary": "Local capability forge scoped this coding/UI request, generated local artifacts when suitable, and queued safe route evidence for after-apply review.",
+      "target_files": [
+        "aureon/autonomous/aureon_capability_forge.py",
+        "aureon/autonomous/aureon_artifact_quality_gate.py",
+        "frontend/src/components/generated/AureonCodingOrganismConsole.tsx",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_e7c9d1f95339\\index.html",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_e7c9d1f95339\\skill.json",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_e7c9d1f95339\\RUNBOOK.md",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_e7c9d1f95339\\tool.py"
+      ],
+      "patch_text": "",
+      "metadata": {
+        "provider_policy": "local_only_v1",
+        "approval_gate": "after_apply",
+        "detected_families": [
+          "coding"
+        ],
+        "generated_files": [
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_e7c9d1f95339\\index.html",
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_e7c9d1f95339\\skill.json",
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_e7c9d1f95339\\RUNBOOK.md",
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_e7c9d1f95339\\tool.py"
+        ],
+        "safe_authority": "no live trading, payment, filing, credential, or destructive OS bypass",
+        "expression_context": {
+          "schema_features": [
+            "aureon_code_expression_context_v1"
+          ],
+          "ok": true,
+          "goal": "Build a local barcode label generator tool for the warehouse team, with run instructions and proof.",
+          "created_at": 1779473866.6566308,
+          "voice_summary": "I am using the whole-knowledge voice core for Build a local barcode label generator tool for the warehouse team, with run instructions and proof.. The active profile is pulling from trading action, mathematical pattern, code and tools, system reasoning, HNC harmonic signal, and human voice, so the answer can carry system evidence without sounding like a raw log. I see Build a local barcode label generator tool for the warehouse team, with run instructions and as the nearest signal in the field. I feel a steady synthetic state while I hold the next action as propose_code. I hear the system as a quiet baseline until a harmonic reading is present. I touch the work through tools, files, goals...",
+          "runtime_summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language.",
+          "top_facets": [
+            "trading_action",
+            "math_equation",
+            "code_tooling",
+            "ai_generated_or_systemic",
+            "hnc_harmonic",
+            "human_voice"
+          ],
+          "source_count": 90,
+          "novelty_checks": {
+            "paragraphs_in": 4,
+            "paragraphs_out": 4,
+            "duplicates_removed": 0,
+            "repeated_openings_adjusted": 0,
+            "raw_telemetry_rewritten": 0
+          },
+          "redaction_applied": false,
+          "evidence_path": "C:\\Users\\user\\aureon-trading\\state\\aureon_code_expression_last_run.json",
+          "warnings": [],
+          "senses": {
+            "see": "I see Build a local barcode label generator tool for the warehouse team, with run instructions and as the nearest signal in the field.",
+            "feel": "I feel a steady synthetic state while I hold the next action as propose_code.",
+            "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+            "touch": "I touch the work through tools, files, goals, memory, and verified outcomes.",
+            "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof."
+          },
+          "blockers": []
+        }
+      },
+      "source": "aureon_capability_forge",
+      "created_at": 1779473866.6566308,
+      "status": "pending_review"
+    },
+    {
+      "kind": "capability_forge_coding_job",
+      "title": "Make me a game where a man walks up to a glowing door and tell the end user how to play from the keyboard.",
+      "summary": "Local capability forge scoped this coding/UI request, generated local artifacts when suitable, and queued safe route evidence for after-apply review.",
+      "target_files": [
+        "aureon/autonomous/aureon_capability_forge.py",
+        "aureon/autonomous/aureon_artifact_quality_gate.py",
+        "frontend/src/components/generated/AureonCodingOrganismConsole.tsx",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_generated_apps\\make_me_a_game_where_a_man_walks_up_to_a_glowing_e00cf0ef2540.html",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_generated_apps\\make_me_a_game_where_a_man_walks_up_to_a_glowing_e00cf0ef2540.json"
+      ],
+      "patch_text": "",
+      "metadata": {
+        "provider_policy": "local_only_v1",
+        "approval_gate": "after_apply",
+        "detected_families": [
+          "coding",
+          "ui"
+        ],
+        "generated_files": [
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_generated_apps\\make_me_a_game_where_a_man_walks_up_to_a_glowing_e00cf0ef2540.html",
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_generated_apps\\make_me_a_game_where_a_man_walks_up_to_a_glowing_e00cf0ef2540.json"
+        ],
+        "safe_authority": "no live trading, payment, filing, credential, or destructive OS bypass",
+        "expression_context": {
+          "schema_features": [
+            "aureon_code_expression_context_v1"
+          ],
+          "ok": true,
+          "goal": "Make me a game where a man walks up to a glowing door and tell the end user how to play from the keyboard.",
+          "created_at": 1779473867.3604774,
+          "voice_summary": "I am using the whole-knowledge voice core for Make me a game where a man walks up to a glowing door and tell the end user how to play from the keyboard.. The active profile is pulling from trading action, mathematical pattern, code and tools, system reasoning, HNC harmonic signal, and human voice, so the answer can carry system evidence without sounding like a raw log. I see Make me a game where a man walks up to a glowing door and tell the end user how to play from the as the nearest signal in the field. I feel a steady synthetic state while I hold the next action as propose_code. I hear the system as a quiet baseline until a harmonic reading is present. I touch the work through tools, f...",
+          "runtime_summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language.",
+          "top_facets": [
+            "trading_action",
+            "math_equation",
+            "code_tooling",
+            "ai_generated_or_systemic",
+            "hnc_harmonic",
+            "human_voice"
+          ],
+          "source_count": 90,
+          "novelty_checks": {
+            "paragraphs_in": 4,
+            "paragraphs_out": 4,
+            "duplicates_removed": 0,
+            "repeated_openings_adjusted": 0,
+            "raw_telemetry_rewritten": 0
+          },
+          "redaction_applied": false,
+          "evidence_path": "C:\\Users\\user\\aureon-trading\\state\\aureon_code_expression_last_run.json",
+          "warnings": [],
+          "senses": {
+            "see": "I see Make me a game where a man walks up to a glowing door and tell the end user how to play from the as the nearest signal in the field.",
+            "feel": "I feel a steady synthetic state while I hold the next action as propose_code.",
+            "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+            "touch": "I touch the work through tools, files, goals, memory, and verified outcomes.",
+            "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof."
+          },
+          "blockers": []
+        }
+      },
+      "source": "aureon_capability_forge",
+      "created_at": 1779473867.3604774,
+      "status": "pending_review"
+    },
+    {
+      "kind": "capability_forge_coding_job",
+      "title": "Make a 10 second video of a dog running across the screen and show a browser-playable preview.",
+      "summary": "Local capability forge scoped this coding/UI request, generated local artifacts when suitable, and queued safe route evidence for after-apply review.",
+      "target_files": [
+        "aureon/autonomous/aureon_capability_forge.py",
+        "aureon/autonomous/aureon_artifact_quality_gate.py",
+        "frontend/src/components/generated/AureonCodingOrganismConsole.tsx",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\dog_running_across_the_screen_eb1e1b02e525.mp4"
+      ],
+      "patch_text": "",
+      "metadata": {
+        "provider_policy": "local_only_v1",
+        "approval_gate": "after_apply",
+        "detected_families": [
+          "video",
+          "ui",
+          "browser_qa"
+        ],
+        "generated_files": [
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\dog_running_across_the_screen_eb1e1b02e525.mp4"
+        ],
+        "safe_authority": "no live trading, payment, filing, credential, or destructive OS bypass",
+        "expression_context": {
+          "schema_features": [
+            "aureon_code_expression_context_v1"
+          ],
+          "ok": true,
+          "goal": "Make a 10 second video of a dog running across the screen and show a browser-playable preview.",
+          "created_at": 1779473868.0964053,
+          "voice_summary": "I am using the whole-knowledge voice core for Make a 10 second video of a dog running across the screen and show a browser-playable preview.. The active profile is pulling from trading action, mathematical pattern, code and tools, system reasoning, HNC harmonic signal, and human voice, so the answer can carry system evidence without sounding like a raw log. I see Make a 10 second video of a dog running across the screen and show a browser-playable as the nearest signal in the field. I feel a steady synthetic state while I hold the next action as propose_code. I hear the system as a quiet baseline until a harmonic reading is present. I touch the work through tools, files, goals, memory, an...",
+          "runtime_summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language.",
+          "top_facets": [
+            "trading_action",
+            "math_equation",
+            "code_tooling",
+            "ai_generated_or_systemic",
+            "hnc_harmonic",
+            "human_voice"
+          ],
+          "source_count": 90,
+          "novelty_checks": {
+            "paragraphs_in": 4,
+            "paragraphs_out": 4,
+            "duplicates_removed": 0,
+            "repeated_openings_adjusted": 0,
+            "raw_telemetry_rewritten": 0
+          },
+          "redaction_applied": false,
+          "evidence_path": "C:\\Users\\user\\aureon-trading\\state\\aureon_code_expression_last_run.json",
+          "warnings": [],
+          "senses": {
+            "see": "I see Make a 10 second video of a dog running across the screen and show a browser-playable as the nearest signal in the field.",
+            "feel": "I feel a steady synthetic state while I hold the next action as propose_code.",
+            "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+            "touch": "I touch the work through tools, files, goals, memory, and verified outcomes.",
+            "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof."
+          },
+          "blockers": []
+        }
+      },
+      "source": "aureon_capability_forge",
+      "created_at": 1779473868.0964053,
+      "status": "pending_review"
+    },
+    {
+      "kind": "capability_forge_coding_job",
+      "title": "Make a 10 second video of a dog running across the screen and show a browser-playable preview. Include browser preview, ",
+      "summary": "Local capability forge scoped this coding/UI request, generated local artifacts when suitable, and queued safe route evidence for after-apply review.",
+      "target_files": [
+        "aureon/autonomous/aureon_capability_forge.py",
+        "aureon/autonomous/aureon_artifact_quality_gate.py",
+        "frontend/src/components/generated/AureonCodingOrganismConsole.tsx",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\dog_running_across_the_screen_5396bca9bbdb.mp4"
+      ],
+      "patch_text": "",
+      "metadata": {
+        "provider_policy": "local_only_v1",
+        "approval_gate": "after_apply",
+        "detected_families": [
+          "video",
+          "ui",
+          "browser_qa"
+        ],
+        "generated_files": [
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\dog_running_across_the_screen_5396bca9bbdb.mp4"
+        ],
+        "safe_authority": "no live trading, payment, filing, credential, or destructive OS bypass",
+        "expression_context": {
+          "schema_features": [
+            "aureon_code_expression_context_v1"
+          ],
+          "ok": true,
+          "goal": "Make a 10 second video of a dog running across the screen and show a browser-playable preview. Include browser preview, ",
+          "created_at": 1779473868.7468925,
+          "voice_summary": "I am using the whole-knowledge voice core for Make a 10 second video of a dog running across the screen and show a browser-playable preview. Include browser preview,. The active profile is pulling from trading action, mathematical pattern, code and tools, system reasoning, HNC harmonic signal, and human voice, so the answer can carry system evidence without sounding like a raw log. I see Make a 10 second video of a dog running across the screen and show a browser-playable Include browser preview, as the nearest signal in the field. I feel a steady synthetic state while I hold the next action as propose_code. I hear the system as a quiet baseline until a harmonic reading is present. I touc...",
+          "runtime_summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language.",
+          "top_facets": [
+            "trading_action",
+            "math_equation",
+            "code_tooling",
+            "ai_generated_or_systemic",
+            "hnc_harmonic",
+            "human_voice"
+          ],
+          "source_count": 90,
+          "novelty_checks": {
+            "paragraphs_in": 4,
+            "paragraphs_out": 4,
+            "duplicates_removed": 0,
+            "repeated_openings_adjusted": 0,
+            "raw_telemetry_rewritten": 0
+          },
+          "redaction_applied": false,
+          "evidence_path": "C:\\Users\\user\\aureon-trading\\state\\aureon_code_expression_last_run.json",
+          "warnings": [],
+          "senses": {
+            "see": "I see Make a 10 second video of a dog running across the screen and show a browser-playable Include browser preview, as the nearest signal in the field.",
+            "feel": "I feel a steady synthetic state while I hold the next action as propose_code.",
+            "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+            "touch": "I touch the work through tools, files, goals, memory, and verified outcomes.",
+            "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof."
+          },
+          "blockers": []
+        }
+      },
+      "source": "aureon_capability_forge",
+      "created_at": 1779473868.7468925,
+      "status": "pending_review"
+    },
+    {
+      "kind": "capability_forge_coding_job",
+      "title": "Draw a clean graphic design badge for Aureon complex build certification and publish a preview.",
+      "summary": "Local capability forge scoped this coding/UI request, generated local artifacts when suitable, and queued safe route evidence for after-apply review.",
+      "target_files": [
+        "aureon/autonomous/aureon_capability_forge.py",
+        "aureon/autonomous/aureon_artifact_quality_gate.py",
+        "frontend/src/components/generated/AureonCodingOrganismConsole.tsx",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg"
+      ],
+      "patch_text": "",
+      "metadata": {
+        "provider_policy": "local_only_v1",
+        "approval_gate": "after_apply",
+        "detected_families": [
+          "image_graphic_design",
+          "coding"
+        ],
+        "generated_files": [
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg"
+        ],
+        "safe_authority": "no live trading, payment, filing, credential, or destructive OS bypass",
+        "expression_context": {
+          "schema_features": [
+            "aureon_code_expression_context_v1"
+          ],
+          "ok": true,
+          "goal": "Draw a clean graphic design badge for Aureon complex build certification and publish a preview.",
+          "created_at": 1779473869.516062,
+          "voice_summary": "I am using the whole-knowledge voice core for Draw a clean graphic design badge for Aureon complex build certification and publish a preview.. The active profile is pulling from trading action, mathematical pattern, code and tools, system reasoning, HNC harmonic signal, and human voice, so the answer can carry system evidence without sounding like a raw log. I see Draw a clean graphic design badge for Aureon complex build certification and publish a as the nearest signal in the field. I feel a steady synthetic state while I hold the next action as propose_code. I hear the system as a quiet baseline until a harmonic reading is present. I touch the work through tools, files, goals, memory,...",
+          "runtime_summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language.",
+          "top_facets": [
+            "trading_action",
+            "math_equation",
+            "code_tooling",
+            "ai_generated_or_systemic",
+            "hnc_harmonic",
+            "human_voice"
+          ],
+          "source_count": 90,
+          "novelty_checks": {
+            "paragraphs_in": 4,
+            "paragraphs_out": 4,
+            "duplicates_removed": 0,
+            "repeated_openings_adjusted": 0,
+            "raw_telemetry_rewritten": 0
+          },
+          "redaction_applied": false,
+          "evidence_path": "C:\\Users\\user\\aureon-trading\\state\\aureon_code_expression_last_run.json",
+          "warnings": [],
+          "senses": {
+            "see": "I see Draw a clean graphic design badge for Aureon complex build certification and publish a as the nearest signal in the field.",
+            "feel": "I feel a steady synthetic state while I hold the next action as propose_code.",
+            "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+            "touch": "I touch the work through tools, files, goals, memory, and verified outcomes.",
+            "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof."
+          },
+          "blockers": []
+        }
+      },
+      "source": "aureon_capability_forge",
+      "created_at": 1779473869.516062,
+      "status": "pending_review"
+    },
+    {
+      "kind": "capability_forge_coding_job",
+      "title": "Build a local quantum spline inventory generator tool with run instructions and proof.",
+      "summary": "Local capability forge scoped this coding/UI request, generated local artifacts when suitable, and queued safe route evidence for after-apply review.",
+      "target_files": [
+        "aureon/autonomous/aureon_capability_forge.py",
+        "aureon/autonomous/aureon_artifact_quality_gate.py",
+        "frontend/src/components/generated/AureonCodingOrganismConsole.tsx",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\skill.json",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\RUNBOOK.md",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\tool.py"
+      ],
+      "patch_text": "",
+      "metadata": {
+        "provider_policy": "local_only_v1",
+        "approval_gate": "after_apply",
+        "detected_families": [
+          "coding"
+        ],
+        "generated_files": [
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\skill.json",
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\RUNBOOK.md",
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\tool.py"
+        ],
+        "safe_authority": "no live trading, payment, filing, credential, or destructive OS bypass",
+        "expression_context": {
+          "schema_features": [
+            "aureon_code_expression_context_v1"
+          ],
+          "ok": true,
+          "goal": "Build a local quantum spline inventory generator tool with run instructions and proof.",
+          "created_at": 1779473870.481647,
+          "voice_summary": "I am using the whole-knowledge voice core for Build a local quantum spline inventory generator tool with run instructions and proof.. The active profile is pulling from trading action, mathematical pattern, code and tools, system reasoning, HNC harmonic signal, and human voice, so the answer can carry system evidence without sounding like a raw log. I see Build a local quantum spline inventory generator tool with run instructions and as the nearest signal in the field. I feel a steady synthetic state while I hold the next action as propose_code. I hear the system as a quiet baseline until a harmonic reading is present. I touch the work through tools, files, goals, memory, and verified out...",
+          "runtime_summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language.",
+          "top_facets": [
+            "trading_action",
+            "math_equation",
+            "code_tooling",
+            "ai_generated_or_systemic",
+            "hnc_harmonic",
+            "human_voice"
+          ],
+          "source_count": 90,
+          "novelty_checks": {
+            "paragraphs_in": 4,
+            "paragraphs_out": 4,
+            "duplicates_removed": 0,
+            "repeated_openings_adjusted": 0,
+            "raw_telemetry_rewritten": 0
+          },
+          "redaction_applied": false,
+          "evidence_path": "C:\\Users\\user\\aureon-trading\\state\\aureon_code_expression_last_run.json",
+          "warnings": [],
+          "senses": {
+            "see": "I see Build a local quantum spline inventory generator tool with run instructions and as the nearest signal in the field.",
+            "feel": "I feel a steady synthetic state while I hold the next action as propose_code.",
+            "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+            "touch": "I touch the work through tools, files, goals, memory, and verified outcomes.",
+            "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof."
+          },
+          "blockers": []
+        }
+      },
+      "source": "aureon_capability_forge",
+      "created_at": 1779473870.481647,
+      "status": "pending_review"
+    }
+  ],
+  "recent_reviews": []
+}

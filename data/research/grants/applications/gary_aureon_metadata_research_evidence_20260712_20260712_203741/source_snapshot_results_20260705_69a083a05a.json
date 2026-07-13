@@ -1,0 +1,110 @@
+﻿[
+    {
+        "name":  "aureon-trading",
+        "kind":  "git_worktree_source_snapshot_sanitized",
+        "status":  "created",
+        "archive":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\aureon-trading_source_snapshot_sanitized_20260705.tar.gz",
+        "bytes":  263396225,
+        "entries":  13669,
+        "tar_output":  ""
+    },
+    {
+        "name":  "aureon-trading-clean",
+        "kind":  "git_worktree_source_snapshot_sanitized",
+        "status":  "created",
+        "archive":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\aureon-trading-clean_source_snapshot_sanitized_20260705.tar.gz",
+        "bytes":  47303329,
+        "entries":  2702,
+        "tar_output":  ""
+    },
+    {
+        "name":  "aureon-trading-github-latest-20260701",
+        "kind":  "git_worktree_source_snapshot_sanitized",
+        "status":  "created",
+        "archive":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\aureon-trading-github-latest-20260701_source_snapshot_sanitized_20260705.tar.gz",
+        "bytes":  247906901,
+        "entries":  10956,
+        "tar_output":  ""
+    },
+    {
+        "name":  "aureon-trading-integrated-main-20260508",
+        "kind":  "git_worktree_source_snapshot_sanitized",
+        "status":  "created",
+        "archive":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\aureon-trading-integrated-main-20260508_source_snapshot_sanitized_20260705.tar.gz",
+        "bytes":  355222385,
+        "entries":  12781,
+        "tar_output":  ""
+    },
+    {
+        "name":  "aureon-trading-latest",
+        "kind":  "git_worktree_source_snapshot_sanitized",
+        "status":  "created",
+        "archive":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\aureon-trading-latest_source_snapshot_sanitized_20260705.tar.gz",
+        "bytes":  53578016,
+        "entries":  2553,
+        "tar_output":  ""
+    },
+    {
+        "name":  "aureon-trading-loveavblr",
+        "kind":  "git_worktree_source_snapshot_no_commits_sanitized",
+        "status":  "created",
+        "archive":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\aureon-trading-loveavblr_source_snapshot_sanitized_20260705.tar.gz",
+        "bytes":  31037286,
+        "entries":  1695,
+        "tar_output":  ""
+    },
+    {
+        "name":  "project-rainbow",
+        "kind":  "git_worktree_source_snapshot_no_commits_sanitized",
+        "status":  "created",
+        "archive":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\project-rainbow_source_snapshot_sanitized_20260705.tar.gz",
+        "bytes":  98575011,
+        "entries":  5280,
+        "tar_output":  ""
+    },
+    {
+        "name":  "AureonResearch",
+        "kind":  "supporting_content",
+        "status":  "created",
+        "archive":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\AureonResearch_source_snapshot_sanitized_20260705.tar.gz",
+        "bytes":  62631376,
+        "entries":  227,
+        "tar_output":  ""
+    },
+    {
+        "name":  "AureonObsidianVault",
+        "kind":  "supporting_content",
+        "status":  "created",
+        "archive":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\AureonObsidianVault_source_snapshot_sanitized_20260705.tar.gz",
+        "bytes":  16364,
+        "entries":  26,
+        "tar_output":  ""
+    },
+    {
+        "name":  "substack_posts",
+        "kind":  "supporting_content",
+        "status":  "created",
+        "archive":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\substack_posts_source_snapshot_sanitized_20260705.tar.gz",
+        "bytes":  22380,
+        "entries":  16,
+        "tar_output":  ""
+    },
+    {
+        "name":  "aureon-json-backup",
+        "kind":  "supporting_content",
+        "status":  "created",
+        "archive":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\aureon-json-backup_source_snapshot_sanitized_20260705.tar.gz",
+        "bytes":  118376,
+        "entries":  15,
+        "tar_output":  ""
+    },
+    {
+        "name":  "aureon-update-preservation-20260508",
+        "kind":  "supporting_content",
+        "status":  "created",
+        "archive":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\aureon-update-preservation-20260508_source_snapshot_sanitized_20260705.tar.gz",
+        "bytes":  42781,
+        "entries":  8,
+        "tar_output":  ""
+    }
+]

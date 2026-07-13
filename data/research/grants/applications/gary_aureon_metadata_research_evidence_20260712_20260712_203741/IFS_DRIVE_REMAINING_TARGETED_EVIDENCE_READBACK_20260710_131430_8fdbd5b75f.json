@@ -1,0 +1,417 @@
+{
+  "schema_version": "aureon-ifs-drive-remaining-targeted-evidence-readback-v1",
+  "generated_at": "2026-07-10T13:14:30+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_drive_remaining_targeted_evidence_readback",
+  "drive_context": {
+    "account": "gaxlec@gmail.com Google Drive connector",
+    "mode": "read_only_search_and_sheet_row_readback",
+    "war_room_sheet": "Aureon Grant War Room - 2026-07-04",
+    "war_room_sheet_id": "1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+    "war_room_tabs_reviewed": [
+      "Funding Pipeline",
+      "Partner Map",
+      "Evidence Register",
+      "Application Tracker"
+    ],
+    "bounded_sheet_range": "A1:Z1000"
+  },
+  "summary": {
+    "drive_file_searches_reviewed": 13,
+    "drive_file_results_observed": 34,
+    "war_room_sheet_searches_reviewed": 21,
+    "war_room_sheet_matched_rows": 8,
+    "remaining_applications_reviewed": 9,
+    "confirmed_unlock_evidence_count": 0,
+    "direct_ifs_submissions_unlocked": 0,
+    "new_browser_submissions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false,
+    "drive_file_created_or_modified": false,
+    "sensitive_content_copied": false,
+    "private_finance_content_copied": false
+  },
+  "drive_file_searches": [
+    {
+      "query": "Swiss partner",
+      "route": "UK-Switzerland CR&D Round 3",
+      "results_observed": 5,
+      "classification": "WAR_ROOM_AND_OPERATING_LOG_ONLY",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned the War Room spreadsheet/workbook copies and the grant operating log. These are planning records, not a signed Swiss implementation partner, partner budget, research-institute/waiver, or commitment letter.",
+      "sanitized_result_titles": [
+        "Aureon Grant War Room - 2026-07-04",
+        "Aureon Grant War Room - 2026-07-04.xlsx",
+        "AUREON_GRANT_OPERATING_LOG.md"
+      ]
+    },
+    {
+      "query": "Innosuisse",
+      "route": "UK-Switzerland CR&D Round 3",
+      "results_observed": 4,
+      "classification": "WAR_ROOM_ONLY",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned the War Room spreadsheet/workbook copies. No Innosuisse partner, Swiss project budget, or acceptance/waiver evidence was found.",
+      "sanitized_result_titles": [
+        "Aureon Grant War Room - 2026-07-04",
+        "Aureon Grant War Room - 2026-07-04.xlsx"
+      ]
+    },
+    {
+      "query": "ETH Zurich",
+      "route": "UK-Switzerland CR&D Round 3",
+      "results_observed": 0,
+      "classification": "NO_DRIVE_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No Drive result for ETH Zurich."
+    },
+    {
+      "query": "CKAF",
+      "route": "CKAF Autumn",
+      "results_observed": 0,
+      "classification": "NO_DRIVE_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No Drive result for CKAF."
+    },
+    {
+      "query": "knowledge asset",
+      "route": "CKAF Autumn",
+      "results_observed": 5,
+      "classification": "RESEARCH_OR_TOOLING_FALSE_POSITIVES",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned research notes and skill/tooling files. No eligible public-sector research organisation lead, owned knowledge asset, IP rights evidence, senior support letter, or Aureon procurement/support role evidence was found.",
+      "sanitized_result_titles": [
+        "THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_Now.md",
+        "AUREON_WHITE_PAPER_RESEARCH_HUB.md",
+        "SKILL.md"
+      ]
+    },
+    {
+      "query": "DRIVE35",
+      "route": "DRIVE35",
+      "results_observed": 0,
+      "classification": "NO_DRIVE_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No Drive result for DRIVE35."
+    },
+    {
+      "query": "ZEV",
+      "route": "DRIVE35",
+      "results_observed": 0,
+      "classification": "NO_DRIVE_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No Drive result for ZEV."
+    },
+    {
+      "query": "co investment",
+      "route": "DRIVE35",
+      "results_observed": 5,
+      "classification": "UNRELATED_OR_PLANNING_FALSE_POSITIVES",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned Invest NI planning material, the War Room, unrelated investment/skill files, and workbook copies. No DRIVE35 co-investment, ZEV facility, Tier 1 partner, match funding, or eligible budget evidence was found.",
+      "sanitized_result_titles": [
+        "01_Invest_NI_Advisor_Email_Pack.pdf",
+        "Aureon Grant War Room - 2026-07-04",
+        "RWA_ICO in BVI 14.08.2025 (1).pdf",
+        "Aureon Grant War Room - 2026-07-04.xlsx"
+      ]
+    },
+    {
+      "query": "ZEVI",
+      "route": "ZEVI2",
+      "results_observed": 0,
+      "classification": "NO_DRIVE_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No Drive result for ZEVI."
+    },
+    {
+      "query": "maritime demonstration",
+      "route": "ZEVI2",
+      "results_observed": 5,
+      "classification": "UNRELATED_OR_RESEARCH_FALSE_POSITIVES",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned unrelated technical docs and Atlantic research drafts. No maritime lead, vessel/port/infrastructure asset, permit, insurance, shipyard route, three-year demonstration commitment, or eligible budget evidence was found.",
+      "sanitized_result_titles": [
+        "unsupported-and-fallbacks.md",
+        "The_Atlantic_Substrate_v.docx",
+        "The_Atlantic_Substrate_v (1).docx",
+        "SKILL.md",
+        "sdk-nodejs.md"
+      ]
+    },
+    {
+      "query": "quantum hardware",
+      "route": "Quantum hardware CR&D",
+      "results_observed": 5,
+      "classification": "WAR_ROOM_AND_INDEX_ONLY",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned the War Room spreadsheet/workbook copies and a master work index. These do not prove a quantum hardware lead, hardware/facility access, consortium commitment, partner budget, or validation plan.",
+      "sanitized_result_titles": [
+        "Aureon Grant War Room - 2026-07-04",
+        "Aureon Grant War Room - 2026-07-04.xlsx",
+        "MASTER_WORK_INDEX_20260705.md"
+      ]
+    },
+    {
+      "query": "QCi3",
+      "route": "Quantum hardware CR&D",
+      "results_observed": 0,
+      "classification": "NO_DRIVE_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No Drive result for QCi3."
+    },
+    {
+      "query": "Innovation Loans",
+      "route": "Innovation Loans EOI",
+      "results_observed": 5,
+      "classification": "WAR_ROOM_AND_PACKAGING_ONLY",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned the War Room files and the RA Grant War Room package. This route is repayable finance, not a grant, and the search did not confirm action-time approval, repayment capacity evidence, loan amount, cash-flow forecast, or credit-risk pack.",
+      "sanitized_result_titles": [
+        "Aureon Grant War Room - 2026-07-04",
+        "Aureon Grant War Room - 2026-07-04.xlsx",
+        "RA_Grant_War_Room_Package.pdf"
+      ]
+    }
+  ],
+  "war_room_sheet_searches": [
+    {
+      "query": "Swiss",
+      "sheet": "Funding Pipeline",
+      "matched_rows": 1,
+      "classification": "ROUTE_PLANNING_ROW_ONLY",
+      "unlock_evidence_found": false,
+      "finding": "Funding Pipeline row 12 records UK-Switzerland CR&D Round 3 and the need to build a Swiss partner target list and one-page pitch. It does not include signed partner, budget, waiver, or commitment evidence."
+    },
+    {
+      "query": "Swiss",
+      "sheet": "Partner Map",
+      "matched_rows": 1,
+      "classification": "PARTNER_TARGET_GAP_ONLY",
+      "unlock_evidence_found": false,
+      "finding": "Partner Map row 12 says a Swiss implementation partner is required and to build a target list. It is not a named committed partner."
+    },
+    {
+      "query": "Swiss",
+      "sheet": "Evidence Register",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No Swiss evidence row found in Evidence Register search range A1:Z1000."
+    },
+    {
+      "query": "CKAF",
+      "sheet": "Funding Pipeline",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No CKAF row found in Funding Pipeline search range A1:Z1000."
+    },
+    {
+      "query": "knowledge asset",
+      "sheet": "Evidence Register",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No knowledge asset evidence row found in Evidence Register search range A1:Z1000."
+    },
+    {
+      "query": "public sector",
+      "sheet": "Partner Map",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No public-sector research organisation lead row found in Partner Map search range A1:Z1000."
+    },
+    {
+      "query": "DRIVE35",
+      "sheet": "Funding Pipeline",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No DRIVE35 row found in Funding Pipeline search range A1:Z1000."
+    },
+    {
+      "query": "Tier 1",
+      "sheet": "Partner Map",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No Tier 1 automotive partner row found in Partner Map search range A1:Z1000."
+    },
+    {
+      "query": "ZEV",
+      "sheet": "Evidence Register",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No ZEV facility, partner, or co-investment evidence row found in Evidence Register search range A1:Z1000."
+    },
+    {
+      "query": "automotive",
+      "sheet": "Partner Map",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No automotive lead, vehicle manufacturer, or Tier 1 partner row found in Partner Map search range A1:Z1000."
+    },
+    {
+      "query": "ZEVI",
+      "sheet": "Funding Pipeline",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No ZEVI row found in Funding Pipeline search range A1:Z1000."
+    },
+    {
+      "query": "maritime",
+      "sheet": "Partner Map",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No maritime lead, port, vessel owner, or infrastructure owner row found in Partner Map search range A1:Z1000."
+    },
+    {
+      "query": "vessel",
+      "sheet": "Evidence Register",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No vessel or maritime infrastructure evidence row found in Evidence Register search range A1:Z1000."
+    },
+    {
+      "query": "quantum",
+      "sheet": "Funding Pipeline",
+      "matched_rows": 3,
+      "classification": "ROUTE_PLANNING_ROWS_ONLY",
+      "unlock_evidence_found": false,
+      "finding": "Funding Pipeline rows 23-25 list quantum route ideas and explicitly frame the hardware CR&D route as weak without a quantum hardware/software partner. They do not include hardware access, consortium, or budget evidence."
+    },
+    {
+      "query": "quantum",
+      "sheet": "Partner Map",
+      "matched_rows": 1,
+      "classification": "OUTREACH_TARGET_ONLY",
+      "unlock_evidence_found": false,
+      "finding": "Partner Map row 5 lists Queen's University Belfast as an academic validation/EPSRC lead target. It is a target, not a committed quantum hardware lead or facility."
+    },
+    {
+      "query": "hardware",
+      "sheet": "Evidence Register",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No hardware facility, hardware access, or quantum partner evidence row found in Evidence Register search range A1:Z1000."
+    },
+    {
+      "query": "Loans",
+      "sheet": "Funding Pipeline",
+      "matched_rows": 1,
+      "classification": "NON_GRANT_ROUTE_WATCH_ONLY",
+      "unlock_evidence_found": false,
+      "finding": "Funding Pipeline row 27 states the loans route is not a grant and should be considered only after revenue/traction and UKDI suitability call. It does not provide repayment-capacity or action-time approval evidence."
+    },
+    {
+      "query": "loan",
+      "sheet": "Evidence Register",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No loan approval, repayment capacity, cash-flow forecast, or credit-risk evidence row found in Evidence Register search range A1:Z1000."
+    },
+    {
+      "query": "UK-Switzerland",
+      "sheet": "Application Tracker",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No UK-Switzerland tracker row found in Application Tracker search range A1:Z1000."
+    },
+    {
+      "query": "Quantum",
+      "sheet": "Application Tracker",
+      "matched_rows": 1,
+      "classification": "OUTREACH_TASK_ONLY",
+      "unlock_evidence_found": false,
+      "finding": "Application Tracker row 10 records academic partner outreach as not started and needed for EPSRC/quantum/hardware routes. It confirms the gap rather than unlocking submission."
+    },
+    {
+      "query": "maritime",
+      "sheet": "Application Tracker",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No maritime tracker row found in Application Tracker search range A1:Z1000."
+    }
+  ],
+  "route_impacts": [
+    {
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "impact": "Drive and War Room readback confirmed route planning only. No Swiss implementation partner, research-institute/waiver, partner commitment letter, partner budget, permit/export position, or finance evidence was found.",
+      "state_after_readback": "LIVE_DRAFT_PARTNER_BUDGET_EXPORT_GATED",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+      "impact": "Drive and War Room readback did not confirm an eligible public-sector research organisation lead, owned knowledge asset, IP rights evidence, senior support letter, or authorised Aureon support/procurement role.",
+      "state_after_readback": "PUBLIC_SECTOR_RESEARCH_ORG_REQUIRED",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+      "impact": "Drive and War Room readback did not confirm a vehicle manufacturer or Tier 1 partner, ZEV work package, match funding, partner budget, eligible budget, or consortium role.",
+      "state_after_readback": "ZEV_PARTNER_MATCH_FUNDING_REQUIRED",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+      "impact": "Drive and War Room readback did not confirm a ZEV manufacturing facility/site, co-investment, GBP5m-plus project cost basis, capital investment plan, or delivery capacity.",
+      "state_after_readback": "ZEV_MANUFACTURING_FACILITY_REQUIRED",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+      "impact": "Drive and War Room readback did not confirm a UK maritime lead, alternative-fuel vessel or infrastructure asset, three-year demonstration commitment, eligible budget, permit, insurance, or site evidence.",
+      "state_after_readback": "MARITIME_PARTNER_ASSET_BUDGET_REQUIRED",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+      "impact": "Drive and War Room readback did not confirm a UK maritime lead, electric-power vessel or infrastructure asset, three-year demonstration commitment, eligible budget, permit, insurance, or site evidence.",
+      "state_after_readback": "MARITIME_PARTNER_ASSET_BUDGET_REQUIRED",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+      "impact": "Drive and War Room readback did not confirm a UK maritime lead, vessel/infrastructure asset, three-year demonstration commitment, eligible budget, permit, insurance, or site evidence.",
+      "state_after_readback": "MARITIME_PARTNER_ASSET_BUDGET_REQUIRED",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "impact": "Drive and War Room readback found quantum route planning notes and outreach targets only. No eligible quantum hardware lead, hardware/facility access, consortium commitment, partner budget, or validation plan was found.",
+      "state_after_readback": "QUANTUM_HARDWARE_LEAD_REQUIRED",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+      "impact": "Drive and War Room readback confirms the loan route remains repayable finance, not a grant. No action-time approval, repayment capacity, cash-flow forecast, loan amount, credit-risk pack, or deliberate loan approval was found.",
+      "state_after_readback": "LOAN_FINANCE_RISK_GATED",
+      "direct_submit_ready": false
+    }
+  ],
+  "controls": [
+    "Google Drive and Google Sheets were read only.",
+    "Planning packs, War Room rows, outreach targets, and research files are not treated as signed/dated lead, partner, budget, facility, asset, or commitment evidence.",
+    "No Drive file or Sheet cell was created, modified, moved, shared, uploaded, or downloaded as raw private evidence.",
+    "Private finance and repayable-loan material was not copied into the artifact.",
+    "No IFS portal page was changed and no external action was performed.",
+    "No route was marked submit-ready from planning logs, target rows, unrelated files, or non-grant loan watch rows."
+  ],
+  "result": "DRIVE_REMAINING_TARGETED_READBACK_NO_CONFIRMED_UNLOCK_EVIDENCE"
+}

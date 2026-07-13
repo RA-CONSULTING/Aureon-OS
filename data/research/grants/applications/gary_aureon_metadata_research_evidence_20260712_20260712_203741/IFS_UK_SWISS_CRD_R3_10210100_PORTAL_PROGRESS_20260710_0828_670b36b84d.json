@@ -1,0 +1,44 @@
+{
+  "generated_at": "2026-07-10T08:28:00+01:00",
+  "operator": "Aureon",
+  "scope": "IFS_ONLY",
+  "event": "ifs_uk_swiss_q17_draft_saved",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "status": "IFS_DRAFT_THEME_COMPLETE_Q17_DRAFT_SAVED_PARTNER_BUDGET_EVIDENCE_REQUIRED",
+  "live_portal_change": {
+    "section": "17. Costs and value for money",
+    "draft_saved": true,
+    "marked_complete": false,
+    "word_count": 156,
+    "words_remaining_readback": 244,
+    "portal_readback": "Last updated: today 8:28am by you"
+  },
+  "saved_answer": "The final project budget will be completed after the Swiss implementation partner, any research institution or waiver route, work-package split and eligible costs are confirmed. R&A Consulting and Brokerage Services Ltd will only enter costs that are evidenced for the Aureon Evidence OS work package: evidence architecture, source register setup, claim-to-source mapping, reproducible workflow templates, risk and assumption control, partner review materials and funder-ready reporting outputs.\n\nValue for money will come from a lean UK software assurance work package that reuses existing Aureon code, local evidence workflows, open-source tooling and founder technical labour rather than creating unnecessary capital, equipment or subcontract costs. Each cost line will be mapped to a deliverable and milestone so reviewers can see what public funding buys and how it reduces reporting, assurance and delivery risk for the consortium.\n\nNo partner costs, travel, materials, equipment, subcontracting, overheads or grant totals will be represented until the partner budget and eligible-cost evidence are complete.",
+  "controls": [
+    "Q17 was saved as a draft only and not marked complete",
+    "No final IFS submission attempted",
+    "No Project Impact survey submission attempted",
+    "No award terms acceptance attempted",
+    "No partner invitation attempted",
+    "No upload attempted",
+    "No email or Drive send attempted",
+    "No CAPTCHA/MFA/provider-control bypass attempted",
+    "No total eligible costs, grant request, partner costs, travel, materials, equipment, subcontracting, overheads, or grant totals invented"
+  ],
+  "remaining_gates": [
+    "Named Swiss implementation partner and research institution/waiver evidence",
+    "Partner legal details and Innosuisse parallel application owner",
+    "Work-package split and partner technical scope",
+    "Eligible cost budget, grant request, partner contributions and finance overview",
+    "Export-control and TR&I review after partner technical scope is fixed",
+    "Project Impact final submission fields",
+    "Award terms and final review/submit"
+  ],
+  "evidence": [
+    "applications/IFS_PARTNER_OUTREACH_PIPELINE_20260710_081819.json",
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_PORTAL_PROGRESS_20260710_0824.json",
+    "applications/IFS_PORTAL_READY_TEXT_UK_SWITZERLAND_CR_D_ROUND_3_20260709.md"
+  ],
+  "result": "LIVE_IFS_DRAFT_Q17_SAVED_NO_FINAL_SUBMISSION"
+}

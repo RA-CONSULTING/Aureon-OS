@@ -1,0 +1,962 @@
+{
+  "civilization": "Aztec",
+  "last_updated": "2025-12-30T18:27:37.532414",
+  "version": "1.0.0",
+  "sources": [
+    "hardcoded",
+    "wikipedia"
+  ],
+  "core_principles": {
+    "tonalpohualli": {
+      "description": "260-day sacred calendar with 20 day-signs and 13 numbers",
+      "trading_application": "Short-term cycle timing aligned with sacred mathematics",
+      "confidence": 0.85
+    },
+    "xiuhpohualli": {
+      "description": "365-day solar calendar tracking agricultural and ceremonial cycles",
+      "trading_application": "Annual market cycle alignment",
+      "confidence": 0.8
+    },
+    "five_suns": {
+      "description": "Five world ages each destroyed and reborn, current is Fifth Sun",
+      "trading_application": "Market regime recognition, paradigm shifts",
+      "confidence": 0.75
+    },
+    "teotl": {
+      "description": "Sacred force permeating all existence, dynamic and transformative",
+      "trading_application": "Understanding market energy and momentum",
+      "confidence": 0.7
+    }
+  },
+  "calendar_mathematics": {
+    "sacred_numbers": [
+      13,
+      20,
+      52,
+      260,
+      365
+    ],
+    "calendar_round": {
+      "period_days": 18980,
+      "years": 52,
+      "meaning": "Complete cycle before patterns repeat"
+    },
+    "venus_cycle": {
+      "synodic_period": 584,
+      "relation": "5 Venus cycles = 8 solar years = 2920 days",
+      "trading_insight": "Multi-year correlation patterns"
+    }
+  },
+  "day_signs": {
+    "cipactli": {
+      "meaning": "Crocodile",
+      "energy": "Beginnings, primordial"
+    },
+    "ehecatl": {
+      "meaning": "Wind",
+      "energy": "Change, communication"
+    },
+    "calli": {
+      "meaning": "House",
+      "energy": "Shelter, introspection"
+    },
+    "cuetzpalin": {
+      "meaning": "Lizard",
+      "energy": "Agility, survival"
+    },
+    "coatl": {
+      "meaning": "Serpent",
+      "energy": "Power, transformation"
+    },
+    "miquiztli": {
+      "meaning": "Death",
+      "energy": "Endings, rebirth"
+    },
+    "mazatl": {
+      "meaning": "Deer",
+      "energy": "Grace, hunt"
+    },
+    "tochtli": {
+      "meaning": "Rabbit",
+      "energy": "Abundance, multiplication"
+    },
+    "atl": {
+      "meaning": "Water",
+      "energy": "Flow, emotion"
+    },
+    "itzcuintli": {
+      "meaning": "Dog",
+      "energy": "Loyalty, guidance"
+    },
+    "ozomatli": {
+      "meaning": "Monkey",
+      "energy": "Play, creativity"
+    },
+    "malinalli": {
+      "meaning": "Grass",
+      "energy": "Resilience, tenacity"
+    },
+    "acatl": {
+      "meaning": "Reed",
+      "energy": "Authority, judgment"
+    },
+    "ocelotl": {
+      "meaning": "Jaguar",
+      "energy": "Stealth, inner power"
+    },
+    "cuauhtli": {
+      "meaning": "Eagle",
+      "energy": "Vision, freedom"
+    },
+    "cozcacuauhtli": {
+      "meaning": "Vulture",
+      "energy": "Wisdom, purification"
+    },
+    "ollin": {
+      "meaning": "Movement",
+      "energy": "Change, earthquake"
+    },
+    "tecpatl": {
+      "meaning": "Flint",
+      "energy": "Sacrifice, truth"
+    },
+    "quiahuitl": {
+      "meaning": "Rain",
+      "energy": "Cleansing, fertility"
+    },
+    "xochitl": {
+      "meaning": "Flower",
+      "energy": "Beauty, art, completion"
+    }
+  },
+  "deities_and_forces": {
+    "quetzalcoatl": "Feathered Serpent - wisdom, wind, learning",
+    "tezcatlipoca": "Smoking Mirror - fate, night, change",
+    "huitzilopochtli": "Hummingbird of South - will, war, sun",
+    "tlaloc": "Rain God - nourishment, storms, agriculture"
+  },
+  "wikipedia_topics": [
+    "Aztec calendar",
+    "Tonalpohualli",
+    "Xiuhpohualli",
+    "Aztec mythology",
+    "Quetzalcoatl",
+    "Tezcatlipoca",
+    "Five Suns",
+    "Aztec numerals",
+    "Mesoamerican Long Count calendar",
+    "Aztec philosophy"
+  ],
+  "learned_insights": [
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec calendar",
+      "content": "The Aztec sun stone, often erroneously called the calendar stone, is on display at the National Museum of Anthropology in Mexico City.\nThe actual Aztec calendar consists of a 365-day calendar cycle called xiuhpōhualli (year count), and a 260-day ritual cycle called tōnalpōhualli (day count). These two cycles together form a 52-year \"century\", sometimes called the \"calendar round\". The xiuhpōhualli is considered to be the agricultural calendar, since it is based on the sun, and the tōnalpōhualli ",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:17.805704",
+      "content_hash": "020ece17dc5d67f06ca95629707b2542"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec calendar",
+      "content": "== Tōnalpōhualli ==\nThe tōnalpōhualli (\"day count\") consists of a cycle of 260 days, each day signified by a combination of a number from 1 to 13, and one of the twenty day signs. With each new day, both the number and day sign would be incremented: 1. Crocodile is followed by 2. Wind, 3. House, 4. Lizard, and so forth up to 13. Reed. After Reed, the cycle of numbers would restart (though the twenty day signs had not yet been exhausted), resulting in 1. Jaguar, 2. Eagle, and so on, as the days i",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:17.805749",
+      "content_hash": "47417f27694c732efbd95050f77951c1"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec calendar",
+      "content": "=== Trecenas ===\nThe 260 days of the sacred calendar were grouped into twenty periods of 13 days each. Scholars usually refer to these thirteen-day \"weeks\" as trecenas, using a Spanish term derived from trece \"thirteen\" (just as the Spanish term docena \"dozen\" is derived from doce \"twelve\"). The original Nahuatl term was \"in cencalli tonalli\" (a family of days), according to Book IV of the Florentine Codex.\nEach trecena is named according to the calendar date of the first day of the 13 days in t",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:17.805801",
+      "content_hash": "73b4c7331251fbcc2f5ccd9ca1339704"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec calendar",
+      "content": "== Xihuitl ==\nIn ancient times the year was composed of eighteen months, and thus it was observed by the native people.  Since their months were made of no more than twenty days, these were all the days contained in a month, because they were not guided by the moon but by the days; therefore, the year had eighteen months.  The days of the year were counted twenty by twenty.\nXiuhpōhualli is the Aztec year (xihuitl) count (pōhualli). One year consists of 360 named days and 5 nameless (nēmontēmi). ",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:17.805864",
+      "content_hash": "29b1333bd94783e7d97fd7ab06d41e05"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec calendar",
+      "content": "== Xiuhmolpilli ==\nThe ancient Mexicans counted their years by means of four signs combined with thirteen numbers, thus obtaining periods of 52 years, which are commonly known as Xiuhmolpilli, a popular but incorrect generic name; the most correct Nahuatl word for this cycle is Xiuhnelpilli. The table with the current years:",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:17.805882",
+      "content_hash": "a1221468086d15dc1552dc07d9cf738f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec calendar",
+      "content": "== Reconstruction of the Calendar ==\nIn the last century scholars had tried to reconstruct the Calendar. One version was proposed by Professor Rafael Tena of the Instituto Nacional de Antropología e Historia, based on the studies of Sahagún and Alfonso Caso of the National Autonomous University of Mexico. His correlation argues that the first day of the Mexica year was February 13 of the old Julian calendar or February 23 of the current Gregorian calendar.\nUsing the same count, it has been the d",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:17.805938",
+      "content_hash": "349cb7945df4785dca7efdae475cc81e"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Tonalpohualli",
+      "content": "The term for the Aztec day signs, tōnalpōhualli, comes from the root word Tona which means to give light or heat. Tōnalpōhualli refers to the count of the days, made up of 20 day signs and a 260 day cycle. In Aztec society there were multiple intertwining calendars, the tōnalpōhualli, and the xiuhpōhualli which refers to the solar year of 365 days. The xiuhpōhualli was divided into eighteen twenty day months, and then an extra five days at the end of the cycle. Each day denoted by a different da",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:22.456657",
+      "content_hash": "43b08e7f7b7c22b5adc7c55d7c0825c4"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Tonalpohualli",
+      "content": "The tōnalpōhualli as aforementioned consists of twenty different day signs or Trecenas, which in almost all representations are accompanied with a glyph depicting its character. The Aztec form of writing is largely pictorial and was a semasiographic system, meaning writing existed separately from spoken word. The glyphs were recognizable to their meaning, and members of the population would understand what day it was and their current position in time. Since the Trecenas would repeat every twent",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:22.456755",
+      "content_hash": "05c2fe9a8b1f9cca67d8af22f76de870"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Xiuhpohualli",
+      "content": "The xiuhpōhualli (Nahuatl pronunciation: [ʃiʍpoːˈwalːi], from xihuitl (“year”) + pōhualli (“count”)) is a 365-day calendar used by the Aztecs and other pre-Columbian Nahua peoples in central Mexico.  It is composed of eighteen 20-day \"months,\" which through Spanish usage came to be known as veintenas (“scores, groups of twenty”), with an inauspicious, separate 5-day period at the end of the year called the nēmontēmi. The name given to the 20-day periods in pre-Columbian times is unknown, and tho",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:27.187877",
+      "content_hash": "4a8284790d00bf98c352f4522a7e4bab"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Xiuhpohualli",
+      "content": "In ancient times the year was composed of eighteen months, and thus it was observed by these Indian people.  Since their months were made of no more than twenty days, these were all the days contained in a month, because they were not guided by the moon but by the days; therefore, the year had eighteen months.  The days of the year were counted twenty by twenty.\nThe xiuhpōhualli calendar (in history known as the \"vague year\" which means no leap day) had its antecedents in form and function in ea",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:27.187966",
+      "content_hash": "63f802454955d12cbd4f2fa32df85fca"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec mythology",
+      "content": "Water deities\nTlaloc, god of rain, lightning and thunder. He is a fertility god.\nChalchiuhtlicue, goddess of running water, lakes, rivers, seas, streams, horizontal waters, storms, and baptism.\nHuixtocihuatl, goddess of salt\nOpochtli, god of fishing and birdcatchers, discoverer of both the harpoon and net\nAtlahua, god of water, a fisherman and archer\nFire deities\nXiuhtecuhtli, god of fire and time\nChantico, goddess of the hearth (firebox) and volcanoes\nXolotl, god of fire, lightning, and death, ",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:31.903875",
+      "content_hash": "c1eddacd504d2bd5ebc7fb2b6d00c44c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Quetzalcoatl",
+      "content": "Quetzalcoatl () (Nahuatl: \"Feathered Serpent\") is a deity in Aztec culture and literature. Among the Aztecs, he was related to wind, Venus, Sun, merchants, arts, crafts,  knowledge, and learning. He was also the patron god of the Aztec priesthood. He is also a god of wisdom, learning and intelligence. He was one of several important gods in the Aztec pantheon, along with the gods Tlaloc, Tezcatlipoca and Huitzilopochtli. The two other gods represented by the planet Venus are Tlaloc (ally and the",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:28:36.783172",
+      "content_hash": "cabeb2d95901aa5b7e3269a09c646f2b"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Quetzalcoatl",
+      "content": "The earliest known iconographic depiction of the deity appears on Stela 19 at the Olmec site of La Venta. Dated to around 900 BC, it depicts a serpent rising up behind a person probably engaged in a shamanic ritual.  Although probably not exactly a depiction of the same feathered-serpent deity worshipped in classic and post-classic periods, it shows the continuity of symbolism of feathered snakes in Mesoamerica from the formative period and on, for example in comparison to the Maya Vision Serpen",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:28:36.783280",
+      "content_hash": "4582447d01179c9b73345392f00e6e0b"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Tezcatlipoca",
+      "content": "Tezcatlipoca (Classical Nahuatl: Tēzcatlīpohca [teːs̻kat͡ɬiːˈpoʔkaˀ]) or Tezcatl Ipoca was a central deity in Aztec religion. He is associated with a variety of concepts, including the night sky, hurricanes, obsidian, and conflict. He was considered one of the four sons of Ometecuhtli and Omecihuatl, the primordial dual deity. His main festival was Toxcatl, which, like most religious festivals of Aztec culture, involved human sacrifice.\nTezcatlipoca's nagual, his animal counterpart, was the jagu",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:41.539404",
+      "content_hash": "98b4647e0a68be779f149fe5ca5cde55"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Tezcatlipoca",
+      "content": "=== Iconography ===\nOne of the most recognizable iconographic details of Tezcatlipoca is his face paint, called mixchictlapanticac. Most commonly, he is shown with horizontal bands of black and yellow, though codices may vary in which two colors are depicted. Mary Miller has posited that the combination of yellow and black might be a connection to the jaguar, with which Tezcatlipoca is associated. Black is the foremost color associated with Tezcatlipoca, not only because of his role as a god of ",
+      "relevance_score": 0.4,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-15T10:28:41.539600",
+      "content_hash": "66d8c101d9f81a845acc3da257923c25"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Tezcatlipoca",
+      "content": "The frontispiece of the Codex Fejéváry-Mayer, one of the more well-known images from Aztec codices, features a god circumscribed in the 20 trecena, or day symbols, of the Tōnalpōhualli. The exact identity of this god is unclear, but is most likely either Tezcatlipoca or Xiuhtecutli. The figure has yellow and black face paint, as is characteristic of Tezcatlipoca. But as Olivier points out, \"gods like Xiuhtecutli or Huitzilopoctli have similar facial painting.\" The figure is also shown with two u",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:41.539700",
+      "content_hash": "2b0ccd081183f2e32d870b06cd4a9762"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Five Suns",
+      "content": "In creation myths, the term \"Five Suns\" refers to the belief of certain Nahua cultures and Aztec peoples that the world has gone through five distinct cycles of creation and destruction, with the current era being the fifth. It is primarily derived from a combination of myths, cosmologies, and eschatological beliefs that were originally held by pre-Columbian peoples in the Mesoamerican region, including central Mexico, and it is part of a larger mythology of Fifth World or Fifth Sun beliefs. \nTh",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:46.382198",
+      "content_hash": "2d9649c957b951bc5b61798a0c070ac8"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Five Suns",
+      "content": "=== First sun: Tezcatlipoca ===\nThe four Tezcatlipocas sought to create the world, but each time they created something, it fell into the waters below and was devoured by Cipactli, a monstrous caiman covered in mouths. Determined to end the cycle, Tezcatlipoca, the Black Tezcatlipoca, sacrificed his leg, using it as bait to lure Cipactli from the depths. As she consumed it, the other gods seized the opportunity to slay her. From her body, they shaped the earth, and later created other gods and h",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:46.382268",
+      "content_hash": "d5b01dd7f26eca8b3b312dff6f0bf8d2"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Five Suns",
+      "content": "=== Second sun: Quetzalcōātl ===\nThe gods shaped a new race of humans in normal stature, with Quetzalcōātl serving as the sun for this new civilization. Their intention was to bring order to the world, but their efforts failed, as humans strayed from divine teachings and instead succumbed to greed and corruption. In response, Tezcatlipoca turned them into monkeys. Quetzalcōātl, who had still held them in great regard, was deeply distressed and, in his sorrow, unleashed a hurricane to cast them a",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:28:46.382308",
+      "content_hash": "9d3472b079b8c09f8f5c76808e3986fd"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Five Suns",
+      "content": "Most of what is known about the ancient Aztecs comes from the few codices to survive the Spanish conquest. Their myths can be confusing because of the lack of documentation and also because there are many popular myths that seem to contradict one another. This happened due to the fact that they were originally passed down by word of mouth and because the Aztecs adopted many of their gods from other tribes, both assigning their own new aspects to these gods and endowing them with those of similar",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:28:46.382482",
+      "content_hash": "97e897014c7cf0f46b1fec844327bb5e"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec numerals",
+      "content": "== Structure and use ==\nAztec was pictographic and ideographic proto-writing, augmented by phonetic rebuses. It also contained syllabic signs and logograms. There was no alphabet, but puns also contributed to recording sounds of the Aztec language. While some scholars have understood the system not to be considered a complete writing system, this is disputed by others. The existence of logograms and syllabic signs is being documented and a phonetic aspect of the writing system has emerged, even ",
+      "relevance_score": 0.6,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:28:51.135744",
+      "content_hash": "19a72e5de4ae02d4829893c3e53ef92c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec numerals",
+      "content": "=== Historical ===\nAztecs embraced the widespread manner of presenting history cartographically. A cartographic map would hold an elaborately detailed history recording events. The maps were painted to be read in sequence, so that time is established by the movement of the narrative through the map and by the succession of individual maps.\nAztecs also used continuous year-count annals to record anything that would occur during that year. All the years are painted in a sequence and most of the ye",
+      "relevance_score": 0.6,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:28:51.135822",
+      "content_hash": "1a9bbfb2ef5b9769468c1fd5d5cd4225"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Mesoamerican Long Count calendar",
+      "content": "The Mesoamerican Long Count calendar is a non-repeating base-20 and base-18 calendar used by pre-Columbian Mesoamerican cultures, most notably the Maya. For this reason, it is often known as the Maya Long Count calendar. Using a modified vigesimal tally, the Long Count calendar identifies a day by counting the number of days passed since a mythical creation date that corresponds to August 11, 3114 BCE in the proleptic Gregorian calendar. The Long Count calendar was widely used on monuments.",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:56.046794",
+      "content_hash": "41e30e5d3be5e033dc9799a7e452a03d"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Mesoamerican Long Count calendar",
+      "content": "== Background ==\nThe two most widely used calendars in pre-Columbian Mesoamerica were the 260-day tzolkʼin and the 365-day haabʼ. The equivalent Aztec calendars are known in Nahuatl as the tōnalpōhualli and xiuhpōhualli, respectively.\nThe combination of a haabʼ and a tzolkʼin date identifies a day in a combination which does not occur again for 18,980 days (52 haabʼ cycles of 365 days equals 73 tzolkʼin cycles of 260 days, approximately 52 years), a period known as the Calendar Round. To identif",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:56.046835",
+      "content_hash": "8e9b7f63a14381e3a721cc32453db577"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Mesoamerican Long Count calendar",
+      "content": "The Long Count calendar identifies a date by counting the number of days from a starting date that is generally calculated to be August 11, 3114 BCE in the proleptic Gregorian calendar or September 6 in the Julian calendar (or −3113 in astronomical year numbering). There has been much debate over the precise correlation between the Western calendars and the Long Count calendars. The August 11 date is based on the GMT correlation.\nThe completion of 13 bʼakʼtuns (August 11, 3114 BCE) marks the Cre",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:56.046905",
+      "content_hash": "03f9be865b0215f742a452d2fbd9c21b"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Mesoamerican Long Count calendar",
+      "content": "Long Count dates are written with Mesoamerican numerals, as shown on this table. A dot represents 1 while a bar equals 5. The shell glyph was used to represent the zero concept. The Long Count calendar required the use of zero as a place-holder and presents one of the earliest uses of the zero concept in history.\nOn Maya monuments, the Long Count syntax is more complex. The date sequence is given once, at the beginning of the inscription and opens with the so-called ISIG (Introductory Series Ini",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:56.046948",
+      "content_hash": "8e14e804e4497f7a404ae44254a17a20"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Mesoamerican Long Count calendar",
+      "content": "Of the six sites, three are on the western edge of the Maya homeland and three are several hundred kilometers further west, leading some researchers to believe that the Long Count calendar predates the Maya. La Mojarra Stela 1, the Tuxtla Statuette, Tres Zapotes Stela C and Chiapa Stela 2 are all inscribed in an Epi-Olmec, not Maya, style. El Baúl Stela 2, on the other hand, was created in the Izapan style.\nThe first unequivocally Maya artifact is Stela 29 from Tikal, with the Long Count date of",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:56.047007",
+      "content_hash": "e19da0548c661a7c5bc9aad93a4eec3e"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Mesoamerican Long Count calendar",
+      "content": "The Maya and Western calendars are correlated by using a Julian day number (JDN) of the starting date of the current creation — 13.0.0.0.0, 4 Ajaw, 8 Kumkʼu. This is referred to as a \"correlation constant\". The generally accepted correlation constant is the Modified Thompson 2, \"Goodman–Martinez–Thompson\", or GMT correlation of 584,283 days. Using the GMT correlation, the current creation started on September 6, −3113 (Julian astronomical) – August 11, 3114 BCE in the Proleptic Gregorian calenda",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:56.047137",
+      "content_hash": "8b7109edd5a802d5fda2d640caec095a"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec philosophy",
+      "content": "== Moral beliefs and aesthetics ==\nAztec philosophers focused on morality as establishing balance.  The world was seen as constantly shifting with the ever-changing teotl.  Morality focused on finding the path to living a balanced life, which would provide stability in the shifting world.\nAztec philosophy saw the arts as a way to express the true nature of teotl.  Art was considered to be good if it in some way brought about a better understanding of teotl.  Aztec poetry was closely tied to phil",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:29:00.785491",
+      "content_hash": "e04187853e9b4035fd62fc7ccad02b9c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec philosophy",
+      "content": "== How did the Aztecs regard \"time\"? ==\nJames Maffie has explained that the Aztec concept of time (like that of the Mayas) was not one of 'uniform forward flow' whose passage could be accurately measured by a clock or some similar device.\nSpecific events were regarded as separate, unique entities, only minimally related to those which had occurred immediately before them or to those which followed straight afterwards. Of paramount importance were the positions which they happened to occupy in th",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:29:00.785534",
+      "content_hash": "866e25e8f7b27c1df54f3da23672b380"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec calendar",
+      "content": "The Aztec sun stone, often erroneously called the calendar stone, is on display at the National Museum of Anthropology in Mexico City.\nThe actual Aztec calendar consists of a 365-day calendar cycle called xiuhpōhualli (year count), and a 260-day ritual cycle called tōnalpōhualli (day count). These two cycles together form a 52-year \"century\", sometimes called the \"calendar round\". The xiuhpōhualli is considered to be the agricultural calendar, since it is based on the sun, and the tōnalpōhualli ",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:04.396672",
+      "content_hash": "020ece17dc5d67f06ca95629707b2542"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec calendar",
+      "content": "== Tōnalpōhualli ==\nThe tōnalpōhualli (\"day count\") consists of a cycle of 260 days, each day signified by a combination of a number from 1 to 13, and one of the twenty day signs. With each new day, both the number and day sign would be incremented: 1. Crocodile is followed by 2. Wind, 3. House, 4. Lizard, and so forth up to 13. Reed. After Reed, the cycle of numbers would restart (though the twenty day signs had not yet been exhausted), resulting in 1. Jaguar, 2. Eagle, and so on, as the days i",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:04.396722",
+      "content_hash": "47417f27694c732efbd95050f77951c1"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec calendar",
+      "content": "=== Trecenas ===\nThe 260 days of the sacred calendar were grouped into twenty periods of 13 days each. Scholars usually refer to these thirteen-day \"weeks\" as trecenas, using a Spanish term derived from trece \"thirteen\" (just as the Spanish term docena \"dozen\" is derived from doce \"twelve\"). The original Nahuatl term was \"in cencalli tonalli\" (a family of days), according to Book IV of the Florentine Codex.\nEach trecena is named according to the calendar date of the first day of the 13 days in t",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:04.396777",
+      "content_hash": "73b4c7331251fbcc2f5ccd9ca1339704"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec calendar",
+      "content": "== Xihuitl ==\nIn ancient times the year was composed of eighteen months, and thus it was observed by the native people.  Since their months were made of no more than twenty days, these were all the days contained in a month, because they were not guided by the moon but by the days; therefore, the year had eighteen months.  The days of the year were counted twenty by twenty.\nXiuhpōhualli is the Aztec year (xihuitl) count (pōhualli). One year consists of 360 named days and 5 nameless (nēmontēmi). ",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:04.396827",
+      "content_hash": "29b1333bd94783e7d97fd7ab06d41e05"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec calendar",
+      "content": "== Xiuhmolpilli ==\nThe ancient Mexicans counted their years by means of four signs combined with thirteen numbers, thus obtaining periods of 52 years, which are commonly known as Xiuhmolpilli, a popular but incorrect generic name; the most correct Nahuatl word for this cycle is Xiuhnelpilli. The table with the current years:",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:04.396847",
+      "content_hash": "a1221468086d15dc1552dc07d9cf738f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec calendar",
+      "content": "== Reconstruction of the Calendar ==\nIn the last century scholars had tried to reconstruct the Calendar. One version was proposed by Professor Rafael Tena of the Instituto Nacional de Antropología e Historia, based on the studies of Sahagún and Alfonso Caso of the National Autonomous University of Mexico. His correlation argues that the first day of the Mexica year was February 13 of the old Julian calendar or February 23 of the current Gregorian calendar.\nUsing the same count, it has been the d",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:04.396919",
+      "content_hash": "349cb7945df4785dca7efdae475cc81e"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Tonalpohualli",
+      "content": "The term for the Aztec day signs, tōnalpōhualli, comes from the root word Tona which means to give light or heat. Tōnalpōhualli refers to the count of the days, made up of 20 day signs and a 260 day cycle. In Aztec society there were multiple intertwining calendars, the tōnalpōhualli, and the xiuhpōhualli which refers to the solar year of 365 days. The xiuhpōhualli was divided into eighteen twenty day months, and then an extra five days at the end of the cycle. Each day denoted by a different da",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:10.222476",
+      "content_hash": "43b08e7f7b7c22b5adc7c55d7c0825c4"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Tonalpohualli",
+      "content": "The tōnalpōhualli as aforementioned consists of twenty different day signs or Trecenas, which in almost all representations are accompanied with a glyph depicting its character. The Aztec form of writing is largely pictorial and was a semasiographic system, meaning writing existed separately from spoken word. The glyphs were recognizable to their meaning, and members of the population would understand what day it was and their current position in time. Since the Trecenas would repeat every twent",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:10.222610",
+      "content_hash": "05c2fe9a8b1f9cca67d8af22f76de870"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Xiuhpohualli",
+      "content": "The xiuhpōhualli (Nahuatl pronunciation: [ʃiʍpoːˈwalːi], from xihuitl (“year”) + pōhualli (“count”)) is a 365-day calendar used by the Aztecs and other pre-Columbian Nahua peoples in central Mexico.  It is composed of eighteen 20-day \"months,\" which through Spanish usage came to be known as veintenas (“scores, groups of twenty”), with an inauspicious, separate 5-day period at the end of the year called the nēmontēmi. The name given to the 20-day periods in pre-Columbian times is unknown, and tho",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:14.912203",
+      "content_hash": "4a8284790d00bf98c352f4522a7e4bab"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Xiuhpohualli",
+      "content": "In ancient times the year was composed of eighteen months, and thus it was observed by these Indian people.  Since their months were made of no more than twenty days, these were all the days contained in a month, because they were not guided by the moon but by the days; therefore, the year had eighteen months.  The days of the year were counted twenty by twenty.\nThe xiuhpōhualli calendar (in history known as the \"vague year\" which means no leap day) had its antecedents in form and function in ea",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:14.912292",
+      "content_hash": "63f802454955d12cbd4f2fa32df85fca"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec mythology",
+      "content": "Water deities\nTlaloc, god of rain, lightning and thunder. He is a fertility god.\nChalchiuhtlicue, goddess of running water, lakes, rivers, seas, streams, horizontal waters, storms, and baptism.\nHuixtocihuatl, goddess of salt\nOpochtli, god of fishing and birdcatchers, discoverer of both the harpoon and net\nAtlahua, god of water, a fisherman and archer\nFire deities\nXiuhtecuhtli, god of fire and time\nChantico, goddess of the hearth (firebox) and volcanoes\nXolotl, god of fire, lightning, and death, ",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:19.828525",
+      "content_hash": "c1eddacd504d2bd5ebc7fb2b6d00c44c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Quetzalcoatl",
+      "content": "Quetzalcoatl () (Nahuatl: \"Feathered Serpent\") is a deity in Aztec culture and literature. Among the Aztecs, he was related to wind, Venus, Sun, merchants, arts, crafts,  knowledge, and learning. He was also the patron god of the Aztec priesthood. He is also a god of wisdom, learning and intelligence. He was one of several important gods in the Aztec pantheon, along with the gods Tlaloc, Tezcatlipoca and Huitzilopochtli. The two other gods represented by the planet Venus are Tlaloc (ally and the",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:46:24.669016",
+      "content_hash": "19837a291782a9fce28cb8e03fc85040"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Quetzalcoatl",
+      "content": "The earliest known iconographic depiction of the deity appears on Stela 19 at the Olmec site of La Venta. Dated to around 900 BC, it depicts a serpent rising up behind a person probably engaged in a shamanic ritual.  Although probably not exactly a depiction of the same feathered-serpent deity worshipped in classic and post-classic periods, it shows the continuity of symbolism of feathered snakes in Mesoamerica from the formative period and on, for example in comparison to the Maya Vision Serpen",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:46:24.669107",
+      "content_hash": "4582447d01179c9b73345392f00e6e0b"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Tezcatlipoca",
+      "content": "Tezcatlipoca (Classical Nahuatl: Tēzcatlīpohca [teːs̻kat͡ɬiːˈpoʔkaˀ]) or Tezcatl Ipoca was a central deity in Aztec religion. He is associated with a variety of concepts, including the night sky, hurricanes, obsidian, and conflict. He was considered one of the four sons of Ometecuhtli and Omecihuatl, the primordial dual deity. His main festival was Toxcatl, which, like most religious festivals of Aztec culture, involved human sacrifice.\nTezcatlipoca's nagual, his animal counterpart, was the jagu",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:29.672997",
+      "content_hash": "f41f80ae087e4465924c8f2fdec8d340"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Tezcatlipoca",
+      "content": "=== Iconography ===\nOne of the most recognizable iconographic details of Tezcatlipoca is his face paint, called mixchictlapanticac. Most commonly, he is shown with horizontal bands of black and yellow, though codices may vary in which two colors are depicted. Mary Miller has posited that the combination of yellow and black might be a connection to the jaguar, with which Tezcatlipoca is associated. Black is the foremost color associated with Tezcatlipoca, not only because of his role as a god of ",
+      "relevance_score": 0.4,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-25T19:46:29.673166",
+      "content_hash": "66d8c101d9f81a845acc3da257923c25"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Tezcatlipoca",
+      "content": "The frontispiece of the Codex Fejéváry-Mayer, one of the more well-known images from Aztec codices, features a god circumscribed in the 20 trecena, or day symbols, of the Tōnalpōhualli. The exact identity of this god is unclear, but is most likely either Tezcatlipoca or Xiuhtecutli. The figure has yellow and black face paint, as is characteristic of Tezcatlipoca. But as Olivier points out, \"gods like Xiuhtecutli or Huitzilopoctli have similar facial painting.\" The figure is also shown with two u",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:29.673250",
+      "content_hash": "2b0ccd081183f2e32d870b06cd4a9762"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Five Suns",
+      "content": "In creation myths, the term \"Five Suns\" refers to the belief of certain Nahua cultures and Aztec peoples that the world has gone through five distinct cycles of creation and destruction, with the current era being the fifth. It is primarily derived from a combination of myths, cosmologies, and eschatological beliefs that were originally held by pre-Columbian peoples in the Mesoamerican region, including central Mexico, and it is part of a larger mythology of Fifth World or Fifth Sun beliefs. \nTh",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:34.507965",
+      "content_hash": "2d9649c957b951bc5b61798a0c070ac8"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Five Suns",
+      "content": "=== First sun: Tezcatlipoca ===\nThe four Tezcatlipocas sought to create the world, but each time they created something, it fell into the waters below and was devoured by Cipactli, a monstrous caiman covered in mouths. Determined to end the cycle, Tezcatlipoca, the Black Tezcatlipoca, sacrificed his leg, using it as bait to lure Cipactli from the depths. As she consumed it, the other gods seized the opportunity to slay her. From her body, they shaped the earth, and later created other gods and h",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:34.508039",
+      "content_hash": "d5b01dd7f26eca8b3b312dff6f0bf8d2"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Five Suns",
+      "content": "=== Second sun: Quetzalcōātl ===\nThe gods shaped a new race of humans in normal stature, with Quetzalcōātl serving as the sun for this new civilization. Their intention was to bring order to the world, but their efforts failed, as humans strayed from divine teachings and instead succumbed to greed and corruption. In response, Tezcatlipoca turned them into monkeys. Quetzalcōātl, who had still held them in great regard, was deeply distressed and, in his sorrow, unleashed a hurricane to cast them a",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:46:34.508078",
+      "content_hash": "9d3472b079b8c09f8f5c76808e3986fd"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Five Suns",
+      "content": "Most of what is known about the ancient Aztecs comes from the few codices to survive the Spanish conquest. Their myths can be confusing because of the lack of documentation and also because there are many popular myths that seem to contradict one another. This happened due to the fact that they were originally passed down by word of mouth and because the Aztecs adopted many of their gods from other tribes, both assigning their own new aspects to these gods and endowing them with those of similar",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:46:34.508255",
+      "content_hash": "97e897014c7cf0f46b1fec844327bb5e"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec numerals",
+      "content": "== Structure and use ==\nAztec was pictographic and ideographic proto-writing, augmented by phonetic rebuses. It also contained syllabic signs and logograms. There was no alphabet, but puns also contributed to recording sounds of the Aztec language. While some scholars have understood the system not to be considered a complete writing system, this is disputed by others. The existence of logograms and syllabic signs is being documented and a phonetic aspect of the writing system has emerged, even ",
+      "relevance_score": 0.6,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:46:39.217937",
+      "content_hash": "19a72e5de4ae02d4829893c3e53ef92c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec numerals",
+      "content": "=== Historical ===\nAztecs embraced the widespread manner of presenting history cartographically. A cartographic map would hold an elaborately detailed history recording events. The maps were painted to be read in sequence, so that time is established by the movement of the narrative through the map and by the succession of individual maps.\nAztecs also used continuous year-count annals to record anything that would occur during that year. All the years are painted in a sequence and most of the ye",
+      "relevance_score": 0.6,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:46:39.218022",
+      "content_hash": "1a9bbfb2ef5b9769468c1fd5d5cd4225"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Mesoamerican Long Count calendar",
+      "content": "The Mesoamerican Long Count calendar is a non-repeating base-20 and base-18 calendar used by pre-Columbian Mesoamerican cultures, most notably the Maya. For this reason, it is often known as the Maya Long Count calendar. Using a modified vigesimal tally, the Long Count calendar identifies a day by counting the number of days passed since a mythical creation date that corresponds to August 11, 3114 BCE in the proleptic Gregorian calendar. The Long Count calendar was widely used on monuments.",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:44.186539",
+      "content_hash": "41e30e5d3be5e033dc9799a7e452a03d"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Mesoamerican Long Count calendar",
+      "content": "== Background ==\nThe two most widely used calendars in pre-Columbian Mesoamerica were the 260-day tzolkʼin and the 365-day haabʼ. The equivalent Aztec calendars are known in Nahuatl as the tōnalpōhualli and xiuhpōhualli, respectively.\nThe combination of a haabʼ and a tzolkʼin date identifies a day in a combination which does not occur again for 18,980 days (52 haabʼ cycles of 365 days equals 73 tzolkʼin cycles of 260 days, approximately 52 years), a period known as the Calendar Round. To identif",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:44.186581",
+      "content_hash": "8e9b7f63a14381e3a721cc32453db577"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Mesoamerican Long Count calendar",
+      "content": "The Long Count calendar identifies a date by counting the number of days from a starting date that is generally calculated to be August 11, 3114 BCE in the proleptic Gregorian calendar or September 6 in the Julian calendar (or −3113 in astronomical year numbering). There has been much debate over the precise correlation between the Western calendars and the Long Count calendars. The August 11 date is based on the GMT correlation.\nThe completion of 13 bʼakʼtuns (August 11, 3114 BCE) marks the Cre",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:44.186639",
+      "content_hash": "03f9be865b0215f742a452d2fbd9c21b"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Mesoamerican Long Count calendar",
+      "content": "Long Count dates are written with Mesoamerican numerals, as shown on this table. A dot represents 1 while a bar equals 5. The shell glyph was used to represent the zero concept. The Long Count calendar required the use of zero as a place-holder and presents one of the earliest uses of the zero concept in history.\nOn Maya monuments, the Long Count syntax is more complex. The date sequence is given once, at the beginning of the inscription and opens with the so-called ISIG (Introductory Series Ini",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:44.186682",
+      "content_hash": "8e14e804e4497f7a404ae44254a17a20"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Mesoamerican Long Count calendar",
+      "content": "Of the six sites, three are on the western edge of the Maya homeland and three are several hundred kilometers further west, leading some researchers to believe that the Long Count calendar predates the Maya. La Mojarra Stela 1, the Tuxtla Statuette, Tres Zapotes Stela C and Chiapa Stela 2 are all inscribed in an Epi-Olmec, not Maya, style. El Baúl Stela 2, on the other hand, was created in the Izapan style.\nThe first unequivocally Maya artifact is Stela 29 from Tikal, with the Long Count date of",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:44.186742",
+      "content_hash": "e19da0548c661a7c5bc9aad93a4eec3e"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Mesoamerican Long Count calendar",
+      "content": "The Maya and Western calendars are correlated by using a Julian day number (JDN) of the starting date of the current creation — 13.0.0.0.0, 4 Ajaw, 8 Kumkʼu. This is referred to as a \"correlation constant\". The generally accepted correlation constant is the Modified Thompson 2, \"Goodman–Martinez–Thompson\", or GMT correlation of 584,283 days. Using the GMT correlation, the current creation started on September 6, −3113 (Julian astronomical) – August 11, 3114 BCE in the Proleptic Gregorian calenda",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:44.186883",
+      "content_hash": "8b7109edd5a802d5fda2d640caec095a"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec philosophy",
+      "content": "== Moral beliefs and aesthetics ==\nAztec philosophers focused on morality as establishing balance.  The world was seen as constantly shifting with the ever-changing teotl.  Morality focused on finding the path to living a balanced life, which would provide stability in the shifting world.\nAztec philosophy saw the arts as a way to express the true nature of teotl.  Art was considered to be good if it in some way brought about a better understanding of teotl.  Aztec poetry was closely tied to phil",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:46:48.947337",
+      "content_hash": "e04187853e9b4035fd62fc7ccad02b9c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "aztec",
+      "topic": "Aztec philosophy",
+      "content": "== How did the Aztecs regard \"time\"? ==\nJames Maffie has explained that the Aztec concept of time (like that of the Mayas) was not one of 'uniform forward flow' whose passage could be accurately measured by a clock or some similar device.\nSpecific events were regarded as separate, unique entities, only minimally related to those which had occurred immediately before them or to those which followed straight afterwards. Of paramount importance were the positions which they happened to occupy in th",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:46:48.947394",
+      "content_hash": "866e25e8f7b27c1df54f3da23672b380"
+    }
+  ],
+  "scan_history": [
+    {
+      "timestamp": "2025-12-15T10:20:44.353077",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-15T10:29:04.788037",
+      "insights_found": 30,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:37:19.795364",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:46:52.951099",
+      "insights_found": 30,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:11:47.750523",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:26:39.403231",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:31:32.864815",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T14:51:27.122190",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:01:02.092502",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:49:23.307523",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T12:30:39.045550",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T13:45:14.418774",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T14:39:19.306117",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T11:26:15.036189",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T12:01:29.750930",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:15:35.663524",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:19:44.908886",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:35:55.674431",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T14:02:40.837285",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T14:56:32.861839",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:24:43.811783",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:41:28.541386",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T16:10:17.247969",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T17:16:28.378139",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T17:20:37.835141",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T18:27:37.532414",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    }
+  ]
+}

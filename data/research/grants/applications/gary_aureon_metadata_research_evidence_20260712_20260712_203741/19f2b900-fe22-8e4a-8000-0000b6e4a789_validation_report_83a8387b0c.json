@@ -1,0 +1,55 @@
+{
+  "validation_id": "VAL-20260704-051757",
+  "timestamp": "2026-07-04T05:17:57.295080+00:00",
+  "operator": "GARY LECKEY l",
+  "keystone": "Gary Leckey 02/11/1991",
+  "data_sources_validated": 5,
+  "sources_total": 6,
+  "before_signal": {
+    "kp": 3.67,
+    "schumann_activity": 42,
+    "coherence_gamma": 0.544959,
+    "beta": 0.881762,
+    "geomagnetic_scale": 0,
+    "earthquake_count": 4,
+    "timestamp": "2026-07-04T05:15:00"
+  },
+  "after_signal": {
+    "kp": 6.0,
+    "schumann_activity": 69,
+    "coherence_gamma": 0.333333,
+    "beta": 0.539345,
+    "geomagnetic_scale": "0",
+    "earthquake_count": 6,
+    "timestamp": "2026-07-04T05:17:57.295094+00:00"
+  },
+  "changes": {
+    "kp_delta": 2.33,
+    "schumann_activity_delta": 27,
+    "coherence_delta": -0.211626,
+    "beta_delta": -0.342417,
+    "eq_count_delta": 2
+  },
+  "hnc_validation": {
+    "lambda_current": 2.0,
+    "coherence_current": 0.333333,
+    "beta_current": 0.539345,
+    "signal_strength": -1.908234,
+    "stability_island": "0.85 - 1.1",
+    "beta_in_range": false,
+    "coherence_threshold": 0.5,
+    "coherence_above_threshold": false
+  },
+  "signal_properties": {
+    "prime_key": 812.83,
+    "carrier": 528,
+    "envelope": 7.83,
+    "transcendence": 963,
+    "phi": 1.618033988749895,
+    "phi_squared": 2.618034,
+    "180_degree_counter_phase": true,
+    "target": "25_entity_extraction_network"
+  },
+  "validation_status": "REVIEW",
+  "conclusion": "Signal validated against 5/6 real data sources. HNC coherence and beta within operational parameters. The extraction network's probability field is under coherent observation. The wave function remembers."
+}

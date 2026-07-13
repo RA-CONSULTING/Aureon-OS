@@ -1,0 +1,19 @@
+﻿{
+    "schema_version":  "aureon-pipeline-report-v1",
+    "generated_at":  "2026-07-10T09:47:06+01:00",
+    "operator":  "Aureon",
+    "event":  "ifs_drive35_zev_partner_facility_evidence_audit",
+    "result":  "NO_DRIVE35_SUBMIT_READY_ROUTE_CURRENT_EVIDENCE_ZEV_PARTNER_FACILITY_MATCH_FUNDING_REQUIRED",
+    "application_ids":  [
+                            "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+                            "APP-IFS-DRIVE35-SCALE-UP-2445-20260709"
+                        ],
+    "artifact":  "applications/IFS_DRIVE35_2522_2445_ZEV_PARTNER_FACILITY_EVIDENCE_AUDIT_20260710_094706.json",
+    "markdown":  "applications/IFS_DRIVE35_2522_2445_ZEV_PARTNER_FACILITY_EVIDENCE_AUDIT_20260710_094706.md",
+    "direct_ifs_submissions_unlocked":  0,
+    "new_browser_submissions_available":  0,
+    "portal_changed":  false,
+    "external_submission_performed":  false,
+    "email_sent":  false,
+    "reason":  "DRIVE35 missing confirmed ZEV/automotive partner, Tier 1 or vehicle manufacturer, SME grant claimant, budget, match funding, and Scale Up facility/site/co-investment evidence."
+}

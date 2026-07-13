@@ -1,0 +1,230 @@
+{
+  "schema_version": "aureon-ifs-gated-route-action-queue-v1",
+  "timestamp": "2026-07-09T15:49:03+01:00",
+  "operator": "Aureon",
+  "scope": "IFS_ONLY",
+  "official_sources": [
+    "https://apply-for-innovation-funding.service.gov.uk/competition/search",
+    "https://apply-for-innovation-funding.service.gov.uk/competition/search?page=1"
+  ],
+  "official_current_competition_count": 20,
+  "submission_rule": "Do not duplicate submitted IFS applications. Do not submit gated IFS routes without evidenced partners, eligibility facts, finance basis, facilities, staff count, host status, or deployment assets.",
+  "submitted_monitor_only": [
+    {
+      "application_id": "APP-IFS-NEXT-WAVE-10209601",
+      "competition": "Next Wave: Breakthrough Wave 1",
+      "portal_application_number": "10209601",
+      "status": "SUBMITTED_AWAITING_ASSESSMENT",
+      "next_action": "Monitor IFS track page and email. Do not duplicate."
+    },
+    {
+      "application_id": "APP-IFS-FLF-R11-2499-20260709",
+      "competition": "Future Leaders Fellowships: Round 11, business and non-academic",
+      "portal_application_number": "10209992",
+      "status": "SUBMITTED_AWAITING_ASSESSMENT",
+      "next_action": "Monitor IFS track page and email. Do not duplicate."
+    },
+    {
+      "application_id": "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+      "competition": "Consumer Led Flexibility for the Clean Energy Superpower Mission",
+      "portal_application_number": "10210032",
+      "status": "SUBMITTED_AWAITING_ASSESSMENT",
+      "next_action": "Monitor IFS track page and email. Do not duplicate."
+    },
+    {
+      "application_id": "APP-IFS-CFI-SEN-2511-20260709",
+      "competition": "CfI: Earlier identification of UK children with SEN",
+      "portal_application_number": "10210045",
+      "status": "SUBMITTED_AWAITING_ASSESSMENT",
+      "next_action": "Monitor IFS track page and email. Do not duplicate."
+    }
+  ],
+  "conversion_routes": [
+    {
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "competition": "UK-Switzerland CR&D Round 3",
+      "priority": 1,
+      "gate": "Swiss implementation partner and at least one research institute required",
+      "aureon_role": "AI evidence, reproducibility, grant-readiness, and workflow assurance work package",
+      "evidence_required_before_submission": [
+        "named Swiss implementation partner",
+        "named research institute",
+        "work package split",
+        "partner budget",
+        "partner confirmation or letter",
+        "IP and data plan"
+      ],
+      "status": "PARTNER_REQUIRED"
+    },
+    {
+      "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "competition": "Scaling performance of quantum computing hardware: CR&D",
+      "priority": 2,
+      "gate": "Collaboration and quantum hardware lead required",
+      "aureon_role": "software assurance, evidence traceability, reproducibility, and benchmark workflow partner",
+      "evidence_required_before_submission": [
+        "quantum hardware lead",
+        "device or runtime scope",
+        "hardware access",
+        "partner confirmation",
+        "technical work package",
+        "consortium budget"
+      ],
+      "status": "HARDWARE_LEAD_PARTNER_REQUIRED"
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+      "competition": "DRIVE35 Innovation Fund: Collaborate 3",
+      "priority": 3,
+      "gate": "Automotive zero-emission vehicle partner and late-stage deployment evidence required",
+      "aureon_role": "evidence automation and assurance layer for test, manufacturing, compliance, or deployment reporting",
+      "evidence_required_before_submission": [
+        "ZEV supply-chain or vehicle partner",
+        "deployment site",
+        "project asset",
+        "test plan",
+        "partner budget",
+        "partner agreement"
+      ],
+      "status": "AUTOMOTIVE_ZEV_PARTNER_REQUIRED"
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+      "competition": "Zero Emission Vessels and Infrastructure 2: Energy Efficiency",
+      "priority": 4,
+      "gate": "Maritime consortium and real-world deployment required",
+      "aureon_role": "verification, evidence, reporting, and AI assurance layer for maritime deployment data",
+      "evidence_required_before_submission": [
+        "maritime lead",
+        "vessel or infrastructure asset",
+        "deployment site",
+        "three-year operating plan",
+        "budget",
+        "partner agreement"
+      ],
+      "status": "MARITIME_CONSORTIUM_REQUIRED"
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+      "competition": "Zero Emission Vessels and Infrastructure 2: Electric Power",
+      "priority": 4,
+      "gate": "Maritime consortium and real-world deployment required",
+      "aureon_role": "verification, evidence, reporting, and AI assurance layer for maritime deployment data",
+      "evidence_required_before_submission": [
+        "maritime lead",
+        "vessel or infrastructure asset",
+        "deployment site",
+        "three-year operating plan",
+        "budget",
+        "partner agreement"
+      ],
+      "status": "MARITIME_CONSORTIUM_REQUIRED"
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+      "competition": "Zero Emission Vessels and Infrastructure 2: Alternative Fuels",
+      "priority": 4,
+      "gate": "Maritime consortium and real-world deployment required",
+      "aureon_role": "verification, evidence, reporting, and AI assurance layer for maritime deployment data",
+      "evidence_required_before_submission": [
+        "maritime lead",
+        "vessel or infrastructure asset",
+        "deployment site",
+        "three-year operating plan",
+        "budget",
+        "partner agreement"
+      ],
+      "status": "MARITIME_CONSORTIUM_REQUIRED"
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "competition": "Clean Maritime Demonstration Competition 7: Pre-deployment trials",
+      "priority": 5,
+      "gate": "Maritime consortium and short deadline risk",
+      "aureon_role": "evidence assurance support only if an eligible maritime lead provides a complete work package immediately",
+      "evidence_required_before_submission": [
+        "maritime lead",
+        "asset or site",
+        "signed consortium scope",
+        "budget",
+        "deadline-ready technical package"
+      ],
+      "status": "MARITIME_CONSORTIUM_REQUIRED"
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "competition": "Clean Maritime Demonstration Competition 7: Feasibility studies",
+      "priority": 5,
+      "gate": "Maritime consortium and short deadline risk",
+      "aureon_role": "evidence assurance support only if an eligible maritime lead provides a complete work package immediately",
+      "evidence_required_before_submission": [
+        "maritime lead",
+        "asset or site",
+        "signed consortium scope",
+        "budget",
+        "deadline-ready technical package"
+      ],
+      "status": "MARITIME_CONSORTIUM_REQUIRED"
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "competition": "Clean Maritime Demonstration Competition 7: Deployment trials",
+      "priority": 5,
+      "gate": "Maritime consortium and short deadline risk",
+      "aureon_role": "evidence assurance support only if an eligible maritime lead provides a complete work package immediately",
+      "evidence_required_before_submission": [
+        "maritime lead",
+        "asset or site",
+        "signed consortium scope",
+        "budget",
+        "deadline-ready technical package"
+      ],
+      "status": "MARITIME_CONSORTIUM_REQUIRED"
+    }
+  ],
+  "non_lead_or_excluded_routes": [
+    {
+      "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+      "competition": "ADOPT Facilitator Support Grant: Round 10",
+      "gate": "active farming, growing, or forestry business in England required",
+      "action": "Do not apply as R&A; use only if an eligible farm client appoints Aureon as facilitator."
+    },
+    {
+      "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+      "competition": "Full ADOPT Grant: Round 8",
+      "gate": "farming/growing/forestry lead and another farming business required",
+      "action": "Do not apply as R&A; use only if an eligible farm-led consortium invites Aureon."
+    },
+    {
+      "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+      "competition": "ACTASAP Pilot Phase 1",
+      "gate": "UK registered academic institution lead required",
+      "action": "Do not apply as R&A; prepare only as invited partner or subcontractor to an eligible academic lead."
+    },
+    {
+      "application_id": "APP-IFS-AKT6-2473-20260709",
+      "competition": "Accelerated Knowledge Transfer Partnerships 6",
+      "gate": "HE/FE/RTO/Catapult lead and 4+ FTE business partner required",
+      "action": "Do not submit unless lead institution is confirmed and 4+ FTE evidence exists; current local evidence records 1 FTE."
+    },
+    {
+      "application_id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+      "competition": "Commercialising Knowledge Assets Fund Autumn",
+      "gate": "public sector research organisation or eligible public sector body required",
+      "action": "Do not apply as R&A; monitor only for partner-led route."
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+      "competition": "DRIVE35 Scale Up Fund",
+      "gate": "ZEV manufacturing facility plan, site, staffing, and capex evidence required",
+      "action": "Do not submit without facility evidence."
+    },
+    {
+      "application_id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+      "competition": "Innovation Loans Expression of Interest",
+      "gate": "repayable finance, not grant funding",
+      "action": "Exclude from grant-submit queue unless repayable finance is explicitly approved with capacity evidence."
+    }
+  ],
+  "controlled_partner_language": "R&A Consulting and Brokerage Services Ltd proposes Aureon Evidence OS as a local-first evidence automation and assurance work package. The work package supports source inventory, claim classification, reproducible workflow records, benchmark reporting, risk tagging, and funder-ready audit trails. It does not claim validated autonomous decision-making, regulated diagnostic capability, confirmed partner access, manufacturing facilities, maritime assets, or hardware access unless those facts are provided and evidenced by the lead partner."
+}

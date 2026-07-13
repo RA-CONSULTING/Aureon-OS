@@ -1,0 +1,114 @@
+{
+  "schema_version": "aureon-pipeline-report-v1",
+  "generated_at": "2026-07-11T21:08:01+01:00",
+  "event": "grant_operator_continue",
+  "result": "GRANT_OPERATOR_CONTINUE_RECONCILED_NO_SAFE_SUBMISSION",
+  "summary": {
+    "run_id": "aureon-grant-operator-continue-20260711_210801",
+    "generated_at": "2026-07-11T21:08:01+01:00",
+    "result": "GRANT_OPERATOR_CONTINUE_RECONCILED_NO_SAFE_SUBMISSION",
+    "total_opportunities": 46,
+    "total_applications": 33,
+    "submitted_ifs_applications": 4,
+    "submitted_airr_applications": 2,
+    "active_or_gated_applications": 27,
+    "official_ifs_competitions": 20,
+    "missing_official_ifs_routes": 0,
+    "priority_routes_waiting_reply": 4,
+    "formal_support_notes_created": 16,
+    "direct_submit_ready_routes": 0,
+    "safe_portal_submissions_now": 0,
+    "new_browser_submissions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "upload_performed": false,
+    "status_counts": {
+      "ACADEMIC_HOST_REQUIRED": 1,
+      "ACCOUNT_CREATED_EMAIL_VERIFICATION_REQUIRED": 1,
+      "ACTASAP_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY": 1,
+      "ADOPT_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY": 2,
+      "AKT6_KNOWLEDGE_BASE_EVIDENCE_REQUESTS_SENT_WAITING_REPLY": 1,
+      "BLOCKED_REQUIRED_LINKEDIN_AND_PITCH_DECK": 1,
+      "BLOCKED_REQUIRED_VERIFIED_FIELDS_OR_DECK": 1,
+      "CKAF_PUBLIC_SECTOR_RESEARCH_ORG_AND_KNOWLEDGE_ASSET_EVIDENCE_REQUIRED": 1,
+      "CMDC7_MARITIME_EVIDENCE_REQUESTS_SENT_WAITING_REPLY": 3,
+      "DRIVE35_COLLAB3_ZEV_PARTNER_MATCH_FUNDING_AND_TIER1_EVIDENCE_REQUIRED": 1,
+      "DRIVE35_SCALEUP_ZEV_MANUFACTURING_FACILITY_AND_COINVESTMENT_EVIDENCE_REQUIRED": 1,
+      "EVIDENCE_GATED": 1,
+      "INNOVATION_LOANS_REPAYABLE_FINANCE_CAPACITY_AND_ACTION_APPROVAL_REQUIRED": 1,
+      "LIVE_DRAFT_FINANCE_COMPLETE_COST_BOOK_VARIANCE_STAGED_PROJECT_IMPACT_TERMS_GATED": 1,
+      "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK": 3,
+      "NO_DIRECT_FORM_ROUTE_FOUND": 1,
+      "PARTNER_OUTREACH_DRAFT": 1,
+      "PARTNER_REQUIRED": 1,
+      "QUANTUM_HARDWARE_LEAD_ACCESS_CONSORTIUM_AND_BUDGET_EVIDENCE_REQUIRED": 1,
+      "RESEARCH_ORG_LEAD_AND_JAPAN_PARTNER_REQUIRED": 1,
+      "ROUTE_REQUEST_SUBMITTED_CONFIRMED": 1,
+      "SHORTLIST_REQUIRED": 1,
+      "SUBMITTED": 6
+    },
+    "latest_artifacts": {
+      "official_live_search_refresh": "applications/IFS_OFFICIAL_LIVE_SEARCH_REFRESH_20260711_133311.json",
+      "urgent_reply_evidence_sweep": "applications/IFS_URGENT_REPLY_EVIDENCE_SWEEP_20260711_134236.json",
+      "formal_submission_support_packet": "applications/IFS_FORMAL_SUBMISSION_SUPPORT_PACKET_20260711_135057.json",
+      "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260711_135124.json",
+      "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260711_135132.json",
+      "next_submission_unlock_packet": "applications/IFS_NEXT_SUBMISSION_UNLOCK_PACKET_20260711_135137.json"
+    },
+    "official_sources": [
+      {
+        "source": "Innovation Funding Service search",
+        "url": "https://apply-for-innovation-funding.service.gov.uk/competition/search",
+        "observed_fact": "20 open competitions; local Aureon IFS queue covers all 20."
+      },
+      {
+        "source": "Innovation Funding Service page 2",
+        "url": "https://apply-for-innovation-funding.service.gov.uk/competition/search?page=1",
+        "observed_fact": "AKT6 and all three CMDC7 strands close on 2026-07-15 and remain lead/partner gated."
+      },
+      {
+        "source": "Next Wave official overview",
+        "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2517/overview/6ff2066d-4639-44e6-bb4f-ce7099222739",
+        "observed_fact": "Next Wave is open to UK SMEs and already exists in the submitted monitor queue."
+      },
+      {
+        "source": "UK-Switzerland CR&D official overview",
+        "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2512/overview/2f0a03c4-44b7-42dc-8845-70751b6bc531",
+        "observed_fact": "UK-Switzerland remains open but requires Swiss implementation partner and research institute evidence."
+      },
+      {
+        "source": "InterTradeIreland Seedcorn",
+        "url": "https://intertradeireland.com/funding/seedcorn",
+        "observed_fact": "Seedcorn is in shortlist or upload stage only; no direct fresh submission route was unlocked."
+      },
+      {
+        "source": "Eureka Eurostars Call 11",
+        "url": "https://www.eurekanetwork.org/programmes-and-calls/eurostars/eurostars-call-for-projects-september-2026/",
+        "observed_fact": "Eurostars Call 11 is open but remains consortium and innovative SME lead gated."
+      }
+    ],
+    "controls": [
+      "No plaintext password or secret was read, printed or stored.",
+      "No CAPTCHA, MFA, disabled submit button or provider control was bypassed.",
+      "No IFS portal field, email, upload, partner invite, contact form or final submission was performed in this continuation stamp.",
+      "Existing outreach receipts are preserved but are not treated as partner commitment evidence."
+    ],
+    "next_actions": [
+      "Monitor gaxlec@gmail.com and Drive/local evidence for AKT6 Knowledge Base replies before 2026-07-15 11:00 UK time.",
+      "Monitor maritime partner replies and asset/permission/budget evidence for CMDC7 before 2026-07-15 11:00 UK time.",
+      "Escalate UK-Switzerland 10210100 Project Impact persistence issue only with support-ready evidence; do not submit while partner, Project Impact and terms remain gated."
+    ],
+    "outputs": {
+      "json": "applications/AUREON_GRANT_OPERATOR_CONTINUE_20260711_210801.json",
+      "markdown": "applications/AUREON_GRANT_OPERATOR_CONTINUE_20260711_210801.md",
+      "pipeline_report": "pipelines/pipeline_report_20260711_210801_grant_operator_continue.json"
+    },
+    "backups": {
+      "applications_json": "backups/applications_pre_grant_operator_continue_20260711_210801.json",
+      "pipeline_json": "backups/pipeline_pre_grant_operator_continue_20260711_210801.json",
+      "autopilot_status_json": "backups/autopilot_status_pre_grant_operator_continue_20260711_210801.json"
+    }
+  }
+}

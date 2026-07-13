@@ -1,0 +1,30 @@
+# Concept Ventures Investor Outreach Draft
+
+Subject: AI evidence workflow for regulated SMEs
+
+## Body
+
+Hi Concept Ventures team,
+
+I am Gary Leckey, director of R&A Consulting and Brokerage Services Ltd.
+
+Aureon Evidence OS is a local-first AI workflow for evidence-backed business communication, built around controlled vocabulary, source-grounded drafting and human approval gates.
+
+The immediate use case is regulated SME evidence: grant packs, compliance narratives and investor materials that need to be clear without overstating what has been proven.
+
+I put Concept Ventures on the first outreach list because your published focus overlaps with AI, software, founder-led technology. That makes it a sensible first conversation for the stage and wedge we are testing.
+
+The ask is deliberately small. I would value your view on whether this is close enough to your mandate for a short call.
+
+If this is close to your mandate, I can send a short one-page summary and arrange a focused call. If another route or colleague is better, a pointer would be genuinely useful.
+
+Best regards,
+Gary Leckey
+R&A Consulting and Brokerage Services Ltd
+
+## Send Control
+
+- Status: STAGED_NEEDS_VERIFIED_CONTACT_AND_APPROVAL
+- Outreach sent: false
+- Contact route verified: false
+- Generated through: Aureon investor outbound voice policy

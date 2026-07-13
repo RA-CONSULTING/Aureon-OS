@@ -1,0 +1,51 @@
+[
+  {
+    "pdf": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\email_pdfs\\01_Invest_NI_Advisor_Email_Pack.pdf",
+    "pages": 1,
+    "previews": [
+      "C:\\Users\\user\\outputs\\aureon_grants_20260704\\email_pdfs\\previews\\01_Invest_NI_Advisor_Email_Pack-1.png"
+    ],
+    "route": "Invest NI Innovation Funding Advisory Service",
+    "subject": "Innovation funding advice for Belfast SME developing AI evidence automation"
+  },
+  {
+    "pdf": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\email_pdfs\\02_InterTradeIreland_Innovation_Boost_Email_Pack.pdf",
+    "pages": 1,
+    "previews": [
+      "C:\\Users\\user\\outputs\\aureon_grants_20260704\\email_pdfs\\previews\\02_InterTradeIreland_Innovation_Boost_Email_Pack-1.png"
+    ],
+    "route": "InterTradeIreland Innovation Boost",
+    "subject": "Innovation Boost enquiry - AI evidence automation and SME workflow validation"
+  },
+  {
+    "pdf": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\email_pdfs\\03_Academic_Validation_Sprint_Email_Pack.pdf",
+    "pages": 5,
+    "previews": [
+      "C:\\Users\\user\\outputs\\aureon_grants_20260704\\email_pdfs\\previews\\03_Academic_Validation_Sprint_Email_Pack-1.png",
+      "C:\\Users\\user\\outputs\\aureon_grants_20260704\\email_pdfs\\previews\\03_Academic_Validation_Sprint_Email_Pack-2.png",
+      "C:\\Users\\user\\outputs\\aureon_grants_20260704\\email_pdfs\\previews\\03_Academic_Validation_Sprint_Email_Pack-3.png",
+      "C:\\Users\\user\\outputs\\aureon_grants_20260704\\email_pdfs\\previews\\03_Academic_Validation_Sprint_Email_Pack-4.png",
+      "C:\\Users\\user\\outputs\\aureon_grants_20260704\\email_pdfs\\previews\\03_Academic_Validation_Sprint_Email_Pack-5.png"
+    ],
+    "route": "University / Knowledge-Base Partner",
+    "subject": "Academic validation sprint - AI evidence automation for SME workflows"
+  },
+  {
+    "pdf": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\email_pdfs\\04_EIC_Accelerator_Email_Pack.pdf",
+    "pages": 1,
+    "previews": [
+      "C:\\Users\\user\\outputs\\aureon_grants_20260704\\email_pdfs\\previews\\04_EIC_Accelerator_Email_Pack-1.png"
+    ],
+    "route": "European Innovation Council Accelerator",
+    "subject": "EIC Accelerator short proposal - Aureon AI evidence automation platform"
+  },
+  {
+    "pdf": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\email_pdfs\\05_Next_Wave_Email_Pack.pdf",
+    "pages": 1,
+    "previews": [
+      "C:\\Users\\user\\outputs\\aureon_grants_20260704\\email_pdfs\\previews\\05_Next_Wave_Email_Pack-1.png"
+    ],
+    "route": "Innovate UK Next Wave: Breakthrough Wave 1",
+    "subject": "Next Wave go/no-go - Aureon evidence automation and AI workflow platform"
+  }
+]

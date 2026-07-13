@@ -1,0 +1,171 @@
+{
+  "schema_version": "aureon-ifs-uk-swiss-open-source-cost-model-v1",
+  "generated_at": "2026-07-11T12:32:15+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_uk_swiss_open_source_cost_model",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "competition": "UK-Switzerland CR&D Round 3",
+  "result": "IFS_UK_SWISS_OPEN_SOURCE_COST_MODEL_READY_FOR_PORTAL_ENTRY_NOT_FINAL_SUBMIT_READY",
+  "cost_model": {
+    "currency": "GBP",
+    "duration_months": 24,
+    "working_days_per_year": 232,
+    "funding_level_percent": 70,
+    "total_eligible_costs": 250000,
+    "funding_sought": 175000,
+    "company_contribution": 75000,
+    "other_public_sector_funding": 0,
+    "ifs_project_cost_lines": {
+      "labour": {
+        "role_within_project": "Technical director and evidence systems architect",
+        "gross_employee_cost": 91671,
+        "days_to_be_spent": 464,
+        "calculated_total": 183342,
+        "basis": "ONS ASHE 2025 provisional Table 14.7a, Full-Time, SOC 1137 Information technology directors median gross annual pay.",
+        "why_this_role": "The R&A/Aureon UK work package is a founder-led technical director role covering evidence architecture, claim-to-source mapping, reproducibility controls, workflow automation, validation reporting and consortium audit-pack delivery."
+      },
+      "overheads": {
+        "method": "20% of labour costs",
+        "calculated_total": 36668,
+        "basis": "UKRI Innovate UK non-academic cost guidance standard 20% labour-overhead option."
+      },
+      "materials": {
+        "calculated_total": 0,
+        "basis": "No materials evidenced for the software evidence work package."
+      },
+      "capital_usage": {
+        "calculated_total": 0,
+        "basis": "Existing local equipment and open-source tooling are reused; no new capital purchase is claimed."
+      },
+      "subcontracting": {
+        "calculated_total": 0,
+        "basis": "No subcontractor is evidenced before Swiss partner selection."
+      },
+      "travel_and_subsistence": {
+        "calculated_total": 0,
+        "basis": "No partner-specific travel itinerary is evidenced before Swiss partner selection."
+      },
+      "other_costs": {
+        "description_and_justification": "Direct project compute, secure storage, open-source integration/test infrastructure, evidence corpus handling, validation materials, dissemination/reporting outputs and project documentation for the UK Aureon Evidence OS work package. The allowance is capped so the UK project cost model remains at GBP250,000 and does not include profit or unsupported proprietary licence purchases.",
+        "estimated_cost": 29990,
+        "basis": "Residual capped direct-cost allowance after public-benchmark labour and the UKRI 20% overhead option. Final supplier receipts or quotes should replace this allowance before award claims."
+      }
+    }
+  },
+  "public_source_evidence": [
+    {
+      "name": "UK-Switzerland CR&D Round 3 - IFS competition overview",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2512/overview/2f0a03c4-44b7-42dc-8845-70751b6bc531",
+      "used_for": "Grant rate for micro or small organisations and official route constraints.",
+      "evidence_used": "Industrial research and feasibility studies can fund up to 70% of eligible costs for micro or small organisations."
+    },
+    {
+      "name": "UKRI opportunity page - UK-Switzerland CR&D Round 3",
+      "url": "https://www.ukri.org/opportunity/uk-switzerland-crd-round-3/",
+      "used_for": "Competition status, grant type, total fund and collaboration requirement.",
+      "evidence_used": "Open opportunity; UK business lead must collaborate with Swiss implementation partner and at least one research institute."
+    },
+    {
+      "name": "UKRI Innovate UK costs guidance for non-academic organisations",
+      "url": "https://www.ukri.org/councils/innovate-uk/guidance-for-applicants/costs-we-fund/costs-guidance-for-non-academic-organisations/",
+      "used_for": "Cost categories and overhead method.",
+      "evidence_used": "20% of labour costs option is an accepted overhead method for Innovate UK applications."
+    },
+    {
+      "name": "ONS ASHE 2025 Table 14.7a - occupation by four-digit SOC",
+      "url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/occupation4digitsoc2010ashetable14",
+      "local_cache": "source_cache/ons_ashe_table14_2025_provisional.zip",
+      "used_for": "Public-source labour benchmark.",
+      "evidence_used": {
+        "SOC_1137_information_technology_directors_median_gross_annual_gbp": 91671,
+        "SOC_2133_it_business_analysts_architects_systems_designers_median_gross_annual_gbp": 60288,
+        "SOC_2134_programmers_software_development_professionals_median_gross_annual_gbp": 56914
+      }
+    }
+  ],
+  "ons_rows_used": {
+    "1137": {
+      "description": "   Information technology directors",
+      "code": "1137",
+      "jobs_thousand": 56,
+      "median_gross_annual_gbp": 91671,
+      "annual_percentage_change": 9.2,
+      "mean_gross_annual_gbp": 110618,
+      "mean_annual_percentage_change": 13.6,
+      "percentile_75_gbp": 119408,
+      "percentile_90_gbp": "x"
+    },
+    "2131": {
+      "description": "   IT project managers",
+      "code": "2131",
+      "jobs_thousand": 29,
+      "median_gross_annual_gbp": 58373,
+      "annual_percentage_change": 0.4,
+      "mean_gross_annual_gbp": 61787,
+      "mean_annual_percentage_change": 5,
+      "percentile_75_gbp": 74823,
+      "percentile_90_gbp": "x"
+    },
+    "2133": {
+      "description": "   IT business analysts, architects and systems designers",
+      "code": "2133",
+      "jobs_thousand": 163,
+      "median_gross_annual_gbp": 60288,
+      "annual_percentage_change": 9.6,
+      "mean_gross_annual_gbp": 67274,
+      "mean_annual_percentage_change": 5.7,
+      "percentile_75_gbp": 81932,
+      "percentile_90_gbp": 100418
+    },
+    "2134": {
+      "description": "   Programmers and software development professionals ",
+      "code": "2134",
+      "jobs_thousand": 343,
+      "median_gross_annual_gbp": 56914,
+      "annual_percentage_change": 4.2,
+      "mean_gross_annual_gbp": 63810,
+      "mean_annual_percentage_change": 0.7,
+      "percentile_75_gbp": 75794,
+      "percentile_90_gbp": 102860
+    },
+    "2431": {
+      "description": "   Management consultants and business analysts",
+      "code": "2431",
+      "jobs_thousand": 222,
+      "median_gross_annual_gbp": 53295,
+      "annual_percentage_change": 5.9,
+      "mean_gross_annual_gbp": 59929,
+      "mean_annual_percentage_change": 7,
+      "percentile_75_gbp": 70977,
+      "percentile_90_gbp": 93362
+    }
+  },
+  "readiness": {
+    "cost_model_ready_for_ifs_entry": true,
+    "ready_for_final_submit": false,
+    "portal_entry_requires_external_transmission": true,
+    "direct_submit_ready": false,
+    "remaining_gates": [
+      "Project Impact provider persistence remains unresolved.",
+      "Swiss implementation partner still not confirmed in the Aureon ledger.",
+      "Research institute participation or valid waiver still not evidenced.",
+      "Partner budget and country-balance evidence still not evidenced.",
+      "PAYE application evidence exists, but final employer PAYE reference is not yet evidenced.",
+      "Award terms and final submit remain legal actions after finance and impact completion."
+    ]
+  },
+  "controls": [
+    "Open-source/public data is used for the labour benchmark and Innovate UK cost rules.",
+    "No partner budget, travel, materials, capital purchase, subcontractor or Swiss-side cost is invented.",
+    "The model is an IFS project-cost entry basis for the UK R&A/Aureon work package, not a final consortium budget.",
+    "Do not press award terms or final submit until remaining gates are resolved.",
+    "Do not state that a final PAYE employer reference exists until HMRC issues it."
+  ],
+  "backups": {
+    "applications": "backups/applications_pre_ifs_uk_swiss_open_source_cost_model_20260711_123215.json",
+    "autopilot_status": "backups/autopilot_status_pre_ifs_uk_swiss_open_source_cost_model_20260711_123215.json",
+    "pipeline": "backups/pipeline_pre_ifs_uk_swiss_open_source_cost_model_20260711_123215.json"
+  }
+}

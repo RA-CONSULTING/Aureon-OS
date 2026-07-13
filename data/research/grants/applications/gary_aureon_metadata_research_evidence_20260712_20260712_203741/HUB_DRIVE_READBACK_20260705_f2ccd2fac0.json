@@ -1,0 +1,44 @@
+{
+  "created_at": "2026-07-05",
+  "local_hub": "C:\\Users\\user\\Aureon_Work_Hub_20260705",
+  "local_archive": "C:\\Users\\user\\outputs\\Aureon_Work_Hub_20260705.tar",
+  "local_archive_size_bytes": 646486016,
+  "local_archive_sha256": "5FA666E5DAAFDA31CEB59C7892CACE7614ECD22CF8D52D66448926F6AA0EA485",
+  "drive_folder": {
+    "id": "1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr",
+    "url": "https://drive.google.com/drive/folders/1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr",
+    "title": "Aureon Grant War Room - 2026-07-04"
+  },
+  "drive_archive": {
+    "id": "1tZFDPqnIjF0C1UeBHqMozkcRWvKcPJgG",
+    "title": "Aureon_Work_Hub_20260705.tar",
+    "mime_type": "application/x-tar",
+    "size_bytes": 646486016,
+    "url": "https://drive.google.com/file/d/1tZFDPqnIjF0C1UeBHqMozkcRWvKcPJgG/view?usp=drivesdk",
+    "created_time": "2026-07-05T09:47:55.732Z",
+    "modified_time": "2026-07-05T09:40:56.000Z",
+    "parent_ids": [
+      "1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr"
+    ]
+  },
+  "drive_readback_manifest": {
+    "id": "1bB2DdBpPS-3EXJvBVN_FTw66XA4DgAnt",
+    "title": "HUB_DRIVE_READBACK_20260705.json",
+    "mime_type": "application/json",
+    "size_bytes": 1478,
+    "url": "https://drive.google.com/file/d/1bB2DdBpPS-3EXJvBVN_FTw66XA4DgAnt/view?usp=drivesdk",
+    "created_time": "2026-07-05T09:49:29.608Z",
+    "modified_time": "2026-07-05T09:49:01.000Z"
+  },
+  "hub_summary": {
+    "total_hub_files": 3228,
+    "local_research_corpus_files": 3219,
+    "sensitive_excluded": 1740,
+    "total_hub_bytes": 643574566
+  },
+  "notes": [
+    "The hub archive is a consolidated working copy of Aureon research and grant material found locally and indexed from Drive.",
+    "Sensitive accounting, bank, tax, and personal/legal records were excluded from the research corpus and indexed separately.",
+    "The Drive archive byte size matches the local TAR byte size at readback."
+  ]
+}

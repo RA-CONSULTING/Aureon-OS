@@ -1,0 +1,2358 @@
+{
+  "contract": {
+    "no_execution_change": "This map does not place trades, change credentials, or bypass runtime checks.",
+    "purpose": "Map current live and historical coverage of the planetary financial ecosystem.",
+    "source_of_truth": "runtime status, live stream cache, exchange monitoring checklist, and global history database."
+  },
+  "data_ocean": {
+    "coverage_profile": "LicensedReachable",
+    "generated_at": "2026-05-22T07:23:27.962011+00:00",
+    "governor_mode": "budgeted_adaptive",
+    "mapping_complete": false,
+    "schema_version": "aureon-data-ocean-status-v1",
+    "sources": [
+      {
+        "active": true,
+        "asset_classes": [
+          "crypto",
+          "spot",
+          "quotes"
+        ],
+        "availability_state": "unknown",
+        "cash_aware_call_plan": {
+          "cash_or_position_active": false,
+          "cash_usd_estimate": 0.0,
+          "data_boost_eligible": true,
+          "exchange": "binance",
+          "execution_reserved_per_min": 43.2,
+          "market_data_budget_per_hour": 11808.0,
+          "market_data_budget_per_min": 196.8,
+          "official_doc_url": "https://developers.binance.com/docs/binance-spot-api-docs/rest-api/limits",
+          "official_limit_model": "request_weight_and_order_limits_from_exchangeInfo",
+          "operator_note": "No meaningful cash/position detected, so use more budget for streams, quotes, and candidate discovery.",
+          "position_count": 0,
+          "quote_budget_fraction": 0.82,
+          "recommended_mode": "idle_cash_market_discovery_boost",
+          "safe_calls_per_hour": 14400.0,
+          "safe_calls_per_min": 240.0,
+          "stream_preferred": true
+        },
+        "category": "live_exchange",
+        "command": [
+          "python",
+          "-m",
+          "aureon.data_feeds.ws_market_data_feeder",
+          "--binance"
+        ],
+        "configured_reachable": true,
+        "credential_state": "configured",
+        "decision_blocker": "",
+        "evidence_path": "ws_cache/ws_prices.json#source_health.binance",
+        "fresh": true,
+        "governor_action": "maintain",
+        "last_attempt": {},
+        "last_error": "",
+        "last_success_at": 1779434595.9621444,
+        "missing_credentials": [],
+        "next_action": "Keep Binance live cache fresh and feed high-volume crypto candidates.",
+        "official_rate_limit": {
+          "env_overrides": {
+            "calls_per_min": "UNIFIED_BINANCE_CALLS_PER_MIN",
+            "quote_budget_fraction": "UNIFIED_BINANCE_QUOTE_BUDGET_FRACTION"
+          },
+          "exchange": "binance",
+          "official_doc_url": "https://developers.binance.com/docs/binance-spot-api-docs/rest-api/limits",
+          "official_limit_model": "request_weight_and_order_limits_from_exchangeInfo",
+          "official_limits": {
+            "ban_status": "418",
+            "rate_limit_status": "429",
+            "rest_order_header": "X-MBX-ORDER-COUNT-(intervalNum)(intervalLetter)",
+            "rest_rate_limits_source": "/api/v3/exchangeInfo rateLimits",
+            "rest_usage_header": "X-MBX-USED-WEIGHT-(intervalNum)(intervalLetter)",
+            "websocket_connection_attempts_per_5_min_per_ip": 300,
+            "websocket_connection_weight": 2,
+            "websocket_request_weight_per_minute_example": 6000
+          },
+          "official_notes": [
+            "Binance limits are weight-based, not simple call counts; endpoints with multiple symbols can cost more.",
+            "The runtime should read exchangeInfo and response headers when available, then back off on Retry-After.",
+            "Use streams for live market data so REST weight remains available for account, order, and recovery calls."
+          ],
+          "provider_status": "official_documented",
+          "safe_governor_calls_per_min": 240.0,
+          "source_lines": [
+            "Binance REST limits docs lines 58-67",
+            "Binance WS limits docs lines 143-171"
+          ],
+          "stream_preferred": true,
+          "title": "Binance Spot REST/WebSocket"
+        },
+        "rate_budget": {
+          "cadence_sec": 5,
+          "cash_aware_market_data_budget_per_hour": 11808.0,
+          "cash_aware_safe_calls_per_hour": 14400.0,
+          "mode": "official_rate_limit_cash_aware_budgeted_adaptive",
+          "priority": 95,
+          "registry_max_calls_per_hour": 720
+        },
+        "reason": "",
+        "row_count": 2978,
+        "source_id": "binance_live",
+        "title": "Binance live crypto universe",
+        "usable_for_decision": true,
+        "usable_for_mapping": true
+      },
+      {
+        "active": true,
+        "asset_classes": [
+          "crypto",
+          "spot",
+          "margin",
+          "quotes",
+          "balances"
+        ],
+        "availability_state": "unknown",
+        "cash_aware_call_plan": {
+          "cash_or_position_active": false,
+          "cash_usd_estimate": 0.0,
+          "data_boost_eligible": true,
+          "exchange": "kraken",
+          "execution_reserved_per_min": 18.0,
+          "market_data_budget_per_hour": 2520.0,
+          "market_data_budget_per_min": 42.0,
+          "official_doc_url": "https://support.kraken.com/hc/en-us/articles/206548367-what-are-the-api-rate-limits-",
+          "official_limit_model": "public_ip_frequency_private_counter_and_trading_points",
+          "operator_note": "No meaningful cash/position detected, so use more budget for streams, quotes, and candidate discovery.",
+          "position_count": 0,
+          "quote_budget_fraction": 0.7,
+          "recommended_mode": "idle_cash_market_discovery_boost",
+          "safe_calls_per_hour": 3600.0,
+          "safe_calls_per_min": 60.0,
+          "stream_preferred": true
+        },
+        "category": "live_exchange",
+        "command": [
+          "python",
+          "-m",
+          "aureon.data_feeds.ws_market_data_feeder",
+          "--kraken"
+        ],
+        "configured_reachable": true,
+        "credential_state": "configured",
+        "decision_blocker": "",
+        "evidence_path": "ws_cache/ws_prices.json#source_health.kraken",
+        "fresh": true,
+        "governor_action": "maintain",
+        "last_attempt": {},
+        "last_error": "",
+        "last_success_at": 1779434586.043318,
+        "missing_credentials": [],
+        "next_action": "Activate Kraken live cache, fee context, collateral context, and order-book probes.",
+        "official_rate_limit": {
+          "env_overrides": {
+            "calls_per_min": "UNIFIED_KRAKEN_CALLS_PER_MIN",
+            "quote_budget_fraction": "UNIFIED_KRAKEN_QUOTE_BUDGET_FRACTION"
+          },
+          "exchange": "kraken",
+          "official_doc_url": "https://support.kraken.com/hc/en-us/articles/206548367-what-are-the-api-rate-limits-",
+          "official_limit_model": "public_ip_frequency_private_counter_and_trading_points",
+          "official_limits": {
+            "private_counter_higher_limits_decay_per_sec": 1.0,
+            "private_counter_higher_limits_max": 20,
+            "private_counter_verified_decay_per_sec": 0.5,
+            "private_counter_verified_max": 20,
+            "private_history_counter_increment": 4,
+            "private_standard_counter_increment": 1,
+            "public_rest_safe_frequency_per_sec": 1,
+            "trading_counter_scope": "account_and_currency_pair"
+          },
+          "official_notes": [
+            "Kraken private history calls are expensive: Ledgers, TradesHistory, and ClosedOrders add +4 to the counter.",
+            "AddOrder/CancelOrder do not use the private-account counter, but they use Kraken's separate trading limit model.",
+            "Keep private account-history sync low priority; favor WebSocket/public market streams for live discovery."
+          ],
+          "provider_status": "official_documented",
+          "safe_governor_calls_per_min": 30.0,
+          "source_lines": [
+            "Kraken support rate-limit docs lines 49-77",
+            "Kraken support rate-limit docs lines 79-102"
+          ],
+          "stream_preferred": true,
+          "title": "Kraken Spot REST/WebSocket"
+        },
+        "rate_budget": {
+          "cadence_sec": 10,
+          "cash_aware_market_data_budget_per_hour": 2520.0,
+          "cash_aware_safe_calls_per_hour": 3600.0,
+          "mode": "official_rate_limit_cash_aware_budgeted_adaptive",
+          "priority": 94,
+          "registry_max_calls_per_hour": 360
+        },
+        "reason": "",
+        "row_count": 24,
+        "source_id": "kraken_live",
+        "title": "Kraken spot and margin live crypto",
+        "usable_for_decision": true,
+        "usable_for_mapping": true
+      },
+      {
+        "active": true,
+        "asset_classes": [
+          "stocks",
+          "etfs",
+          "crypto",
+          "quotes"
+        ],
+        "availability_state": "unknown",
+        "cash_aware_call_plan": {
+          "cash_or_position_active": false,
+          "cash_usd_estimate": 0.0,
+          "data_boost_eligible": true,
+          "exchange": "alpaca",
+          "execution_reserved_per_min": 21.6,
+          "market_data_budget_per_hour": 5904.0,
+          "market_data_budget_per_min": 98.4,
+          "official_doc_url": "https://docs.alpaca.markets/us/v1.4.2/docs/about-market-data-api",
+          "official_limit_model": "trading_rpm_plus_market_data_plan_limits",
+          "operator_note": "No meaningful cash/position detected, so use more budget for streams, quotes, and candidate discovery.",
+          "position_count": 0,
+          "quote_budget_fraction": 0.82,
+          "recommended_mode": "idle_cash_market_discovery_boost",
+          "safe_calls_per_hour": 7200.0,
+          "safe_calls_per_min": 120.0,
+          "stream_preferred": true
+        },
+        "category": "live_exchange",
+        "command": [
+          "python",
+          "-m",
+          "aureon.data_feeds.ws_market_data_feeder",
+          "--alpaca"
+        ],
+        "configured_reachable": true,
+        "credential_state": "configured",
+        "decision_blocker": "",
+        "evidence_path": "ws_cache/ws_prices.json#source_health.alpaca",
+        "fresh": true,
+        "governor_action": "maintain",
+        "last_attempt": {},
+        "last_error": "",
+        "last_success_at": 1779434576.2087703,
+        "missing_credentials": [],
+        "next_action": "Enable fresh stock/ETF snapshots and market-hours state.",
+        "official_rate_limit": {
+          "env_overrides": {
+            "calls_per_min": "UNIFIED_ALPACA_CALLS_PER_MIN",
+            "quote_budget_fraction": "UNIFIED_ALPACA_QUOTE_BUDGET_FRACTION"
+          },
+          "exchange": "alpaca",
+          "official_doc_url": "https://docs.alpaca.markets/us/v1.4.2/docs/about-market-data-api",
+          "official_limit_model": "trading_rpm_plus_market_data_plan_limits",
+          "official_limits": {
+            "equities_algo_trader_plus_websocket_symbols": "unlimited",
+            "equities_basic_websocket_symbols": 30,
+            "market_data_algo_trader_plus_historical_calls_per_min": 10000,
+            "market_data_basic_historical_calls_per_min": 200,
+            "options_algo_trader_plus_websocket_quotes": 1000,
+            "options_basic_websocket_quotes": 200,
+            "trading_api_default_requests_per_min_per_account": 200,
+            "typical_stream_connections_per_endpoint": 1
+          },
+          "official_notes": [
+            "Alpaca's official market-data docs define plan-specific historical limits and WebSocket subscription limits.",
+            "Alpaca support documents the Trading API default as 200 requests per minute per account.",
+            "Use one stream connection per endpoint in most plans; use REST history budget for backfill, not live ticks."
+          ],
+          "provider_status": "official_documented",
+          "safe_governor_calls_per_min": 120.0,
+          "source_lines": [
+            "Alpaca market-data docs lines 154-180",
+            "Alpaca WebSocket docs lines 184-191"
+          ],
+          "stream_preferred": true,
+          "title": "Alpaca Trading and Market Data"
+        },
+        "rate_budget": {
+          "cadence_sec": 15,
+          "cash_aware_market_data_budget_per_hour": 5904.0,
+          "cash_aware_safe_calls_per_hour": 7200.0,
+          "mode": "official_rate_limit_cash_aware_budgeted_adaptive",
+          "priority": 88,
+          "registry_max_calls_per_hour": 240
+        },
+        "reason": "",
+        "row_count": 6,
+        "source_id": "alpaca_live",
+        "title": "Alpaca equities, ETFs, and crypto snapshots",
+        "usable_for_decision": true,
+        "usable_for_mapping": true
+      },
+      {
+        "active": true,
+        "asset_classes": [
+          "cfds",
+          "forex",
+          "indices",
+          "stocks",
+          "positions"
+        ],
+        "availability_state": "unknown",
+        "cash_aware_call_plan": {
+          "cash_or_position_active": false,
+          "cash_usd_estimate": 0.0,
+          "data_boost_eligible": true,
+          "exchange": "capital",
+          "execution_reserved_per_min": 11.25,
+          "market_data_budget_per_hour": 2025.0,
+          "market_data_budget_per_min": 33.75,
+          "official_doc_url": "https://open-api.capital.com/",
+          "official_limit_model": "per_user_request_rate_endpoint_limits_and_ws_instrument_cap",
+          "operator_note": "No meaningful cash/position detected, so use more budget for streams, quotes, and candidate discovery.",
+          "position_count": 0,
+          "quote_budget_fraction": 0.75,
+          "recommended_mode": "idle_cash_market_discovery_boost",
+          "safe_calls_per_hour": 2700.0,
+          "safe_calls_per_min": 45.0,
+          "stream_preferred": true
+        },
+        "category": "live_exchange",
+        "command": [
+          "python",
+          "-m",
+          "aureon.data_feeds.ws_market_data_feeder",
+          "--capital"
+        ],
+        "configured_reachable": true,
+        "credential_state": "configured",
+        "decision_blocker": "",
+        "evidence_path": "ws_cache/ws_prices.json#source_health.capital",
+        "fresh": true,
+        "governor_action": "maintain",
+        "last_attempt": {},
+        "last_error": "",
+        "last_success_at": 1779434580.7362545,
+        "missing_credentials": [],
+        "next_action": "Enable fresh Capital market snapshots and profitable-position close telemetry.",
+        "official_rate_limit": {
+          "env_overrides": {
+            "calls_per_min": "UNIFIED_CAPITAL_CALLS_PER_MIN",
+            "quote_budget_fraction": "UNIFIED_CAPITAL_QUOTE_BUDGET_FRACTION"
+          },
+          "exchange": "capital",
+          "official_doc_url": "https://open-api.capital.com/",
+          "official_limit_model": "per_user_request_rate_endpoint_limits_and_ws_instrument_cap",
+          "official_limits": {
+            "demo_positions_workingorders_requests_per_hour": 1000,
+            "max_requests_per_sec_per_user": 10,
+            "position_or_order_request_spacing_sec": 0.1,
+            "rest_session_inactive_ttl_min": 10,
+            "session_endpoint_requests_per_sec_per_api_key": 1,
+            "websocket_max_instruments": 40,
+            "websocket_session_ttl_min": 10
+          },
+          "official_notes": [
+            "Capital supports REST and WebSocket real-time prices for platform instruments.",
+            "Order/position requests must respect the endpoint limits and still need confirmation checks.",
+            "Use WebSocket subscriptions for up to 40 active instruments and keep session refresh separate from market scans."
+          ],
+          "provider_status": "official_documented",
+          "safe_governor_calls_per_min": 45.0,
+          "source_lines": [
+            "Capital.com API docs lines 201-215"
+          ],
+          "stream_preferred": true,
+          "title": "Capital.com REST/WebSocket"
+        },
+        "rate_budget": {
+          "cadence_sec": 20,
+          "cash_aware_market_data_budget_per_hour": 2025.0,
+          "cash_aware_safe_calls_per_hour": 2700.0,
+          "mode": "official_rate_limit_cash_aware_budgeted_adaptive",
+          "priority": 87,
+          "registry_max_calls_per_hour": 180
+        },
+        "reason": "",
+        "row_count": 26,
+        "source_id": "capital_live",
+        "title": "Capital.com CFD, FX, index, and equity snapshots",
+        "usable_for_decision": true,
+        "usable_for_mapping": true
+      },
+      {
+        "active": false,
+        "asset_classes": [
+          "stocks",
+          "etfs",
+          "indices",
+          "forex",
+          "commodities",
+          "crypto"
+        ],
+        "availability_state": "provider_unavailable_or_no_data",
+        "cash_aware_call_plan": null,
+        "category": "history",
+        "command": [
+          "python",
+          "scripts/python/ingest_yfinance.py",
+          "--all",
+          "--days",
+          "1825"
+        ],
+        "configured_reachable": false,
+        "credential_state": "not_required",
+        "decision_blocker": "",
+        "evidence_path": "state/aureon_global_history.sqlite#market_bars",
+        "fresh": false,
+        "governor_action": "provider_unavailable",
+        "last_attempt": {
+          "empty_batches": 0,
+          "errors": 6,
+          "inserted": 0,
+          "reason": "provider_returned_no_usable_rows",
+          "results": [
+            {
+              "category": "stocks",
+              "empty_batches": 0,
+              "errors": 1,
+              "inserted": 0,
+              "skipped": 0,
+              "symbol_count": 15
+            },
+            {
+              "category": "indices",
+              "empty_batches": 0,
+              "errors": 1,
+              "inserted": 0,
+              "skipped": 0,
+              "symbol_count": 14
+            },
+            {
+              "category": "forex",
+              "empty_batches": 0,
+              "errors": 1,
+              "inserted": 0,
+              "skipped": 0,
+              "symbol_count": 15
+            },
+            {
+              "category": "commodities",
+              "empty_batches": 0,
+              "errors": 1,
+              "inserted": 0,
+              "skipped": 0,
+              "symbol_count": 14
+            },
+            {
+              "category": "crypto",
+              "empty_batches": 0,
+              "errors": 1,
+              "inserted": 0,
+              "skipped": 0,
+              "symbol_count": 10
+            },
+            {
+              "category": "etfs",
+              "empty_batches": 0,
+              "errors": 1,
+              "inserted": 0,
+              "skipped": 0,
+              "symbol_count": 13
+            }
+          ],
+          "source_id": "yfinance_history",
+          "status": "provider_unavailable_or_no_data",
+          "updated_at": "2026-05-21T14:03:12.342072+00:00"
+        },
+        "last_error": "",
+        "last_success_at": null,
+        "missing_credentials": [],
+        "next_action": "Backfill broad daily history for world indices, equities, ETFs, FX, commodities, and crypto.",
+        "official_rate_limit": null,
+        "rate_budget": {
+          "cadence_sec": 86400,
+          "max_calls_per_hour": 30,
+          "mode": "budgeted_adaptive",
+          "priority": 70
+        },
+        "reason": "provider_returned_no_usable_rows",
+        "row_count": 0,
+        "source_id": "yfinance_history",
+        "title": "Yahoo Finance broad historical OHLCV",
+        "usable_for_decision": false,
+        "usable_for_mapping": false
+      },
+      {
+        "active": false,
+        "asset_classes": [
+          "crypto",
+          "bars",
+          "trades",
+          "symbols"
+        ],
+        "availability_state": "unknown",
+        "cash_aware_call_plan": null,
+        "category": "history",
+        "command": [
+          "python",
+          "scripts/python/ingest_market_history.py",
+          "--coinapi"
+        ],
+        "configured_reachable": true,
+        "credential_state": "configured",
+        "decision_blocker": "",
+        "evidence_path": "state/aureon_global_history.sqlite#market_bars",
+        "fresh": false,
+        "governor_action": "run_refresh",
+        "last_attempt": {},
+        "last_error": "",
+        "last_success_at": null,
+        "missing_credentials": [],
+        "next_action": "Use licensed CoinAPI capacity for wide daily and recent minute crypto waveforms.",
+        "official_rate_limit": null,
+        "rate_budget": {
+          "cadence_sec": 21600,
+          "max_calls_per_hour": 100,
+          "mode": "budgeted_adaptive",
+          "priority": 78
+        },
+        "reason": "no_usable_rows_or_fresh_cache",
+        "row_count": 0,
+        "source_id": "coinapi_history",
+        "title": "CoinAPI crypto market history",
+        "usable_for_decision": false,
+        "usable_for_mapping": false
+      },
+      {
+        "active": true,
+        "asset_classes": [
+          "crypto",
+          "bars"
+        ],
+        "availability_state": "unknown",
+        "cash_aware_call_plan": null,
+        "category": "history",
+        "command": [
+          "python",
+          "scripts/python/ingest_existing_feeds.py",
+          "--feeds",
+          "coinbase"
+        ],
+        "configured_reachable": true,
+        "credential_state": "not_required",
+        "decision_blocker": "",
+        "evidence_path": "state/aureon_global_history.sqlite#market_bars",
+        "fresh": true,
+        "governor_action": "maintain",
+        "last_attempt": {},
+        "last_error": "",
+        "last_success_at": "2026-05-21T14:00:00+00:00",
+        "missing_credentials": [],
+        "next_action": "Use Coinbase public candles as crypto cross-check history.",
+        "official_rate_limit": null,
+        "rate_budget": {
+          "cadence_sec": 21600,
+          "max_calls_per_hour": 40,
+          "mode": "budgeted_adaptive",
+          "priority": 62
+        },
+        "reason": "",
+        "row_count": 52500,
+        "source_id": "coinbase_history",
+        "title": "Coinbase public crypto history",
+        "usable_for_decision": true,
+        "usable_for_mapping": true
+      },
+      {
+        "active": true,
+        "asset_classes": [
+          "crypto",
+          "reference_prices"
+        ],
+        "availability_state": "unknown",
+        "cash_aware_call_plan": null,
+        "category": "context",
+        "command": [
+          "python",
+          "scripts/python/ingest_existing_feeds.py",
+          "--feeds",
+          "coingecko"
+        ],
+        "configured_reachable": true,
+        "credential_state": "not_required",
+        "decision_blocker": "",
+        "evidence_path": "state/aureon_global_history.sqlite#market_bars",
+        "fresh": true,
+        "governor_action": "maintain",
+        "last_attempt": {},
+        "last_error": "",
+        "last_success_at": "2026-05-21T14:03:22.050000+00:00",
+        "missing_credentials": [],
+        "next_action": "Keep CoinGecko reference prices as non-execution cross-checks.",
+        "official_rate_limit": null,
+        "rate_budget": {
+          "cadence_sec": 600,
+          "max_calls_per_hour": 60,
+          "mode": "budgeted_adaptive",
+          "priority": 64
+        },
+        "reason": "",
+        "row_count": 28,
+        "source_id": "coingecko_snapshot",
+        "title": "CoinGecko crypto reference snapshots",
+        "usable_for_decision": true,
+        "usable_for_mapping": true
+      },
+      {
+        "active": false,
+        "asset_classes": [
+          "rates",
+          "inflation",
+          "growth",
+          "employment",
+          "macro"
+        ],
+        "availability_state": "unknown",
+        "cash_aware_call_plan": null,
+        "category": "macro",
+        "command": [
+          "python",
+          "scripts/python/ingest_fred.py",
+          "--category",
+          "all"
+        ],
+        "configured_reachable": false,
+        "credential_state": "missing",
+        "decision_blocker": "",
+        "evidence_path": "state/aureon_global_history.sqlite#macro_indicators",
+        "fresh": false,
+        "governor_action": "credential_required",
+        "last_attempt": {},
+        "last_error": "",
+        "last_success_at": null,
+        "missing_credentials": [
+          "FRED_API_KEY"
+        ],
+        "next_action": "Configure FRED_API_KEY and refresh rates, CPI, GDP, and employment context.",
+        "official_rate_limit": null,
+        "rate_budget": {
+          "cadence_sec": 86400,
+          "max_calls_per_hour": 120,
+          "mode": "budgeted_adaptive",
+          "priority": 58
+        },
+        "reason": "required_credentials_missing",
+        "row_count": 0,
+        "source_id": "fred_macro",
+        "title": "FRED macro indicators",
+        "usable_for_decision": false,
+        "usable_for_mapping": false
+      },
+      {
+        "active": false,
+        "asset_classes": [
+          "calendar",
+          "earnings",
+          "macro_events",
+          "corporate_actions"
+        ],
+        "availability_state": "unknown",
+        "cash_aware_call_plan": null,
+        "category": "events",
+        "command": [
+          "python",
+          "scripts/python/ingest_economic_calendar.py",
+          "--sources",
+          "all"
+        ],
+        "configured_reachable": false,
+        "credential_state": "missing",
+        "decision_blocker": "",
+        "evidence_path": "state/aureon_global_history.sqlite#calendar_events",
+        "fresh": false,
+        "governor_action": "credential_required",
+        "last_attempt": {},
+        "last_error": "",
+        "last_success_at": null,
+        "missing_credentials": [
+          "FMP_API_KEY"
+        ],
+        "next_action": "Configure FMP_API_KEY for economic and corporate calendar coverage.",
+        "official_rate_limit": null,
+        "rate_budget": {
+          "cadence_sec": 21600,
+          "max_calls_per_hour": 60,
+          "mode": "budgeted_adaptive",
+          "priority": 56
+        },
+        "reason": "required_credentials_missing",
+        "row_count": 0,
+        "source_id": "fmp_calendar",
+        "title": "FMP economic, earnings, IPO, and dividend calendar",
+        "usable_for_decision": false,
+        "usable_for_mapping": false
+      },
+      {
+        "active": false,
+        "asset_classes": [
+          "news",
+          "sentiment",
+          "geopolitical"
+        ],
+        "availability_state": "unknown",
+        "cash_aware_call_plan": null,
+        "category": "sentiment",
+        "command": [
+          "python",
+          "scripts/python/ingest_existing_feeds.py",
+          "--feeds",
+          "news"
+        ],
+        "configured_reachable": false,
+        "credential_state": "missing",
+        "decision_blocker": "",
+        "evidence_path": "state/aureon_global_history.sqlite#sentiment",
+        "fresh": false,
+        "governor_action": "credential_required",
+        "last_attempt": {},
+        "last_error": "",
+        "last_success_at": null,
+        "missing_credentials": [
+          "WORLD_NEWS_API_KEY"
+        ],
+        "next_action": "Configure WORLD_NEWS_API_KEY for fresh news sentiment and geopolitical context.",
+        "official_rate_limit": null,
+        "rate_budget": {
+          "cadence_sec": 1800,
+          "max_calls_per_hour": 30,
+          "mode": "budgeted_adaptive",
+          "priority": 55
+        },
+        "reason": "required_credentials_missing",
+        "row_count": 0,
+        "source_id": "world_news",
+        "title": "World News market and geopolitical sentiment",
+        "usable_for_decision": false,
+        "usable_for_mapping": false
+      },
+      {
+        "active": false,
+        "asset_classes": [
+          "crypto",
+          "onchain"
+        ],
+        "availability_state": "unknown",
+        "cash_aware_call_plan": null,
+        "category": "onchain",
+        "command": [
+          "python",
+          "scripts/python/ingest_existing_feeds.py",
+          "--feeds",
+          "glassnode"
+        ],
+        "configured_reachable": false,
+        "credential_state": "missing",
+        "decision_blocker": "",
+        "evidence_path": "state/aureon_global_history.sqlite#onchain_metrics",
+        "fresh": false,
+        "governor_action": "credential_required",
+        "last_attempt": {},
+        "last_error": "",
+        "last_success_at": null,
+        "missing_credentials": [
+          "GLASSNODE_API_KEY"
+        ],
+        "next_action": "Configure GLASSNODE_API_KEY for on-chain confirmation signals.",
+        "official_rate_limit": null,
+        "rate_budget": {
+          "cadence_sec": 3600,
+          "max_calls_per_hour": 30,
+          "mode": "budgeted_adaptive",
+          "priority": 50
+        },
+        "reason": "required_credentials_missing",
+        "row_count": 0,
+        "source_id": "glassnode_onchain",
+        "title": "Glassnode on-chain crypto metrics",
+        "usable_for_decision": false,
+        "usable_for_mapping": false
+      },
+      {
+        "active": true,
+        "asset_classes": [
+          "macro",
+          "risk_regime",
+          "commodities",
+          "forex"
+        ],
+        "availability_state": "unknown",
+        "cash_aware_call_plan": null,
+        "category": "context",
+        "command": [
+          "python",
+          "scripts/python/ingest_existing_feeds.py",
+          "--feeds",
+          "macro,macro_intel"
+        ],
+        "configured_reachable": true,
+        "credential_state": "not_required",
+        "decision_blocker": "",
+        "evidence_path": "state/aureon_global_history.sqlite#sentiment",
+        "fresh": true,
+        "governor_action": "maintain",
+        "last_attempt": {},
+        "last_error": "",
+        "last_success_at": "2026-05-21T14:03:34.138000+00:00",
+        "missing_credentials": [],
+        "next_action": "Refresh macro snapshot for risk regime, DXY, VIX, yields, oil, and gold context.",
+        "official_rate_limit": null,
+        "rate_budget": {
+          "cadence_sec": 1800,
+          "max_calls_per_hour": 20,
+          "mode": "budgeted_adaptive",
+          "priority": 52
+        },
+        "reason": "",
+        "row_count": 44,
+        "source_id": "macro_snapshot",
+        "title": "Global financial feed macro snapshot",
+        "usable_for_decision": true,
+        "usable_for_mapping": true
+      },
+      {
+        "active": true,
+        "asset_classes": [
+          "account_trades",
+          "positions",
+          "fills"
+        ],
+        "availability_state": "unknown",
+        "cash_aware_call_plan": null,
+        "category": "account_memory",
+        "command": [
+          "python",
+          "scripts/python/sync_global_history_db.py"
+        ],
+        "configured_reachable": true,
+        "credential_state": "configured",
+        "decision_blocker": "",
+        "evidence_path": "state/aureon_global_history.sqlite#account_trades",
+        "fresh": true,
+        "governor_action": "maintain",
+        "last_attempt": {},
+        "last_error": "",
+        "last_success_at": "2026-05-21T13:53:47.805000+00:00",
+        "missing_credentials": [],
+        "next_action": "Keep private account trade history synced for cost basis, execution learning, and risk memory.",
+        "official_rate_limit": null,
+        "rate_budget": {
+          "cadence_sec": 3600,
+          "max_calls_per_hour": 40,
+          "mode": "budgeted_adaptive",
+          "priority": 82
+        },
+        "reason": "",
+        "row_count": 10634,
+        "source_id": "account_trades",
+        "title": "Private account trade history",
+        "usable_for_decision": true,
+        "usable_for_mapping": true
+      },
+      {
+        "active": true,
+        "asset_classes": [
+          "knowledge",
+          "forecasts",
+          "reasoning",
+          "memory"
+        ],
+        "availability_state": "unknown",
+        "cash_aware_call_plan": null,
+        "category": "internal",
+        "command": [
+          "python",
+          "scripts/python/ingest_queen_knowledge.py",
+          "--sources",
+          "all"
+        ],
+        "configured_reachable": true,
+        "credential_state": "not_required",
+        "decision_blocker": "",
+        "evidence_path": "state/aureon_global_history.sqlite#queen_tables",
+        "fresh": true,
+        "governor_action": "maintain",
+        "last_attempt": {},
+        "last_error": "",
+        "last_success_at": "2026-05-21T14:07:29.517000+00:00",
+        "missing_credentials": [],
+        "next_action": "Refresh internal memory and strategy knowledge into the global history database.",
+        "official_rate_limit": null,
+        "rate_budget": {
+          "cadence_sec": 21600,
+          "max_calls_per_hour": 10,
+          "mode": "budgeted_adaptive",
+          "priority": 45
+        },
+        "reason": "",
+        "row_count": 15401,
+        "source_id": "queen_knowledge",
+        "title": "Queen knowledge, memories, insights, thoughts, and strategies",
+        "usable_for_decision": true,
+        "usable_for_mapping": true
+      }
+    ],
+    "summary": {
+      "accounted_percent": 100.0,
+      "cash_aware_exchange_plan": {
+        "alpaca": {
+          "cash_or_position_active": false,
+          "cash_usd_estimate": 0.0,
+          "data_boost_eligible": true,
+          "exchange": "alpaca",
+          "execution_reserved_per_min": 21.6,
+          "market_data_budget_per_hour": 5904.0,
+          "market_data_budget_per_min": 98.4,
+          "official_doc_url": "https://docs.alpaca.markets/us/v1.4.2/docs/about-market-data-api",
+          "official_limit_model": "trading_rpm_plus_market_data_plan_limits",
+          "operator_note": "No meaningful cash/position detected, so use more budget for streams, quotes, and candidate discovery.",
+          "position_count": 0,
+          "quote_budget_fraction": 0.82,
+          "recommended_mode": "idle_cash_market_discovery_boost",
+          "safe_calls_per_hour": 7200.0,
+          "safe_calls_per_min": 120.0,
+          "stream_preferred": true
+        },
+        "binance": {
+          "cash_or_position_active": false,
+          "cash_usd_estimate": 0.0,
+          "data_boost_eligible": true,
+          "exchange": "binance",
+          "execution_reserved_per_min": 43.2,
+          "market_data_budget_per_hour": 11808.0,
+          "market_data_budget_per_min": 196.8,
+          "official_doc_url": "https://developers.binance.com/docs/binance-spot-api-docs/rest-api/limits",
+          "official_limit_model": "request_weight_and_order_limits_from_exchangeInfo",
+          "operator_note": "No meaningful cash/position detected, so use more budget for streams, quotes, and candidate discovery.",
+          "position_count": 0,
+          "quote_budget_fraction": 0.82,
+          "recommended_mode": "idle_cash_market_discovery_boost",
+          "safe_calls_per_hour": 14400.0,
+          "safe_calls_per_min": 240.0,
+          "stream_preferred": true
+        },
+        "capital": {
+          "cash_or_position_active": false,
+          "cash_usd_estimate": 0.0,
+          "data_boost_eligible": true,
+          "exchange": "capital",
+          "execution_reserved_per_min": 11.25,
+          "market_data_budget_per_hour": 2025.0,
+          "market_data_budget_per_min": 33.75,
+          "official_doc_url": "https://open-api.capital.com/",
+          "official_limit_model": "per_user_request_rate_endpoint_limits_and_ws_instrument_cap",
+          "operator_note": "No meaningful cash/position detected, so use more budget for streams, quotes, and candidate discovery.",
+          "position_count": 0,
+          "quote_budget_fraction": 0.75,
+          "recommended_mode": "idle_cash_market_discovery_boost",
+          "safe_calls_per_hour": 2700.0,
+          "safe_calls_per_min": 45.0,
+          "stream_preferred": true
+        },
+        "kraken": {
+          "cash_or_position_active": false,
+          "cash_usd_estimate": 0.0,
+          "data_boost_eligible": true,
+          "exchange": "kraken",
+          "execution_reserved_per_min": 18.0,
+          "market_data_budget_per_hour": 2520.0,
+          "market_data_budget_per_min": 42.0,
+          "official_doc_url": "https://support.kraken.com/hc/en-us/articles/206548367-what-are-the-api-rate-limits-",
+          "official_limit_model": "public_ip_frequency_private_counter_and_trading_points",
+          "operator_note": "No meaningful cash/position detected, so use more budget for streams, quotes, and candidate discovery.",
+          "position_count": 0,
+          "quote_budget_fraction": 0.7,
+          "recommended_mode": "idle_cash_market_discovery_boost",
+          "safe_calls_per_hour": 3600.0,
+          "safe_calls_per_min": 60.0,
+          "stream_preferred": true
+        }
+      },
+      "configured_reachable_count": 10,
+      "coverage_percent": 90.0,
+      "credential_missing_count": 4,
+      "decision_usable_source_count": 9,
+      "fresh_source_count": 9,
+      "official_exchange_rate_limits_known": 4,
+      "runtime_stale": false,
+      "source_count": 15,
+      "top_gaps": [
+        {
+          "next_action": "Backfill broad daily history for world indices, equities, ETFs, FX, commodities, and crypto.",
+          "reason": "provider_returned_no_usable_rows",
+          "source_id": "yfinance_history"
+        },
+        {
+          "next_action": "Use licensed CoinAPI capacity for wide daily and recent minute crypto waveforms.",
+          "reason": "no_usable_rows_or_fresh_cache",
+          "source_id": "coinapi_history"
+        },
+        {
+          "next_action": "Configure FRED_API_KEY and refresh rates, CPI, GDP, and employment context.",
+          "reason": "required_credentials_missing",
+          "source_id": "fred_macro"
+        },
+        {
+          "next_action": "Configure FMP_API_KEY for economic and corporate calendar coverage.",
+          "reason": "required_credentials_missing",
+          "source_id": "fmp_calendar"
+        },
+        {
+          "next_action": "Configure WORLD_NEWS_API_KEY for fresh news sentiment and geopolitical context.",
+          "reason": "required_credentials_missing",
+          "source_id": "world_news"
+        },
+        {
+          "next_action": "Configure GLASSNODE_API_KEY for on-chain confirmation signals.",
+          "reason": "required_credentials_missing",
+          "source_id": "glassnode_onchain"
+        }
+      ],
+      "usable_source_count": 9
+    }
+  },
+  "exchange_monitoring": {
+    "exchanges": [
+      {
+        "cache_fresh": true,
+        "connected": true,
+        "exchange": "binance",
+        "feeds_decision_logic": false,
+        "missing": [
+          "no_exchange_action_plan_venue",
+          "per_exchange_orderbook_depth_not_proven"
+        ],
+        "ticker_count": 2978
+      },
+      {
+        "cache_fresh": true,
+        "connected": false,
+        "exchange": "kraken",
+        "feeds_decision_logic": false,
+        "missing": [
+          "cost_and_fee_context_not_confirmed",
+          "exchange_client_not_ready_or_credentials_missing",
+          "margin_pair_quotes_not_confirmed",
+          "no_exchange_action_plan_venue",
+          "per_exchange_orderbook_depth_not_proven"
+        ],
+        "ticker_count": 24
+      },
+      {
+        "cache_fresh": true,
+        "connected": true,
+        "exchange": "alpaca",
+        "feeds_decision_logic": false,
+        "missing": [
+          "authenticated_market_data_entitlement_not_proven",
+          "market_hours_state_not_confirmed",
+          "news_context_if_available_not_confirmed",
+          "no_exchange_action_plan_venue",
+          "portfolio_balance_not_confirmed"
+        ],
+        "ticker_count": 6
+      },
+      {
+        "cache_fresh": true,
+        "connected": true,
+        "exchange": "capital",
+        "feeds_decision_logic": true,
+        "missing": [
+          "capital_market_hours_and_position_close_speed_not_proven",
+          "market_hours_state_not_confirmed",
+          "open_position_context_not_confirmed",
+          "portfolio_balance_not_confirmed",
+          "profit_loss_context_not_confirmed"
+        ],
+        "ticker_count": 26
+      }
+    ],
+    "present": true,
+    "status": "exchange_monitoring_ready",
+    "summary": {
+      "active_exchange_count": 4,
+      "connected_exchange_count": 3,
+      "decision_fed_exchange_count": 1,
+      "exchange_count": 4,
+      "fast_money_usable_exchange_count": 1,
+      "fresh_exchange_count": 4,
+      "runtime_stale": false,
+      "stale_reason": "",
+      "status": "exchange_monitoring_ready",
+      "stream_cache_generated_at": 1779434595.9798863,
+      "stream_cache_source": "multi_exchange_stream_cache",
+      "top_missing": [
+        {
+          "exchange": "binance",
+          "missing": "no_exchange_action_plan_venue"
+        },
+        {
+          "exchange": "binance",
+          "missing": "per_exchange_orderbook_depth_not_proven"
+        },
+        {
+          "exchange": "kraken",
+          "missing": "cost_and_fee_context_not_confirmed"
+        },
+        {
+          "exchange": "kraken",
+          "missing": "exchange_client_not_ready_or_credentials_missing"
+        },
+        {
+          "exchange": "kraken",
+          "missing": "margin_pair_quotes_not_confirmed"
+        },
+        {
+          "exchange": "kraken",
+          "missing": "no_exchange_action_plan_venue"
+        },
+        {
+          "exchange": "kraken",
+          "missing": "per_exchange_orderbook_depth_not_proven"
+        },
+        {
+          "exchange": "alpaca",
+          "missing": "authenticated_market_data_entitlement_not_proven"
+        },
+        {
+          "exchange": "alpaca",
+          "missing": "market_hours_state_not_confirmed"
+        },
+        {
+          "exchange": "alpaca",
+          "missing": "news_context_if_available_not_confirmed"
+        },
+        {
+          "exchange": "alpaca",
+          "missing": "no_exchange_action_plan_venue"
+        },
+        {
+          "exchange": "alpaca",
+          "missing": "portfolio_balance_not_confirmed"
+        }
+      ],
+      "total_tickers_monitored": 3034,
+      "waveform_history_exchange_count": 4
+    }
+  },
+  "generated_at": "2026-05-22T07:23:27.962011+00:00",
+  "history": {
+    "db_path": "state/aureon_global_history.sqlite",
+    "market_bar_periods": [
+      {
+        "count": 159244,
+        "name": "LIVE_60S"
+      },
+      {
+        "count": 52500,
+        "name": "1h"
+      },
+      {
+        "count": 28,
+        "name": "snapshot"
+      }
+    ],
+    "market_bar_providers": [
+      {
+        "count": 159244,
+        "name": "aureon_live_stream_cache"
+      },
+      {
+        "count": 52500,
+        "name": "coinbase"
+      },
+      {
+        "count": 28,
+        "name": "coingecko"
+      }
+    ],
+    "market_bar_venues": [
+      {
+        "count": 157938,
+        "name": "BINANCE"
+      },
+      {
+        "count": 52500,
+        "name": "coinbase"
+      },
+      {
+        "count": 1306,
+        "name": "KRAKEN"
+      },
+      {
+        "count": 28,
+        "name": "coingecko"
+      }
+    ],
+    "missing": [],
+    "present": true,
+    "size_bytes": 162885632,
+    "tables": {
+      "account_trades": {
+        "first_at": "2025-11-14T22:29:48.106000+00:00",
+        "last_at": "2026-05-21T13:53:47.805000+00:00",
+        "present": true,
+        "recent_24h_count": 2,
+        "row_count": 10634,
+        "symbol_count": 436,
+        "table": "account_trades"
+      },
+      "calendar_events": {
+        "first_at": "2020-01-03T00:00:00+00:00",
+        "last_at": "2026-05-06T00:00:00+00:00",
+        "present": true,
+        "recent_24h_count": 0,
+        "row_count": 103,
+        "symbol_count": 8,
+        "table": "calendar_events"
+      },
+      "events": {
+        "first_at": null,
+        "last_at": null,
+        "present": true,
+        "recent_24h_count": 0,
+        "row_count": 0,
+        "symbol_count": 0,
+        "table": "events"
+      },
+      "forecasts": {
+        "first_at": null,
+        "last_at": null,
+        "present": true,
+        "recent_24h_count": 0,
+        "row_count": 0,
+        "symbol_count": 0,
+        "table": "forecasts"
+      },
+      "macro_indicators": {
+        "first_at": null,
+        "last_at": null,
+        "present": true,
+        "recent_24h_count": 0,
+        "row_count": 0,
+        "symbol_count": 0,
+        "table": "macro_indicators"
+      },
+      "market_bars": {
+        "first_at": "2025-05-21T15:00:00+00:00",
+        "last_at": "2026-05-22T07:23:00+00:00",
+        "present": true,
+        "recent_24h_count": 159314,
+        "row_count": 211772,
+        "symbol_count": 546,
+        "table": "market_bars"
+      },
+      "market_trades": {
+        "first_at": null,
+        "last_at": null,
+        "present": true,
+        "recent_24h_count": 0,
+        "row_count": 0,
+        "symbol_count": 0,
+        "table": "market_trades"
+      },
+      "onchain_metrics": {
+        "first_at": null,
+        "last_at": null,
+        "present": true,
+        "recent_24h_count": 0,
+        "row_count": 0,
+        "symbol_count": 0,
+        "table": "onchain_metrics"
+      },
+      "sentiment": {
+        "first_at": "2020-01-03T00:00:00+00:00",
+        "last_at": "2026-05-21T14:06:16.146000+00:00",
+        "present": true,
+        "recent_24h_count": 98,
+        "row_count": 130,
+        "symbol_count": 4,
+        "table": "sentiment"
+      },
+      "symbols": {
+        "present": true,
+        "row_count": 0,
+        "symbol_count": 0,
+        "table": "symbols"
+      }
+    }
+  },
+  "live_stream": {
+    "active_source_count": 4,
+    "exchange_counts": [
+      {
+        "count": 6,
+        "name": "alpaca"
+      },
+      {
+        "count": 2978,
+        "name": "binance"
+      },
+      {
+        "count": 26,
+        "name": "capital"
+      },
+      {
+        "count": 24,
+        "name": "kraken"
+      }
+    ],
+    "generated_at": 1779434595.9798863,
+    "present": true,
+    "quote_counts": [
+      {
+        "count": 1208,
+        "name": "USD"
+      },
+      {
+        "count": 1198,
+        "name": "USDT"
+      },
+      {
+        "count": 622,
+        "name": "USDC"
+      }
+    ],
+    "source": "multi_exchange_stream_cache",
+    "source_count": 4,
+    "source_health": {
+      "alpaca": {
+        "active": true,
+        "age_sec": 19.771,
+        "fresh": true,
+        "generated_at": 1779434576.2087703,
+        "mode": "budgeted_authenticated_market_snapshot",
+        "present": true,
+        "reason": "",
+        "source": "alpaca_rest_snapshot",
+        "ticker_count": 6
+      },
+      "binance": {
+        "active": true,
+        "age_sec": 0.018,
+        "fresh": true,
+        "generated_at": 1779434595.9621444,
+        "mode": "rest_snapshot_for_stream_continuity",
+        "present": true,
+        "reason": "",
+        "source": "binance_rest_ws_gap_fill",
+        "ticker_count": 2978
+      },
+      "capital": {
+        "active": true,
+        "age_sec": 15.244,
+        "fresh": true,
+        "generated_at": 1779434580.7362545,
+        "mode": "budgeted_authenticated_market_snapshot",
+        "present": true,
+        "reason": "",
+        "source": "capital_rest_snapshot",
+        "ticker_count": 26
+      },
+      "kraken": {
+        "active": true,
+        "age_sec": 9.937,
+        "fresh": true,
+        "generated_at": 1779434586.043318,
+        "mode": "budgeted_public_rest_snapshot",
+        "present": true,
+        "reason": "",
+        "source": "kraken_public_rest",
+        "ticker_count": 24
+      }
+    },
+    "ticker_count": 3034
+  },
+  "repo_root": "C:\\Users\\user\\aureon-trading",
+  "rows": [
+    {
+      "coverage": "Binance/Kraken crypto ticks and spot/margin context",
+      "domain": "crypto_live_market",
+      "fresh": true,
+      "history_count": 211772,
+      "live_count": 3034,
+      "missing": [],
+      "next_action": "Keep Binance streaming; activate Kraken live cache, spot/margin fee context, and order-book probes.",
+      "usable": true
+    },
+    {
+      "coverage": "Alpaca stock/ETF/crypto market snapshots",
+      "domain": "equity_and_etf_live_market",
+      "fresh": true,
+      "history_count": 0,
+      "live_count": 6,
+      "missing": [],
+      "next_action": "Use Alpaca snapshots/stream entitlements to add fresh equity and ETF ticks.",
+      "usable": false
+    },
+    {
+      "coverage": "Capital.com CFD positions, equity, and market snapshots",
+      "domain": "cfd_fx_indices_equities",
+      "fresh": true,
+      "history_count": 10634,
+      "live_count": 26,
+      "missing": [],
+      "next_action": "Add Capital market snapshot refresh and fast profitable-position close telemetry.",
+      "usable": true
+    },
+    {
+      "coverage": "1h to 1y market bar memory for multi-horizon waveform models",
+      "domain": "historical_waveform_memory",
+      "fresh": true,
+      "history_count": 211772,
+      "live_count": 3034,
+      "missing": [],
+      "next_action": "Keep live cache writing bars into global history so models build from 1h through 1y.",
+      "usable": true
+    },
+    {
+      "coverage": "Macro indicators, calendar events, earnings/geopolitical events",
+      "domain": "macro_events_context",
+      "fresh": false,
+      "history_count": 0,
+      "live_count": 0,
+      "missing": [
+        "fresh_economic_calendar"
+      ],
+      "next_action": "Refresh owned/licensed macro calendar and event feeds for context-aware trade selection.",
+      "usable": false
+    },
+    {
+      "coverage": "Sentiment, on-chain observations, and forecast memory",
+      "domain": "sentiment_onchain_forecast_context",
+      "fresh": true,
+      "history_count": 130,
+      "live_count": 98,
+      "missing": [],
+      "next_action": "Feed sentiment, on-chain, and forecast claims into the decision memory with timestamps.",
+      "usable": false
+    }
+  ],
+  "schema_version": "aureon-global-financial-coverage-map-v1",
+  "source_registry": [
+    {
+      "active": true,
+      "asset_classes": [
+        "crypto",
+        "spot",
+        "quotes"
+      ],
+      "availability_state": "unknown",
+      "cash_aware_call_plan": {
+        "cash_or_position_active": false,
+        "cash_usd_estimate": 0.0,
+        "data_boost_eligible": true,
+        "exchange": "binance",
+        "execution_reserved_per_min": 43.2,
+        "market_data_budget_per_hour": 11808.0,
+        "market_data_budget_per_min": 196.8,
+        "official_doc_url": "https://developers.binance.com/docs/binance-spot-api-docs/rest-api/limits",
+        "official_limit_model": "request_weight_and_order_limits_from_exchangeInfo",
+        "operator_note": "No meaningful cash/position detected, so use more budget for streams, quotes, and candidate discovery.",
+        "position_count": 0,
+        "quote_budget_fraction": 0.82,
+        "recommended_mode": "idle_cash_market_discovery_boost",
+        "safe_calls_per_hour": 14400.0,
+        "safe_calls_per_min": 240.0,
+        "stream_preferred": true
+      },
+      "category": "live_exchange",
+      "command": [
+        "python",
+        "-m",
+        "aureon.data_feeds.ws_market_data_feeder",
+        "--binance"
+      ],
+      "configured_reachable": true,
+      "credential_state": "configured",
+      "decision_blocker": "",
+      "evidence_path": "ws_cache/ws_prices.json#source_health.binance",
+      "fresh": true,
+      "governor_action": "maintain",
+      "last_attempt": {},
+      "last_error": "",
+      "last_success_at": 1779434595.9621444,
+      "missing_credentials": [],
+      "next_action": "Keep Binance live cache fresh and feed high-volume crypto candidates.",
+      "official_rate_limit": {
+        "env_overrides": {
+          "calls_per_min": "UNIFIED_BINANCE_CALLS_PER_MIN",
+          "quote_budget_fraction": "UNIFIED_BINANCE_QUOTE_BUDGET_FRACTION"
+        },
+        "exchange": "binance",
+        "official_doc_url": "https://developers.binance.com/docs/binance-spot-api-docs/rest-api/limits",
+        "official_limit_model": "request_weight_and_order_limits_from_exchangeInfo",
+        "official_limits": {
+          "ban_status": "418",
+          "rate_limit_status": "429",
+          "rest_order_header": "X-MBX-ORDER-COUNT-(intervalNum)(intervalLetter)",
+          "rest_rate_limits_source": "/api/v3/exchangeInfo rateLimits",
+          "rest_usage_header": "X-MBX-USED-WEIGHT-(intervalNum)(intervalLetter)",
+          "websocket_connection_attempts_per_5_min_per_ip": 300,
+          "websocket_connection_weight": 2,
+          "websocket_request_weight_per_minute_example": 6000
+        },
+        "official_notes": [
+          "Binance limits are weight-based, not simple call counts; endpoints with multiple symbols can cost more.",
+          "The runtime should read exchangeInfo and response headers when available, then back off on Retry-After.",
+          "Use streams for live market data so REST weight remains available for account, order, and recovery calls."
+        ],
+        "provider_status": "official_documented",
+        "safe_governor_calls_per_min": 240.0,
+        "source_lines": [
+          "Binance REST limits docs lines 58-67",
+          "Binance WS limits docs lines 143-171"
+        ],
+        "stream_preferred": true,
+        "title": "Binance Spot REST/WebSocket"
+      },
+      "rate_budget": {
+        "cadence_sec": 5,
+        "cash_aware_market_data_budget_per_hour": 11808.0,
+        "cash_aware_safe_calls_per_hour": 14400.0,
+        "mode": "official_rate_limit_cash_aware_budgeted_adaptive",
+        "priority": 95,
+        "registry_max_calls_per_hour": 720
+      },
+      "reason": "",
+      "row_count": 2978,
+      "source_id": "binance_live",
+      "title": "Binance live crypto universe",
+      "usable_for_decision": true,
+      "usable_for_mapping": true
+    },
+    {
+      "active": true,
+      "asset_classes": [
+        "crypto",
+        "spot",
+        "margin",
+        "quotes",
+        "balances"
+      ],
+      "availability_state": "unknown",
+      "cash_aware_call_plan": {
+        "cash_or_position_active": false,
+        "cash_usd_estimate": 0.0,
+        "data_boost_eligible": true,
+        "exchange": "kraken",
+        "execution_reserved_per_min": 18.0,
+        "market_data_budget_per_hour": 2520.0,
+        "market_data_budget_per_min": 42.0,
+        "official_doc_url": "https://support.kraken.com/hc/en-us/articles/206548367-what-are-the-api-rate-limits-",
+        "official_limit_model": "public_ip_frequency_private_counter_and_trading_points",
+        "operator_note": "No meaningful cash/position detected, so use more budget for streams, quotes, and candidate discovery.",
+        "position_count": 0,
+        "quote_budget_fraction": 0.7,
+        "recommended_mode": "idle_cash_market_discovery_boost",
+        "safe_calls_per_hour": 3600.0,
+        "safe_calls_per_min": 60.0,
+        "stream_preferred": true
+      },
+      "category": "live_exchange",
+      "command": [
+        "python",
+        "-m",
+        "aureon.data_feeds.ws_market_data_feeder",
+        "--kraken"
+      ],
+      "configured_reachable": true,
+      "credential_state": "configured",
+      "decision_blocker": "",
+      "evidence_path": "ws_cache/ws_prices.json#source_health.kraken",
+      "fresh": true,
+      "governor_action": "maintain",
+      "last_attempt": {},
+      "last_error": "",
+      "last_success_at": 1779434586.043318,
+      "missing_credentials": [],
+      "next_action": "Activate Kraken live cache, fee context, collateral context, and order-book probes.",
+      "official_rate_limit": {
+        "env_overrides": {
+          "calls_per_min": "UNIFIED_KRAKEN_CALLS_PER_MIN",
+          "quote_budget_fraction": "UNIFIED_KRAKEN_QUOTE_BUDGET_FRACTION"
+        },
+        "exchange": "kraken",
+        "official_doc_url": "https://support.kraken.com/hc/en-us/articles/206548367-what-are-the-api-rate-limits-",
+        "official_limit_model": "public_ip_frequency_private_counter_and_trading_points",
+        "official_limits": {
+          "private_counter_higher_limits_decay_per_sec": 1.0,
+          "private_counter_higher_limits_max": 20,
+          "private_counter_verified_decay_per_sec": 0.5,
+          "private_counter_verified_max": 20,
+          "private_history_counter_increment": 4,
+          "private_standard_counter_increment": 1,
+          "public_rest_safe_frequency_per_sec": 1,
+          "trading_counter_scope": "account_and_currency_pair"
+        },
+        "official_notes": [
+          "Kraken private history calls are expensive: Ledgers, TradesHistory, and ClosedOrders add +4 to the counter.",
+          "AddOrder/CancelOrder do not use the private-account counter, but they use Kraken's separate trading limit model.",
+          "Keep private account-history sync low priority; favor WebSocket/public market streams for live discovery."
+        ],
+        "provider_status": "official_documented",
+        "safe_governor_calls_per_min": 30.0,
+        "source_lines": [
+          "Kraken support rate-limit docs lines 49-77",
+          "Kraken support rate-limit docs lines 79-102"
+        ],
+        "stream_preferred": true,
+        "title": "Kraken Spot REST/WebSocket"
+      },
+      "rate_budget": {
+        "cadence_sec": 10,
+        "cash_aware_market_data_budget_per_hour": 2520.0,
+        "cash_aware_safe_calls_per_hour": 3600.0,
+        "mode": "official_rate_limit_cash_aware_budgeted_adaptive",
+        "priority": 94,
+        "registry_max_calls_per_hour": 360
+      },
+      "reason": "",
+      "row_count": 24,
+      "source_id": "kraken_live",
+      "title": "Kraken spot and margin live crypto",
+      "usable_for_decision": true,
+      "usable_for_mapping": true
+    },
+    {
+      "active": true,
+      "asset_classes": [
+        "stocks",
+        "etfs",
+        "crypto",
+        "quotes"
+      ],
+      "availability_state": "unknown",
+      "cash_aware_call_plan": {
+        "cash_or_position_active": false,
+        "cash_usd_estimate": 0.0,
+        "data_boost_eligible": true,
+        "exchange": "alpaca",
+        "execution_reserved_per_min": 21.6,
+        "market_data_budget_per_hour": 5904.0,
+        "market_data_budget_per_min": 98.4,
+        "official_doc_url": "https://docs.alpaca.markets/us/v1.4.2/docs/about-market-data-api",
+        "official_limit_model": "trading_rpm_plus_market_data_plan_limits",
+        "operator_note": "No meaningful cash/position detected, so use more budget for streams, quotes, and candidate discovery.",
+        "position_count": 0,
+        "quote_budget_fraction": 0.82,
+        "recommended_mode": "idle_cash_market_discovery_boost",
+        "safe_calls_per_hour": 7200.0,
+        "safe_calls_per_min": 120.0,
+        "stream_preferred": true
+      },
+      "category": "live_exchange",
+      "command": [
+        "python",
+        "-m",
+        "aureon.data_feeds.ws_market_data_feeder",
+        "--alpaca"
+      ],
+      "configured_reachable": true,
+      "credential_state": "configured",
+      "decision_blocker": "",
+      "evidence_path": "ws_cache/ws_prices.json#source_health.alpaca",
+      "fresh": true,
+      "governor_action": "maintain",
+      "last_attempt": {},
+      "last_error": "",
+      "last_success_at": 1779434576.2087703,
+      "missing_credentials": [],
+      "next_action": "Enable fresh stock/ETF snapshots and market-hours state.",
+      "official_rate_limit": {
+        "env_overrides": {
+          "calls_per_min": "UNIFIED_ALPACA_CALLS_PER_MIN",
+          "quote_budget_fraction": "UNIFIED_ALPACA_QUOTE_BUDGET_FRACTION"
+        },
+        "exchange": "alpaca",
+        "official_doc_url": "https://docs.alpaca.markets/us/v1.4.2/docs/about-market-data-api",
+        "official_limit_model": "trading_rpm_plus_market_data_plan_limits",
+        "official_limits": {
+          "equities_algo_trader_plus_websocket_symbols": "unlimited",
+          "equities_basic_websocket_symbols": 30,
+          "market_data_algo_trader_plus_historical_calls_per_min": 10000,
+          "market_data_basic_historical_calls_per_min": 200,
+          "options_algo_trader_plus_websocket_quotes": 1000,
+          "options_basic_websocket_quotes": 200,
+          "trading_api_default_requests_per_min_per_account": 200,
+          "typical_stream_connections_per_endpoint": 1
+        },
+        "official_notes": [
+          "Alpaca's official market-data docs define plan-specific historical limits and WebSocket subscription limits.",
+          "Alpaca support documents the Trading API default as 200 requests per minute per account.",
+          "Use one stream connection per endpoint in most plans; use REST history budget for backfill, not live ticks."
+        ],
+        "provider_status": "official_documented",
+        "safe_governor_calls_per_min": 120.0,
+        "source_lines": [
+          "Alpaca market-data docs lines 154-180",
+          "Alpaca WebSocket docs lines 184-191"
+        ],
+        "stream_preferred": true,
+        "title": "Alpaca Trading and Market Data"
+      },
+      "rate_budget": {
+        "cadence_sec": 15,
+        "cash_aware_market_data_budget_per_hour": 5904.0,
+        "cash_aware_safe_calls_per_hour": 7200.0,
+        "mode": "official_rate_limit_cash_aware_budgeted_adaptive",
+        "priority": 88,
+        "registry_max_calls_per_hour": 240
+      },
+      "reason": "",
+      "row_count": 6,
+      "source_id": "alpaca_live",
+      "title": "Alpaca equities, ETFs, and crypto snapshots",
+      "usable_for_decision": true,
+      "usable_for_mapping": true
+    },
+    {
+      "active": true,
+      "asset_classes": [
+        "cfds",
+        "forex",
+        "indices",
+        "stocks",
+        "positions"
+      ],
+      "availability_state": "unknown",
+      "cash_aware_call_plan": {
+        "cash_or_position_active": false,
+        "cash_usd_estimate": 0.0,
+        "data_boost_eligible": true,
+        "exchange": "capital",
+        "execution_reserved_per_min": 11.25,
+        "market_data_budget_per_hour": 2025.0,
+        "market_data_budget_per_min": 33.75,
+        "official_doc_url": "https://open-api.capital.com/",
+        "official_limit_model": "per_user_request_rate_endpoint_limits_and_ws_instrument_cap",
+        "operator_note": "No meaningful cash/position detected, so use more budget for streams, quotes, and candidate discovery.",
+        "position_count": 0,
+        "quote_budget_fraction": 0.75,
+        "recommended_mode": "idle_cash_market_discovery_boost",
+        "safe_calls_per_hour": 2700.0,
+        "safe_calls_per_min": 45.0,
+        "stream_preferred": true
+      },
+      "category": "live_exchange",
+      "command": [
+        "python",
+        "-m",
+        "aureon.data_feeds.ws_market_data_feeder",
+        "--capital"
+      ],
+      "configured_reachable": true,
+      "credential_state": "configured",
+      "decision_blocker": "",
+      "evidence_path": "ws_cache/ws_prices.json#source_health.capital",
+      "fresh": true,
+      "governor_action": "maintain",
+      "last_attempt": {},
+      "last_error": "",
+      "last_success_at": 1779434580.7362545,
+      "missing_credentials": [],
+      "next_action": "Enable fresh Capital market snapshots and profitable-position close telemetry.",
+      "official_rate_limit": {
+        "env_overrides": {
+          "calls_per_min": "UNIFIED_CAPITAL_CALLS_PER_MIN",
+          "quote_budget_fraction": "UNIFIED_CAPITAL_QUOTE_BUDGET_FRACTION"
+        },
+        "exchange": "capital",
+        "official_doc_url": "https://open-api.capital.com/",
+        "official_limit_model": "per_user_request_rate_endpoint_limits_and_ws_instrument_cap",
+        "official_limits": {
+          "demo_positions_workingorders_requests_per_hour": 1000,
+          "max_requests_per_sec_per_user": 10,
+          "position_or_order_request_spacing_sec": 0.1,
+          "rest_session_inactive_ttl_min": 10,
+          "session_endpoint_requests_per_sec_per_api_key": 1,
+          "websocket_max_instruments": 40,
+          "websocket_session_ttl_min": 10
+        },
+        "official_notes": [
+          "Capital supports REST and WebSocket real-time prices for platform instruments.",
+          "Order/position requests must respect the endpoint limits and still need confirmation checks.",
+          "Use WebSocket subscriptions for up to 40 active instruments and keep session refresh separate from market scans."
+        ],
+        "provider_status": "official_documented",
+        "safe_governor_calls_per_min": 45.0,
+        "source_lines": [
+          "Capital.com API docs lines 201-215"
+        ],
+        "stream_preferred": true,
+        "title": "Capital.com REST/WebSocket"
+      },
+      "rate_budget": {
+        "cadence_sec": 20,
+        "cash_aware_market_data_budget_per_hour": 2025.0,
+        "cash_aware_safe_calls_per_hour": 2700.0,
+        "mode": "official_rate_limit_cash_aware_budgeted_adaptive",
+        "priority": 87,
+        "registry_max_calls_per_hour": 180
+      },
+      "reason": "",
+      "row_count": 26,
+      "source_id": "capital_live",
+      "title": "Capital.com CFD, FX, index, and equity snapshots",
+      "usable_for_decision": true,
+      "usable_for_mapping": true
+    },
+    {
+      "active": false,
+      "asset_classes": [
+        "stocks",
+        "etfs",
+        "indices",
+        "forex",
+        "commodities",
+        "crypto"
+      ],
+      "availability_state": "provider_unavailable_or_no_data",
+      "cash_aware_call_plan": null,
+      "category": "history",
+      "command": [
+        "python",
+        "scripts/python/ingest_yfinance.py",
+        "--all",
+        "--days",
+        "1825"
+      ],
+      "configured_reachable": false,
+      "credential_state": "not_required",
+      "decision_blocker": "",
+      "evidence_path": "state/aureon_global_history.sqlite#market_bars",
+      "fresh": false,
+      "governor_action": "provider_unavailable",
+      "last_attempt": {
+        "empty_batches": 0,
+        "errors": 6,
+        "inserted": 0,
+        "reason": "provider_returned_no_usable_rows",
+        "results": [
+          {
+            "category": "stocks",
+            "empty_batches": 0,
+            "errors": 1,
+            "inserted": 0,
+            "skipped": 0,
+            "symbol_count": 15
+          },
+          {
+            "category": "indices",
+            "empty_batches": 0,
+            "errors": 1,
+            "inserted": 0,
+            "skipped": 0,
+            "symbol_count": 14
+          },
+          {
+            "category": "forex",
+            "empty_batches": 0,
+            "errors": 1,
+            "inserted": 0,
+            "skipped": 0,
+            "symbol_count": 15
+          },
+          {
+            "category": "commodities",
+            "empty_batches": 0,
+            "errors": 1,
+            "inserted": 0,
+            "skipped": 0,
+            "symbol_count": 14
+          },
+          {
+            "category": "crypto",
+            "empty_batches": 0,
+            "errors": 1,
+            "inserted": 0,
+            "skipped": 0,
+            "symbol_count": 10
+          },
+          {
+            "category": "etfs",
+            "empty_batches": 0,
+            "errors": 1,
+            "inserted": 0,
+            "skipped": 0,
+            "symbol_count": 13
+          }
+        ],
+        "source_id": "yfinance_history",
+        "status": "provider_unavailable_or_no_data",
+        "updated_at": "2026-05-21T14:03:12.342072+00:00"
+      },
+      "last_error": "",
+      "last_success_at": null,
+      "missing_credentials": [],
+      "next_action": "Backfill broad daily history for world indices, equities, ETFs, FX, commodities, and crypto.",
+      "official_rate_limit": null,
+      "rate_budget": {
+        "cadence_sec": 86400,
+        "max_calls_per_hour": 30,
+        "mode": "budgeted_adaptive",
+        "priority": 70
+      },
+      "reason": "provider_returned_no_usable_rows",
+      "row_count": 0,
+      "source_id": "yfinance_history",
+      "title": "Yahoo Finance broad historical OHLCV",
+      "usable_for_decision": false,
+      "usable_for_mapping": false
+    },
+    {
+      "active": false,
+      "asset_classes": [
+        "crypto",
+        "bars",
+        "trades",
+        "symbols"
+      ],
+      "availability_state": "unknown",
+      "cash_aware_call_plan": null,
+      "category": "history",
+      "command": [
+        "python",
+        "scripts/python/ingest_market_history.py",
+        "--coinapi"
+      ],
+      "configured_reachable": true,
+      "credential_state": "configured",
+      "decision_blocker": "",
+      "evidence_path": "state/aureon_global_history.sqlite#market_bars",
+      "fresh": false,
+      "governor_action": "run_refresh",
+      "last_attempt": {},
+      "last_error": "",
+      "last_success_at": null,
+      "missing_credentials": [],
+      "next_action": "Use licensed CoinAPI capacity for wide daily and recent minute crypto waveforms.",
+      "official_rate_limit": null,
+      "rate_budget": {
+        "cadence_sec": 21600,
+        "max_calls_per_hour": 100,
+        "mode": "budgeted_adaptive",
+        "priority": 78
+      },
+      "reason": "no_usable_rows_or_fresh_cache",
+      "row_count": 0,
+      "source_id": "coinapi_history",
+      "title": "CoinAPI crypto market history",
+      "usable_for_decision": false,
+      "usable_for_mapping": false
+    },
+    {
+      "active": true,
+      "asset_classes": [
+        "crypto",
+        "bars"
+      ],
+      "availability_state": "unknown",
+      "cash_aware_call_plan": null,
+      "category": "history",
+      "command": [
+        "python",
+        "scripts/python/ingest_existing_feeds.py",
+        "--feeds",
+        "coinbase"
+      ],
+      "configured_reachable": true,
+      "credential_state": "not_required",
+      "decision_blocker": "",
+      "evidence_path": "state/aureon_global_history.sqlite#market_bars",
+      "fresh": true,
+      "governor_action": "maintain",
+      "last_attempt": {},
+      "last_error": "",
+      "last_success_at": "2026-05-21T14:00:00+00:00",
+      "missing_credentials": [],
+      "next_action": "Use Coinbase public candles as crypto cross-check history.",
+      "official_rate_limit": null,
+      "rate_budget": {
+        "cadence_sec": 21600,
+        "max_calls_per_hour": 40,
+        "mode": "budgeted_adaptive",
+        "priority": 62
+      },
+      "reason": "",
+      "row_count": 52500,
+      "source_id": "coinbase_history",
+      "title": "Coinbase public crypto history",
+      "usable_for_decision": true,
+      "usable_for_mapping": true
+    },
+    {
+      "active": true,
+      "asset_classes": [
+        "crypto",
+        "reference_prices"
+      ],
+      "availability_state": "unknown",
+      "cash_aware_call_plan": null,
+      "category": "context",
+      "command": [
+        "python",
+        "scripts/python/ingest_existing_feeds.py",
+        "--feeds",
+        "coingecko"
+      ],
+      "configured_reachable": true,
+      "credential_state": "not_required",
+      "decision_blocker": "",
+      "evidence_path": "state/aureon_global_history.sqlite#market_bars",
+      "fresh": true,
+      "governor_action": "maintain",
+      "last_attempt": {},
+      "last_error": "",
+      "last_success_at": "2026-05-21T14:03:22.050000+00:00",
+      "missing_credentials": [],
+      "next_action": "Keep CoinGecko reference prices as non-execution cross-checks.",
+      "official_rate_limit": null,
+      "rate_budget": {
+        "cadence_sec": 600,
+        "max_calls_per_hour": 60,
+        "mode": "budgeted_adaptive",
+        "priority": 64
+      },
+      "reason": "",
+      "row_count": 28,
+      "source_id": "coingecko_snapshot",
+      "title": "CoinGecko crypto reference snapshots",
+      "usable_for_decision": true,
+      "usable_for_mapping": true
+    },
+    {
+      "active": false,
+      "asset_classes": [
+        "rates",
+        "inflation",
+        "growth",
+        "employment",
+        "macro"
+      ],
+      "availability_state": "unknown",
+      "cash_aware_call_plan": null,
+      "category": "macro",
+      "command": [
+        "python",
+        "scripts/python/ingest_fred.py",
+        "--category",
+        "all"
+      ],
+      "configured_reachable": false,
+      "credential_state": "missing",
+      "decision_blocker": "",
+      "evidence_path": "state/aureon_global_history.sqlite#macro_indicators",
+      "fresh": false,
+      "governor_action": "credential_required",
+      "last_attempt": {},
+      "last_error": "",
+      "last_success_at": null,
+      "missing_credentials": [
+        "FRED_API_KEY"
+      ],
+      "next_action": "Configure FRED_API_KEY and refresh rates, CPI, GDP, and employment context.",
+      "official_rate_limit": null,
+      "rate_budget": {
+        "cadence_sec": 86400,
+        "max_calls_per_hour": 120,
+        "mode": "budgeted_adaptive",
+        "priority": 58
+      },
+      "reason": "required_credentials_missing",
+      "row_count": 0,
+      "source_id": "fred_macro",
+      "title": "FRED macro indicators",
+      "usable_for_decision": false,
+      "usable_for_mapping": false
+    },
+    {
+      "active": false,
+      "asset_classes": [
+        "calendar",
+        "earnings",
+        "macro_events",
+        "corporate_actions"
+      ],
+      "availability_state": "unknown",
+      "cash_aware_call_plan": null,
+      "category": "events",
+      "command": [
+        "python",
+        "scripts/python/ingest_economic_calendar.py",
+        "--sources",
+        "all"
+      ],
+      "configured_reachable": false,
+      "credential_state": "missing",
+      "decision_blocker": "",
+      "evidence_path": "state/aureon_global_history.sqlite#calendar_events",
+      "fresh": false,
+      "governor_action": "credential_required",
+      "last_attempt": {},
+      "last_error": "",
+      "last_success_at": null,
+      "missing_credentials": [
+        "FMP_API_KEY"
+      ],
+      "next_action": "Configure FMP_API_KEY for economic and corporate calendar coverage.",
+      "official_rate_limit": null,
+      "rate_budget": {
+        "cadence_sec": 21600,
+        "max_calls_per_hour": 60,
+        "mode": "budgeted_adaptive",
+        "priority": 56
+      },
+      "reason": "required_credentials_missing",
+      "row_count": 0,
+      "source_id": "fmp_calendar",
+      "title": "FMP economic, earnings, IPO, and dividend calendar",
+      "usable_for_decision": false,
+      "usable_for_mapping": false
+    },
+    {
+      "active": false,
+      "asset_classes": [
+        "news",
+        "sentiment",
+        "geopolitical"
+      ],
+      "availability_state": "unknown",
+      "cash_aware_call_plan": null,
+      "category": "sentiment",
+      "command": [
+        "python",
+        "scripts/python/ingest_existing_feeds.py",
+        "--feeds",
+        "news"
+      ],
+      "configured_reachable": false,
+      "credential_state": "missing",
+      "decision_blocker": "",
+      "evidence_path": "state/aureon_global_history.sqlite#sentiment",
+      "fresh": false,
+      "governor_action": "credential_required",
+      "last_attempt": {},
+      "last_error": "",
+      "last_success_at": null,
+      "missing_credentials": [
+        "WORLD_NEWS_API_KEY"
+      ],
+      "next_action": "Configure WORLD_NEWS_API_KEY for fresh news sentiment and geopolitical context.",
+      "official_rate_limit": null,
+      "rate_budget": {
+        "cadence_sec": 1800,
+        "max_calls_per_hour": 30,
+        "mode": "budgeted_adaptive",
+        "priority": 55
+      },
+      "reason": "required_credentials_missing",
+      "row_count": 0,
+      "source_id": "world_news",
+      "title": "World News market and geopolitical sentiment",
+      "usable_for_decision": false,
+      "usable_for_mapping": false
+    },
+    {
+      "active": false,
+      "asset_classes": [
+        "crypto",
+        "onchain"
+      ],
+      "availability_state": "unknown",
+      "cash_aware_call_plan": null,
+      "category": "onchain",
+      "command": [
+        "python",
+        "scripts/python/ingest_existing_feeds.py",
+        "--feeds",
+        "glassnode"
+      ],
+      "configured_reachable": false,
+      "credential_state": "missing",
+      "decision_blocker": "",
+      "evidence_path": "state/aureon_global_history.sqlite#onchain_metrics",
+      "fresh": false,
+      "governor_action": "credential_required",
+      "last_attempt": {},
+      "last_error": "",
+      "last_success_at": null,
+      "missing_credentials": [
+        "GLASSNODE_API_KEY"
+      ],
+      "next_action": "Configure GLASSNODE_API_KEY for on-chain confirmation signals.",
+      "official_rate_limit": null,
+      "rate_budget": {
+        "cadence_sec": 3600,
+        "max_calls_per_hour": 30,
+        "mode": "budgeted_adaptive",
+        "priority": 50
+      },
+      "reason": "required_credentials_missing",
+      "row_count": 0,
+      "source_id": "glassnode_onchain",
+      "title": "Glassnode on-chain crypto metrics",
+      "usable_for_decision": false,
+      "usable_for_mapping": false
+    },
+    {
+      "active": true,
+      "asset_classes": [
+        "macro",
+        "risk_regime",
+        "commodities",
+        "forex"
+      ],
+      "availability_state": "unknown",
+      "cash_aware_call_plan": null,
+      "category": "context",
+      "command": [
+        "python",
+        "scripts/python/ingest_existing_feeds.py",
+        "--feeds",
+        "macro,macro_intel"
+      ],
+      "configured_reachable": true,
+      "credential_state": "not_required",
+      "decision_blocker": "",
+      "evidence_path": "state/aureon_global_history.sqlite#sentiment",
+      "fresh": true,
+      "governor_action": "maintain",
+      "last_attempt": {},
+      "last_error": "",
+      "last_success_at": "2026-05-21T14:03:34.138000+00:00",
+      "missing_credentials": [],
+      "next_action": "Refresh macro snapshot for risk regime, DXY, VIX, yields, oil, and gold context.",
+      "official_rate_limit": null,
+      "rate_budget": {
+        "cadence_sec": 1800,
+        "max_calls_per_hour": 20,
+        "mode": "budgeted_adaptive",
+        "priority": 52
+      },
+      "reason": "",
+      "row_count": 44,
+      "source_id": "macro_snapshot",
+      "title": "Global financial feed macro snapshot",
+      "usable_for_decision": true,
+      "usable_for_mapping": true
+    },
+    {
+      "active": true,
+      "asset_classes": [
+        "account_trades",
+        "positions",
+        "fills"
+      ],
+      "availability_state": "unknown",
+      "cash_aware_call_plan": null,
+      "category": "account_memory",
+      "command": [
+        "python",
+        "scripts/python/sync_global_history_db.py"
+      ],
+      "configured_reachable": true,
+      "credential_state": "configured",
+      "decision_blocker": "",
+      "evidence_path": "state/aureon_global_history.sqlite#account_trades",
+      "fresh": true,
+      "governor_action": "maintain",
+      "last_attempt": {},
+      "last_error": "",
+      "last_success_at": "2026-05-21T13:53:47.805000+00:00",
+      "missing_credentials": [],
+      "next_action": "Keep private account trade history synced for cost basis, execution learning, and risk memory.",
+      "official_rate_limit": null,
+      "rate_budget": {
+        "cadence_sec": 3600,
+        "max_calls_per_hour": 40,
+        "mode": "budgeted_adaptive",
+        "priority": 82
+      },
+      "reason": "",
+      "row_count": 10634,
+      "source_id": "account_trades",
+      "title": "Private account trade history",
+      "usable_for_decision": true,
+      "usable_for_mapping": true
+    },
+    {
+      "active": true,
+      "asset_classes": [
+        "knowledge",
+        "forecasts",
+        "reasoning",
+        "memory"
+      ],
+      "availability_state": "unknown",
+      "cash_aware_call_plan": null,
+      "category": "internal",
+      "command": [
+        "python",
+        "scripts/python/ingest_queen_knowledge.py",
+        "--sources",
+        "all"
+      ],
+      "configured_reachable": true,
+      "credential_state": "not_required",
+      "decision_blocker": "",
+      "evidence_path": "state/aureon_global_history.sqlite#queen_tables",
+      "fresh": true,
+      "governor_action": "maintain",
+      "last_attempt": {},
+      "last_error": "",
+      "last_success_at": "2026-05-21T14:07:29.517000+00:00",
+      "missing_credentials": [],
+      "next_action": "Refresh internal memory and strategy knowledge into the global history database.",
+      "official_rate_limit": null,
+      "rate_budget": {
+        "cadence_sec": 21600,
+        "max_calls_per_hour": 10,
+        "mode": "budgeted_adaptive",
+        "priority": 45
+      },
+      "reason": "",
+      "row_count": 15401,
+      "source_id": "queen_knowledge",
+      "title": "Queen knowledge, memories, insights, thoughts, and strategies",
+      "usable_for_decision": true,
+      "usable_for_mapping": true
+    }
+  ],
+  "status": "global_financial_map_ready_with_gaps",
+  "summary": {
+    "accounted_percent": 100.0,
+    "active_live_source_count": 4,
+    "configured_reachable_source_count": 10,
+    "coverage_percent": 90.0,
+    "credential_missing_source_count": 4,
+    "decision_fed_exchange_count": 1,
+    "domain_count": 6,
+    "fresh_domain_count": 5,
+    "fresh_exchange_count": 4,
+    "fresh_source_count": 9,
+    "history_db_present": true,
+    "history_db_size_bytes": 162885632,
+    "live_ticker_count": 3034,
+    "mapping_complete": false,
+    "source_count": 15,
+    "status": "global_financial_map_ready_with_gaps",
+    "top_missing": [
+      {
+        "domain": "macro_events_context",
+        "missing": "fresh_economic_calendar"
+      }
+    ],
+    "total_history_rows": 222639,
+    "usable_domain_count": 3,
+    "usable_source_count": 9
+  }
+}

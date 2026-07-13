@@ -1,0 +1,549 @@
+{
+  "civilization": "Strategic Warfare",
+  "last_updated": "2025-12-30T18:33:54.933589",
+  "version": "1.0.0",
+  "sources": [
+    "hardcoded",
+    "wikipedia"
+  ],
+  "core_principles": {
+    "sun_tzu": {
+      "description": "Know yourself, know your enemy - victory through superior intelligence",
+      "trading_application": "Self-awareness of biases, thorough market research",
+      "confidence": 0.95
+    },
+    "clausewitz_friction": {
+      "description": "Fog of war - uncertainty, confusion, and chance in all conflict",
+      "trading_application": "Expect the unexpected, build in margins for error",
+      "confidence": 0.9
+    },
+    "boyd_ooda": {
+      "description": "Observe-Orient-Decide-Act loop - faster cycles defeat slower opponents",
+      "trading_application": "Rapid decision cycles, information processing speed",
+      "confidence": 0.9
+    },
+    "indirect_approach": {
+      "description": "Liddell Hart's strategy - attack weakness, avoid strength",
+      "trading_application": "Find market inefficiencies, avoid crowded trades",
+      "confidence": 0.85
+    }
+  },
+  "sun_tzu_art_of_war": {
+    "supreme_excellence": "Winning without fighting - profits without excessive risk",
+    "know_terrain": "Understand market structure before engaging",
+    "deception": "All warfare is based on deception - markets deceive",
+    "water_strategy": "Be formless like water, adapt to circumstances",
+    "nine_situations": "Different market conditions require different strategies",
+    "use_of_spies": "Intelligence gathering is paramount"
+  },
+  "clausewitz_on_war": {
+    "center_of_gravity": "Identify the decisive point for maximum effect",
+    "culminating_point": "Know when to stop advancing, consolidate gains",
+    "moral_forces": "Will, leadership, and sentiment often decide outcomes",
+    "trinity": "Violence, chance, and reason - the three forces at play"
+  },
+  "modern_doctrine": {
+    "maneuver_warfare": {
+      "description": "Rapid movement, bypass strongpoints, attack decision-making",
+      "trading_application": "Quick repositioning, avoid fighting the tape"
+    },
+    "mission_command": {
+      "description": "Decentralized execution, clear intent, initiative",
+      "trading_application": "Rule-based systems with adaptive execution"
+    },
+    "combined_arms": {
+      "description": "Synergistic use of different capabilities",
+      "trading_application": "Multiple uncorrelated strategies working together"
+    }
+  },
+  "intelligence_principles": {
+    "sigint": "Signals intelligence - reading market data flows",
+    "humint": "Human intelligence - sentiment, social analysis",
+    "osint": "Open source intelligence - public information advantage",
+    "analysis": "Raw data means nothing without interpretation"
+  },
+  "historical_strategists": {
+    "sun_tzu": "Chinese general, Art of War author (~500 BCE)",
+    "clausewitz": "Prussian general, On War author (1780-1831)",
+    "jomini": "Swiss military theorist, geometric strategy (1779-1869)",
+    "mahan": "American naval strategist, sea power theory (1840-1914)",
+    "boyd": "American fighter pilot, OODA loop creator (1927-1997)",
+    "liddell_hart": "British strategist, indirect approach (1895-1970)"
+  },
+  "wikipedia_topics": [
+    "The Art of War",
+    "Sun Tzu",
+    "Carl von Clausewitz",
+    "On War",
+    "OODA loop",
+    "John Boyd (military strategist)",
+    "Military strategy",
+    "Liddell Hart",
+    "Principles of war",
+    "Maneuver warfare"
+  ],
+  "learned_insights": [
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Carl von Clausewitz",
+      "content": "Carl Philipp Gottlieb von Clausewitz ( KLOW-zə-vits; German: [ˈkaʁl fɔn ˈklaʊzəvɪts] ; born Carl Philipp Gottlieb Clauswitz; 1 July 1780 – 16 November 1831) was a Prussian general and military theorist who stressed the \"moral\" (in modern terms meaning psychological) and political aspects of waging war. His most notable work, Vom Kriege (About War), though unfinished at his death, is considered a seminal treatise on military strategy and science.\nClausewitz stressed the multiple interactions of d",
+      "relevance_score": 0.4,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-25T19:50:26.681019",
+      "content_hash": "67f7da4f7df0b6a32e9b89ec6005c392"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Carl von Clausewitz",
+      "content": "On 10 December 1810, he married the socially prominent Countess Marie von Brühl, whom he had first met in 1803. She was a member of the noble German Brühl family originating in Thuringia. The couple moved in the highest circles, socialising with Berlin's political, literary, and intellectual élite. Marie was well-educated and politically well-connected—she played an important role in her husband's career progress and intellectual evolution. She also edited, published, and introduced his collecte",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:50:26.681226",
+      "content_hash": "cc77fa602e966b0cb6c52efd785cd3c1"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Carl von Clausewitz",
+      "content": "== Theory of war ==\nClausewitz was a professional combat soldier and a staff officer who was involved in numerous military campaigns, but he is famous primarily as a military theorist interested in the examination of war, utilising the campaigns of Frederick the Great and Napoleon as frames of reference for his work. He wrote a careful, systematic, philosophical examination of war in all its aspects. The result was his principal book, Vom Kriege (in English, On War), a major work on the philosop",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:50:26.681296",
+      "content_hash": "fe10ff6681bd10afce2c4a8c56520d93"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "On War",
+      "content": "Vom Kriege (German pronunciation: [fɔm ˈkʁiːɡə]) is a book on war and military strategy by Prussian general Carl von Clausewitz (1780–1831), written mostly after the Napoleonic Wars, between 1816 and 1830, and published posthumously by his wife Marie von Brühl in 1832. It remains both controversial and influential on military strategic thinking.\nVom Kriege has been translated into English several times as On War. On War is an unfinished work. Clausewitz had set about revising his accumulated man",
+      "relevance_score": 0.4,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-25T19:50:31.644605",
+      "content_hash": "c5ebc4f3ebeef86a18181742023acf58"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "On War",
+      "content": "== History ==\nClausewitz was among those intrigued by the manner in which the leaders of the French Revolution, especially Napoleon, changed the conduct of war through their ability to motivate the populace and gain access to the full resources of the state, thus unleashing war on a greater scale than had previously been seen in Europe. Clausewitz believed that moral forces in battle had a significant influence on its outcome. Clausewitz was well-educated and had strong interests in art, history",
+      "relevance_score": 0.8,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-25T19:50:31.644690",
+      "content_hash": "fa21b50a0744c3d107011cf95c16572d"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "On War",
+      "content": "=== Definition of war ===\nClausewitz argued that war theory cannot be a strict operational advice for generals. Instead, he wanted to highlight general principles that would result from the study of history and logical thinking. He contended that military campaigns could be planned only to a very small degree because incalculable influences or events, so-called friction, would quickly make any too-detailed planning in advance obsolete. Military leaders must be capable to make decisions under tim",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:50:31.644736",
+      "content_hash": "47f0e425bf103d6ecbfd2c9df6090abd"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "On War",
+      "content": "=== Purpose, goal and means ===\nClausewitz analyzed the conflicts of his time along the line of the categories Purpose, Goal and Means. He reasoned that the Purpose of war is one's will to be enforced, which is determined by politics. The Goal of the conflict is therefore to defeat the opponent in order to exact the Purpose. The Goal is pursued with the help of a strategy, that might be brought about by various Means such as by the defeat or the elimination of opposing armed forces or by non-mil",
+      "relevance_score": 0.8,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:50:31.644794",
+      "content_hash": "b366faa693310c32c8ae1e3adcbd0ff9"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "On War",
+      "content": "the dialectical approach to military analysis\nthe methods of \"critical analysis\"\nthe uses and abuses of historical studies\nthe nature of the balance-of-power mechanism\nthe relationship between political objectives and military objectives in war\nthe asymmetrical relationship between attack and defense\nthe nature of \"military genius\" (German: der kriegerische Genius) - as exemplified particularly in Frederick the Great and in Napoleon Bonaparte\nthe \"fascinating trinity\" (Wunderliche Dreifaltigkeit",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:50:31.644854",
+      "content_hash": "db24dc40438247a350941143fa171201"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "John Boyd (military strategist)",
+      "content": "== Military theories ==\nIn the early 1960s, Boyd, together with Thomas Christie, a civilian mathematician, created the energy–maneuverability theory, or E-M theory, of aerial combat. A legendary maverick by reputation, Boyd was said to have stolen the IBM 704 computer time to do the millions of calculations necessary to prove the theory. A civilian employee had previously barred Boyd from performing the calculations, but Thomas P. Christie provided Boyd a project number. An investigating inspect",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:50:42.501445",
+      "content_hash": "09b0d6b90e4e755221bb0a46d67626a3"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "John Boyd (military strategist)",
+      "content": "Based on his experiences in Thailand during the Vietnam War, Boyd conjectured that that the attrition-firepower model of warfare (prevalent since the Industrial Revolution) would become less important in future conflicts, and the ability to rapidly and accurately acquire and act on information would grow in importance. In the early 1970s, he developed these observations into a key concept called the OODA loop (Observe, Orient, Decide, Act, repeat), a decision making cycle that provided an entity",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:50:42.501522",
+      "content_hash": "88672f2ae16d381cd78beb4a7cb6905a"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Military strategy",
+      "content": "Military strategy is the planning and execution of the contest between groups of armed adversaries. It is a subdiscipline of warfare and of foreign policy, and a principal tool to secure national interests. Its perspective is larger than military tactics, which involve the disposition and maneuver of units on a particular sea or battlefield, but less broad than grand strategy (or \"national strategy\"), which is the overarching strategy of the largest of organizations such as the nation state, con",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:50:47.778399",
+      "content_hash": "e3bc21c954ec643eb5ebb45d6c1485c6"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Military strategy",
+      "content": "=== Background ===\nMilitary strategy in the 19th century was still viewed as one of a trivium of \"arts\" or \"sciences\" that govern the conduct of warfare; the others being tactics, the execution of plans and maneuvering of forces in battle, and logistics, the maintenance of an army. The view had prevailed since the Roman times, and the borderline between strategy and tactics at this time was blurred, and sometimes categorization of a decision is a matter of almost personal opinion. Carnot, during",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:50:47.778464",
+      "content_hash": "8b8adcf54ff378e35c327d134f212dfe"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Military strategy",
+      "content": "Many military strategists have attempted to encapsulate a successful strategy in a set of principles. Sun Tzu defined 13 principles in his The Art of War while Napoleon listed 115 maxims. American Civil War General Nathan Bedford Forrest had only one: to \"[get] there first with the most men\". The concepts given as essential in the United States Army Field Manual of Military Operations (FM 3–0) are:",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:50:47.778505",
+      "content_hash": "269bfd94acc3118f6c19f7ceec60e49a"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Military strategy",
+      "content": "Objective type (direct every military operation towards a clearly defined, decisive, and attainable objective)\nOffensive type (seize, retain, and exploit the initiative)\nMass Type (concentrate combat power at the decisive place and time)\nEconomy of force type (allocate minimum essential combat power to secondary efforts)\nManeuver type (place the enemy in a disadvantageous position through the flexible application of combat power)\nUnity of command type (for every objective, ensure unity of effort",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:50:47.778563",
+      "content_hash": "64497741c2e192a7f5b2a9c3a3055088"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Military strategy",
+      "content": "=== Antiquity ===\nThe principles of military strategy emerged at least as far back as 500 BC in the works of Sun Tzu and Chanakya. The campaigns of Alexander the Great, Chandragupta Maurya, Hannibal, Qin Shi Huang, Julius Caesar, Zhuge Liang, Khalid ibn al-Walid and, in particular, Cyrus the Great demonstrate strategic planning and movement. \nEarly strategies included the strategy of annihilation, exhaustion, attrition warfare, scorched earth action, blockade, guerrilla campaign, deception and f",
+      "relevance_score": 0.4,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-25T19:50:47.778632",
+      "content_hash": "398389cc400ffcc46a618e70b59943c2"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Military strategy",
+      "content": "=== Early Modern era ===\nIn 1520 Niccolò Machiavelli's Dell'arte della guerra (Art of War) dealt with the relationship between civil and military matters and the formation of grand strategy. In the Thirty Years' War (1618-1648), Gustavus Adolphus of Sweden demonstrated advanced operational strategy that led to his victories on the soil of the Holy Roman Empire. It was not until the 18th century that military strategy was subjected to serious study in Europe. The word was first used in German as ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:50:47.778685",
+      "content_hash": "d2fe529192110b148ff755f8e9fd2cc7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Military strategy",
+      "content": "=== Interwar ===\nTechnological change had an enormous effect on strategy, but little effect on leadership. The use of telegraph and later radio, along with improved transport, enabled the rapid movement of large numbers of men. One of Germany's key enablers in mobile warfare was the use of radios, where these were put into every tank. However, the number of men that one officer could effectively control had, if anything, declined. The increases in the size of the armies led to an increase in the",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:50:47.778744",
+      "content_hash": "f39f4c9fb3feab293ea45ef707230e54"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Liddell Hart",
+      "content": "=== Journalist and military historian ===\nLiddell Hart was placed on half-pay from June 1924. He retired from the Army in 1927. Two mild heart attacks in 1921 and 1922, probably the long-term effects of his gassing, precluded his further advancement in the small post-war army. He spent the rest of his career as a theorist and writer. In 1924, he became a lawn tennis correspondent and assistant military correspondent for The Morning Post covering Wimbledon and in 1926, publishing a collection of ",
+      "relevance_score": 0.4,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-25T19:50:53.000139",
+      "content_hash": "501fffda9299a05f7567a7db6b9bdd0e"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Maneuver warfare",
+      "content": "Maneuver warfare (American English), manoeuvre warfare (Commonwealth English), or manoeuver warfare (less common; North American English), is a military strategy which emphasizes movement, initiative and surprise to achieve a position of advantage. Maneuver seeks to inflict losses indirectly by envelopment, encirclement and disruption, while minimizing the need to engage in frontal combat. In contrast to attrition warfare where strength tends to be applied against strength, maneuver warfare atte",
+      "relevance_score": 0.8,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:51:02.621930",
+      "content_hash": "bf3a1170188508fbde359c96a67423a7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Maneuver warfare",
+      "content": "Although most battles between established armies have historically been fought based on attrition warfare strategies, many military doctrines and cultures are based on replete historical examples of maneuver warfare.\nThe view on attrition warfare involves moving masses of men and materiel against enemy strongpoints, with the emphasis on the destruction of the enemy's physical assets, success as measured by enemy combatants killed, equipment and infrastructure destroyed, and territory taken or oc",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:51:02.622027",
+      "content_hash": "a2d108e0f2ee3dc59ccb9cb29944437a"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Maneuver warfare",
+      "content": "Tempo: as illustrated by John Boyd's OODA loop.\nSchwerpunkt ('focal point'): the center of effort, or striking the enemy at the right place at the right time. According to van Creveld, ideally, a spot that is both vital and weakly defended.\nSurprise: Leaving the enemy unable to counter an action is central to any maneuver, and may be achieved by their remaining unaware for as long as possible\nCombined arms: the use of multiple means by which to attack the enemy creates an opportunity cost to any",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:51:02.622090",
+      "content_hash": "c1a4e0b47f8ce2aeddb9aa638fe3d43a"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Maneuver warfare",
+      "content": "The Mongol emperor Genghis Khan used a military system of maneuver warfare that focused on rapid, decisive maneuver, utilizing the skill and endurance of his Mongol horsemen. He used operational maneuver, command and control, deception, and precise battlefield tactics which were vastly superior to those of his opponents in China, Russia, Persia, and Eastern Europe and defeated virtually every enemy army that he faced.\nAn example of his usage of maneuver warfare was the defeat and annexation of t",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:51:02.622125",
+      "content_hash": "01feedca4f5ec8cb9ee703a6bd153fdb"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Maneuver warfare",
+      "content": "Similar strategies are also possible using suitably trained infantry. Napoleon I used preemptive movements of cavalry and fast infantry to interrupt the initial deployment of enemy forces. This allowed his forces to attack where and when he wanted, enabling force concentration, possibly in combination with advantage of terrain. It disabled effective coordination of enemy forces, even when they were superior in numbers. That was effective tactically and strategically.\nDuring his time as a general",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:51:02.622188",
+      "content_hash": "fb9d8cf2503ce34817bb8b57d35c52f3"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Carl von Clausewitz",
+      "content": "Carl Philipp Gottlieb von Clausewitz ( KLOW-zə-vits; German: [ˈkaʁl fɔn ˈklaʊzəvɪts] ; born Carl Philipp Gottlieb Clauswitz; 1 July 1780 – 16 November 1831) was a Prussian general and military theorist who stressed the \"moral\" (in modern terms meaning psychological) and political aspects of waging war. His most notable work, Vom Kriege (On War), though unfinished at his death, is considered a seminal treatise on military strategy and science.\nClausewitz stressed the multiple interactions of dive",
+      "relevance_score": 0.4,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-27T16:04:42.046022",
+      "content_hash": "fc6127fdd7204fa004309ca9559eb455"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "warfare",
+      "topic": "Carl von Clausewitz",
+      "content": "== Theory of war ==\nClausewitz was a professional combat soldier and a staff officer who was involved in numerous military campaigns, but he is famous primarily as a military theorist interested in the examination of war, utilising the campaigns of Frederick the Great and Napoleon as frames of reference for his work. He wrote a careful, systematic, philosophical examination of war in all its aspects. The result was his principal book, Vom Kriege (in English, On War), a major work on the philosop",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-27T16:04:42.046371",
+      "content_hash": "de4584c179c55e07d17e3a6e07bc3fd2"
+    }
+  ],
+  "scan_history": [
+    {
+      "timestamp": "2025-12-15T10:24:05.918125",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:40:40.996357",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:51:06.631137",
+      "insights_found": 23,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:15:07.991769",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:34:53.091879",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T14:54:48.731305",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:05:22.091072",
+      "insights_found": 2,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:53:33.616021",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T12:36:16.002986",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T13:50:53.127541",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T14:44:57.943198",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T12:07:05.354700",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:25:44.185445",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:41:51.207512",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T14:08:40.514369",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:02:20.370960",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:30:31.007734",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:47:10.041871",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T16:15:55.050340",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T17:26:17.061230",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T18:33:54.933589",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    }
+  ],
+  "learned_lessons": [
+    {
+      "name": "Trading Lesson - 20251215_103749",
+      "content": "In times of market chaos, the bold who act with conviction find opportunity.",
+      "trading_insight": "In times of market chaos, the bold who act with conviction find opportunity.",
+      "source": "Samuel Trading Experience",
+      "relevance_score": 0.9,
+      "learned_at": "2025-12-15T10:37:49.410184"
+    },
+    {
+      "name": "Trading Lesson - 20251215_103749",
+      "content": "Even strong trends pause to breathe; timing is the essence of wisdom.",
+      "trading_insight": "Even strong trends pause to breathe; timing is the essence of wisdom.",
+      "source": "Samuel Trading Experience",
+      "relevance_score": 0.7,
+      "learned_at": "2025-12-15T10:37:49.940741"
+    },
+    {
+      "name": "Trading Lesson - 20251215_103750",
+      "content": "Fighting the tide exhausts even the strongest swimmer.",
+      "trading_insight": "Fighting the tide exhausts even the strongest swimmer.",
+      "source": "Samuel Trading Experience",
+      "relevance_score": 0.7,
+      "learned_at": "2025-12-15T10:37:50.951479"
+    },
+    {
+      "name": "Trading Lesson - 20251215_103752",
+      "content": "Counter-trend victory comes only to those who see the hidden reversal.",
+      "trading_insight": "Counter-trend victory comes only to those who see the hidden reversal.",
+      "source": "Samuel Trading Experience",
+      "relevance_score": 0.9,
+      "learned_at": "2025-12-15T10:37:52.458302"
+    },
+    {
+      "name": "Trading Lesson - 20251215_103752",
+      "content": "In times of market chaos, the bold who act with conviction find opportunity.",
+      "trading_insight": "In times of market chaos, the bold who act with conviction find opportunity.",
+      "source": "Samuel Trading Experience",
+      "relevance_score": 0.9,
+      "learned_at": "2025-12-15T10:37:52.970438"
+    }
+  ]
+}

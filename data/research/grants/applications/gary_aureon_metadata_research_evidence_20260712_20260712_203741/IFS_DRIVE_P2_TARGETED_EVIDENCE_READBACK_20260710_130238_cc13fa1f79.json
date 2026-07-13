@@ -1,0 +1,237 @@
+{
+  "schema_version": "aureon-ifs-drive-p2-targeted-evidence-readback-v1",
+  "generated_at": "2026-07-10T13:02:38+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_drive_p2_targeted_evidence_readback",
+  "drive_context": {
+    "account": "gaxlec@gmail.com Google Drive connector",
+    "mode": "read_only_search_and_sheet_row_readback",
+    "war_room_sheet": "Aureon Grant War Room - 2026-07-04",
+    "war_room_sheet_id": "1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM"
+  },
+  "summary": {
+    "drive_file_searches_reviewed": 12,
+    "drive_file_results_observed": 43,
+    "war_room_sheet_searches_reviewed": 8,
+    "war_room_sheet_matched_rows": 4,
+    "p2_applications_reviewed": 3,
+    "confirmed_unlock_evidence_count": 0,
+    "direct_ifs_submissions_unlocked": 0,
+    "new_browser_submissions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false,
+    "drive_file_created_or_modified": false,
+    "sensitive_content_copied": false
+  },
+  "drive_file_searches": [
+    {
+      "query": "ACTASAP",
+      "route": "ACTASAP",
+      "results_observed": 2,
+      "classification": "PLANNING_PACKS_ONLY",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned RA Grant War Room package files. They are planning/staging material, not an academic lead, TTO authorisation, budget, or institutional commitment.",
+      "sanitized_result_titles": [
+        "RA_Grant_War_Room_Package.pdf",
+        "RA_Grant_War_Room_Package.md"
+      ]
+    },
+    {
+      "query": "academic lead",
+      "route": "ACTASAP",
+      "results_observed": 5,
+      "classification": "PUBLICATION_AND_PLANNING_MATERIAL_ONLY",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned a white paper, academic validation sprint draft pack, War Room sheets, and workbook files. These support outreach context but do not prove an eligible academic lead or research-office commitment.",
+      "sanitized_result_titles": [
+        "SCEMDA_HNC_LSC_Academic_White_Paper.pdf",
+        "03_Academic_Validation_Sprint_Email_Pack.pdf",
+        "Aureon Grant War Room - 2026-07-04"
+      ]
+    },
+    {
+      "query": "technology transfer",
+      "route": "ACTASAP",
+      "results_observed": 5,
+      "classification": "IRRELEVANT_OR_PLANNING_FALSE_POSITIVES",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned unrelated skill/docs files, project notes, and the War Room. No TTO, authorised office, ACTASAP lead, or institutional budget evidence was found."
+    },
+    {
+      "query": "QUB Innovation",
+      "route": "ACTASAP",
+      "results_observed": 0,
+      "classification": "NO_DRIVE_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No Drive result for QUB Innovation."
+    },
+    {
+      "query": "Ulster Innovation",
+      "route": "ACTASAP",
+      "results_observed": 5,
+      "classification": "IRRELEVANT_OR_PLANNING_FALSE_POSITIVES",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned unrelated EIC and tool documentation, plus planning files. No Ulster Innovation Services lead or ACTASAP commitment evidence was found."
+    },
+    {
+      "query": "ADOPT",
+      "route": "ADOPT",
+      "results_observed": 5,
+      "classification": "WAR_ROOM_AND_PLANNING_LOGS_ONLY",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned the War Room workbook/sheet and operating log. No England farming/growing/forestry lead, farm collaborator, farm problem statement, or registered facilitator evidence was found.",
+      "sanitized_result_titles": [
+        "Aureon Grant War Room - 2026-07-04",
+        "Aureon Grant War Room - 2026-07-04.xlsx",
+        "AUREON_GRANT_OPERATING_LOG.md"
+      ]
+    },
+    {
+      "query": "farmer led",
+      "route": "ADOPT",
+      "results_observed": 5,
+      "classification": "IRRELEVANT_RESEARCH_OR_PLANNING_FALSE_POSITIVES",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned RA planning packs and unrelated manuscript documents. No farmer-led route evidence was found."
+    },
+    {
+      "query": "ADOPT facilitator",
+      "route": "ADOPT",
+      "results_observed": 5,
+      "classification": "IRRELEVANT_OR_PLANNING_FALSE_POSITIVES",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned skill/project documentation, RA planning packs, and the Future Leaders application PDF. No registered ADOPT facilitator or procurement/role evidence was found."
+    },
+    {
+      "query": "Project Facilitator",
+      "route": "ADOPT",
+      "results_observed": 5,
+      "classification": "IRRELEVANT_OR_PLANNING_FALSE_POSITIVES",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned project-decision docs, RA planning packs, Future Leaders material, and a template. No ADOPT Project Facilitator engagement evidence was found."
+    },
+    {
+      "query": "ADAS",
+      "route": "ADOPT",
+      "results_observed": 0,
+      "classification": "NO_DRIVE_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No Drive result for ADAS."
+    },
+    {
+      "query": "farming lead",
+      "route": "ADOPT",
+      "results_observed": 5,
+      "classification": "IRRELEVANT_RESEARCH_OR_PLANNING_FALSE_POSITIVES",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned RA planning packs and unrelated manuscript documents. No farming lead evidence was found."
+    },
+    {
+      "query": "farm trial",
+      "route": "ADOPT",
+      "results_observed": 1,
+      "classification": "IRRELEVANT_RESEARCH_FALSE_POSITIVE",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned an HNC framework document. No on-farm trial site, farming business lead, or ADOPT collaborator evidence was found."
+    }
+  ],
+  "war_room_sheet_searches": [
+    {
+      "query": "ACTASAP",
+      "sheet": "Funding Pipeline",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No ACTASAP row found in Funding Pipeline search range A1:Z200."
+    },
+    {
+      "query": "ADOPT",
+      "sheet": "Funding Pipeline",
+      "matched_rows": 1,
+      "classification": "SUBSTRING_FALSE_POSITIVE",
+      "unlock_evidence_found": false,
+      "finding": "Matched 'Robotics Adoption Central Convening Body', not ADOPT grant route evidence."
+    },
+    {
+      "query": "academic",
+      "sheet": "Partner Map",
+      "matched_rows": 3,
+      "classification": "PLANNING_PARTNER_TARGETS_ONLY",
+      "unlock_evidence_found": false,
+      "finding": "Partner Map lists Queen's University Belfast, Ulster University, and InterTradeIreland as possible collaboration/advisory targets. It does not contain a signed/dated academic lead or ACTASAP commitment."
+    },
+    {
+      "query": "farmer",
+      "sheet": "Partner Map",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No farmer/farming lead row found in Partner Map search range A1:Z200."
+    },
+    {
+      "query": "ACTASAP",
+      "sheet": "Evidence Register",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No ACTASAP evidence row found in Evidence Register search range A1:Z200."
+    },
+    {
+      "query": "ADOPT",
+      "sheet": "Evidence Register",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No ADOPT evidence row found in Evidence Register search range A1:Z200."
+    },
+    {
+      "query": "ACTASAP",
+      "sheet": "Application Tracker",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No ACTASAP tracker row found in Application Tracker search range A1:Z200."
+    },
+    {
+      "query": "ADOPT",
+      "sheet": "Application Tracker",
+      "matched_rows": 0,
+      "classification": "NO_SHEET_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No ADOPT tracker row found in Application Tracker search range A1:Z200."
+    }
+  ],
+  "route_impacts": [
+    {
+      "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+      "impact": "Drive and War Room readback did not confirm an eligible UK academic institution lead, TTO/research-office authorisation, ACTASAP scope ownership, budget, or commitment evidence.",
+      "state_after_readback": "EVIDENCE_GATED",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+      "impact": "Drive and War Room readback did not confirm an England farming/growing/forestry lead, UK farming collaborator, farm problem statement, project facilitator, farm site, or budget evidence.",
+      "state_after_readback": "EVIDENCE_GATED",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+      "impact": "Drive and War Room readback did not confirm an England farm business applicant, registered facilitator, facilitator role, or procurement evidence.",
+      "state_after_readback": "EVIDENCE_GATED",
+      "direct_submit_ready": false
+    }
+  ],
+  "controls": [
+    "Google Drive and Google Sheets were read only.",
+    "Planning packs and partner-target rows are not treated as signed/dated lead, partner, budget, or commitment evidence.",
+    "No Drive file or Sheet cell was created, modified, moved, shared, uploaded, or downloaded as raw private evidence.",
+    "No IFS portal page was changed and no external action was performed.",
+    "No route was marked submit-ready from planning logs, outreach drafts, unrelated documents, or War Room target rows."
+  ],
+  "result": "DRIVE_P2_TARGETED_READBACK_NO_CONFIRMED_UNLOCK_EVIDENCE"
+}

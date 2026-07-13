@@ -1,0 +1,71 @@
+{
+  "layer_name": "symbolic_compiler_layer",
+  "version": "1.0.0",
+  "description": "Intent-to-frequency synthesis layer for biofield validation",
+  "compiler_config": {
+    "tokenization": {
+      "method": "whitespace_split",
+      "normalize": true,
+      "filter_stopwords": false,
+      "min_token_length": 2
+    },
+    "intent_matching": {
+      "method": "exact_keyword",
+      "fallback_similarity": 0.7,
+      "composite_patterns": true
+    },
+    "synthesis": {
+      "max_frequencies": 5,
+      "max_harmonics": 3,
+      "amplitude_range": [0.1, 2.0],
+      "decay_range": [0.5, 0.99],
+      "sample_rate": 44100,
+      "duration_seconds": 2.0
+    }
+  },
+  "processing_pipeline": [
+    {
+      "stage": "tokenize",
+      "description": "Split input phrase into tokens"
+    },
+    {
+      "stage": "match_intents", 
+      "description": "Map tokens to codex entries"
+    },
+    {
+      "stage": "synthesize_signature",
+      "description": "Combine frequencies and parameters"
+    },
+    {
+      "stage": "generate_waveform",
+      "description": "Create time-domain signal"
+    },
+    {
+      "stage": "validate_output",
+      "description": "Ensure signal quality"
+    }
+  ],
+  "output_format": {
+    "waveform_id": "string",
+    "intent": "string", 
+    "signature": {
+      "frequencies": "array<number>",
+      "decay": "number",
+      "amplitude": "number",
+      "harmonics": "array<number>"
+    },
+    "synthesis_time": "timestamp",
+    "quality_metrics": {
+      "snr": "number",
+      "thd": "number",
+      "peak_amplitude": "number"
+    }
+  },
+  "validation_rules": {
+    "frequency_bounds": [0.1, 1000.0],
+    "amplitude_bounds": [0.01, 3.0],
+    "decay_bounds": [0.1, 0.999],
+    "max_harmonic_count": 5,
+    "min_synthesis_quality": 0.6
+  }
+}

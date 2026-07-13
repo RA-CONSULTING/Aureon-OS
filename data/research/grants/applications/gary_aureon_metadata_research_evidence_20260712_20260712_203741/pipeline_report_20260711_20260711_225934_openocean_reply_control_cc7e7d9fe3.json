@@ -1,0 +1,16 @@
+{
+  "schema_version": "aureon-pipeline-report-v1",
+  "generated_at": "2026-07-11T22:59:34.856499+01:00",
+  "operator": "Aureon",
+  "mode": "PRIVATE_INVESTOR_PIPELINE",
+  "event": "openocean_reply_control",
+  "artifact": "applications/OPENOCEAN_REPLY_CONTROL_20260711_20260711_225934.json",
+  "markdown": "applications/OPENOCEAN_REPLY_CONTROL_20260711_20260711_225934.md",
+  "report": "pipelines/pipeline_report_20260711_20260711_225934_openocean_reply_control.json",
+  "result": "OPENOCEAN_REPLY_STAGED_FORMAL_PITCH_ROUTE_ACKNOWLEDGEMENT",
+  "validation_passed": true,
+  "email_sent": false,
+  "attachment_uploaded": false,
+  "portal_changed": false,
+  "external_submission_performed": false
+}

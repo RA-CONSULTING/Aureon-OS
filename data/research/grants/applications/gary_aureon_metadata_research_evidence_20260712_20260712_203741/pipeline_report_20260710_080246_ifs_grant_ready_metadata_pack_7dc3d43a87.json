@@ -1,0 +1,41 @@
+{
+  "schema_version": "aureon-pipeline-report-v1",
+  "generated_at": "2026-07-10T08:02:46+01:00",
+  "operator": "Aureon",
+  "event": "IFS_GRANT_READY_METADATA_PACK",
+  "result": "IFS_GRANT_READY_LANGUAGE_AND_CLAIM_CONTROLS_ATTACHED_NO_NEW_SUBMIT_READY_ROUTE",
+  "artifacts": [
+    "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+    "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.md"
+  ],
+  "source_artifacts": [
+    "AUREON_WORK_CORPUS_INDEX_20260705.md",
+    "AUREON_UNIFIED_WORK_CORPUS_20260709.json",
+    "AUREON_UNIFIED_WORK_CORPUS_20260709.md",
+    "grant_ready_metadata_20260705.json",
+    "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_075002.json",
+    "applications/IFS_SUBMITTED_TRACK_STATUS_REFRESH_20260710_075145.json",
+    "applications/IFS_PARTNER_BUDGET_EVIDENCE_DISCOVERY_20260710_074251.json",
+    "applications/IFS_BATCH_ROUTE_UNLOCK_AUDIT_20260710_074640.json",
+    "applications/IFS_MARITIME_CONVERSION_PACK_MANIFEST_20260710_073407.json"
+  ],
+  "ifs_applications_updated": 20,
+  "queue_summary": {
+    "official_ifs_competition_count": 20,
+    "local_ifs_application_count": 20,
+    "submitted_monitor_only": 4,
+    "live_draft_gated": 1,
+    "conversion_pack_ready_partner_evidence_required": 6,
+    "explicitly_gated_or_ineligible": 9,
+    "unclassified_new_official_routes": 0,
+    "submitted_track_status_result": "ALL_SUBMITTED_IFS_TRACK_PAGES_STILL_APPLICATION_SUBMITTED"
+  },
+  "controls": {
+    "external_submission_performed": false,
+    "email_sent": false,
+    "portal_upload_performed": false,
+    "statuses_preserved": true
+  },
+  "repaired_at": "2026-07-10T08:08:07+01:00",
+  "repair_note": "Rebuilt current_ifs_route_fit from restored applications.json after PowerShell array collapse during first ledger attach attempt."
+}

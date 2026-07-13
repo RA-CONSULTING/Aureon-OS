@@ -1,0 +1,45 @@
+{
+  "schema_version": "aureon-validation-v1",
+  "generated_at": "2026-07-10T15:03:06+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_full_board_coverage_validation",
+  "source_refs": {
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_145957.json",
+    "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_145945.json",
+    "submitted_track_signin_gate": "applications/IFS_SUBMITTED_TRACK_SIGNIN_GATE_20260710_143214.json",
+    "p1_stop_go_audit": "applications/IFS_P1_STOP_GO_AUDIT_20260710_143920.json",
+    "p2_stop_go_audit": "applications/IFS_P2_STOP_GO_AUDIT_20260710_144429.json",
+    "uk_swiss_stop_go_audit": "applications/IFS_UK_SWISS_STOP_GO_AUDIT_20260710_145126.json",
+    "remaining_stop_go_audit": "applications/IFS_REMAINING_STOP_GO_AUDIT_20260710_145545.json",
+    "repayable_finance_hold_audit": "applications/IFS_REPAYABLE_FINANCE_HOLD_AUDIT_20260710_145906.json",
+    "official_ifs_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_143047.json",
+    "company_compliance_readback": "applications/IFS_COMPANY_COMPLIANCE_READBACK_20260710_143531.json"
+  },
+  "summary": {
+    "validation_passed": true,
+    "failures": [],
+    "ifs_applications_total": 20,
+    "submitted_monitor_only": 4,
+    "active_not_submitted": 16,
+    "route_family_counts": {
+      "SUBMITTED_MONITOR": 4,
+      "P1_NEAREST_DEADLINE": 4,
+      "P2_NEXT_DEADLINE": 3,
+      "LIVE_DRAFT_UK_SWISS": 1,
+      "REMAINING_EVIDENCE_GATED": 7,
+      "REPAYABLE_FINANCE_HELD_OUTSIDE_GRANT_QUEUE": 1
+    },
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0,
+    "secret_scan_hits": {},
+    "internal_language_scan_hits": {}
+  },
+  "controls": [
+    "Validation only; no IFS portal field was changed.",
+    "No IFS application was submitted.",
+    "No email, contact form, partner invite, upload, award terms or Project Impact action was performed.",
+    "All active IFS route families are covered by current stop/go or hold audits."
+  ],
+  "result": "IFS_FULL_BOARD_COVERAGE_VALIDATION_PASSED"
+}

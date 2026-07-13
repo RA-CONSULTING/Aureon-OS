@@ -1,0 +1,150 @@
+{
+  "schema_version": "aureon-ifs-live-portal-readback-evidence-search-v1",
+  "generated_at": "2026-07-10T12:23:32+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "application": {
+    "id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+    "title": "UK-Switzerland CR&D Round 3",
+    "status": "IFS_DRAFT_80_PERCENT_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+    "deadline": "2026-09-03T11:00:00+01:00",
+    "portal_application_number": "10210100",
+    "url": "https://apply-for-innovation-funding.service.gov.uk/application/10210100",
+    "human_or_provider_gate": "SWISS_PARTNER_RESEARCH_INSTITUTE_BUDGET_AND_FINANCE_EVIDENCE_REQUIRED",
+    "automation_next_action": "Use the formal partner evidence request PDF pack to obtain Swiss implementation partner, research institute or waiver, budget, permits/licences, export-control and Project Impact evidence before completing remaining IFS sections or final submission."
+  },
+  "portal_readback": {
+    "captured_from": "IFS live portal read-only browser session",
+    "portal_application_number": "10210100",
+    "project_title": "Aureon Evidence OS for Cross-Border R&D Assurance",
+    "competition": "UK-Switzerland CR&D Round 3",
+    "deadline": "11:00am Thursday 3 September 2026",
+    "progress_readback": "80 percent complete",
+    "lead_organisation": "R&A CONSULTING AND BROKERAGE SERVICES LTD",
+    "lead_contact": "Gary Leckey <gaxlec@gmail.com>",
+    "lead_company_number": "NI696693",
+    "registered_office": "1 Quadrant Place, Belfast, Northern Ireland, BT12 4HX",
+    "completed_sections": [
+      "Subsidy basis",
+      "Application team",
+      "Application details",
+      "Research category",
+      "Project summary",
+      "Public description",
+      "Scope",
+      "Q1 Themes",
+      "Q2 Applicant location",
+      "Q3 Animal testing",
+      "Q5 International collaboration",
+      "Q7 Trusted Research and Innovation",
+      "Q8-Q16 narrative answers"
+    ],
+    "incomplete_sections": [
+      "Q4 Permits/licences",
+      "Q6 Export licence",
+      "Q17 Costs and value for money",
+      "Your project finances",
+      "Finances overview",
+      "Project impact",
+      "Award terms and conditions",
+      "Review and submit"
+    ],
+    "finance_readback": {
+      "r_and_a_total_costs": 0,
+      "funding_level_percent": 70,
+      "funding_sought": 0,
+      "company_contribution": 0,
+      "other_public_sector_funding": 0,
+      "finance_status": "Incomplete; no partner costs, total eligible costs, grant request or company contribution entered."
+    },
+    "q4_permits_form_options_seen": [
+      "Yes",
+      "No",
+      "In process",
+      "Not applicable"
+    ],
+    "q6_export_licence_form_options_seen": [
+      "Yes",
+      "No"
+    ],
+    "portal_mutations_performed": [],
+    "security_note": "Existing IFS account session was used for readback; runtime sign-in secret was not written to any artifact."
+  },
+  "evidence_search": {
+    "drive_searches_reviewed": [
+      {
+        "query": "Aureon Swiss / Innosuisse / Swiss partner",
+        "finding": "Returned Aureon planning and war-room records; no confirmed Swiss implementation partner, research institute commitment, waiver, signed partner letter or partner budget."
+      },
+      {
+        "query": "Aureon maritime / partner / budget",
+        "finding": "Returned broad planning or technical material; no clean maritime lead, vessel, trial site, permit, safety case or eligible-cost budget evidence."
+      },
+      {
+        "query": "Gary Leckey Aureon / partner / budget",
+        "finding": "Returned evidence and planning records useful for narrative support, but not route-unlocking commitments or budgets for the live UK-Swiss draft."
+      }
+    ],
+    "local_searches_reviewed": [
+      {
+        "scope": "C:/Users/user/aureon-trading",
+        "finding": "Existing grant artifacts repeatedly identify the UK-Switzerland route as partner, waiver/research-institute, budget, permit and export-control gated."
+      },
+      {
+        "scope": "C:/Users/user/AureonResearch, Downloads and Documents",
+        "finding": "Searches found technical/research material and draft outreach records, but no confirmed Swiss partner, research institute or waiver, signed commitment, partner budget or cost split."
+      },
+      {
+        "scope": "prior Aureon discovery artifact",
+        "artifact": "applications/IFS_PARTNER_BUDGET_EVIDENCE_DISCOVERY_20260710_074251.md",
+        "finding": "Prior evidence discovery also recorded no confirmed Swiss implementation partner, research institute or waiver, partner commitment, partner budget, person-month split or total eligible-cost basis."
+      },
+      {
+        "scope": "prior partner targeting artifact",
+        "artifact": "applications/IFS_PARTNER_OUTREACH_PIPELINE_20260710_081819.json",
+        "finding": "Contains candidate Swiss outreach targets and evidence requirements; it is a pipeline, not commitment evidence."
+      }
+    ],
+    "confirmed_missing_evidence": {
+      "confirmed_swiss_implementation_partner": false,
+      "confirmed_research_institute_or_valid_waiver": false,
+      "confirmed_partner_letter_or_commitment": false,
+      "confirmed_partner_budget_or_eligible_cost_split": false,
+      "confirmed_total_eligible_cost_basis": false,
+      "confirmed_permits_and_licences_position": false,
+      "confirmed_export_control_position": false,
+      "confirmed_project_finances": false,
+      "confirmed_project_impact_submission_ready": false,
+      "award_terms_accepted": false
+    }
+  },
+  "decision": {
+    "result": "LIVE_PORTAL_READBACK_NO_SAFE_BINARY_DECLARATION_NO_NEW_SUBMIT_READY_ROUTE",
+    "direct_ifs_submissions_unlocked": 0,
+    "new_browser_submissions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "partner_invite_sent": false,
+    "upload_performed": false,
+    "award_terms_accepted": false,
+    "project_impact_submitted": false,
+    "why_q4_not_completed": "Q4 is a legal/technical permits declaration with binary options. The current draft and evidence base still depend on final Swiss partner and technical scope, so selecting No or Not applicable would be unsupported.",
+    "why_q6_not_completed": "Q6 is an export-control declaration with binary options. The current draft says final partner scope must be checked for controlled hardware, data, IP and dual-use exposure before submission.",
+    "why_submit_not_possible": "IFS readback shows incomplete finances, Project Impact, award terms and review/submit. The finance readback is zero-cost and cannot support a truthful grant submission."
+  },
+  "next_actions": [
+    "Keep the live UK-Switzerland IFS draft open only as a staged application until partner, waiver/research-institute, budget, permit and export-control evidence exists.",
+    "Use the existing partner evidence request pack and partner outreach pipeline to obtain the missing Swiss implementation partner and budget evidence.",
+    "Do not complete Q4, Q6, project finances, Project Impact, award terms, partner invite, upload, or final review/submit without evidence and exact action-time approval.",
+    "Continue checking remaining IFS routes against the ledger for any newly evidenced submit-ready route."
+  ],
+  "controls": [
+    "No IFS form answer was changed during the readback session.",
+    "No Q4 permit/licence declaration was made without confirmed technical and partner scope.",
+    "No Q6 export-control declaration was made without partner/export evidence.",
+    "No project finance, Project Impact, award terms, upload, partner invite or final submit action was performed.",
+    "No external email was sent by this artifact.",
+    "No runtime sign-in secret was stored."
+  ]
+}

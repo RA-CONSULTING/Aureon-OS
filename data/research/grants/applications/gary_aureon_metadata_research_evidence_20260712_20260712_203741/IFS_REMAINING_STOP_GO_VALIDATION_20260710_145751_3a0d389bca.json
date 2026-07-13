@@ -1,0 +1,42 @@
+{
+  "schema_version": "aureon-validation-v1",
+  "generated_at": "2026-07-10T14:57:51+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_remaining_stop_go_validation",
+  "source_remaining_stop_go_audit": "applications/IFS_REMAINING_STOP_GO_AUDIT_20260710_145545.json",
+  "source_current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_145622.json",
+  "source_current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_145627.json",
+  "summary": {
+    "validation_passed": true,
+    "failures": [],
+    "remaining_grant_routes_reviewed": 7,
+    "go_routes": 0,
+    "no_go_routes": 7,
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0,
+    "safe_portal_actions_available": 0,
+    "repayable_finance_routes_excluded_from_grant_queue": 1,
+    "board_ifs_applications_total": 20,
+    "board_submitted_monitor_only": 4,
+    "board_active_not_submitted": 16,
+    "secret_scan_hits": {},
+    "internal_language_scan_hits": {}
+  },
+  "remaining_application_ids": [
+    "APP-IFS-CKAF-AUTUMN-2478-20260709",
+    "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+    "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+    "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+    "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+    "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+    "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709"
+  ],
+  "controls": [
+    "Validation only; no IFS portal field was changed.",
+    "No IFS application was submitted.",
+    "No email, contact form, partner invite, upload, award terms or Project Impact action was performed.",
+    "Innovation Loans remains outside the grant-submit queue as repayable finance."
+  ],
+  "result": "IFS_REMAINING_STOP_GO_VALIDATION_PASSED"
+}

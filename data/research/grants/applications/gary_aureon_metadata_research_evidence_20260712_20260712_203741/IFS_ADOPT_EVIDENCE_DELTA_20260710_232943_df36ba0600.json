@@ -1,0 +1,177 @@
+{
+  "schema_version": "aureon-ifs-adopt-evidence-delta-v1",
+  "generated_at": "2026-07-10T23:29:43+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_adopt_evidence_delta",
+  "application_ids": [
+    "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+    "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+  ],
+  "status_after_delta": "ADOPT_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+  "evidence_checked": {
+    "official_ifs_sources": [
+      "https://apply-for-innovation-funding.service.gov.uk/competition/search",
+      "https://apply-for-innovation-funding.service.gov.uk/competition/search?page=1"
+    ],
+    "official_routes": [
+      {
+        "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "competition": "Full ADOPT Grant: Round 8",
+        "source_url": "https://apply-for-innovation-funding.service.gov.uk/competition/search?page=1",
+        "deadline": "2026-07-29T11:00:00+01:00",
+        "route_requirement": "Collaborations only; lead must be an active farming, growing or forestry business based in England and collaborate with at least one other UK farming business."
+      },
+      {
+        "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+        "competition": "ADOPT Facilitator Support Grant: Round 10",
+        "source_url": "https://apply-for-innovation-funding.service.gov.uk/competition/search",
+        "deadline": "2026-08-12T11:00:00+01:00",
+        "route_requirement": "Single applicants only; applicant must be an active farming, growing or forestry business based in England, able to evidence established business status and have a UK bank account."
+      }
+    ],
+    "local_paths_checked": [
+      "C:/Users/user/aureon-trading/data/research/grants/applications",
+      "C:/Users/user/aureon-trading/data/research/grants/contacts",
+      "C:/Users/user/Documents",
+      "C:/Users/user/Downloads",
+      "C:/Users/user/Desktop"
+    ],
+    "local_search_terms": [
+      "ADOPT",
+      "farm lead",
+      "England farm",
+      "farming lead",
+      "growing business",
+      "forestry business",
+      "Innovative Farmers",
+      "BOFIN",
+      "ADOPT Support Hub",
+      "Farm Carbon Toolkit",
+      "facilitator",
+      "field lab",
+      "partner commitment",
+      "budget owner"
+    ],
+    "google_drive_queries": [
+      "ADOPT Aureon",
+      "BOFIN Aureon",
+      "Innovative Farmers Aureon",
+      "farm carbon Aureon"
+    ],
+    "google_drive_rows_checked": [
+      "Aureon Grant War Room - 2026-07-04 / Funding Pipeline / ADOPT and farming queries",
+      "Aureon Grant War Room - 2026-07-04 / Application Tracker / farm query"
+    ]
+  },
+  "findings": [
+    {
+      "source": "Official IFS current competition search",
+      "finding": "Full ADOPT is an England farm-led collaborative route. ADOPT Facilitator Support is a single-applicant England farm route. R&A is not evidenced as an England farming, growing or forestry business.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "applications/IFS_ADOPT_2491_2520_FARMING_LEAD_EVIDENCE_AUDIT_20260710_093212.md",
+      "finding": "The existing ADOPT audit already classified both ADOPT routes as not submit-ready because an England farming lead and route evidence were missing.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "applications/IFS_NON_P1_EVIDENCE_ACQUISITION_REGISTER_20260710_141505.md",
+      "finding": "The register identifies ADOPT Support Hub, Innovative Farmers, BOFIN and Farm Carbon Toolkit as evidence-acquisition targets. It records no farm lead, facilitator appointment, trial problem statement, budget owner or commitment.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "applications/outreach_payloads",
+      "finding": "Outreach-ready ADOPT payloads exist for support hub, farmer network, BOFIN and farm-carbon/field-lab routes. They are prepared requests, not replies or commitments.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "formal_ifs_texts",
+      "finding": "Clean formal portal text exists for both ADOPT routes, but the English farm lead, farm collaborator, facilitator/procurement role, problem statement and budget owner are still evidence placeholders.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Google Drive search: ADOPT Aureon",
+      "finding": "Drive returned older grant war-room planning material and an unrelated EIC file. No ADOPT farm lead, facilitator appointment, field-lab context or budget evidence was found.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Google Drive search: BOFIN Aureon / farm carbon Aureon",
+      "finding": "No direct Drive result was found.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Google Drive search: Innovative Farmers Aureon",
+      "finding": "Drive returned historical Aureon white-paper material and the grant package, not an Innovative Farmers route reply or farm commitment.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Aureon Grant War Room row search",
+      "finding": "The spreadsheet did not contain a current ADOPT or farming lead row. The only ADOPT keyword hit was a different robotics adoption opportunity.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Documents/Downloads/Desktop targeted search",
+      "finding": "Local search found ADOPT audits, clean text and outreach drafts. No England farm lead, farming collaborator, facilitator appointment, field-lab problem statement or budget owner was found.",
+      "unlock_evidence": false
+    }
+  ],
+  "missing_evidence_by_application": {
+    "APP-IFS-FULL-ADOPT-R8-2491-20260709": [
+      "active farming, growing or forestry business based in England to lead",
+      "evidence that the lead is an established farming business",
+      "at least one other UK farming business collaborator",
+      "farm problem statement and trial or demonstration structure",
+      "Aureon support role and eligible budget owner"
+    ],
+    "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709": [
+      "active farming, growing or forestry business based in England to apply",
+      "established farm business evidence",
+      "UK bank account held by the farm applicant",
+      "external project facilitator route",
+      "Aureon role, procurement basis and support budget evidence"
+    ]
+  },
+  "outreach_ready_refs": [
+    "applications/outreach_payloads/P2-ADOPT-SUPPORT-HUB_20260710_141505.md",
+    "applications/outreach_payloads/P2-ADOPT-INNOVATIVE-FARMERS_20260710_141505.md",
+    "applications/outreach_payloads/P2-ADOPT-BOFIN_20260710_141505.md",
+    "applications/outreach_payloads/P2-ADOPT-FARM-CARBON-TOOLKIT_20260710_141505.md",
+    "applications/IFS_P2_ADOPT_SUPPORT_HUB_OUTREACH_DRAFT_20260710_115624.eml",
+    "applications/IFS_P2_ADOPT_FACILITATOR_IUKBC_OUTREACH_DRAFT_20260710_115624.eml",
+    "applications/IFS_ADOPT_ADOPT_SUPPORT_HUB_OUTREACH_DRAFT_20260710_104233.eml",
+    "applications/IFS_ADOPT_INNOVATE_UK_BUSINESS_CONNECT_ADOPT_FACILITATOR_DIRECTORY_OUTREACH_DRAFT_20260710_104233.eml"
+  ],
+  "source_refs": {
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_232710.json",
+    "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_232707.json",
+    "official_current_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_232050.json",
+    "adopt_farming_lead_evidence_audit": "applications/IFS_ADOPT_2491_2520_FARMING_LEAD_EVIDENCE_AUDIT_20260710_093212.json",
+    "non_p1_evidence_acquisition_register": "applications/IFS_NON_P1_EVIDENCE_ACQUISITION_REGISTER_20260710_141505.json",
+    "p2_stop_go_audit": "applications/IFS_P2_STOP_GO_AUDIT_20260710_144429.json",
+    "route_gate_evidence_search": "applications/IFS_ROUTE_GATE_EVIDENCE_SEARCH_20260710_135633.json",
+    "formal_language_qa": "applications/IFS_FORMAL_LANGUAGE_QA_20260710_134902.json",
+    "live_drive_route_unlock_readback": "applications/IFS_LIVE_DRIVE_ROUTE_UNLOCK_READBACK_20260710_142308.json"
+  },
+  "decision": {
+    "direct_submit_ready": false,
+    "safe_portal_action_now": false,
+    "new_browser_submission_available": false,
+    "external_send_ready_now": false,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "why_not_now": "The current local, Drive and Aureon evidence set contains ADOPT support targets and clean draft text, but no England farm applicant, UK farming collaborator, facilitator appointment, farm problem statement, procurement role or budget owner. A direct R&A ADOPT IFS application would conflict with the route eligibility.",
+    "next_operator_action": "Use the existing ADOPT outreach payloads to obtain an England farm lead, facilitator route or referral, trial problem statement and budget evidence. Re-run this delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+  },
+  "controls": [
+    "Local, Drive and official IFS evidence references were classified for grant-side use only.",
+    "No IFS portal field was changed.",
+    "No IFS ADOPT draft was opened.",
+    "No application was submitted.",
+    "No external email, contact form, partner invite or upload action was performed.",
+    "No password, runtime secret, bank detail, tax reference or private finance payload was written to this artifact.",
+    "No internal draft language was introduced into funder-facing text.",
+    "No public support target was treated as a farm lead or partner commitment."
+  ],
+  "result": "ADOPT_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY"
+}

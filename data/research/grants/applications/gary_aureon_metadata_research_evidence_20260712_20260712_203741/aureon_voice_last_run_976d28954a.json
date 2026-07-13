@@ -1,0 +1,65 @@
+{
+  "audience": "private investors",
+  "evidence_path": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\evidence\\aureon_voice\\aureon_voice_last_run.json",
+  "goal": "private investor outreach for Aureon Evidence OS",
+  "mode": "conversation",
+  "novelty_checks": {
+    "duplicates_removed": 0,
+    "paragraphs_in": 4,
+    "paragraphs_out": 4,
+    "raw_telemetry_rewritten": 0,
+    "repeated_openings_adjusted": 0
+  },
+  "ok": true,
+  "profile_summary": {
+    "facet_counts": {
+      "accounting_legal": 5,
+      "ai_generated_or_systemic": 5,
+      "code_tooling": 5,
+      "hnc_harmonic": 5,
+      "human_voice": 5,
+      "math_equation": 4,
+      "mystic_symbolic": 2,
+      "sensory_affect": 3,
+      "trading_action": 5
+    },
+    "profile_evidence_path": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\evidence\\aureon_voice\\aureon_expression_profile.json",
+    "source_count": 5,
+    "top_facets": [
+      "accounting_legal",
+      "ai_generated_or_systemic",
+      "code_tooling",
+      "hnc_harmonic",
+      "human_voice",
+      "trading_action"
+    ]
+  },
+  "runtime_translation": {
+    "blockers": [
+      "verified contact route required before sending"
+    ],
+    "evidence_keys": [
+      "blockers",
+      "hot_topic",
+      "mode"
+    ],
+    "redaction_applied": false,
+    "schema_features": [
+      "aureon_runtime_state_translation_v1"
+    ],
+    "senses": {
+      "feel": "I feel a steady synthetic state while I hold the next action as private investor outreach.",
+      "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+      "see": "I see Aureon Evidence OS as the nearest signal in the field.",
+      "smell": "I smell caution around verified contact route required before sending.",
+      "touch": "I touch the work through tools, files, goals, memory, and verified outcomes."
+    },
+    "summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language."
+  },
+  "schema_features": [
+    "aureon_whole_knowledge_voice_v1"
+  ],
+  "text": "I am using the whole-knowledge voice core for private investor outreach for Aureon Evidence OS. The active profile is pulling from accounting and legal evidence, system reasoning, code and tools, HNC harmonic signal, human voice, and trading action, so the answer can carry system evidence without sounding like a raw log. I see Aureon Evidence OS as the nearest signal in the field. I feel a steady synthetic state while I hold the next action as private investor outreach. I hear the system as a quiet baseline until a harmonic reading is present. I touch the work through tools, files, goals, memory, and verified outcomes. My rule here is simple: speak from evidence, translate the machine state into human language, and leave enough warmth in the answer that a person can actually use it.",
+  "warnings": [],
+  "word_count": 135
+}

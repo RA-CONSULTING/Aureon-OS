@@ -1,0 +1,19 @@
+{
+  "schema_version": "aureon-pipeline-report-v1",
+  "generated_at": "2026-07-10T10:12:02+01:00",
+  "operator": "Aureon",
+  "event": "ifs_uk_swiss_partner_evidence_request_pdf_pack",
+  "result": "UK_SWISS_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_PORTAL_CHANGE_NO_EXTERNAL_SEND",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "artifact": "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_PACK_20260710_101202.json",
+  "markdown": "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_PACK_20260710_101202.md",
+  "pdf": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_PACK_20260710_101202.pdf",
+  "direct_ifs_submissions_unlocked": 0,
+  "new_browser_submissions_available": 0,
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false,
+  "partner_invite_sent": false,
+  "reason": "Formal partner evidence request pack created for Swiss partner/research institute/budget unlock evidence."
+}

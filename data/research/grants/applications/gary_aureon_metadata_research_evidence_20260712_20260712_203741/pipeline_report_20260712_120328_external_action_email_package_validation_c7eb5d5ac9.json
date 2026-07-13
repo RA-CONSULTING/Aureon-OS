@@ -1,0 +1,15 @@
+{
+  "schema_version": "aureon-pipeline-report-v1",
+  "generated_at": "2026-07-12T12:03:28+01:00",
+  "operator": "Aureon",
+  "event": "external_action_email_package_validation",
+  "artifact": "applications/EXTERNAL_ACTION_EMAIL_PACKAGE_VALIDATION_20260712_120328.json",
+  "markdown": "applications/EXTERNAL_ACTION_EMAIL_PACKAGE_VALIDATION_20260712_120328.md",
+  "result": "EXTERNAL_ACTION_EMAIL_PACKAGES_VALIDATED_READY_NOT_SENT",
+  "packages_validated": 2,
+  "attachments_validated": 6,
+  "issue_count": 0,
+  "email_sent": false,
+  "external_submission_performed": false,
+  "portal_changed": false
+}

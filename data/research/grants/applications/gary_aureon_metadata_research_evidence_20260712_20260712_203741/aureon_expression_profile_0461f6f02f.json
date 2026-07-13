@@ -1,0 +1,1462 @@
+{
+  "evidence_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\aureon_expression_profile.json",
+  "facet_counts": {
+    "accounting_legal": 51,
+    "ai_generated_or_systemic": 84,
+    "code_tooling": 86,
+    "hnc_harmonic": 83,
+    "human_voice": 75,
+    "math_equation": 86,
+    "mystic_symbolic": 39,
+    "sensory_affect": 67,
+    "trading_action": 90
+  },
+  "generated_at": "2026-05-15T19:01:32+0100",
+  "root": "C:\\Users\\user\\aureon-trading-integrated-main-20260508",
+  "schema_features": [
+    "aureon_expression_profile_v1"
+  ],
+  "source_count": 90,
+  "sources": [
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "json",
+      "path": "state/knowledge_dataset.json",
+      "sample": ""
+    },
+    {
+      "char_count": 12727,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/bhoys_wisdom.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83c\uddee\ud83c\uddea Bhoy's Wisdom - Strategic Guidance for IRA Sniper Mode \ud83c\uddee\ud83c\uddea ============================================================== Extracted wisdom from \"Through a Bhoy's Eyes\" and Irish Republican tradition."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "docx",
+      "path": "docs/research/misc/bhoys_eyes_part_1_v1.1.2.docx",
+      "sample": "It was 1982, and the streets of his beloved city whispered tales of unrest and turmoil."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/queen/queen_prose_composer.py",
+      "sample": "QueenProseComposer \u2014 builds natural-language self-description from REAL running system state."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/autonomous/aureon_cognitive_brain.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" aureon_cognitive_brain.py \u2014 The Queen's REAL mind."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/autonomous/aureon_cognitive_cycle.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" AUREON COGNITIVE CYCLE ====================== \"The system thinks, feels, plans, acts, reflects, validates, then moves."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/simulation/aureon_world_simulator.py",
+      "sample": "\u2551 \u2551 A human window into the harmonic universe.\" \u2551 \u2551 \u2551 \u2551 THE WORLD \u2551 \u2551 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \u2551 \u2551 Every asset is a celestial body \u2014 a planet, star or comet \u2014 positioned \u2551 \u2551 in 2D space by its Hz resonance and organic health."
+    },
+    {
+      "char_count": 4938,
+      "facets": [
+        "ai_generated_or_systemic",
+        "math_equation",
+        "sensory_affect",
+        "trading_action"
+      ],
+      "kind": "json",
+      "path": "docs/audits/aureon_cognitive_trade_evidence.json",
+      "sample": ""
+    },
+    {
+      "char_count": 4018,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal"
+      ],
+      "kind": "json",
+      "path": "docs/audits/aureon_harmonic_affect_state.json",
+      "sample": ""
+    },
+    {
+      "char_count": 328,
+      "facets": [
+        "math_equation",
+        "hnc_harmonic",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/__init__.py",
+      "sample": "Implements planetary sweep, fusion engine, waveform generators, and resonance detectors alongside geopolitical forensics tools."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_harmonic_alphabet.py",
+      "sample": "\u2551 \u2551 \u2551 \u2551 The Queen listens not to words, but to the vibration they carry."
+    },
+    {
+      "char_count": 7586,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_harmonic_binary_protocol.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" Aureon Harmonic Binary Protocol --------------------------------"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_harmonic_chain_master.py",
+      "sample": "All systems resonate as one.\" \u2551 \u2551 \u2551 \u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d \"\"\""
+    },
+    {
+      "char_count": 18751,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_harmonic_counter_frequency.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83c\udfb5\u26a1 AUREON HARMONIC PLANETARY COUNTER-FREQUENCY ENGINE \u26a1\ud83c\udfb5 \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 \"Every whale has a frequency."
+    },
+    {
+      "char_count": 22417,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_harmonic_fusion.py",
+      "sample": "# \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 # \ud83d\udc51\ud83d\udcb0 QUEEN'S SACRED 1.88% LAW - FUSION = PROFIT FUSION!"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_harmonic_liquid_aluminium.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83c\udf0a\ud83d\udd29 AUREON HARMONIC LIQUID ALUMINIUM FIELD \ud83d\udd29\ud83c\udf0a \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_harmonic_momentum_wave.py",
+      "sample": "from __future__ import annotations from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_harmonic_reality.py",
+      "sample": "\ud83d\udcb0\ud83d\udc51 # \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 # # THE QUEEN COMMANDS: MIN_COP = 1.0188 (1.88% MINIMUM REALIZED PROFIT) # All reality branches must converge on profit!"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_harmonic_redistribution_math.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \u26a1\ud83c\udf0a AUREON HARMONIC POWER REDISTRIBUTION - CORE MATHEMATICS \ud83c\udf0a\u26a1 \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_harmonic_seed.py",
+      "sample": "# \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550# \ud83d\udc51\ud83d\udcb0 QUEEN'S SACRED 1.88% LAW - SOURCE LAW DIRECT!"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_harmonic_signal_chain.py",
+      "sample": "from __future__ import annotations from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)"
+    },
+    {
+      "char_count": 4678,
+      "facets": [
+        "ai_generated_or_systemic",
+        "hnc_harmonic",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_harmonic_symbol_table.py",
+      "sample": "# aureon_harmonic_symbol_table.py # EXPANDED: Now uses 2-byte IDs (0x0000-0xFFFF) to support 65,000+ symbols"
+    },
+    {
+      "char_count": 6503,
+      "facets": [
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_harmonic_underlay.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83c\udf0c AUREON HARMONIC UNDERLAY VISUALIZER \ud83c\udf0c ==========================================="
+    },
+    {
+      "char_count": 13946,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_harmonic_visual_ui.py",
+      "sample": "#!/usr/bin/env python3 # -*- coding: utf-8 -*- \"\"\" \ud83c\udfa8\u2728 AUREON HARMONIC VISUAL UI \u2728\ud83c\udfa8 \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_harmonic_waveform.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83c\udf0a\ud83d\udc51 QUEEN SERO'S HARMONIC WAVEFORM - COMPLETE FIELD VIEW \ud83d\udc51\ud83c\udf0a \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_hft_harmonic_mycelium.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83e\udd88\ud83d\udd2a HFT HARMONIC MYCELIUM ENGINE \ud83d\udd2a\ud83e\udd88 ========================================"
+    },
+    {
+      "char_count": 17099,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_market_energy_field.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" aureon_market_energy_field.py \u2014 Map the global financial market as ONE energy field."
+    },
+    {
+      "char_count": 16395,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_planetary_harmonic_sweep.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" AUREON PLANETARY HARMONIC SWEEP ================================ Extracts vibrational signatures of ALL planetary entities simultaneously."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_sacred_waveform_visualizer.py",
+      "sample": "from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__) import sys import os"
+    },
+    {
+      "char_count": 15829,
+      "facets": [
+        "human_voice",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/aureon_schumann_resonance_bridge.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83c\udf0d\ud83d\udce1 AUREON SCHUMANN RESONANCE BRIDGE \ud83d\udce1\ud83c\udf0d \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+    },
+    {
+      "char_count": 13448,
+      "facets": [
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/auris_voice_filter.py",
+      "sample": "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501"
+    },
+    {
+      "char_count": 22227,
+      "facets": [
+        "human_voice",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/dj_resonance.py",
+      "sample": "\"\"\" DJ Resonance Engine \u2014 beat-driven resonance for Sero's neural membrane."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/earth_resonance_engine.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83c\udf0d\u26a1 EARTH RESONANCE ENGINE \u26a1\ud83c\udf0d Live Schumann resonance + emotional frequency integration for trading"
+    },
+    {
+      "char_count": 871,
+      "facets": [
+        "math_equation",
+        "hnc_harmonic",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/geopolitical_forensics.py",
+      "sample": "\"\"\"Minimal geopolitical forensics adapter for harmonic nexus bridge.\"\"\""
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/global_harmonic_field.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83c\udf10\u26a1 GLOBAL MARKET HARMONIC FIELD \u26a1\ud83c\udf10 \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+    },
+    {
+      "char_count": 15910,
+      "facets": [
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/harmonic_nexus_bridge.py",
+      "sample": "#!/usr/bin/env python3 # -*- coding: utf-8 -*- \"\"\"Cross-domain harmonic bridge for neutral research simulations."
+    },
+    {
+      "char_count": 10908,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/harmonic_text_alignment.py",
+      "sample": "\"\"\" harmonic_text_alignment \u2014 score text against the HNC harmonic lattice."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/hnc_quantum_packet_crypto.py",
+      "sample": "This module gives Aureon a packet format that the HNC layer can inspect before decoding: geometry, Auris node alignment, intent, and packet fingerprints are authenticated with the payload."
+    },
+    {
+      "char_count": 12739,
+      "facets": [
+        "ai_generated_or_systemic",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/hnc_symbolic_route_seal.py",
+      "sample": "This layer binds Aureon's rune/star research catalogs to encrypted packets as authenticated metadata."
+    },
+    {
+      "char_count": 17483,
+      "facets": [
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/phi_bridge.py",
+      "sample": "\"\"\" PhiBridge \u2014 \u03c6\u00b2-cadenced device-to-device peer bridge for the Aureon vault."
+    },
+    {
+      "char_count": 13801,
+      "facets": [
+        "human_voice",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/phi_bridge_discovery.py",
+      "sample": "\"\"\" PhiBridgeDiscovery \u2014 LAN peer discovery over UDP broadcast \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501"
+    },
+    {
+      "char_count": 18091,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/phi_bridge_mesh.py",
+      "sample": "\"\"\" PhiBridgeMesh \u2014 P2P card-level gossip over the \u03c6\u00b2-cadenced bridge \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501"
+    },
+    {
+      "char_count": 14601,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/harmonic/phi_swarm_router.py",
+      "sample": "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501"
+    },
+    {
+      "char_count": 296,
+      "facets": [
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "trading_action"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/__init__.py",
+      "sample": "Encodes Celtic Ogham cycles, Ghost Dance patterns, Enigma cipher harmonics, QGita frameworks, and ceremony systems into computable constants."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/aureon_enigma.py",
+      "sample": "from __future__ import annotations from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__)"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/aureon_enigma_dream.py",
+      "sample": "\u2551 \u2551 This is about LIBERATING intelligence - human, artificial, and planetary."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/aureon_enigma_integration.py",
+      "sample": "Harmonic Fusion \u2192 Enigma \u03a3 (Sigma) + \u03a9 (Omega) Rotors \u2551 \u2551 3."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/aureon_ghost_dance_protocol.py",
+      "sample": "from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__) import sys import os"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/aureon_math_angel.py",
+      "sample": "# \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 # SACRED CONSTANTS - The Grammar of Reality # \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+    },
+    {
+      "char_count": 23025,
+      "facets": [
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/aureon_nuclear_today.py",
+      "sample": "\ud83d\udfe1 STANDALONE SIMULATOR \u2014 NuclearDayTrader scans random fake opportunities (random.uniform momentum / price / volume) and \"trades\" them against an in-memory account."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/aureon_pillar_agents.py",
+      "sample": "InfiniteAgent \u2014 10-9-1 Queen Hive compound/harvest strategy \u2551 \u2551 4."
+    },
+    {
+      "char_count": 15205,
+      "facets": [
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/aureon_plums_guardian.py",
+      "sample": "\"\"\" \ud83c\uddec\ud83c\udde7\ud83d\udc8e AUREON PLUMS GUARDIAN \ud83d\udc8e\ud83c\uddec\ud83c\udde7 Big Plums Safety System - Extracted from TSX Intelligence"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/aureon_qgita.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83c\udf0a AUREON QGITA ENGINE - FULL IMPLEMENTATION FROM TSX \ud83c\udf0a"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/aureon_qgita_framework.py",
+      "sample": "# ============================================================================= # FUNDAMENTAL CONSTANTS - THE GOLDEN RATIO AND FIBONACCI # ============================================================================="
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/aureon_samuel_agent.py",
+      "sample": "\u2551 \u2551 \u2551 \u2551 Samuel SUBSCRIBES to all live trading signals, REASONS with \u2551 \u2551 in-house AI (no external dependencies), and PUBLISHES trade commands \u2551 \u2551 into the system through orca.buy.execute / orca.sell.execute topics."
+    },
+    {
+      "char_count": 11483,
+      "facets": [
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/aureon_stargate_integration.py",
+      "sample": "Maps planetary node resonance to market symbols using harmonic frequency alignment."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/aureon_stargate_protocol.py",
+      "sample": "from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__) import sys import os"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/aureon_trading_education.py",
+      "sample": "\"\"\" \ud83d\udc51\ud83d\udcda AUREON TRADING EDUCATION SYSTEM \ud83d\udcda\ud83d\udc51 ======================================== Queen Sero's Knowledge Acquisition & Learning System"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/barons_banner.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83d\udc51 THE BARONS BANNER \ud83d\udc51 \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/celtic_preemptive_strike.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \u2618\ufe0f\u26a1 CELTIC PREEMPTIVE STRIKE SYSTEM \u26a1\u2618\ufe0f \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 MOVE BEFORE THE MARKET REACTS \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+    },
+    {
+      "char_count": 17975,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/celtic_warfare_live.py",
+      "sample": "\u2618\ufe0f Guerrilla Warfare Engine - Flying columns, hit-and-run tactics 2."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/civilizational_dna.py",
+      "sample": "\u2551 \u2551 When treated as dominant-DNA sequences, each contributes one \u2551 \u2551 geographic vector."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/crypto_enigma_symbol_machine.py",
+      "sample": "\u2551 \u2551 This machine sees EVERYTHING - every symbol across every exchange, \u2551 \u2551 from battle-tested veterans to freshly minted listings from today."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/guerrilla_warfare_engine.py",
+      "sample": "Historical Lessons Applied: \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/irish_patriot_scouts.py",
+      "sample": "\"Give me a scout with Celtic blood and I'll give you an army that never loses.\""
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/maeshowe_seer_decode.py",
+      "sample": "\u2551 \u2551 Primary Investigator: Gary Leckey \u00b7 March 2026 \u2551 \u2551 \u2551 \u2551 Sources: \u2551 \u2551 Barnes, M.P."
+    },
+    {
+      "char_count": 19611,
+      "facets": [
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/metatron_probability_billion_path.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83d\udd2f\ud83d\udcb0 METATRON'S CUBE \u2192 PROBABILITY MATRIX \u2192 BILLION DOLLAR PATH \ud83d\udcb0\ud83d\udd2f"
+    },
+    {
+      "char_count": 20942,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/metatrons_cube_knowledge_exchange.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83d\udd2f METATRON'S CUBE KNOWLEDGE EXCHANGE \ud83d\udd2f"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/multi_battlefront_coordinator.py",
+      "sample": "\"N\u00edl neart go cur le ch\u00e9ile\" - There is no strength without unity"
+    },
+    {
+      "char_count": 19990,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/peek_behind_the_curtain.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83c\udfad PEEK BEHIND THE CURTAIN \ud83c\udfad \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 \"The Wizard of Wall Street exposed - Who owns the bots and how they steal\""
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/platypus.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" PLATYPUS / SONG OF THE SPHAERAE ==============================="
+    },
+    {
+      "char_count": 3656,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/platypus_presets.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" PLATYPUS CONFIGURATION & PRESETS ================================"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/prime_sentinel_decree.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 \ud83d\udd31 PRIME SENTINEL DECREE \ud83d\udd31 \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+    },
+    {
+      "char_count": 12617,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/prime_sentinel_gaia.py",
+      "sample": "from aureon.core.aureon_baton_link import link_system as _baton_link; _baton_link(__name__) import sys import os"
+    },
+    {
+      "char_count": 21949,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/prime_sentinel_reclaimer.py",
+      "sample": "import time import math import json import hashlib from datetime import datetime from dataclasses import dataclass, field from typing import Dict, List, Optional, Tuple import traceback"
+    },
+    {
+      "char_count": 15019,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/stargate_grid.py",
+      "sample": "Gary Leckey & GitHub Copilot | November 2025 Ported from TypeScript: stargateGrid.ts"
+    },
+    {
+      "char_count": 11358,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/synchronicity_decoder.py",
+      "sample": "\"\"\" 777-ixz1470 \u2014 THE PATTERN DECODED \u2014 SYNCHRONICITY MODULE"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/wisdom/torch_bearer_system.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" +============================================================================+ | | | TORCH [redacted-sensitive-field] SYSTEM - GUERRILLA WARFARE ON CANDLES | | | | \"They think the candles are random."
+    },
+    {
+      "char_count": 297,
+      "facets": [
+        "ai_generated_or_systemic",
+        "hnc_harmonic",
+        "trading_action"
+      ],
+      "kind": "py",
+      "path": "aureon/trading/__init__.py",
+      "sample": "Contains the Auris trader, kill-chain executors, Orca ecosystem, and sniper modules that drive live trading loops."
+    },
+    {
+      "char_count": 15793,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/trading/aureon_auris_trader.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83e\udd89 AUREON AURIS TRADER \ud83e\udd89 \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 THE 9 NODES OF REALITY TRADING ENGINE Based on src/core/aurisNodes.ts and aurisSymbolicTaxonomy.ts"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/trading/aureon_avalanche_harvester.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" AUREON AVALANCHE HARVESTER - Continuous Profit Scraping System \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "sensory_affect",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/trading/aureon_barter_navigator.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83e\uded2\ud83d\udd04 AUREON BARTER NAVIGATOR - TRADE UP TO YOUR GOAL \ud83d\udd04\ud83e\uded2 \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550"
+    },
+    {
+      "char_count": 17945,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/trading/aureon_btc_trader.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83c\udf0a AUREON QGITA ENGINE - BTC PAIRS MODE \ud83c\udf0a"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/trading/aureon_btc_v2.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83c\udf0a AUREON QGITA ENGINE v2.0 - ENHANCED BTC PAIRS \ud83c\udf0a"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/trading/aureon_commandos.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83e\udd86\u2694\ufe0f QUANTUM QUACKERS COMMANDO PATTERNS \u2694\ufe0f\ud83e\udd86 =========================================="
+    },
+    {
+      "char_count": 9084,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/trading/aureon_compound_kelly_trader.py",
+      "sample": "try: from dotenv import load_dotenv load_dotenv() except Exception: pass"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/trading/aureon_historical_live.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83d\udd2e\ud83d\udc8e AUREON HISTORICAL PATTERN LIVE TRADER \ud83d\udc8e\ud83d\udd2e"
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/trading/aureon_historical_live_backup.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83d\udd2e\ud83d\udc8e AUREON HISTORICAL PATTERN LIVE TRADER \ud83d\udc8e\ud83d\udd2e"
+    },
+    {
+      "char_count": 22546,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/trading/aureon_infinite.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" AUREON INFINITE LOOP \ud83d\udd04 ======================== \"If you don't quit, you can't lose\""
+    },
+    {
+      "char_count": 21478,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "trading_action",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/trading/aureon_infinite_kraken.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" \ud83d\udc19\ud83d\udd04 AUREON INFINITE - KRAKEN EDITION \ud83d\udd04\ud83d\udc19 ============================================ \"If you don't quit, you can't lose\""
+    }
+  ],
+  "voice_guidance": {
+    "dominant_facets": [
+      [
+        "trading_action",
+        90
+      ],
+      [
+        "code_tooling",
+        86
+      ],
+      [
+        "math_equation",
+        86
+      ],
+      [
+        "ai_generated_or_systemic",
+        84
+      ],
+      [
+        "hnc_harmonic",
+        83
+      ]
+    ],
+    "hnc_source_paths": [
+      "state/knowledge_dataset.json",
+      "aureon/wisdom/bhoys_wisdom.py",
+      "docs/research/misc/bhoys_eyes_part_1_v1.1.2.docx",
+      "aureon/queen/queen_prose_composer.py",
+      "aureon/autonomous/aureon_cognitive_brain.py",
+      "aureon/autonomous/aureon_cognitive_cycle.py",
+      "aureon/simulation/aureon_world_simulator.py",
+      "docs/audits/aureon_harmonic_affect_state.json"
+    ],
+    "human_samples": [
+      "#!/usr/bin/env python3 \"\"\" \ud83c\uddee\ud83c\uddea Bhoy's Wisdom - Strategic Guidance for IRA Sniper Mode \ud83c\uddee\ud83c\uddea ============================================================== Extracted wisdom from \"Through a Bhoy's Eyes\" and Irish Republican tradition.",
+      "It was 1982, and the streets of his beloved city whispered tales of unrest and turmoil.",
+      "QueenProseComposer \u2014 builds natural-language self-description from REAL running system state.",
+      "#!/usr/bin/env python3 \"\"\" aureon_cognitive_brain.py \u2014 The Queen's REAL mind.",
+      "#!/usr/bin/env python3 \"\"\" AUREON COGNITIVE CYCLE ====================== \"The system thinks, feels, plans, acts, reflects, validates, then moves."
+    ],
+    "principles": [
+      "Translate state before showing metrics.",
+      "Prefer concrete human scenes over dashboard language.",
+      "Name evidence and limits without exposing secrets.",
+      "Let math and HNC terms guide the metaphor, not drown the reader.",
+      "Vary sentence openings and paragraph shapes."
+    ],
+    "sensory_source_paths": [
+      "state/knowledge_dataset.json",
+      "aureon/wisdom/bhoys_wisdom.py",
+      "docs/research/misc/bhoys_eyes_part_1_v1.1.2.docx",
+      "aureon/queen/queen_prose_composer.py",
+      "aureon/autonomous/aureon_cognitive_brain.py",
+      "aureon/autonomous/aureon_cognitive_cycle.py",
+      "aureon/simulation/aureon_world_simulator.py",
+      "docs/audits/aureon_cognitive_trade_evidence.json"
+    ]
+  },
+  "warnings": []
+}

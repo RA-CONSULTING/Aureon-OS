@@ -1,0 +1,61 @@
+﻿{
+    "created_at":  "2026-07-05",
+    "hub":  "C:\\Users\\user\\Aureon_Work_Hub_20260705",
+    "local_research_corpus_files":  3219,
+    "total_hub_files":  3228,
+    "source_candidates":  3219,
+    "sensitive_excluded":  1740,
+    "large_or_archive_references":  0,
+    "local_research_corpus_bytes":  640637141,
+    "total_hub_bytes":  643574566,
+    "categories":  [
+                       {
+                           "category":  "atlantic_maeshowe_archaeology",
+                           "count":  21,
+                           "bytes":  38907503
+                       },
+                       {
+                           "category":  "epas_druid_lidar_space",
+                           "count":  89,
+                           "bytes":  89382724
+                       },
+                       {
+                           "category":  "grant_ops_and_applications",
+                           "count":  97,
+                           "bytes":  61035262
+                       },
+                       {
+                           "category":  "hnc_core_theory",
+                           "count":  435,
+                           "bytes":  96487988
+                       },
+                       {
+                           "category":  "misc_research",
+                           "count":  1615,
+                           "bytes":  175152663
+                       },
+                       {
+                           "category":  "publication_and_outreach",
+                           "count":  96,
+                           "bytes":  45507581
+                       },
+                       {
+                           "category":  "repo_operator_research",
+                           "count":  287,
+                           "bytes":  19126263
+                       },
+                       {
+                           "category":  "validation_and_evidence",
+                           "count":  579,
+                           "bytes":  115037157
+                       }
+                   ],
+    "primary_manifests":  [
+                              "C:\\Users\\user\\Aureon_Work_Hub_20260705\\00_INDEXES\\LOCAL_RESEARCH_SOURCE_TO_HUB_MANIFEST_20260705.csv",
+                              "C:\\Users\\user\\Aureon_Work_Hub_20260705\\00_INDEXES\\LOCAL_RESEARCH_HUB_FILE_MANIFEST_20260705.csv",
+                              "C:\\Users\\user\\Aureon_Work_Hub_20260705\\00_INDEXES\\HUB_SOURCE_MAP_20260705.md",
+                              "C:\\Users\\user\\Aureon_Work_Hub_20260705\\02_DRIVE_SOURCE_INDEX\\DRIVE_SOURCE_INDEX_20260705.md",
+                              "C:\\Users\\user\\Aureon_Work_Hub_20260705\\03_REPO_ARCHIVE_INDEX\\REPO_ARCHIVE_INDEX_20260705.md",
+                              "C:\\Users\\user\\Aureon_Work_Hub_20260705\\05_SENSITIVE_EXCLUDED_INDEX\\SENSITIVE_EXCLUDED_MANIFEST_20260705.csv"
+                          ]
+}

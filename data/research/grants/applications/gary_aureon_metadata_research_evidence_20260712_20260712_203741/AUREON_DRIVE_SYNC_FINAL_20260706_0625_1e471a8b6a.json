@@ -1,0 +1,16 @@
+﻿{
+    "synced_at":  "2026-07-06T06:25:10.0670185+01:00",
+    "drive_folder_name":  "Aureon Grant War Room - 2026-07-04",
+    "drive_folder_url":  "https://drive.google.com/drive/folders/1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr",
+    "upload_method":  "Chrome Google Drive UI fallback after connector DriveFiles.Create scope was insufficient",
+    "uploaded_files":  [
+                           "AUREON_GRANT_OPERATOR_REPO_STATE_20260706_062033.tar.gz",
+                           "AUREON_GRANT_WORKING_PACK_20260706_062033.tar.gz",
+                           "AUREON_DRIVE_EXPORT_MANIFEST_20260706_062033.json",
+                           "AUREON_GRANT_STATUS_REFRESH_20260706_062427.tar.gz",
+                           "AUREON_DRIVE_SYNC_FINAL_20260706_0625.json"
+                       ],
+    "latest_status_refresh":  "AUREON_GRANT_STATUS_REFRESH_20260706_062427.tar.gz",
+    "verification_text":  "Google Drive folder view showed the first four export filenames and 4 uploads complete before final JSON upload.",
+    "local_exports_dir":  "C:\\Users\\user\\Aureon_Work_Hub_20260705\\07_DRIVE_EXPORTS"
+}

@@ -1,0 +1,47 @@
+{
+  "schema_version": "aureon-ifs-uk-swiss-award-terms-legal-gate-readback-v1",
+  "generated_at": "2026-07-12T16:29:39+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_uk_swiss_award_terms_legal_gate_readback",
+  "result": "IFS_AWARD_TERMS_LEGAL_GATE_READBACK_NOT_ACCEPTED",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "competition": "UK-Switzerland CR&D Round 3",
+  "url": "https://apply-for-innovation-funding.service.gov.uk/application/10210100/form/terms-and-conditions/organisation/116134/question/55717",
+  "readback": {
+    "page_title": "Terms and conditions of an Innovate UK Grant Award",
+    "acceptance_checkbox_label": "I agree to the award terms and conditions set out by Innovate UK.",
+    "acceptance_checkbox_checked": false,
+    "agree_and_continue_button_disabled": true,
+    "award_terms_accepted": false,
+    "legal_acceptance_performed": false
+  },
+  "terms_topics_observed": [
+    "background and general grant conditions",
+    "liability and termination language",
+    "project duration and 90-day start requirement after award notification",
+    "recipient obligations, reporting, claims and assurance",
+    "Trusted Research and Innovation, export controls and national security requirements",
+    "subsidy control and Windsor Framework references",
+    "open access and compliance references"
+  ],
+  "source_links_observed": [
+    "https://www.ukri.org/councils/innovate-uk/guidance-for-applicants/general-guidance/",
+    "https://www.ukri.org/councils/innovate-uk/guidance-for-applicants/costs-we-fund/",
+    "https://www.gov.uk/guidance/uk-strategic-export-controls",
+    "https://www.gov.uk/government/publications/complying-with-the-uks-international-obligations-on-subsidy-control-guidance-for-public-authorities/guidance-on-the-scope-and-application-of-article-10-of-the-windsor-framework",
+    "https://www.ukri.org/manage-your-award/publishing-your-research-findings/making-your-research-publications-open-access/"
+  ],
+  "controls": [
+    "No checkbox was ticked.",
+    "Agree and continue was not pressed.",
+    "No final IFS submission was performed.",
+    "Legal acceptance remains a separate action-time decision."
+  ],
+  "outputs": {
+    "json": "applications/IFS_UK_SWISS_AWARD_TERMS_LEGAL_GATE_READBACK_20260712_162939.json",
+    "markdown": "applications/IFS_UK_SWISS_AWARD_TERMS_LEGAL_GATE_READBACK_20260712_162939.md",
+    "pipeline_report": "pipelines/pipeline_report_20260712_162939_ifs_uk_swiss_award_terms_legal_gate_readback.json"
+  }
+}

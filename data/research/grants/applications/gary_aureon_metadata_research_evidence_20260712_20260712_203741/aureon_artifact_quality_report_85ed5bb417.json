@@ -1,0 +1,104 @@
+{
+  "artifact_manifest": {
+    "asset_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+    "build_id": "4b1a8d741656",
+    "kind": "adaptive_skill_capsule",
+    "metadata_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\skill.json",
+    "preview_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+    "preview_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html",
+    "project_id": "aureon-adaptive_skill-4b1a8d741656",
+    "public_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html",
+    "runbook_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\RUNBOOK.md",
+    "subject": "coding",
+    "tool_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\tool.py",
+    "uniqueness_contract": {
+      "build_id": "4b1a8d741656",
+      "family": "adaptive_skill",
+      "policy": "fresh_project_per_coding_request",
+      "project_id": "aureon-adaptive_skill-4b1a8d741656",
+      "prompt_sha256": "266d421a6413dabe13d9b3b1827530154aa6ec928a8357cf8b67a57f696d4764",
+      "reuse_allowed_for_handover": false,
+      "rule": "Every coding/app/tool artifact must be a fresh project instance, even when the prompt resembles an older job."
+    }
+  },
+  "browser_render_proof": {
+    "local_probe": true,
+    "preview_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html",
+    "proof_status": "adaptive_preview_ready",
+    "public_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html"
+  },
+  "checks": [
+    {
+      "blocking": true,
+      "evidence": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+      "id": "adaptive_skill_preview_exists",
+      "label": "Browser preview exists",
+      "ok": true
+    },
+    {
+      "blocking": true,
+      "evidence": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\skill.json",
+      "id": "adaptive_skill_metadata_exists",
+      "label": "Skill metadata exists",
+      "ok": true
+    },
+    {
+      "blocking": true,
+      "evidence": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\tool.py",
+      "id": "adaptive_skill_run_contract_exists",
+      "label": "Local run contract exists",
+      "ok": true
+    },
+    {
+      "blocking": true,
+      "evidence": "generic capsule only",
+      "id": "domain_specific_worker_present",
+      "label": "Finished domain-specific worker exists when a tool is requested",
+      "ok": false
+    },
+    {
+      "blocking": true,
+      "evidence": "no external API calls",
+      "id": "local_only_generation",
+      "label": "Skill was generated locally",
+      "ok": true
+    },
+    {
+      "blocking": true,
+      "evidence": "4b1a8d741656",
+      "id": "unique_build_id_present",
+      "label": "Fresh build id is present in artifact paths",
+      "ok": true
+    },
+    {
+      "blocking": true,
+      "evidence": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html",
+      "id": "no_stale_handover_reuse",
+      "label": "Handover points at this build's fresh artifact",
+      "ok": true
+    }
+  ],
+  "generated_at": "2026-05-22T18:17:50.457361+00:00",
+  "handover_ready": false,
+  "minimum_score": 0.8,
+  "provider_policy": "local_only_v1",
+  "regeneration_attempts": [
+    {
+      "attempt": 1,
+      "reason": "generic capsule held because the client asked for a finished domain tool",
+      "status": "needs_regeneration"
+    }
+  ],
+  "schema_version": "aureon-artifact-quality-report-v1",
+  "score": 0.68,
+  "snags": [
+    {
+      "blocking": true,
+      "id": "missing_domain_specific_worker",
+      "next_action": "teach Aureon a domain-specific local worker, then rerun the request",
+      "title": "Generic adaptive capsule is not a finished tool"
+    }
+  ],
+  "status": "artifact_quality_blocked",
+  "task_family": "coding"
+}

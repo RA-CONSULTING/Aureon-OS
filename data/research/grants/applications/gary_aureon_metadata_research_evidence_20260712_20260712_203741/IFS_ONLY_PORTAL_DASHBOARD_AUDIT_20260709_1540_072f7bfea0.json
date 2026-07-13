@@ -1,0 +1,84 @@
+{
+  "schema_version": "aureon-ifs-only-portal-dashboard-audit-v1",
+  "timestamp": "2026-07-09T15:40:48+01:00",
+  "operator": "Aureon",
+  "scope": "IFS_ONLY",
+  "user_instruction": "Only fill in grants on IFS with Aureon as operator.",
+  "official_sources": [
+    "https://apply-for-innovation-funding.service.gov.uk/competition/search",
+    "https://apply-for-innovation-funding.service.gov.uk/competition/search?page=1"
+  ],
+  "official_current_competition_count": 20,
+  "submitted_ifs_applications_verified": [
+    {
+      "application_number": "10209601",
+      "competition": "Next Wave: Breakthrough Wave 1",
+      "title": "Aureon Evidence Studio for Createch AI Workflows",
+      "track_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209601/track",
+      "portal_state": "Application submitted / Awaiting assessment",
+      "submitted_at_display": "7 Jul 2026 at 1:47pm"
+    },
+    {
+      "application_number": "10209992",
+      "competition": "Future Leaders Fellowships: Round 11, business and non-academic",
+      "title": "Aureon Evidence OS for AI-Driven Scientific Discovery and Auditable SME Automation",
+      "track_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209992/track",
+      "portal_state": "Application submitted / Awaiting assessment",
+      "submitted_at_display": "9 Jul 2026 at 11:07am"
+    },
+    {
+      "application_number": "10210032",
+      "competition": "Consumer Led Flexibility for the Clean Energy Superpower Mission",
+      "title": "Aureon Flex Evidence OS: AI Assurance for Consumer-Led Flexibility",
+      "track_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210032/track",
+      "portal_state": "Application submitted / Awaiting assessment",
+      "submitted_at_display": "9 Jul 2026 at 1:45pm"
+    },
+    {
+      "application_number": "10210045",
+      "competition": "CfI: Earlier identification of UK children with SEN",
+      "title": "Aureon SEN Evidence OS: Fair Early Identification Support",
+      "track_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210045/track",
+      "portal_state": "Application submitted / Awaiting assessment",
+      "submitted_at_display": "9 Jul 2026 at 2:31pm"
+    }
+  ],
+  "older_dashboard_records_reviewed": [
+    {
+      "application_number": "10143721",
+      "competition": "Innovate UK Smart grants: July 2024",
+      "title": "Project A.L.F.I.E. - Advanced Launch Force for Integrated Efficiency",
+      "portal_state": "Ineligible"
+    },
+    {
+      "application_number": "10162520",
+      "competition": "Innovate UK innovation loans future economy: Round 20",
+      "title": "Untitled application",
+      "portal_state": "Not submitted",
+      "route_decision": "Loan finance, not IFS grant submission queue."
+    },
+    {
+      "application_number": "10163647",
+      "competition": "ATI Programme strategic batch: EoI - May 2025",
+      "title": "Development of a Multi-Layer Active Shielding System (EPAS) for Deep Space Micrometeoroid and Dust Protection",
+      "portal_state": "Application submitted"
+    },
+    {
+      "application_number": "10167738",
+      "competition": "Innovate UK innovation loans future economy: Round 21",
+      "title": "Untitled application",
+      "portal_state": "Not submitted",
+      "route_decision": "Loan finance, not IFS grant submission queue."
+    },
+    {
+      "application_number": "10169785",
+      "competition": "Contracts for Innovation: Quantum Sensors and PNT Missions Primer",
+      "title": "Untitled application",
+      "portal_state": "Not submitted before deadline",
+      "portal_message": "This application has not been entered into the competition Contracts for Innovation: Quantum Sensors and PNT Missions Primer as it was not submitted before the competition deadline."
+    }
+  ],
+  "current_submit_decision": "NO_ADDITIONAL_STANDALONE_IFS_GRANT_SUBMIT_READY",
+  "reason": "The four direct-fit IFS routes are already submitted. Remaining current IFS routes require missing partner, sector, facility, academic, public-sector, maritime, automotive, farming, or loan-finance conditions.",
+  "next_action": "Monitor the four submitted IFS applications and refresh official IFS competition search for newly opened direct SME grant routes."
+}

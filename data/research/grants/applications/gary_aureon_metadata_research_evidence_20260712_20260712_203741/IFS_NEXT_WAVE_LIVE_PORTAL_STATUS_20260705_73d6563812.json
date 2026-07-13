@@ -1,0 +1,71 @@
+{
+  "captured_at": "2026-07-05T23:55:38+01:00",
+  "operator": "Aureon",
+  "application_id": "10209601",
+  "application_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209601",
+  "title": "Aureon Evidence Studio for Createch AI Workflows",
+  "competition": "Next Wave: Breakthrough Wave 1",
+  "deadline": "11:00am Tuesday 11 August 2026",
+  "portal_progress": "100%",
+  "submitted": false,
+  "complete_sections": [
+    "Application details",
+    "Application team",
+    "Research category",
+    "Project summary",
+    "Public description",
+    "Scope",
+    "Subsidy basis",
+    "Application questions 1 to 17",
+    "Your project finances",
+    "Finances overview",
+    "Project Impact survey",
+    "Award terms and conditions"
+  ],
+  "incomplete_sections": [],
+  "finance": {
+    "total_eligible_costs_gbp": 250000,
+    "funding_level_percent": 70,
+    "funding_sought_gbp": 175000,
+    "company_contribution_gbp": 75000,
+    "other_public_funding_gbp": 0,
+    "project_location_postcode": "BT12 4HX",
+    "organisation_size": "Micro or small",
+    "turnover_gbp_from_2026_ixbrl": 100497,
+    "full_time_employees_from_2026_ixbrl": 1
+  },
+  "terms": {
+    "accepted": true,
+    "accepted_at_portal_text": "11:28pm on 5 July 2026"
+  },
+  "project_impact": {
+    "survey_url": "https://innovateuk.my.site.com/IMCommunity/s/?CompanyNumber=NI696693&OrganisationId=116134&IFSApplicationNumber=10209601&CompetitionId=2517&PreApproval=true",
+    "state": "Submitted successfully in Chrome after in-app browser controls failed.",
+    "confirmation_text": "Project impact answers submitted",
+    "answers": {
+      "fte_employees": "1",
+      "fte_freelancers": "0",
+      "innovation_fte_employees": "1",
+      "expected_additional_fte": "3.0",
+      "operating_profit_or_loss_gbp_rounded": "76000",
+      "innovation_expenditure_gbp_rounded": "25000",
+      "turnover_from_innovative_products_percent": "100",
+      "expected_additional_turnover_gbp_5_years": "500000",
+      "active_rd_projects": "1",
+      "catapult_engagement": "No",
+      "innovate_uk_business_connect_engagement": "No",
+      "business_connect_positive_outcomes": "Not engaged with Innovate UK Business Connect",
+      "creative_uk_engagement": "No",
+      "expected_new_products_services_processes": "Yes within 2 years",
+      "market_readiness_level": "MRL9 - Product/service defined",
+      "technology_readiness_level": "TRL 5 - Technology validated in relevant environment (industrially relevant environment in the case of key enabling technologies)"
+    }
+  },
+  "final_review": {
+    "state": "Review-and-submit page open in Chrome.",
+    "review_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209601/review-and-submit",
+    "button_visible": "Submit application",
+    "action_required": "Final application submission still requires exact action-time confirmation."
+  }
+}
+

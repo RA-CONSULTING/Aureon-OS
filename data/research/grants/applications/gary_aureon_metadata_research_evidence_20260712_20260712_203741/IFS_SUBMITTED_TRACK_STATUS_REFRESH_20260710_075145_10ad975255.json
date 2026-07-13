@@ -1,0 +1,85 @@
+{
+  "schema_version": "aureon-ifs-submitted-track-status-refresh-v1",
+  "generated_at": "2026-07-10T06:52:46.112Z",
+  "operator": "Aureon",
+  "scope": "IFS_ONLY",
+  "source": "Chrome live IFS track pages using existing signed-in session",
+  "result": "ALL_SUBMITTED_IFS_TRACK_PAGES_STILL_APPLICATION_SUBMITTED",
+  "submitted_application_count": 4,
+  "statuses": [
+    {
+      "id": "APP-IFS-NEXT-WAVE-10209601",
+      "portal_application_number": "10209601",
+      "track_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209601/track",
+      "observed_at": "2026-07-10T06:51:41.531Z",
+      "current_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209601/track",
+      "page_title": "Application Status - Aureon Evidence Studio for Createch AI Workflows - Innovation Funding Service",
+      "heading": "Aureon Evidence Studio for Createch AI Workflows\nApplication status",
+      "status_signals": [
+        "Application submitted"
+      ],
+      "status": "APPLICATION_SUBMITTED",
+      "excerpt": "Skip to main content GOV.UK Innovation Funding Service Dashboard Profile Sign out BETAThis is a new service – your feedback will help us to improve it. Back to applications Aureon Evidence Studio for Createch AI Workflows Application status Application submitted Application number: 10209601 Your application for the competition 'Next Wave: Breakthrough Wave 1' was submitted on 7 Jul 2026 at 1:47pm. View application Reopen application Print application What happens next? Assessment process Once the competition submission deadline is reached your application will be sent for assessment. This is subject to eligibility. The assessment process follows these steps: eligible applications will be assessed independently by expert assessors each application is assessed by up to 5 assessors and against the same set criteria the assessor will score each question and provide feedback to justify those scores a panel process is held to moderate and ratify the outcome of the decision If you reopen it, you must resubmit your application before we can assess it. Decision notification You and your project partners will be emailed notification of the decision by 1 Oct 2026. If your application is succe"
+    },
+    {
+      "id": "APP-IFS-FLF-R11-2499-20260709",
+      "portal_application_number": "10209992",
+      "track_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209992/track",
+      "observed_at": "2026-07-10T06:51:43.807Z",
+      "current_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209992/track",
+      "page_title": "Application Status - Aureon Evidence OS for AI-Driven Scientific Discovery and Auditable SME Automation - Innovation Funding Service",
+      "heading": "Aureon Evidence OS for AI-Driven Scientific Discovery and Auditable SME Automation\nApplication status",
+      "status_signals": [
+        "Application submitted"
+      ],
+      "status": "APPLICATION_SUBMITTED",
+      "excerpt": "Skip to main content GOV.UK Innovation Funding Service Dashboard Profile Sign out BETAThis is a new service – your feedback will help us to improve it. Back to applications Aureon Evidence OS for AI-Driven Scientific Discovery and Auditable SME Automation Application status Application submitted Application number: 10209992 Your application for the competition 'Future Leaders Fellowships: Round 11, business and non-academic' was submitted on 9 Jul 2026 at 11:07am. View application Reopen application Print application What happens next? Assessment process Once the competition submission deadline is reached your application will be sent for assessment. This is subject to eligibility. The assessment process follows these steps: eligible applications will be assessed independently by expert assessors each application is assessed by up to 5 assessors and against the same set criteria the assessor will score each question and provide feedback to justify those scores a panel process is held to moderate and ratify the outcome of the decision If you reopen it, you must resubmit your application before we can assess it. Decision notification You and your project partners will be emailed noti"
+    },
+    {
+      "id": "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+      "portal_application_number": "10210032",
+      "track_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210032/track",
+      "observed_at": "2026-07-10T06:51:44.632Z",
+      "current_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210032/track",
+      "page_title": "Application Status - Aureon Flex Evidence OS: AI Assurance for Consumer-Led Flexibility - Innovation Funding Service",
+      "heading": "Aureon Flex Evidence OS: AI Assurance for Consumer-Led Flexibility\nApplication status",
+      "status_signals": [
+        "Application submitted"
+      ],
+      "status": "APPLICATION_SUBMITTED",
+      "excerpt": "Skip to main content GOV.UK Innovation Funding Service Dashboard Profile Sign out BETAThis is a new service – your feedback will help us to improve it. Back to applications Aureon Flex Evidence OS: AI Assurance for Consumer-Led Flexibility Application status Application submitted Application number: 10210032 Your application for the competition 'Consumer Led Flexibility for the Clean Energy Superpower Mission' was submitted on 9 Jul 2026 at 1:45pm. View application Reopen application Print application What happens next? Assessment process Once the competition submission deadline is reached your application will be sent for assessment. This is subject to eligibility. The assessment process follows these steps: eligible applications will be assessed independently by expert assessors each application is assessed by up to 5 assessors and against the same set criteria the assessor will score each question and provide feedback to justify those scores a panel process is held to moderate and ratify the outcome of the decision If you reopen it, you must resubmit your application before we can assess it. Decision notification You and your project partners will be emailed notification of the "
+    },
+    {
+      "id": "APP-IFS-CFI-SEN-2511-20260709",
+      "portal_application_number": "10210045",
+      "track_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210045/track",
+      "observed_at": "2026-07-10T06:51:45.482Z",
+      "current_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210045/track",
+      "page_title": "Application Status - Aureon SEN Evidence OS: Fair Early Identification Support - Innovation Funding Service",
+      "heading": "Aureon SEN Evidence OS: Fair Early Identification Support\nApplication status",
+      "status_signals": [
+        "Application submitted"
+      ],
+      "status": "APPLICATION_SUBMITTED",
+      "excerpt": "Skip to main content GOV.UK Innovation Funding Service Dashboard Profile Sign out BETAThis is a new service – your feedback will help us to improve it. Back to applications Aureon SEN Evidence OS: Fair Early Identification Support Application status Application submitted Application number: 10210045 Your application for the competition 'CfI: Earlier identification of UK children with SEN' was submitted on 9 Jul 2026 at 2:31pm. View application Reopen application Print application What happens next? Assessment process Once the competition submission deadline is reached your application will be sent for assessment. This is subject to eligibility. The assessment process follows these steps: eligible applications will be assessed independently by selected assessors each application is assessed against the same set of criteria the assessor will score each question individually Decision notification You will be emailed the outcome of your application in due course. If your application is successful You will receive an email which will detail the next steps. You can give feedback to help us improve this service. This should take no more than 2 minutes. Give us feedback Finish without feed"
+    }
+  ],
+  "screenshot_attempt": {
+    "attempted": true,
+    "result": "FULL_PAGE_SCREENSHOT_TIMEOUT_NO_SCREENSHOT_WRITTEN",
+    "control": "DOM status readback preserved; prior screenshot evidence remains in applications/ifs_portal_evidence_20260709_1545."
+  },
+  "controls": [
+    "Read-only status refresh only",
+    "No application reopened",
+    "No final submission attempted",
+    "No Project Impact submit attempted",
+    "No award terms accepted",
+    "No partner invitation, upload, email, or Drive write attempted"
+  ],
+  "artifacts": [
+    "applications/IFS_SUBMITTED_TRACK_STATUS_REFRESH_20260710_075145.json",
+    "applications/IFS_SUBMITTED_TRACK_STATUS_REFRESH_20260710_075145.md",
+    "pipelines/pipeline_report_20260710_075145_ifs_submitted_track_status_refresh.json"
+  ]
+}

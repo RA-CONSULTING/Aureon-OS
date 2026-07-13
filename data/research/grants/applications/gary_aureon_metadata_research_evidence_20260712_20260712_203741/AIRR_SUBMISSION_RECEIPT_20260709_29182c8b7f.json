@@ -1,0 +1,18 @@
+{
+  "schema_version": "aureon-airr-submission-receipt-v1",
+  "generated_at": "2026-07-09T06:58:39.863733+01:00",
+  "application_id": "APP-AIRR-001",
+  "portal_proposal_id": "0261-8797-7601-1",
+  "portal_url": "https://portal-airr.isambard.ac.uk/proposals/5a87cac10a0044db903550fe12188b4a/",
+  "status": "SUBMITTED",
+  "submitted_at_display": "Jul 9, 2026, 6:57 AM",
+  "submitted_at": "2026-07-09T06:57:00+01:00",
+  "applicant": "Gary Leckey",
+  "email": "gaxlec@gmail.com",
+  "organisation": "R&A Consulting and Brokerage Services Ltd",
+  "title": "Aureon Evidence OS for AI-Driven Scientific Discovery",
+  "resource": "Isambard-AI Open Access",
+  "request": "500,000 GPU hours over 365 days",
+  "attachment": "AIRR_AI_OPEN_ACCESS_SUPPORTING_FORM.pdf",
+  "screenshot": "applications/rendered/airr_submitted_20260709.png"
+}

@@ -1,0 +1,1145 @@
+"""Validate Aureon's repo navigation and SaaS-access contract."""
+
+from __future__ import annotations
+
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+from urllib.parse import unquote
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+DOCS_REPO_SITEMAP = REPO_ROOT / "docs" / "repo_sitemap.json"
+DOCS_ACCESS_MAP = REPO_ROOT / "docs" / "end_user_access_map.json"
+DOCS_CAPABILITY_ACCESS_MATRIX = REPO_ROOT / "docs" / "capability_access_matrix.json"
+DOCS_CAPABILITY_REGISTRY = REPO_ROOT / "docs" / "capability_registry.json"
+DOCS_NAVIGATION_INDEX = REPO_ROOT / "docs" / "repo_navigation_index.json"
+DOCS_ORGANIZATION_TREE = REPO_ROOT / "docs" / "repo_organization_tree.json"
+DOCS_NAVIGATION_READINESS = REPO_ROOT / "docs" / "repo_navigation_readiness.json"
+DOCS_NAVIGATION_COMPLETION_AUDIT = REPO_ROOT / "docs" / "repo_navigation_completion_audit.json"
+DOCS_SYSTEM_INTEGRATION = REPO_ROOT / "docs" / "system_integration_map.json"
+DOCS_SAAS_HANDOFF = REPO_ROOT / "docs" / "saas_integration_handoff.json"
+DOCS_SAAS_MANIFEST = REPO_ROOT / "docs" / "saas_integration_manifest.json"
+DOCS_SUPABASE_HARDENING = REPO_ROOT / "docs" / "supabase_hardening_manifest.json"
+PUBLIC_REPO_SITEMAP = REPO_ROOT / "frontend" / "public" / "aureon_repo_sitemap.json"
+PUBLIC_ACCESS_MAP = REPO_ROOT / "frontend" / "public" / "aureon_end_user_access_map.json"
+PUBLIC_CAPABILITY_ACCESS_MATRIX = REPO_ROOT / "frontend" / "public" / "aureon_capability_access_matrix.json"
+PUBLIC_CAPABILITY_REGISTRY = REPO_ROOT / "frontend" / "public" / "aureon_capability_registry.json"
+PUBLIC_NAVIGATION_INDEX = REPO_ROOT / "frontend" / "public" / "aureon_repo_navigation_index.json"
+PUBLIC_ORGANIZATION_TREE = REPO_ROOT / "frontend" / "public" / "aureon_repo_organization_tree.json"
+PUBLIC_NAVIGATION_READINESS = REPO_ROOT / "frontend" / "public" / "aureon_repo_navigation_readiness.json"
+PUBLIC_NAVIGATION_COMPLETION_AUDIT = REPO_ROOT / "frontend" / "public" / "aureon_repo_navigation_completion_audit.json"
+PUBLIC_SYSTEM_INTEGRATION = REPO_ROOT / "frontend" / "public" / "aureon_system_integration_map.json"
+PUBLIC_SAAS_HANDOFF = REPO_ROOT / "frontend" / "public" / "aureon_saas_integration_handoff.json"
+PUBLIC_SAAS_MANIFEST = REPO_ROOT / "frontend" / "public" / "aureon_saas_integration_manifest.json"
+PUBLIC_SUPABASE_HARDENING = REPO_ROOT / "frontend" / "public" / "aureon_supabase_hardening_manifest.json"
+SUPABASE_CONFIG = REPO_ROOT / "supabase" / "config.toml"
+ENV_SOURCES = [".env.example", "deploy/env.example", "app.yaml"]
+
+AUTONOMOUS_FRONTEND_MANIFESTS = [
+    "aureon_saas_system_inventory.json",
+    "aureon_frontend_unification_plan.json",
+    "aureon_frontend_evolution_queue.json",
+    "aureon_organism_runtime_status.json",
+    "aureon_autonomous_capability_switchboard.json",
+]
+
+REQUIRED_PATHS = [
+    "README.md",
+    "docs/REPO_SITEMAP.md",
+    "docs/END_USER_ACCESS_MAP.md",
+    "docs/CAPABILITY_REGISTRY.md",
+    "docs/SAAS_INTEGRATION_READINESS.md",
+    "docs/SYSTEM_INTEGRATION_MAP.md",
+    "docs/INDEX.md",
+    "docs/investor/README.md",
+    "docs/investor/TERMINOLOGY.md",
+    "docs/repo_sitemap.json",
+    "docs/end_user_access_map.json",
+    "docs/capability_access_matrix.json",
+    "docs/capability_registry.json",
+    "docs/repo_navigation_index.json",
+    "docs/repo_organization_tree.json",
+    "docs/repo_navigation_readiness.json",
+    "docs/repo_navigation_completion_audit.json",
+    "docs/system_integration_map.json",
+    "docs/saas_integration_handoff.json",
+    "docs/saas_integration_manifest.json",
+    "docs/SUPABASE_HARDENING_REVIEW.md",
+    "docs/supabase_hardening_manifest.json",
+    "docs/audits/aureon_saas_system_inventory.json",
+    "docs/audits/aureon_frontend_unification_plan.json",
+    "docs/audits/aureon_frontend_evolution_queue.json",
+    "docs/audits/aureon_organism_runtime_status.json",
+    "docs/audits/aureon_autonomous_capability_switchboard.json",
+    "frontend/src/components/RepoNavigationPanel.tsx",
+    "frontend/public/aureon_repo_sitemap.json",
+    "frontend/public/aureon_end_user_access_map.json",
+    "frontend/public/aureon_capability_access_matrix.json",
+    "frontend/public/aureon_capability_registry.json",
+    "frontend/public/aureon_repo_navigation_index.json",
+    "frontend/public/aureon_repo_organization_tree.json",
+    "frontend/public/aureon_repo_navigation_readiness.json",
+    "frontend/public/aureon_repo_navigation_completion_audit.json",
+    "frontend/public/aureon_system_integration_map.json",
+    "frontend/public/aureon_saas_integration_handoff.json",
+    "frontend/public/aureon_saas_integration_manifest.json",
+    "frontend/public/aureon_supabase_hardening_manifest.json",
+    "frontend/public/aureon_saas_system_inventory.json",
+    "frontend/public/aureon_frontend_unification_plan.json",
+    "frontend/public/aureon_frontend_evolution_queue.json",
+    "frontend/public/aureon_organism_runtime_status.json",
+    "frontend/public/aureon_autonomous_capability_switchboard.json",
+    "scripts/validation/generate_capability_access_matrix.py",
+    "scripts/validation/generate_repo_navigation_index.py",
+    "scripts/validation/generate_repo_organization_tree.py",
+    "scripts/validation/generate_repo_navigation_readiness.py",
+    "scripts/validation/generate_repo_navigation_completion_audit.py",
+    "scripts/validation/generate_capability_registry.py",
+    "scripts/validation/generate_system_integration_map.py",
+    "scripts/validation/generate_saas_integration_handoff.py",
+    "scripts/validation/generate_saas_integration_manifest.py",
+    "scripts/validation/generate_supabase_hardening_manifest.py",
+]
+
+MARKDOWN_FILES = [
+    "README.md",
+    "docs/INDEX.md",
+    "docs/REPO_SITEMAP.md",
+    "docs/END_USER_ACCESS_MAP.md",
+    "docs/CAPABILITY_REGISTRY.md",
+    "docs/SYSTEM_INTEGRATION_MAP.md",
+    "docs/SAAS_INTEGRATION_READINESS.md",
+    "docs/SUPABASE_HARDENING_REVIEW.md",
+    "docs/investor/README.md",
+    "docs/investor/TERMINOLOGY.md",
+]
+
+SECRET_VALUE_PATTERNS = [
+    re.compile(r"sk-[A-Za-z0-9_-]{16,}"),
+    re.compile(r"pk_[A-Za-z0-9_-]{16,}"),
+    re.compile(r"ghp_[A-Za-z0-9_]{20,}"),
+    re.compile(r"AKIA[0-9A-Z]{16}"),
+    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
+]
+
+SAFE_CREDENTIAL_METADATA_VALUES = {
+    "",
+    "false",
+    "none",
+    "null",
+    "redacted",
+    "[redacted]",
+    "hidden",
+    "metadata_only_hide_values",
+    "metadata_status_only_never_reveal_values",
+}
+
+
+def run_git(*args: str) -> list[str]:
+    result = subprocess.run(
+        ["git", *args],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.splitlines()
+
+
+def load_json(path: Path) -> object:
+    with path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def git_file_count(path_prefix: str | None = None) -> int:
+    args = ["ls-files", "-z"]
+    if path_prefix:
+        args.extend(["--", path_prefix])
+    result = subprocess.run(
+        ["git", *args],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+    )
+    return len([path for path in result.stdout.split(b"\0") if path])
+
+
+def git_directory_count() -> int:
+    result = subprocess.run(
+        ["git", "ls-files", "-z"],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+    )
+    directories: set[str] = set()
+    for raw_path in result.stdout.split(b"\0"):
+        if not raw_path:
+            continue
+        path = raw_path.decode("utf-8", errors="replace")
+        parts = path.split("/")[:-1]
+        for index in range(1, len(parts) + 1):
+            directories.add("/".join(parts[:index]) + "/")
+    return len(directories)
+
+
+def parse_supabase_auth_counts() -> dict[str, int]:
+    counts = {"verify_jwt_true": 0, "verify_jwt_false": 0}
+    current_function = None
+    section_re = re.compile(r"^\s*\[functions\.([^\]]+)\]\s*$")
+    verify_re = re.compile(r"^\s*verify_jwt\s*=\s*(true|false)\s*(?:#.*)?$")
+
+    for raw_line in SUPABASE_CONFIG.read_text(encoding="utf-8").splitlines():
+        section_match = section_re.match(raw_line)
+        if section_match:
+            current_function = section_match.group(1)
+            continue
+
+        verify_match = verify_re.match(raw_line)
+        if current_function and verify_match:
+            key = f"verify_jwt_{verify_match.group(1)}"
+            counts[key] += 1
+
+    return counts
+
+
+def parse_env_variable_names() -> set[str]:
+    names: set[str] = set()
+    assignment_re = re.compile(r"^\s*([A-Z][A-Z0-9_]+)\s*=")
+    app_key_re = re.compile(r"^\s*-\s*key:\s*([A-Z][A-Z0-9_]+)\s*$")
+
+    for rel_path in ENV_SOURCES:
+        path = REPO_ROOT / rel_path
+        if not path.exists():
+            continue
+        for raw_line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+            assignment_match = assignment_re.match(raw_line)
+            if assignment_match:
+                names.add(assignment_match.group(1))
+                continue
+            app_key_match = app_key_re.match(raw_line)
+            if app_key_match:
+                names.add(app_key_match.group(1))
+
+    return names
+
+
+def parse_capabilities_table_count() -> int:
+    source = REPO_ROOT / "CAPABILITIES.md"
+    markdown = source.read_text(encoding="utf-8")
+    start = markdown.find("## Capability Table")
+    if start == -1:
+        return 0
+    end = markdown.find("\n## ", start + len("## Capability Table"))
+    section = markdown[start:] if end == -1 else markdown[start:end]
+    count = 0
+    for raw_line in section.splitlines():
+        line = raw_line.strip()
+        if line.startswith("|") and not line.startswith("|---") and not line.startswith("| Capability "):
+            count += 1
+    return count
+
+
+def collect_json_secret_findings(value: object, path: str = "$") -> list[str]:
+    findings: list[str] = []
+
+    if isinstance(value, dict):
+        for key, child in value.items():
+            child_path = f"{path}.{key}"
+            lower_key = key.lower()
+            if any(marker in lower_key for marker in ("password", "secret", "token", "api_key", "apikey", "private_key")):
+                normalized_child = child.strip().lower() if isinstance(child, str) else ""
+                is_metadata_policy = (
+                    lower_key.endswith("_policy")
+                    or lower_key.endswith("_values_hidden")
+                    or lower_key in {"secrets", "secret_values_hidden", "contains_secrets"}
+                )
+                if is_metadata_policy and (isinstance(child, bool) or normalized_child in SAFE_CREDENTIAL_METADATA_VALUES):
+                    pass
+                elif isinstance(child, str) and normalized_child not in SAFE_CREDENTIAL_METADATA_VALUES:
+                    findings.append(f"{child_path} contains a credential-like key with a string value")
+                elif child not in (False, None) and not isinstance(child, (dict, list)):
+                    findings.append(f"{child_path} contains a credential-like key with a non-empty value")
+            findings.extend(collect_json_secret_findings(child, child_path))
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            findings.extend(collect_json_secret_findings(child, f"{path}[{index}]"))
+    elif isinstance(value, str):
+        for pattern in SECRET_VALUE_PATTERNS:
+            if pattern.search(value):
+                findings.append(f"{path} contains a credential-like value")
+
+    return findings
+
+
+def markdown_link_targets(markdown: str) -> list[str]:
+    pattern = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
+    return [match.group(1).strip() for match in pattern.finditer(markdown)]
+
+
+def is_external_or_anchor(target: str) -> bool:
+    lowered = target.lower()
+    return (
+        not target
+        or lowered.startswith(("http://", "https://", "mailto:", "javascript:"))
+        or target.startswith("#")
+    )
+
+
+def normalize_markdown_target(target: str) -> str:
+    if target.startswith("<") and target.endswith(">"):
+        target = target[1:-1]
+    target = target.split("#", 1)[0].strip()
+    if " " in target and not target.endswith("/"):
+        first, *_ = target.split()
+        target = first
+    return unquote(target)
+
+
+def collect_broken_markdown_links() -> list[str]:
+    broken: list[str] = []
+    for rel_path in MARKDOWN_FILES:
+        markdown_path = REPO_ROOT / rel_path
+        if not markdown_path.exists():
+            broken.append(f"{rel_path} is missing")
+            continue
+
+        for raw_target in markdown_link_targets(markdown_path.read_text(encoding="utf-8")):
+            if is_external_or_anchor(raw_target):
+                continue
+            target = normalize_markdown_target(raw_target)
+            if not target:
+                continue
+            candidate = (markdown_path.parent / target).resolve()
+            if not str(candidate).startswith(str(REPO_ROOT.resolve())):
+                broken.append(f"{rel_path} links outside repo: {raw_target}")
+            elif not candidate.exists():
+                broken.append(f"{rel_path} has broken link: {raw_target}")
+
+    return broken
+
+
+def expect(condition: bool, failures: list[str], message: str) -> None:
+    if not condition:
+        failures.append(message)
+
+
+def main() -> int:
+    failures: list[str] = []
+
+    docs_repo = load_json(DOCS_REPO_SITEMAP)
+    docs_access = load_json(DOCS_ACCESS_MAP)
+    docs_capability_access_matrix = load_json(DOCS_CAPABILITY_ACCESS_MATRIX)
+    docs_capability_registry = load_json(DOCS_CAPABILITY_REGISTRY)
+    docs_navigation_index = load_json(DOCS_NAVIGATION_INDEX)
+    docs_organization_tree = load_json(DOCS_ORGANIZATION_TREE)
+    docs_navigation_readiness = load_json(DOCS_NAVIGATION_READINESS)
+    docs_navigation_completion_audit = load_json(DOCS_NAVIGATION_COMPLETION_AUDIT)
+    docs_system_integration = load_json(DOCS_SYSTEM_INTEGRATION)
+    docs_saas_handoff = load_json(DOCS_SAAS_HANDOFF)
+    docs_saas_manifest = load_json(DOCS_SAAS_MANIFEST)
+    docs_supabase_hardening = load_json(DOCS_SUPABASE_HARDENING)
+    public_repo = load_json(PUBLIC_REPO_SITEMAP)
+    public_access = load_json(PUBLIC_ACCESS_MAP)
+    public_capability_access_matrix = load_json(PUBLIC_CAPABILITY_ACCESS_MATRIX)
+    public_capability_registry = load_json(PUBLIC_CAPABILITY_REGISTRY)
+    public_navigation_index = load_json(PUBLIC_NAVIGATION_INDEX)
+    public_organization_tree = load_json(PUBLIC_ORGANIZATION_TREE)
+    public_navigation_readiness = load_json(PUBLIC_NAVIGATION_READINESS)
+    public_navigation_completion_audit = load_json(PUBLIC_NAVIGATION_COMPLETION_AUDIT)
+    public_system_integration = load_json(PUBLIC_SYSTEM_INTEGRATION)
+    public_saas_handoff = load_json(PUBLIC_SAAS_HANDOFF)
+    public_saas_manifest = load_json(PUBLIC_SAAS_MANIFEST)
+    public_supabase_hardening = load_json(PUBLIC_SUPABASE_HARDENING)
+
+    for rel_path in REQUIRED_PATHS:
+        expect((REPO_ROOT / rel_path).exists(), failures, f"required path missing: {rel_path}")
+
+    tracked_total = git_file_count()
+    expect(docs_repo.get("tracked_file_count") == tracked_total, failures, "docs/repo_sitemap.json tracked_file_count is stale")
+    expect(public_repo.get("tracked_file_count") == tracked_total, failures, "frontend public sitemap tracked_file_count is stale")
+    expect(docs_navigation_index.get("tracked_file_count") == tracked_total, failures, "docs repo navigation index tracked_file_count is stale")
+    expect(public_navigation_index.get("tracked_file_count") == tracked_total, failures, "frontend repo navigation index tracked_file_count is stale")
+
+    systems = {entry["path"]: entry["files"] for entry in docs_repo.get("top_level_systems", [])}
+    for path, recorded_count in systems.items():
+        actual_count = git_file_count(path)
+        expect(recorded_count == actual_count, failures, f"top_level_systems count is stale for {path}: {recorded_count} != {actual_count}")
+
+    docs_capabilities = docs_access.get("capabilities", [])
+    public_capabilities = public_access.get("capabilities", [])
+    expect(docs_access == public_access, failures, "end-user access map docs/public mirrors differ")
+    expect(len(docs_capabilities) == 13, failures, "docs access map capability count changed from 13")
+    expect(len(public_capabilities) == len(docs_capabilities), failures, "public access map capability count differs from docs access map")
+    for capability in docs_capabilities:
+        capability_id = capability.get("id", "[missing-id]") if isinstance(capability, dict) else "[invalid-row]"
+        for field in ("id", "label", "user_action", "primary_docs", "related_systems", "runtime_or_api_surface", "safety_gate"):
+            expect(
+                bool(capability.get(field)) if isinstance(capability, dict) else False,
+                failures,
+                f"end-user access map capability {capability_id} is missing {field}",
+            )
+    repo_navigation_route = next(
+        (capability for capability in docs_capabilities if isinstance(capability, dict) and capability.get("id") == "repo_navigation"),
+        {},
+    )
+    expect(
+        "docs/repo_organization_tree.json" in repo_navigation_route.get("primary_docs", []),
+        failures,
+        "repo_navigation access route does not expose docs/repo_organization_tree.json",
+    )
+    expect(
+        "frontend/public/aureon_repo_organization_tree.json" in repo_navigation_route.get("runtime_or_api_surface", []),
+        failures,
+        "repo_navigation access route does not expose the public organization tree",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("capability_count") == len(docs_capabilities),
+        failures,
+        "repo sitemap end_user_access.capability_count is stale",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("frontend_navigation_tab") == "#repo-map",
+        failures,
+        "repo sitemap does not expose the frontend navigation tab",
+    )
+    expect(
+        public_repo.get("frontend_navigation_tab") == "#repo-map",
+        failures,
+        "frontend public sitemap does not expose #repo-map",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("capability_registry") == "docs/capability_registry.json",
+        failures,
+        "repo sitemap does not expose the docs capability registry",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("capability_access_matrix") == "docs/capability_access_matrix.json",
+        failures,
+        "repo sitemap does not expose the docs capability access matrix",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("frontend_public_capability_access_matrix")
+        == "frontend/public/aureon_capability_access_matrix.json",
+        failures,
+        "repo sitemap does not expose the public capability access matrix",
+    )
+    expect(
+        public_repo.get("capability_access_matrix") == "frontend/public/aureon_capability_access_matrix.json",
+        failures,
+        "frontend public sitemap does not expose the capability access matrix",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("frontend_public_capability_registry")
+        == "frontend/public/aureon_capability_registry.json",
+        failures,
+        "repo sitemap does not expose the public capability registry",
+    )
+    expect(
+        public_repo.get("capability_registry") == "frontend/public/aureon_capability_registry.json",
+        failures,
+        "frontend public sitemap does not expose the capability registry",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("repo_navigation_index") == "docs/repo_navigation_index.json",
+        failures,
+        "repo sitemap does not expose the docs repo navigation index",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("frontend_public_navigation_index") == "frontend/public/aureon_repo_navigation_index.json",
+        failures,
+        "repo sitemap does not expose the public repo navigation index",
+    )
+    expect(
+        public_repo.get("navigation_index") == "frontend/public/aureon_repo_navigation_index.json",
+        failures,
+        "frontend public sitemap does not expose the repo navigation index",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("repo_organization_tree") == "docs/repo_organization_tree.json",
+        failures,
+        "repo sitemap does not expose the docs repo organization tree",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("frontend_public_organization_tree")
+        == "frontend/public/aureon_repo_organization_tree.json",
+        failures,
+        "repo sitemap does not expose the public repo organization tree",
+    )
+    expect(
+        public_repo.get("organization_tree") == "frontend/public/aureon_repo_organization_tree.json",
+        failures,
+        "frontend public sitemap does not expose the repo organization tree",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("repo_navigation_readiness") == "docs/repo_navigation_readiness.json",
+        failures,
+        "repo sitemap does not expose the docs repo navigation readiness audit",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("frontend_public_repo_navigation_readiness")
+        == "frontend/public/aureon_repo_navigation_readiness.json",
+        failures,
+        "repo sitemap does not expose the public repo navigation readiness audit",
+    )
+    expect(
+        public_repo.get("repo_navigation_readiness") == "frontend/public/aureon_repo_navigation_readiness.json",
+        failures,
+        "frontend public sitemap does not expose the repo navigation readiness audit",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("repo_navigation_completion_audit") == "docs/repo_navigation_completion_audit.json",
+        failures,
+        "repo sitemap does not expose the docs repo navigation completion audit",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("frontend_public_repo_navigation_completion_audit")
+        == "frontend/public/aureon_repo_navigation_completion_audit.json",
+        failures,
+        "repo sitemap does not expose the public repo navigation completion audit",
+    )
+    expect(
+        public_repo.get("repo_navigation_completion_audit") == "frontend/public/aureon_repo_navigation_completion_audit.json",
+        failures,
+        "frontend public sitemap does not expose the repo navigation completion audit",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("system_integration_map") == "docs/system_integration_map.json",
+        failures,
+        "repo sitemap does not expose the docs system integration map",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("frontend_public_system_integration_map")
+        == "frontend/public/aureon_system_integration_map.json",
+        failures,
+        "repo sitemap does not expose the public system integration map",
+    )
+    expect(
+        public_repo.get("system_integration_map") == "frontend/public/aureon_system_integration_map.json",
+        failures,
+        "frontend public sitemap does not expose the system integration map",
+    )
+    expect(
+        docs_repo.get("saas_readiness", {}).get("handoff_manifest") == "docs/saas_integration_handoff.json",
+        failures,
+        "repo sitemap does not expose the docs SaaS integration handoff",
+    )
+    expect(
+        docs_repo.get("saas_readiness", {}).get("frontend_public_handoff_manifest")
+        == "frontend/public/aureon_saas_integration_handoff.json",
+        failures,
+        "repo sitemap does not expose the public SaaS integration handoff",
+    )
+    expect(
+        public_repo.get("saas_integration_handoff") == "frontend/public/aureon_saas_integration_handoff.json",
+        failures,
+        "frontend public sitemap does not expose the SaaS integration handoff",
+    )
+    expect(
+        docs_repo.get("saas_readiness", {}).get("machine_readable") == "docs/saas_integration_manifest.json",
+        failures,
+        "repo sitemap does not expose the docs SaaS integration manifest",
+    )
+    expect(
+        docs_repo.get("saas_readiness", {}).get("frontend_public_mirror") == "frontend/public/aureon_saas_integration_manifest.json",
+        failures,
+        "repo sitemap does not expose the public SaaS integration manifest",
+    )
+    expect(
+        public_repo.get("saas_integration_manifest") == "frontend/public/aureon_saas_integration_manifest.json",
+        failures,
+        "frontend public sitemap does not expose the SaaS integration manifest",
+    )
+    expect(
+        docs_repo.get("saas_readiness", {}).get("supabase_hardening_manifest") == "docs/supabase_hardening_manifest.json",
+        failures,
+        "repo sitemap does not expose the docs Supabase hardening manifest",
+    )
+    expect(
+        docs_repo.get("saas_readiness", {}).get("frontend_public_supabase_hardening_manifest")
+        == "frontend/public/aureon_supabase_hardening_manifest.json",
+        failures,
+        "repo sitemap does not expose the public Supabase hardening manifest",
+    )
+    expect(
+        public_repo.get("supabase_hardening_manifest") == "frontend/public/aureon_supabase_hardening_manifest.json",
+        failures,
+        "frontend public sitemap does not expose the Supabase hardening manifest",
+    )
+    expected_autonomous_frontend_paths = [
+        f"frontend/public/{manifest_name}" for manifest_name in AUTONOMOUS_FRONTEND_MANIFESTS
+    ]
+    docs_autonomous_frontend_paths = [
+        entry.get("frontend_public")
+        for entry in docs_repo.get("saas_readiness", {}).get("autonomous_frontend_manifests", [])
+        if isinstance(entry, dict)
+    ]
+    expect(
+        docs_autonomous_frontend_paths == expected_autonomous_frontend_paths,
+        failures,
+        "repo sitemap does not expose the autonomous frontend manifests",
+    )
+    expect(
+        public_repo.get("autonomous_frontend_manifests") == expected_autonomous_frontend_paths,
+        failures,
+        "frontend public sitemap does not expose the autonomous frontend manifests",
+    )
+    expect(docs_capability_access_matrix == public_capability_access_matrix, failures, "capability access matrix docs/public mirrors differ")
+    expect(docs_capability_registry == public_capability_registry, failures, "capability registry docs/public mirrors differ")
+    expect(docs_navigation_index == public_navigation_index, failures, "repo navigation index docs/public mirrors differ")
+    expect(docs_organization_tree == public_organization_tree, failures, "repo organization tree docs/public mirrors differ")
+    expect(docs_navigation_readiness == public_navigation_readiness, failures, "repo navigation readiness docs/public mirrors differ")
+    expect(docs_navigation_completion_audit == public_navigation_completion_audit, failures, "repo navigation completion audit docs/public mirrors differ")
+    expect(docs_system_integration == public_system_integration, failures, "system integration map docs/public mirrors differ")
+    expect(docs_saas_handoff == public_saas_handoff, failures, "SaaS integration handoff docs/public mirrors differ")
+    capability_registry_rows = docs_capability_registry.get("capabilities", []) if isinstance(docs_capability_registry, dict) else []
+    expected_capability_rows = parse_capabilities_table_count()
+    registry_summary = docs_capability_registry.get("summary", {}) if isinstance(docs_capability_registry, dict) else {}
+    registry_resolved_count = sum(len(row.get("resolved_paths", [])) for row in capability_registry_rows if isinstance(row, dict))
+    registry_runtime_count = sum(len(row.get("runtime_refs", [])) for row in capability_registry_rows if isinstance(row, dict))
+    registry_generated_count = sum(len(row.get("generated_refs", [])) for row in capability_registry_rows if isinstance(row, dict))
+    registry_command_count = sum(len(row.get("command_refs", [])) for row in capability_registry_rows if isinstance(row, dict))
+    registry_symbol_count = sum(len(row.get("code_symbol_refs", [])) for row in capability_registry_rows if isinstance(row, dict))
+    registry_unresolved_count = sum(len(row.get("unresolved_refs", [])) for row in capability_registry_rows if isinstance(row, dict))
+    expect(
+        registry_summary.get("tracked_file_count") == tracked_total,
+        failures,
+        "capability registry tracked_file_count is stale",
+    )
+    expect(
+        registry_summary.get("navigation_index_entries") == docs_navigation_index.get("entry_count"),
+        failures,
+        "capability registry navigation_index_entries is stale",
+    )
+    expect(
+        registry_summary.get("capability_count") == expected_capability_rows,
+        failures,
+        "capability registry capability_count differs from CAPABILITIES.md",
+    )
+    expect(
+        len(capability_registry_rows) == expected_capability_rows,
+        failures,
+        "capability registry row count differs from CAPABILITIES.md",
+    )
+    expect(
+        registry_summary.get("runtime_surface_ref_count") == registry_runtime_count,
+        failures,
+        "capability registry runtime_surface_ref_count differs from rows",
+    )
+    expect(
+        registry_summary.get("generated_artifact_ref_count") == registry_generated_count,
+        failures,
+        "capability registry generated_artifact_ref_count differs from rows",
+    )
+    expect(
+        registry_summary.get("command_surface_ref_count") == registry_command_count,
+        failures,
+        "capability registry command_surface_ref_count differs from rows",
+    )
+    expect(
+        registry_summary.get("code_symbol_ref_count") == registry_symbol_count,
+        failures,
+        "capability registry code_symbol_ref_count differs from rows",
+    )
+    expect(
+        registry_summary.get("unresolved_surface_ref_count") == registry_unresolved_count,
+        failures,
+        "capability registry unresolved_surface_ref_count differs from rows",
+    )
+    expect(
+        registry_summary.get("resolved_surface_ref_count", 0) <= registry_resolved_count,
+        failures,
+        "capability registry resolved_surface_ref_count exceeds row path count",
+    )
+    expect(
+        docs_capability_registry.get("public_contract", {}).get("contains_file_contents") is False,
+        failures,
+        "capability registry public contract must not contain file contents",
+    )
+    expect(
+        docs_capability_registry.get("public_contract", {}).get("contains_secrets") is False,
+        failures,
+        "capability registry public contract must not contain secrets",
+    )
+    matrix_rows = docs_capability_access_matrix.get("capabilities", []) if isinstance(docs_capability_access_matrix, dict) else []
+    matrix_summary = docs_capability_access_matrix.get("summary", {}) if isinstance(docs_capability_access_matrix, dict) else {}
+    matrix_ids = {row.get("id") for row in matrix_rows if isinstance(row, dict)}
+    registry_ids = {row.get("id") for row in capability_registry_rows if isinstance(row, dict)}
+    expect(
+        matrix_summary.get("capability_count") == len(capability_registry_rows),
+        failures,
+        "capability access matrix capability_count differs from capability registry",
+    )
+    expect(len(matrix_rows) == len(capability_registry_rows), failures, "capability access matrix rows differ from capability registry")
+    expect(matrix_ids == registry_ids, failures, "capability access matrix does not cover every registry capability")
+    expect(
+        matrix_summary.get("system_bound_capability_count") == len(capability_registry_rows),
+        failures,
+        "capability access matrix does not bind every current capability to related systems",
+    )
+    for row in matrix_rows:
+        capability_id = row.get("id", "[missing-id]") if isinstance(row, dict) else "[invalid-row]"
+        expect(bool(row.get("access_routes")) if isinstance(row, dict) else False, failures, f"capability access matrix {capability_id} has no access routes")
+        expect(bool(row.get("related_systems")) if isinstance(row, dict) else False, failures, f"capability access matrix {capability_id} has no related systems")
+        expect(bool(row.get("end_user_start_points")) if isinstance(row, dict) else False, failures, f"capability access matrix {capability_id} has no end-user start points")
+        expect(bool(row.get("safety_gates")) if isinstance(row, dict) else False, failures, f"capability access matrix {capability_id} has no safety gates")
+    expect(
+        docs_capability_access_matrix.get("public_contract", {}).get("contains_file_contents") is False,
+        failures,
+        "capability access matrix public contract must not contain file contents",
+    )
+    expect(
+        docs_capability_access_matrix.get("public_contract", {}).get("contains_secrets") is False,
+        failures,
+        "capability access matrix public contract must not contain secrets",
+    )
+    navigation_entries = docs_navigation_index.get("entries", [])
+    expect(len(navigation_entries) == tracked_total, failures, "repo navigation index entry count differs from git ls-files")
+    expect(docs_navigation_index.get("entry_count") == tracked_total, failures, "repo navigation index entry_count is stale")
+    entry_paths = [entry.get("path") for entry in navigation_entries if isinstance(entry, dict)]
+    expect(len(set(entry_paths)) == tracked_total, failures, "repo navigation index paths are missing or duplicated")
+    expect(
+        docs_navigation_index.get("public_contract", {}).get("contains_file_contents") is False,
+        failures,
+        "repo navigation index public contract must not contain file contents",
+    )
+    organization_directories = docs_organization_tree.get("directories", []) if isinstance(docs_organization_tree, dict) else []
+    actual_directory_count = git_directory_count()
+    expect(
+        docs_organization_tree.get("tracked_file_count") == tracked_total,
+        failures,
+        "repo organization tree tracked_file_count is stale",
+    )
+    expect(
+        docs_organization_tree.get("directory_count") == actual_directory_count,
+        failures,
+        "repo organization tree directory_count differs from git ls-files",
+    )
+    expect(
+        len(organization_directories) == actual_directory_count,
+        failures,
+        "repo organization tree directory rows differ from git ls-files",
+    )
+    expect(
+        docs_organization_tree.get("public_contract", {}).get("contains_file_contents") is False,
+        failures,
+        "repo organization tree public contract must not contain file contents",
+    )
+    expect(
+        docs_organization_tree.get("public_contract", {}).get("contains_secrets") is False,
+        failures,
+        "repo organization tree public contract must not contain secrets",
+    )
+    system_rows = docs_system_integration.get("systems", []) if isinstance(docs_system_integration, dict) else []
+    system_paths = {entry.get("path") for entry in system_rows if isinstance(entry, dict)}
+    sitemap_paths = {entry.get("path") for entry in docs_repo.get("top_level_systems", []) if isinstance(entry, dict)}
+    system_capability_ids = {
+        capability_id
+        for entry in system_rows
+        if isinstance(entry, dict)
+        for capability_id in entry.get("capability_ids", [])
+    }
+    system_access_route_ids = {
+        route_id
+        for entry in system_rows
+        if isinstance(entry, dict)
+        for route_id in entry.get("access_route_ids", [])
+    }
+    access_route_ids = {route.get("id") for route in docs_capabilities if isinstance(route, dict)}
+    capability_system_counts = docs_system_integration.get("capability_system_counts", {})
+    access_route_system_counts = docs_system_integration.get("access_route_system_counts", {})
+    expect(
+        docs_system_integration.get("summary", {}).get("tracked_file_count") == tracked_total,
+        failures,
+        "system integration map tracked_file_count is stale",
+    )
+    expect(
+        docs_system_integration.get("summary", {}).get("system_count") == len(docs_repo.get("top_level_systems", [])),
+        failures,
+        "system integration map system_count differs from repo sitemap",
+    )
+    expect(
+        docs_system_integration.get("summary", {}).get("capability_count") == len(registry_ids),
+        failures,
+        "system integration map capability_count differs from capability registry",
+    )
+    expect(
+        docs_system_integration.get("summary", {}).get("mapped_capability_count") == len(system_capability_ids),
+        failures,
+        "system integration map mapped_capability_count differs from system rows",
+    )
+    expect(
+        system_capability_ids == registry_ids,
+        failures,
+        "system integration map does not cover every current capability registry ID",
+    )
+    expect(
+        set(capability_system_counts) == registry_ids,
+        failures,
+        "system integration map capability_system_counts does not cover every current capability",
+    )
+    expect(
+        docs_system_integration.get("summary", {}).get("unmapped_capability_count") == 0,
+        failures,
+        "system integration map reports unmapped current capabilities",
+    )
+    expect(
+        not docs_system_integration.get("unmapped_capability_ids"),
+        failures,
+        "system integration map lists unmapped current capabilities",
+    )
+    expect(
+        docs_system_integration.get("summary", {}).get("access_route_count") == len(docs_capabilities),
+        failures,
+        "system integration map access_route_count differs from access map",
+    )
+    expect(
+        docs_system_integration.get("summary", {}).get("mapped_access_route_count") == len(system_access_route_ids),
+        failures,
+        "system integration map mapped_access_route_count differs from system rows",
+    )
+    expect(
+        system_access_route_ids.issubset(access_route_ids),
+        failures,
+        "system integration map has access route IDs not present in the access map",
+    )
+    expect(
+        set(access_route_system_counts).issubset(access_route_ids),
+        failures,
+        "system integration map access_route_system_counts has IDs not present in the access map",
+    )
+    expect(system_paths == sitemap_paths, failures, "system integration map does not cover every top-level system")
+    expect(
+        docs_system_integration.get("public_contract", {}).get("contains_file_contents") is False,
+        failures,
+        "system integration map public contract must not contain file contents",
+    )
+    expect(
+        docs_system_integration.get("public_contract", {}).get("contains_secrets") is False,
+        failures,
+        "system integration map public contract must not contain secrets",
+    )
+
+    supabase_counts = parse_supabase_auth_counts()
+    expect(
+        docs_repo.get("saas_readiness", {}).get("supabase_auth_counts") == supabase_counts,
+        failures,
+        "repo sitemap Supabase auth counts differ from supabase/config.toml",
+    )
+    expect(docs_saas_manifest == public_saas_manifest, failures, "SaaS integration manifest docs/public mirrors differ")
+    expect(docs_supabase_hardening == public_supabase_hardening, failures, "Supabase hardening manifest docs/public mirrors differ")
+    env_names = parse_env_variable_names()
+    expect(
+        docs_saas_manifest.get("environment", {}).get("variable_count") == len(env_names),
+        failures,
+        "SaaS integration manifest env variable count differs from env sources",
+    )
+    expect(
+        docs_saas_manifest.get("supabase", {}).get("verify_jwt_true") == supabase_counts["verify_jwt_true"],
+        failures,
+        "SaaS integration manifest verify_jwt_true differs from supabase/config.toml",
+    )
+    expect(
+        docs_saas_manifest.get("supabase", {}).get("verify_jwt_false") == supabase_counts["verify_jwt_false"],
+        failures,
+        "SaaS integration manifest verify_jwt_false differs from supabase/config.toml",
+    )
+    expect(
+        docs_saas_manifest.get("public_contract", {}).get("contains_env_values") is False,
+        failures,
+        "SaaS integration manifest public contract must not contain env values",
+    )
+    readiness_summary = docs_navigation_readiness.get("summary", {}) if isinstance(docs_navigation_readiness, dict) else {}
+    handoff_summary = docs_saas_handoff.get("summary", {}) if isinstance(docs_saas_handoff, dict) else {}
+    expect(
+        handoff_summary.get("tracked_file_count") == tracked_total,
+        failures,
+        "SaaS integration handoff tracked_file_count is stale",
+    )
+    expect(
+        handoff_summary.get("readiness_status") == readiness_summary.get("readiness_status"),
+        failures,
+        "SaaS integration handoff readiness_status differs from readiness audit",
+    )
+    expect(
+        handoff_summary.get("current_capability_count") == len(capability_registry_rows),
+        failures,
+        "SaaS integration handoff current_capability_count differs from capability registry",
+    )
+    expect(
+        handoff_summary.get("system_mapped_capability_count") == len(capability_registry_rows),
+        failures,
+        "SaaS integration handoff system_mapped_capability_count differs from capability registry",
+    )
+    expect(
+        handoff_summary.get("unmapped_capability_count") == 0,
+        failures,
+        "SaaS integration handoff reports unmapped capabilities",
+    )
+    expect(
+        handoff_summary.get("deployment_surface_count") == len(docs_saas_manifest.get("deployment_surfaces", [])),
+        failures,
+        "SaaS integration handoff deployment_surface_count differs from SaaS manifest",
+    )
+    expect(
+        handoff_summary.get("environment_variable_name_count") == len(env_names),
+        failures,
+        "SaaS integration handoff environment_variable_name_count differs from env sources",
+    )
+    expect(
+        handoff_summary.get("supabase_production_blocker_count") == 0,
+        failures,
+        "SaaS integration handoff reports Supabase production blockers",
+    )
+    expect(
+        handoff_summary.get("handoff_status") in {"ready", "ready_with_advisory_review"},
+        failures,
+        "SaaS integration handoff status is not ready",
+    )
+    expect(
+        docs_saas_handoff.get("public_contract", {}).get("contains_env_values") is False,
+        failures,
+        "SaaS integration handoff public contract must not contain env values",
+    )
+    expect(
+        docs_saas_handoff.get("public_contract", {}).get("contains_secrets") is False,
+        failures,
+        "SaaS integration handoff public contract must not contain secrets",
+    )
+    hardening_summary = docs_supabase_hardening.get("summary", {}) if isinstance(docs_supabase_hardening, dict) else {}
+    public_high_risk_routes = docs_supabase_hardening.get("public_high_risk_routes", []) if isinstance(docs_supabase_hardening, dict) else []
+    expect(
+        hardening_summary.get("function_count") == supabase_counts["verify_jwt_true"] + supabase_counts["verify_jwt_false"],
+        failures,
+        "Supabase hardening manifest function_count differs from supabase/config.toml",
+    )
+    expect(
+        hardening_summary.get("verify_jwt_true") == supabase_counts["verify_jwt_true"],
+        failures,
+        "Supabase hardening manifest verify_jwt_true differs from supabase/config.toml",
+    )
+    expect(
+        hardening_summary.get("verify_jwt_false") == supabase_counts["verify_jwt_false"],
+        failures,
+        "Supabase hardening manifest verify_jwt_false differs from supabase/config.toml",
+    )
+    expect(
+        hardening_summary.get("public_high_risk_count") == len(public_high_risk_routes),
+        failures,
+        "Supabase hardening manifest public_high_risk_count is stale",
+    )
+    expect(
+        hardening_summary.get("production_blocker_count") == len(public_high_risk_routes),
+        failures,
+        "Supabase hardening manifest production_blocker_count is stale",
+    )
+    expect(
+        docs_supabase_hardening.get("public_contract", {}).get("contains_file_contents") is False,
+        failures,
+        "Supabase hardening manifest public contract must not contain file contents",
+    )
+    expect(
+        docs_supabase_hardening.get("public_contract", {}).get("contains_secrets") is False,
+        failures,
+        "Supabase hardening manifest public contract must not contain secrets",
+    )
+
+    readiness_gates = docs_navigation_readiness.get("gates", []) if isinstance(docs_navigation_readiness, dict) else []
+    expect(
+        readiness_summary.get("readiness_status") == "pass",
+        failures,
+        "repo navigation readiness audit is not passing",
+    )
+    expect(
+        readiness_summary.get("failed_gate_count") == 0,
+        failures,
+        "repo navigation readiness audit reports failed gates",
+    )
+    expect(
+        readiness_summary.get("tracked_file_count") == tracked_total,
+        failures,
+        "repo navigation readiness tracked_file_count is stale",
+    )
+    expect(
+        readiness_summary.get("directory_count") == actual_directory_count,
+        failures,
+        "repo navigation readiness directory_count is stale",
+    )
+    expect(
+        readiness_summary.get("current_capability_count") == len(capability_registry_rows),
+        failures,
+        "repo navigation readiness current_capability_count differs from capability registry",
+    )
+    expect(
+        readiness_summary.get("routed_capability_count") == len(capability_registry_rows),
+        failures,
+        "repo navigation readiness routed_capability_count differs from capability registry",
+    )
+    expect(
+        readiness_summary.get("system_mapped_capability_count") == len(capability_registry_rows),
+        failures,
+        "repo navigation readiness system_mapped_capability_count differs from capability registry",
+    )
+    expect(
+        readiness_summary.get("unmapped_capability_count") == 0,
+        failures,
+        "repo navigation readiness reports unmapped capabilities",
+    )
+    expect(
+        readiness_summary.get("supabase_production_blocker_count") == 0,
+        failures,
+        "repo navigation readiness reports Supabase production blockers",
+    )
+    expect(
+        readiness_summary.get("gate_count") == len(readiness_gates),
+        failures,
+        "repo navigation readiness gate_count differs from gate rows",
+    )
+    expect(
+        docs_navigation_readiness.get("public_contract", {}).get("contains_file_contents") is False,
+        failures,
+        "repo navigation readiness public contract must not contain file contents",
+    )
+    expect(
+        docs_navigation_readiness.get("public_contract", {}).get("contains_secrets") is False,
+        failures,
+        "repo navigation readiness public contract must not contain secrets",
+    )
+    completion_summary = docs_navigation_completion_audit.get("summary", {}) if isinstance(docs_navigation_completion_audit, dict) else {}
+    completion_requirements = docs_navigation_completion_audit.get("requirements", []) if isinstance(docs_navigation_completion_audit, dict) else []
+    expect(
+        completion_summary.get("completion_status") == "complete",
+        failures,
+        "repo navigation completion audit is not complete",
+    )
+    expect(
+        completion_summary.get("tracked_file_count") == tracked_total,
+        failures,
+        "repo navigation completion audit tracked_file_count is stale",
+    )
+    expect(
+        completion_summary.get("current_capability_count") == len(capability_registry_rows),
+        failures,
+        "repo navigation completion audit current_capability_count differs from capability registry",
+    )
+    expect(
+        completion_summary.get("routed_capability_count") == len(capability_registry_rows),
+        failures,
+        "repo navigation completion audit routed_capability_count differs from capability registry",
+    )
+    expect(
+        completion_summary.get("system_mapped_capability_count") == len(capability_registry_rows),
+        failures,
+        "repo navigation completion audit system_mapped_capability_count differs from capability registry",
+    )
+    expect(
+        completion_summary.get("unmapped_capability_count") == 0,
+        failures,
+        "repo navigation completion audit reports unmapped capabilities",
+    )
+    expect(
+        completion_summary.get("readiness_status") == readiness_summary.get("readiness_status"),
+        failures,
+        "repo navigation completion audit readiness_status differs from readiness audit",
+    )
+    expect(
+        completion_summary.get("supabase_production_blocker_count") == hardening_summary.get("production_blocker_count"),
+        failures,
+        "repo navigation completion audit Supabase blocker count differs from hardening manifest",
+    )
+    expect(
+        completion_summary.get("handoff_status") == handoff_summary.get("handoff_status"),
+        failures,
+        "repo navigation completion audit handoff_status differs from SaaS handoff",
+    )
+    expect(
+        completion_summary.get("requirement_count") == len(completion_requirements),
+        failures,
+        "repo navigation completion audit requirement_count differs from requirement rows",
+    )
+    expect(
+        completion_summary.get("incomplete_requirement_count") == 0
+        and all(isinstance(item, dict) and item.get("status") == "complete" for item in completion_requirements),
+        failures,
+        "repo navigation completion audit has incomplete requirements",
+    )
+    expect(
+        docs_navigation_completion_audit.get("public_contract", {}).get("contains_file_contents") is False,
+        failures,
+        "repo navigation completion audit public contract must not contain file contents",
+    )
+    expect(
+        docs_navigation_completion_audit.get("public_contract", {}).get("contains_secrets") is False,
+        failures,
+        "repo navigation completion audit public contract must not contain secrets",
+    )
+
+    autonomous_public_manifests: list[tuple[str, object]] = []
+    for manifest_name in AUTONOMOUS_FRONTEND_MANIFESTS:
+        docs_label = f"docs/audits/{manifest_name}"
+        public_label = f"frontend/public/{manifest_name}"
+        docs_manifest = load_json(REPO_ROOT / docs_label)
+        public_manifest = load_json(REPO_ROOT / public_label)
+        autonomous_public_manifests.append((public_label, public_manifest))
+        expect(docs_manifest == public_manifest, failures, f"{manifest_name} docs/public mirrors differ")
+        expect(
+            isinstance(public_manifest, dict) and isinstance(public_manifest.get("status"), str),
+            failures,
+            f"{public_label} must expose a status string",
+        )
+        expect(
+            isinstance(public_manifest, dict) and isinstance(public_manifest.get("summary"), dict),
+            failures,
+            f"{public_label} must expose a summary object",
+        )
+
+    for label, manifest in (
+        ("frontend/public/aureon_repo_sitemap.json", public_repo),
+        ("frontend/public/aureon_end_user_access_map.json", public_access),
+        ("frontend/public/aureon_capability_access_matrix.json", public_capability_access_matrix),
+        ("frontend/public/aureon_capability_registry.json", public_capability_registry),
+        ("frontend/public/aureon_repo_navigation_index.json", public_navigation_index),
+        ("frontend/public/aureon_repo_organization_tree.json", public_organization_tree),
+        ("frontend/public/aureon_repo_navigation_readiness.json", public_navigation_readiness),
+        ("frontend/public/aureon_repo_navigation_completion_audit.json", public_navigation_completion_audit),
+        ("frontend/public/aureon_system_integration_map.json", public_system_integration),
+        ("frontend/public/aureon_saas_integration_handoff.json", public_saas_handoff),
+        ("frontend/public/aureon_saas_integration_manifest.json", public_saas_manifest),
+        ("frontend/public/aureon_supabase_hardening_manifest.json", public_supabase_hardening),
+        *autonomous_public_manifests,
+    ):
+        for finding in collect_json_secret_findings(manifest):
+            failures.append(f"{label}: {finding}")
+
+    failures.extend(collect_broken_markdown_links())
+
+    if failures:
+        print("Navigation contract validation failed:")
+        for failure in failures:
+            print(f"- {failure}")
+        return 1
+
+    print(f"OK tracked_file_count={tracked_total}")
+    print(f"OK capability_count={len(docs_capabilities)}")
+    print(f"OK current_capability_registry_count={len(capability_registry_rows)}")
+    print(f"OK capability_access_matrix_rows={len(matrix_rows)}")
+    print(f"OK repo_navigation_index_entries={len(navigation_entries)}")
+    print(f"OK repo_organization_directories={len(organization_directories)}")
+    print(f"OK repo_navigation_readiness={readiness_summary.get('readiness_status')}")
+    print(f"OK repo_navigation_completion_audit={completion_summary.get('completion_status')}")
+    print(f"OK system_integration_systems={len(system_rows)}")
+    print(f"OK saas_integration_handoff={handoff_summary.get('handoff_status')}")
+    print(f"OK saas_env_variable_count={len(env_names)}")
+    print(f"OK supabase_auth_counts={supabase_counts}")
+    print(f"OK supabase_hardening_public_blockers={len(public_high_risk_routes)}")
+    print(f"OK autonomous_frontend_manifests={len(AUTONOMOUS_FRONTEND_MANIFESTS)}")
+    print("OK public navigation manifests contain no credential-like values")
+    print("OK key Markdown links resolve")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

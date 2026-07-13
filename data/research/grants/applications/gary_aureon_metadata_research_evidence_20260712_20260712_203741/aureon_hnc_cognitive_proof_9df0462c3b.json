@@ -1,0 +1,342 @@
+{
+  "generated_at": "2026-05-13T10:59:46.706675",
+  "status": "passing",
+  "passed": true,
+  "who": "HNC master formula plus Auris nodes, Seer, Lyra, King, shadow agents, and unified exchange runtime",
+  "what": "timestamped proof that cognitive logic evaluated real market data and moved through the intended flow",
+  "where": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\aureon_hnc_cognitive_proof.json",
+  "real_data": {
+    "passed": true,
+    "source_count": 3,
+    "source_names": [
+      "capital",
+      "kraken",
+      "binance"
+    ],
+    "symbol_count": 7,
+    "active_signal_count": 7,
+    "price_count": 4,
+    "avg_confidence": 0.463357,
+    "avg_change_pct": 0.369714,
+    "avg_abs_change_pct": 0.381714,
+    "avg_support_count": 1.0,
+    "model_alignment_rate": 0.285714,
+    "simulation_fallback_disabled": true,
+    "live_env_enabled": true,
+    "data_source_kind": "live_exchange_runtime"
+  },
+  "market_texture": {
+    "volatility": 0.0763428,
+    "momentum": 0.0739428,
+    "volume": 0.5,
+    "spread": 0.536643,
+    "route_unity": 0.8333333333333334,
+    "model_alignment": 0.285714,
+    "confidence": 0.463357
+  },
+  "master_formula": {
+    "source": "unified runtime blend over HNC/Auris/Seer/Lyra/King contracts",
+    "evaluated": true,
+    "formula": "HNC = 0.22*real_data + 0.16*source_unity + 0.22*auris + 0.14*model_alignment + 0.12*shadow + 0.14*route_unity",
+    "inputs": {
+      "real_data": 1.0,
+      "source_unity": 0.75,
+      "auris": 0.609928,
+      "model_alignment": 0.285714,
+      "shadow": 0.641493,
+      "route_unity": 0.833333
+    },
+    "score": 0.70783,
+    "passed": true,
+    "timestamp": "2026-05-13T10:59:46.706675"
+  },
+  "auris_nodes": {
+    "source": "aureon/utils/aureon_queen_hive_mind.py::AURIS_NODES",
+    "evaluated": true,
+    "passed": true,
+    "node_count": 9,
+    "coherence": 0.609928,
+    "status": "moderate_coherence",
+    "market_texture": {
+      "volatility": 0.076343,
+      "momentum": 0.073943,
+      "volume": 0.5,
+      "spread": 0.536643,
+      "route_unity": 0.833333,
+      "model_alignment": 0.285714,
+      "confidence": 0.463357
+    },
+    "nodes": {
+      "Tiger": {
+        "value": 0.738926,
+        "freq": 220.0,
+        "role": "volatility",
+        "weight": 1.0,
+        "weighted_value": 0.738926,
+        "domain": "cuts noise",
+        "timestamp": "2026-05-13T10:59:46.706675"
+      },
+      "Falcon": {
+        "value": 0.20176,
+        "freq": 285.0,
+        "role": "momentum",
+        "weight": 1.2,
+        "weighted_value": 0.242112,
+        "domain": "speed and attack",
+        "timestamp": "2026-05-13T10:59:46.706675"
+      },
+      "Hummingbird": {
+        "value": 0.06949,
+        "freq": 396.0,
+        "role": "stability",
+        "weight": 0.8,
+        "weighted_value": 0.055592,
+        "domain": "high frequency lock",
+        "timestamp": "2026-05-13T10:59:46.706675"
+      },
+      "Dolphin": {
+        "value": 0.615107,
+        "freq": 528.0,
+        "role": "emotion",
+        "weight": 1.5,
+        "weighted_value": 0.922661,
+        "domain": "waveform carrier",
+        "timestamp": "2026-05-13T10:59:46.706675"
+      },
+      "Deer": {
+        "value": 0.536643,
+        "freq": 639.0,
+        "role": "sensing",
+        "weight": 0.9,
+        "weighted_value": 0.482979,
+        "domain": "micro shifts",
+        "timestamp": "2026-05-13T10:59:46.706675"
+      },
+      "Owl": {
+        "value": 0.671428,
+        "freq": 741.0,
+        "role": "memory",
+        "weight": 1.1,
+        "weighted_value": 0.738571,
+        "domain": "pattern memory",
+        "timestamp": "2026-05-13T10:59:46.706675"
+      },
+      "Panda": {
+        "value": 0.961829,
+        "freq": 852.0,
+        "role": "love",
+        "weight": 1.3,
+        "weighted_value": 1.250377,
+        "domain": "grounding safety",
+        "timestamp": "2026-05-13T10:59:46.706675"
+      },
+      "CargoShip": {
+        "value": 0.833333,
+        "freq": 936.0,
+        "role": "infrastructure",
+        "weight": 0.7,
+        "weighted_value": 0.583333,
+        "domain": "liquidity buffer",
+        "timestamp": "2026-05-13T10:59:46.706675"
+      },
+      "Clownfish": {
+        "value": 0.779762,
+        "freq": 963.0,
+        "role": "symbiosis",
+        "weight": 1.0,
+        "weighted_value": 0.779762,
+        "domain": "connection",
+        "timestamp": "2026-05-13T10:59:46.706675"
+      }
+    }
+  },
+  "systems": {
+    "hnc_master_protocol": {
+      "name": "HNC master protocol",
+      "role": "global financial frequency mapper and trading bridge",
+      "path": "aureon/strategies/hnc_master_protocol.py",
+      "present": true,
+      "passed": true,
+      "markers_found": [
+        "class HarmonicNexusCore",
+        "class HNCTradingBridge",
+        "def enhance_opportunity"
+      ],
+      "markers_required": [
+        "class HarmonicNexusCore",
+        "class HNCTradingBridge",
+        "def enhance_opportunity"
+      ],
+      "line_count": 1508
+    },
+    "hnc_probability_matrix": {
+      "name": "HNC probability matrix",
+      "role": "timestamped harmonic probability validation",
+      "path": "aureon/strategies/hnc_probability_matrix.py",
+      "present": true,
+      "passed": true,
+      "markers_found": [
+        "class FrequencySnapshot",
+        "class ProbabilityMatrix",
+        "class HNCProbabilityIntegration"
+      ],
+      "markers_required": [
+        "class FrequencySnapshot",
+        "class ProbabilityMatrix",
+        "class HNCProbabilityIntegration"
+      ],
+      "line_count": 2219
+    },
+    "auris_nodes": {
+      "name": "Auris nodes",
+      "role": "nine-node sensory market texture evaluation",
+      "path": "aureon/utils/aureon_queen_hive_mind.py",
+      "present": true,
+      "passed": true,
+      "markers_found": [
+        "AURIS_NODES",
+        "def read_auris_nodes",
+        "def get_auris_coherence"
+      ],
+      "markers_required": [
+        "AURIS_NODES",
+        "def read_auris_nodes",
+        "def get_auris_coherence"
+      ],
+      "line_count": 15548
+    },
+    "seer": {
+      "name": "Seer",
+      "role": "vision and oracle consensus layer",
+      "path": "aureon/intelligence/aureon_seer.py",
+      "present": true,
+      "passed": true,
+      "markers_found": [
+        "class SeerVision",
+        "class SeerConsensus",
+        "class OracleReading"
+      ],
+      "markers_required": [
+        "class SeerVision",
+        "class SeerConsensus",
+        "class OracleReading"
+      ],
+      "line_count": 3625,
+      "runtime_reading": {
+        "evaluated": true,
+        "symbol": "US100",
+        "signal": "BUY",
+        "confidence": 1.0,
+        "vision_grade": "clear",
+        "timestamp": "2026-05-13T10:59:46.706675"
+      }
+    },
+    "lyra": {
+      "name": "Lyra",
+      "role": "harmonic resonance and market affect layer",
+      "path": "aureon/trading/aureon_lyra.py",
+      "present": true,
+      "passed": true,
+      "markers_found": [
+        "class LyraResonance",
+        "class TheLyre",
+        "class ChamberOfSpirit"
+      ],
+      "markers_required": [
+        "class LyraResonance",
+        "class TheLyre",
+        "class ChamberOfSpirit"
+      ],
+      "line_count": 1491,
+      "runtime_reading": {
+        "evaluated": true,
+        "resonance_score": 0.566096,
+        "resonance_frequency_hz": 741.829,
+        "resonance_grade": "moderate_coherence",
+        "timestamp": "2026-05-13T10:59:46.706675"
+      }
+    },
+    "king": {
+      "name": "King",
+      "role": "capital growth and compounding discipline layer",
+      "path": "aureon/trading/compound_king.py",
+      "present": true,
+      "passed": true,
+      "markers_found": [
+        "class CompoundKing",
+        "def get_daily_return_target",
+        "def run_30_days"
+      ],
+      "markers_required": [
+        "class CompoundKing",
+        "def get_daily_return_target",
+        "def run_30_days"
+      ],
+      "line_count": 345,
+      "runtime_reading": {
+        "evaluated": true,
+        "executor_quote_usd": 5.0,
+        "max_open_positions": 12,
+        "route_unity": 0.833333,
+        "discipline_score": 0.916667,
+        "timestamp": "2026-05-13T10:59:46.706675"
+      }
+    }
+  },
+  "flow": [
+    {
+      "step": "real_market_data",
+      "passed": true,
+      "evidence": "3 sources, 7 symbols, 4 live prices",
+      "timestamp": "2026-05-13T10:59:46.706675"
+    },
+    {
+      "step": "hnc_master_formula",
+      "passed": true,
+      "evidence": "score=0.70783",
+      "timestamp": "2026-05-13T10:59:46.706675"
+    },
+    {
+      "step": "auris_nodes",
+      "passed": true,
+      "evidence": "9 nodes coherence=0.609928",
+      "timestamp": "2026-05-13T10:59:46.706675"
+    },
+    {
+      "step": "seer_vision",
+      "passed": true,
+      "evidence": "US100 BUY clear",
+      "timestamp": "2026-05-13T10:59:46.706675"
+    },
+    {
+      "step": "lyra_resonance",
+      "passed": true,
+      "evidence": "741.829Hz moderate_coherence",
+      "timestamp": "2026-05-13T10:59:46.706675"
+    },
+    {
+      "step": "king_capital_logic",
+      "passed": true,
+      "evidence": "discipline=0.916667",
+      "timestamp": "2026-05-13T10:59:46.706675"
+    },
+    {
+      "step": "shadow_trade_self_validation",
+      "passed": true,
+      "evidence": "0 opened, 1 active, 0 validated",
+      "timestamp": "2026-05-13T10:59:46.706675"
+    },
+    {
+      "step": "public_state_publication",
+      "passed": true,
+      "evidence": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_hnc_cognitive_proof.json",
+      "timestamp": "2026-05-13T10:59:46.706675"
+    }
+  ],
+  "passed_count": 8,
+  "step_count": 8,
+  "runtime_clearances": [
+    "order_intent_publish_disabled"
+  ],
+  "shadow_report_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\unified_shadow_trade_report.json"
+}

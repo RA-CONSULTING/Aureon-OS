@@ -1,0 +1,31 @@
+﻿{
+    "operator":  "Aureon",
+    "generated_at":  "2026-07-10T07:46:40+01:00",
+    "event":  "ifs_batch_route_unlock_audit",
+    "scope":  "IFS_ONLY",
+    "result":  "NO_NEW_IFS_ROUTE_UNLOCK_EVIDENCE_FOUND",
+    "routes_checked":  16,
+    "unlock_evidence_found":  false,
+    "route_groups":  {
+                         "maritime_partner_asset_budget_permit_gate":  6,
+                         "uk_swiss_partner_budget_gate":  1,
+                         "quantum_hardware_lead_partner_gate":  1,
+                         "automotive_zev_partner_gate":  1,
+                         "manufacturing_facility_gate":  1,
+                         "lead_or_entity_eligibility_gate":  5,
+                         "not_grant_finance_risk_gate":  1
+                     },
+    "artifacts":  [
+                      "applications/IFS_BATCH_ROUTE_UNLOCK_AUDIT_20260710_074640.json",
+                      "applications/IFS_BATCH_ROUTE_UNLOCK_AUDIT_20260710_074640.md"
+                  ],
+    "controls":  [
+                     "No IFS draft opened in this batch audit",
+                     "No final IFS submission attempted",
+                     "No Project Impact final submit attempted",
+                     "No award terms accepted",
+                     "No partner invitation, email, upload, or Drive write attempted",
+                     "No partner, asset, vessel, facility, lead-organisation, permit, or budget claim invented",
+                     "No CAPTCHA/MFA/provider-control bypass or plaintext password storage attempted"
+                 ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "aureon-email-receipt-v1",
+  "generated_at": "2026-07-09T06:24:31.719209",
+  "status": "SENT_CONFIRMED_BY_GMAIL_TOAST",
+  "to": "gaxlec@gmail.com",
+  "from": "gaxlec@gmail.com",
+  "subject": "Aureon grant update - IFS current sweep and Future Leaders pack staged",
+  "body_file": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\SELF_UPDATE_IFS_CURRENT_QUEUE_20260709.body.txt",
+  "eml_file": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\SELF_UPDATE_IFS_CURRENT_QUEUE_20260709.eml",
+  "screenshot": "applications/rendered/gmail_ifs_current_queue_sent_20260709.png",
+  "included_drive_links": [
+    "https://drive.google.com/file/d/1O0NHcbNsRrgS-n1Vf87x78bUPse2mmGR/view?usp=drivesdk",
+    "https://drive.google.com/file/d/1pe30LLVbt5J2IO1MKK_Tg12R8sQ6j4Ow/view?usp=drivesdk"
+  ]
+}

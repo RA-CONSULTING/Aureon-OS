@@ -1,0 +1,325 @@
+{
+  "schema_version": "aureon-ifs-live-drive-route-unlock-readback-v1",
+  "generated_at": "2026-07-10T14:23:08+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_live_drive_route_unlock_readback",
+  "search_method": "Google Drive connector metadata search. Best-effort content fetch was used only for the first broad context query; private finance values were not copied into this artifact.",
+  "source_refs": {
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_141558.json",
+    "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_141556.json",
+    "targeted_local_unlock_recheck": "applications/IFS_TARGETED_UNLOCK_EVIDENCE_RECHECK_20260710_141910.json",
+    "p1_partner_acquisition_register": "applications/IFS_P1_PARTNER_ACQUISITION_REGISTER_20260710_140752.json",
+    "non_p1_evidence_acquisition_register": "applications/IFS_NON_P1_EVIDENCE_ACQUISITION_REGISTER_20260710_141505.json"
+  },
+  "summary": {
+    "drive_queries_reviewed": 11,
+    "metadata_results_reviewed": 50,
+    "private_finance_values_copied": false,
+    "route_unlock_evidence_found": 0,
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0,
+    "safe_portal_actions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false
+  },
+  "searches": [
+    {
+      "query": "Aureon grant",
+      "result_count": 3,
+      "result_class": "GRANT_CONTEXT_AND_DRAFT_PACKS_FOUND",
+      "classification": "War-room, FLF draft pack and source corpus files found. Useful for grant context, but not a new active-route partner, lead, budget, asset, permission or facility unlock.",
+      "sensitive_handling": "One grant war-room result contains private finance and tax fields in fetched content; values are excluded from this readback and must not be copied into generic grant evidence artifacts.",
+      "results": [
+        {
+          "title": "Aureon Grant War Room - 2026-07-04",
+          "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+          "mime_type": "application/vnd.google-apps.spreadsheet",
+          "classification": "Grant operating context and pipeline source; not route-unlocking evidence by itself."
+        },
+        {
+          "title": "IFS_FUTURE_LEADERS_R11_AUREON_PACK_20260709.pdf",
+          "url": "https://drive.google.com/file/d/1O0NHcbNsRrgS-n1Vf87x78bUPse2mmGR",
+          "mime_type": "application/pdf",
+          "classification": "Future Leaders draft pack; useful staged material, not current IFS route unlock evidence."
+        },
+        {
+          "title": "aureon_complete_codex.md",
+          "url": "https://drive.google.com/file/d/1IaKWVreJwlvIz2Ylk-NuSN5Mcc2joylj",
+          "mime_type": "text/markdown",
+          "classification": "Large source/context file; not partner commitment or budget evidence."
+        }
+      ]
+    },
+    {
+      "query": "Swiss partner",
+      "result_count": 7,
+      "result_class": "PLANNING_MATERIAL_ONLY",
+      "classification": "War-room and operating-log files found. No named Swiss implementation partner, partner commitment letter, partner budget, permit/licence or export-control evidence found.",
+      "results": [
+        {
+          "title": "Aureon Grant War Room - 2026-07-04",
+          "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM"
+        },
+        {
+          "title": "Aureon Grant War Room - 2026-07-04.xlsx",
+          "url": "https://drive.google.com/file/d/1Ow2nKdM-mG2p9LiaduSvr97F2Q19NBXs"
+        },
+        {
+          "title": "AUREON_GRANT_OPERATING_LOG_REFRESHED_20260705.md",
+          "url": "https://drive.google.com/file/d/1AgBUZhuDzRZl-7RaDrm5zoGHZ1C2Npbf"
+        }
+      ]
+    },
+    {
+      "query": "academic partner",
+      "result_count": 8,
+      "result_class": "OUTREACH_DRAFT_ONLY",
+      "classification": "Academic outreach pack and planning files found. No eligible academic lead, TTO authorisation, signed work package or budget commitment found.",
+      "results": [
+        {
+          "title": "03_Academic_Validation_Sprint_Email_Pack.pdf",
+          "url": "https://drive.google.com/file/d/1Gwy7fl-jo8Mc5HD4lRopWuhocVuf7V3S"
+        },
+        {
+          "title": "Aureon Grant War Room - 2026-07-04",
+          "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM"
+        },
+        {
+          "title": "MASTER_WORK_INDEX_20260705.md",
+          "url": "https://drive.google.com/file/d/1O-mPZhaX3JdY_CWi-YJ3j8Z-nM71eeVq"
+        }
+      ]
+    },
+    {
+      "query": "maritime vessel",
+      "result_count": 8,
+      "result_class": "RESEARCH_OR_UNRELATED_ONLY",
+      "classification": "Research files and unrelated shipping/software material found. No maritime lead, vessel, port, shipyard, site permission, safety case, insurance or budget evidence found.",
+      "results": [
+        {
+          "title": "guardrail-shipping-health.md",
+          "url": "https://drive.google.com/file/d/1C7VDWeD79cxOyYpGA8j7WaoPOAZNsKgb"
+        },
+        {
+          "title": "Atlantic_Seaboard_Substrate_v.docx",
+          "url": "https://drive.google.com/file/d/1gt25FWYhVMAzynVz2Bk5DXBNtmqyPBe0"
+        },
+        {
+          "title": "Atlantic_Seaboard_Substrate_v1.pdf",
+          "url": "https://drive.google.com/file/d/1iGa_lBbxNsxAYqRiHbD-A2mU2wfyD-Zt"
+        }
+      ]
+    },
+    {
+      "query": "farm ADOPT",
+      "result_count": 8,
+      "result_class": "RESEARCH_AND_WAR_ROOM_ONLY",
+      "classification": "Research and grant planning files found. No England farmer/grower/forester lead, field-lab problem statement, facilitator commitment or support-role procurement evidence found.",
+      "results": [
+        {
+          "title": "People_of_the_Threshold_v.docx",
+          "url": "https://drive.google.com/file/d/1uOYvgUevOR67wmasyq_Ex3Sp7Rmss5Dc"
+        },
+        {
+          "title": "RA_Grant_War_Room_Package.pdf",
+          "url": "https://drive.google.com/file/d/1x7igP7CET552Ey3QKyC6ZVBcN1GMAv5g"
+        },
+        {
+          "title": "RA_Grant_War_Room_Package.md",
+          "url": "https://drive.google.com/file/d/1_V8v6tYCL-LsMxrju_emMQcikxl_ZNly"
+        }
+      ]
+    },
+    {
+      "query": "quantum hardware",
+      "result_count": 8,
+      "result_class": "RESEARCH_AND_PLANNING_ONLY",
+      "classification": "Research, project and war-room files found. No quantum hardware lead, facility access, consortium commitment, work package or budget evidence found.",
+      "results": [
+        {
+          "title": "Aureon Grant War Room - 2026-07-04",
+          "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM"
+        },
+        {
+          "title": "EPAS_Unified_Architecture_Project_Druid.md",
+          "url": "https://drive.google.com/file/d/1R8AeTruKOcVxPk8-6fVXemizp9qW91f-"
+        },
+        {
+          "title": "RA_Grant_War_Room_Package.pdf",
+          "url": "https://drive.google.com/file/d/1x7igP7CET552Ey3QKyC6ZVBcN1GMAv5g"
+        }
+      ]
+    },
+    {
+      "query": "DRIVE35",
+      "result_count": 0,
+      "result_class": "NO_RESULTS",
+      "classification": "No Drive result found for DRIVE35. No ZEV manufacturer, Tier 1, match funding, facility or consortium role evidence found.",
+      "results": []
+    },
+    {
+      "query": "knowledge asset",
+      "result_count": 8,
+      "result_class": "RESEARCH_OR_TOOLING_ONLY",
+      "classification": "Research and tooling files found. No public-sector research organisation lead, public-sector knowledge-asset owner, senior support or procurement route found.",
+      "results": [
+        {
+          "title": "THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_Now.md",
+          "url": "https://drive.google.com/file/d/1-PSJ7sCg6O6rID452Rj010TNLTFniUia"
+        },
+        {
+          "title": "AUREON_WHITE_PAPER_RESEARCH_HUB.md",
+          "url": "https://drive.google.com/file/d/1Fe8YaOtUiYB8ThdT-o9GrzHN_T1n-o7C"
+        }
+      ]
+    },
+    {
+      "query": "ZEV manufacturing",
+      "result_count": 0,
+      "result_class": "NO_RESULTS",
+      "classification": "No Drive result found for ZEV manufacturing. No facility, co-investment or eligible GBP5m-plus project-cost basis found.",
+      "results": []
+    },
+    {
+      "query": "AKT6",
+      "result_count": 0,
+      "result_class": "NO_RESULTS",
+      "classification": "No Drive result found for AKT6. No direct AKT6 lead, TTO, four-FTE evidence, work package or budget commitment found.",
+      "results": []
+    },
+    {
+      "query": "QUB Aureon",
+      "result_count": 0,
+      "result_class": "NO_RESULTS",
+      "classification": "No Drive result found for QUB Aureon. No Queen's commitment or TTO reply evidence found.",
+      "results": []
+    }
+  ],
+  "application_impacts": [
+    {
+      "application_id": "APP-IFS-AKT6-2473-20260709",
+      "impact": "No AKT6/QUB/Aureon or academic-lead commitment found in live Drive search; knowledge-base lead, TTO, four-FTE, work package and budget gates remain.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "impact": "Drive maritime searches found research/unrelated files only; maritime deployment lead, asset/site, permissions, safety and budget gates remain.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "impact": "Drive maritime searches found research/unrelated files only; maritime lead, partner/asset context, scope and budget gates remain.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "impact": "Drive maritime searches found research/unrelated files only; maritime lead, vessel/port/shipyard, permissions, safety, insurance and budget gates remain.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+      "impact": "Drive academic search found outreach/planning files only; academic institution lead, TTO commitment, scope and budget gates remain.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+      "impact": "Drive ADOPT search found research/planning files only; England farm lead, farm problem statement and facilitator/support role gates remain.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+      "impact": "Drive ADOPT search found research/planning files only; farm context, facilitator evidence and role/procurement gates remain.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "impact": "Drive Swiss search found planning files only; Swiss partner, commitment letter, budget split, permit/licence, export-control and finance gates remain.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+      "impact": "Drive knowledge-asset search found research/tooling files only; public-sector research organisation lead and knowledge-asset ownership gates remain.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+      "impact": "Drive DRIVE35/ZEV searches found no direct evidence; vehicle manufacturer/Tier 1 partner, match funding, budget and consortium role gates remain.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+      "impact": "Drive maritime/ZEV searches found no lead or asset evidence; maritime lead, vessel/infrastructure, demonstration commitment, budget and permissions gates remain.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+      "impact": "Drive maritime/ZEV searches found no lead or asset evidence; maritime lead, electric-power asset, demonstration commitment, budget and permissions gates remain.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+      "impact": "Drive maritime/ZEV searches found no lead or asset evidence; maritime lead, vessel/infrastructure, demonstration commitment, budget and permissions gates remain.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "impact": "Drive quantum search found research/planning files only; hardware lead, facility access, consortium commitment and budget gates remain.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+      "impact": "Drive DRIVE35/ZEV searches found no direct evidence; ZEV manufacturing facility, co-investment and GBP5m-plus eligible project-cost gates remain.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+      "impact": "Drive search includes finance-adjacent files but repayable-finance route remains outside the grant queue pending deliberate loan approval and cash-flow evidence.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    }
+  ],
+  "controls": [
+    "No Drive file was moved, copied, shared, deleted, edited, uploaded or downloaded.",
+    "No private finance values from Drive search content were copied into this artifact.",
+    "No IFS portal field was changed.",
+    "No external email or contact form was sent.",
+    "No application is marked direct-submit-ready from this readback."
+  ],
+  "result": "LIVE_DRIVE_ROUTE_UNLOCK_READBACK_NO_CONFIRMED_UNLOCK_EVIDENCE"
+}

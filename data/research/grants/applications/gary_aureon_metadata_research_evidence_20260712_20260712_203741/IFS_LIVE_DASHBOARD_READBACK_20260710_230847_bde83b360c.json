@@ -1,0 +1,145 @@
+{
+  "schema_version": "aureon-ifs-live-dashboard-readback-v1",
+  "generated_at": "2026-07-10T23:08:47+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_live_dashboard_readback",
+  "dashboard_url": "https://apply-for-innovation-funding.service.gov.uk/applicant/dashboard",
+  "result": "IFS_LIVE_DASHBOARD_READBACK_RECONCILED_NO_PORTAL_CHANGE",
+  "summary": {
+    "active_dashboard_items": 5,
+    "previous_dashboard_items": 5,
+    "matched_current_ledger_records": 5,
+    "submitted_current_count": 4,
+    "active_draft_count": 1,
+    "previous_submitted_or_ineligible_count": 2,
+    "previous_not_submitted_count": 3,
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false
+  },
+  "active_readbacks": [
+    {
+      "title": "Aureon SEN Evidence OS: Fair Early Identification Support",
+      "portal_application_number": "10210045",
+      "competition": "CfI: Earlier identification of UK children with SEN",
+      "dashboard_status": "Awaiting assessment; Submitted",
+      "track_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210045/track",
+      "reopen_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210045/confirm-reopen"
+    },
+    {
+      "title": "Aureon Evidence Studio for Createch AI Workflows",
+      "portal_application_number": "10209601",
+      "competition": "Next Wave: Breakthrough Wave 1",
+      "dashboard_status": "Awaiting assessment; Submitted",
+      "track_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209601/track",
+      "reopen_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209601/confirm-reopen"
+    },
+    {
+      "title": "Aureon Flex Evidence OS: AI Assurance for Consumer-Led Flexibility",
+      "portal_application_number": "10210032",
+      "competition": "Consumer Led Flexibility for the Clean Energy Superpower Mission",
+      "dashboard_status": "Awaiting assessment; Submitted",
+      "track_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210032/track",
+      "reopen_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210032/confirm-reopen"
+    },
+    {
+      "title": "Aureon Evidence OS for Cross-Border R&D Assurance",
+      "portal_application_number": "10210100",
+      "competition": "UK-Switzerland CR&D Round 3",
+      "dashboard_status": "In progress; 54 days left; deadline 3 Sept 2026; 80% complete",
+      "application_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210100",
+      "progress_percent": "80%"
+    },
+    {
+      "title": "Aureon Evidence OS for AI-Driven Scientific Discovery and Auditable SME Automation",
+      "portal_application_number": "10209992",
+      "competition": "Future Leaders Fellowships: Round 11, business and non-academic",
+      "dashboard_status": "Awaiting assessment; Submitted",
+      "track_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209992/track",
+      "reopen_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209992/confirm-reopen"
+    }
+  ],
+  "previous_readbacks": [
+    {
+      "title": "Project A.L.F.I.E. - Advanced Launch Force for Integrated Efficiency",
+      "portal_application_number": "10143721",
+      "competition": "Innovate UK Smart grants: July 2024",
+      "dashboard_status": "Ineligible",
+      "summary_url": "https://apply-for-innovation-funding.service.gov.uk/application/10143721/summary"
+    },
+    {
+      "title": "Untitled application",
+      "portal_application_number": "10162520",
+      "competition": "Innovate UK innovation loans future economy: Round 20",
+      "dashboard_status": "Not submitted",
+      "summary_url": "https://apply-for-innovation-funding.service.gov.uk/application/10162520/summary"
+    },
+    {
+      "title": "Development of a Multi-Layer Active Shielding System (EPAS) for Deep Space Micrometeoroid and Dust Protection",
+      "portal_application_number": "10163647",
+      "competition": "ATI Programme strategic batch: EoI - May 2025",
+      "dashboard_status": "Application submitted",
+      "summary_url": "https://apply-for-innovation-funding.service.gov.uk/application/10163647/summary"
+    },
+    {
+      "title": "Untitled application",
+      "portal_application_number": "10167738",
+      "competition": "Innovate UK innovation loans future economy: Round 21",
+      "dashboard_status": "Not submitted",
+      "summary_url": "https://apply-for-innovation-funding.service.gov.uk/application/10167738/summary"
+    },
+    {
+      "title": "Untitled application",
+      "portal_application_number": "10169785",
+      "competition": "Contracts for Innovation: Quantum Sensors and PNT Missions Primer",
+      "dashboard_status": "Not submitted",
+      "summary_url": "https://apply-for-innovation-funding.service.gov.uk/application/10169785/summary"
+    }
+  ],
+  "matched_current_ledger_records": [
+    {
+      "application_id": "APP-IFS-CFI-SEN-2511-20260709",
+      "portal_application_number": "10210045",
+      "dashboard_status": "Awaiting assessment; Submitted",
+      "ledger_status_after_readback": "SUBMITTED"
+    },
+    {
+      "application_id": "APP-IFS-NEXT-WAVE-10209601",
+      "portal_application_number": "10209601",
+      "dashboard_status": "Awaiting assessment; Submitted",
+      "ledger_status_after_readback": "SUBMITTED"
+    },
+    {
+      "application_id": "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+      "portal_application_number": "10210032",
+      "dashboard_status": "Awaiting assessment; Submitted",
+      "ledger_status_after_readback": "SUBMITTED"
+    },
+    {
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "portal_application_number": "10210100",
+      "dashboard_status": "In progress; 54 days left; deadline 3 Sept 2026; 80% complete",
+      "ledger_status_after_readback": "IFS_DRAFT_80_PERCENT_EVIDENCE_DELTA_NO_UNLOCK_Q4_Q6_Q17_FINANCE_IMPACT_TERMS_GATED"
+    },
+    {
+      "application_id": "APP-IFS-FLF-R11-2499-20260709",
+      "portal_application_number": "10209992",
+      "dashboard_status": "Awaiting assessment; Submitted",
+      "ledger_status_after_readback": "SUBMITTED"
+    }
+  ],
+  "controls": [
+    "IFS dashboard was read with the existing authenticated browser session.",
+    "No IFS portal field was changed.",
+    "No application was reopened.",
+    "No delete link was used.",
+    "No final submission, upload, email, contact form or partner invite was performed.",
+    "No password or runtime secret was written to this artifact."
+  ]
+}

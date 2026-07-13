@@ -1,0 +1,103 @@
+{
+  "schema_version": "aureon-openocean-pitch-deck-package-v1",
+  "generated_at": "2026-07-12T07:19:06+01:00",
+  "operator": "Aureon",
+  "mode": "PRIVATE_INVESTOR_PIPELINE",
+  "event": "openocean_pitch_deck_package",
+  "result": "OPENOCEAN_PITCH_DECK_PACKAGE_STAGED_AWAITING_SEND_APPROVAL",
+  "application_id": "APP-PRIVATE-INVESTOR-OPENOCEAN-FIFTH-WAVE-20260711",
+  "target": "OpenOcean",
+  "pitch_route": {
+    "official_pitch_email": "info@openocean.vc",
+    "official_pitch_source": "https://www.openocean.vc/contact",
+    "incoming_reply_evidence": [
+      "applications/evidence/OPENOCEAN_REPLY_DECK_REQUEST_20260712_001500_1.jpg",
+      "applications/evidence/OPENOCEAN_REPLY_DECK_REQUEST_20260712_001500_2.jpg"
+    ],
+    "incoming_request_summary": "OpenOcean asked Gary to submit the pitch deck on their website with a few key data points."
+  },
+  "deck_files": {
+    "pptx": "applications/investor_decks/AUREON_OPENOCEAN_PITCH_DECK_20260712_001500.pptx",
+    "pdf": "applications/investor_decks/AUREON_OPENOCEAN_PITCH_DECK_20260712_001500.pdf",
+    "source_notes": "applications/investor_decks/AUREON_OPENOCEAN_PITCH_DECK_20260712_001500_sources.txt"
+  },
+  "deck_hashes": {
+    "pptx": "910fd6160511a3676d3e9d5f67c8785e7527f3698a414290b7bd0677e4d36ec4",
+    "pdf": "77a7ad08de686633d1ec33fb81c88107ba8b97e29b1fa6ae1868486a34dfb71b"
+  },
+  "key_data": {
+    "company": "R&A Consulting and Brokerage Services Ltd",
+    "product": "Aureon Evidence OS",
+    "lead": "Gary Leckey",
+    "route": "OpenOcean pitch route",
+    "pitch_email": "info@openocean.vc",
+    "wedge": "Local-first AI workflow software for evidence-heavy business operations.",
+    "initial_use_cases": [
+      "grant application evidence packs",
+      "compliance and accounting support records",
+      "partner diligence material",
+      "investor route-fit and data-room evidence"
+    ],
+    "stage": "pre-seed / early seed exploration",
+    "funding_ask_status": "Exact round size, instrument and investor data-room fields are not confirmed in the verified evidence set.",
+    "proof_points": [
+      "46 funding opportunities indexed in the current Aureon monitor",
+      "45 application and investor records tracked",
+      "20 IFS routes reconciled",
+      "36 screenshot receipts indexed",
+      "137 PDF artifacts indexed"
+    ],
+    "controls": [
+      "No private finance, tax, payroll, bank data, passwords, tokens or raw ledgers are included.",
+      "No customer traction, partner commitment, revenue or funding guarantee is claimed.",
+      "No external deck submission, email send, upload or form submission is performed by this package recorder."
+    ]
+  },
+  "local_sources": [
+    "applications/OPENOCEAN_REPLY_CONTROL_20260711_20260711_225934.json",
+    "applications/OPENOCEAN_REPLY_BROWSER_SEND_RECEIPT_20260711.json",
+    "applications/PRIVATE_INVESTOR_FIFTH_WAVE_EMAIL_SEND_RECEIPT_20260711_20260711_224104.json",
+    "applications/AUREON_CONTINUOUS_FUNDING_MONITOR_20260711_232323.json"
+  ],
+  "official_sources": [
+    {
+      "source": "OpenOcean contact page",
+      "url": "https://www.openocean.vc/contact",
+      "observed_fact": "OpenOcean requests pitch submissions to info@openocean.vc and names AI & Data Infrastructure, Future of Software Development and Automation Software as areas where it welcomes pitches."
+    },
+    {
+      "source": "OpenOcean home page",
+      "url": "https://www.openocean.vc/",
+      "observed_fact": "OpenOcean describes itself as a pan-European early-stage venture firm investing in technical teams reshaping knowledge work and infrastructure across AI-native software, automation and foundational technology."
+    }
+  ],
+  "outputs": {
+    "package_json": "applications/OPENOCEAN_PITCH_DECK_PACKAGE_20260712_20260712_071906.json",
+    "package_markdown": "applications/OPENOCEAN_PITCH_DECK_PACKAGE_20260712_20260712_071906.md",
+    "key_data_json": "applications/OPENOCEAN_PITCH_KEY_DATA_20260712_20260712_071906.json",
+    "key_data_markdown": "applications/OPENOCEAN_PITCH_KEY_DATA_20260712_20260712_071906.md",
+    "email_draft": "applications/OPENOCEAN_PITCH_SUBMISSION_DRAFT_20260712_20260712_071906.eml",
+    "pipeline_report": "pipelines/pipeline_report_20260712_20260712_071906_openocean_pitch_deck_package.json"
+  },
+  "validation": {
+    "deck_pptx_exists": true,
+    "deck_pdf_exists": true,
+    "pitch_route_verified": true,
+    "private_data_excluded": true,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "attachment_uploaded": false,
+    "form_submitted": false
+  },
+  "controls": [
+    "No private finance, tax, payroll, bank data, passwords, tokens or raw ledgers are included.",
+    "No customer traction, partner commitment, revenue or funding guarantee is claimed.",
+    "No external deck submission, email send, upload or form submission is performed by this package recorder."
+  ],
+  "next_action": "Confirm exact funding ask and whether to send the staged deck/key-data package to info@openocean.vc.",
+  "backups": {
+    "applications_json": "backups/applications_pre_openocean_pitch_deck_package_20260712_071906.json",
+    "pipeline_json": "backups/pipeline_pre_openocean_pitch_deck_package_20260712_071906.json",
+    "autopilot_status_json": "backups/autopilot_status_pre_openocean_pitch_deck_package_20260712_071906.json"
+  }
+}

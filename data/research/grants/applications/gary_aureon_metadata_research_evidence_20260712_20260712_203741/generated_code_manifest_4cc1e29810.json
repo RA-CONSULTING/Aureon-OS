@@ -1,0 +1,49 @@
+{
+  "authority": "research_code_artifact_only",
+  "generated_at": "2026-05-23T20:49:41.219471+00:00",
+  "generated_files": [
+    {
+      "authoring_path": "QueenCodeArchitect.write_file",
+      "bytes": 34,
+      "ok": true,
+      "path": "aureon/generated/__init__.py"
+    },
+    {
+      "authoring_path": "QueenCodeArchitect.write_file",
+      "bytes": 41,
+      "ok": true,
+      "path": "aureon/generated/research_cinema/__init__.py"
+    },
+    {
+      "authoring_path": "QueenCodeArchitect.write_file",
+      "bytes": 32,
+      "ok": true,
+      "path": "tests/generated/__init__.py"
+    },
+    {
+      "authoring_path": "QueenCodeArchitect.write_file",
+      "bytes": 2486,
+      "ok": true,
+      "path": "aureon/generated/research_cinema/harmonic_nexus_score_model.py"
+    },
+    {
+      "authoring_path": "QueenCodeArchitect.write_file",
+      "bytes": 1048,
+      "ok": true,
+      "path": "tests/generated/test_harmonic_nexus_score_model.py"
+    },
+    {
+      "authoring_path": "QueenCodeArchitect.write_file",
+      "bytes": 799,
+      "ok": true,
+      "path": "docs/research/harmonic-nexus-score_coding_handoff.md"
+    }
+  ],
+  "model_class": "HarmonicNexusScoreInputs",
+  "module_import": "aureon.generated.research_cinema.harmonic_nexus_score_model",
+  "no_external_mutation": true,
+  "no_trading_gate_bypass": true,
+  "status": "coding_artifacts_ready",
+  "test_command": "python -m pytest tests/generated/test_harmonic_nexus_score_model.py -q",
+  "topic": "Harmonic Nexus Score"
+}

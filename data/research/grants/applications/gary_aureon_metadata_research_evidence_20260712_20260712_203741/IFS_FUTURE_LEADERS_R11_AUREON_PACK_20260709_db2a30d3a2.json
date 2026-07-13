@@ -1,0 +1,66 @@
+{
+  "schema_version": "aureon-application-pack-v1",
+  "generated_at": "2026-07-09T07:30:00+01:00",
+  "application_id": "APP-IFS-FLF-R11-2499-20260709",
+  "opportunity_id": "IFS-FLF-R11-2499",
+  "candidate": "Gary Anthony Leckey",
+  "organisation": "R&A Consulting and Brokerage Services Ltd / Aureon Institute",
+  "email": "gaxlec@gmail.com",
+  "draft_title": "Aureon Evidence OS for AI-Driven Scientific Discovery and Auditable SME Automation",
+  "draft_amount_requested_gbp": 1500000,
+  "deadline_tracker": "2026-11-04T11:00:00+00:00",
+  "source_url": "https://apply-for-innovation-funding.service.gov.uk/competition/2499/overview/60da9000-d438-47fb-92aa-e8d9435a17ab",
+  "positioning": "A business/non-academic future-leader route for building a local-first evidence operating system that turns Gary Leckey's AI, scientific-discovery, and workflow-automation corpus into validated, reproducible tools for high-risk research and SME operations.",
+  "work_packages": [
+    {
+      "wp": "WP1",
+      "title": "Evidence OS core",
+      "outcome": "Auditable local-first workflow runtime, evidence ledger, and grant-ready claim controls."
+    },
+    {
+      "wp": "WP2",
+      "title": "Scientific discovery compute",
+      "outcome": "HNC/PEFC/EPAS hypothesis workflows converted into reproducible compute tasks, benchmarks, and falsification protocols."
+    },
+    {
+      "wp": "WP3",
+      "title": "SME automation pilots",
+      "outcome": "Compliance, warehouse, and back-office workflows converted into measurable automation pilots with human review gates."
+    },
+    {
+      "wp": "WP4",
+      "title": "External validation sprint",
+      "outcome": "Partner review, academic challenge sessions, evidence-quality scoring, and public dissemination pack."
+    },
+    {
+      "wp": "WP5",
+      "title": "Commercialisation and governance",
+      "outcome": "Product roadmap, responsible AI controls, data protection pack, IP review, and partner/customer pipeline."
+    }
+  ],
+  "evidence_base": {
+    "corpus_json": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\AUREON_UNIFIED_WORK_CORPUS_20260709.json",
+    "corpus_md": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\AUREON_UNIFIED_WORK_CORPUS_20260709.md",
+    "repo_archive_drive_ids": [
+      "1AHKGb82z4FDIE2pccAAmB0oTFrSxfGCm",
+      "11oDMxnlewlJwXgpLPeKR5Bod4QdFdtBx",
+      "19A5T5BSdS-hjeMWl3XyQY3ZlaUsfMYaT"
+    ],
+    "selected_local_categories": {
+      "general_evidence": 6353,
+      "source_code_or_docs": 49373,
+      "repo_or_pack_archive": 303,
+      "research_paper": 2945,
+      "sensitive_finance": 1159,
+      "grant_pack": 94,
+      "profile_public_metrics": 21
+    }
+  },
+  "submission_gates": [
+    "Confirm FLF business/non-academic eligibility and host/organisation requirements in portal guidance.",
+    "Build a costed four-year fellowship budget from salary, research staff, compute, equipment, travel, dissemination, and overhead rules.",
+    "Verify public profiles before quoting counts: ResearchGate, ORCID, Academia.edu, GitHub.",
+    "Resolve or manage Companies House confirmation statement risk before final submission.",
+    "Attach only sanitized repo/evidence archives; exclude private finance unless exact use is approved."
+  ]
+}

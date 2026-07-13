@@ -1,0 +1,11 @@
+{
+  "status": "SENT_CONFIRMED_BY_GMAIL_UI",
+  "sent_at": "2026-07-09T15:06:00+01:00",
+  "from": "gaxlec@gmail.com",
+  "to": "gaxlec@gmail.com",
+  "subject": "Aureon grant update: AIRR Rapid Access submitted",
+  "gmail_readback": "Message sent; Undo; View message",
+  "body_source": "applications/SELF_UPDATE_AIRR_RAPID_ACCESS_SUBMITTED_20260709.body.txt",
+  "application_id": "APP-AIRR-RAPID-ACCESS-20260709",
+  "portal_proposal_id": "0261-1607-9572-1"
+}

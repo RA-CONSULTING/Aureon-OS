@@ -1,0 +1,630 @@
+{
+  "civilization": "Mayan",
+  "last_updated": "2025-12-30T17:29:41.281700",
+  "version": "1.0.0",
+  "sources": [
+    "hardcoded",
+    "wikipedia"
+  ],
+  "topics": [
+    {
+      "name": "Cyclical Time",
+      "content": "Time is not linear but cyclical - events repeat in patterns through the Long Count",
+      "trading_insight": "Historical patterns repeat. Cycle analysis is the Mayan edge. What happened before will happen again.",
+      "source": "hardcoded",
+      "relevance_score": 0.95
+    },
+    {
+      "name": "Cosmic Order",
+      "content": "Human affairs mirror celestial movements - as above, so below",
+      "trading_insight": "Macro influences micro. Fed decisions move BTC. Understand the cosmos (macro) to predict earth (price).",
+      "source": "hardcoded",
+      "relevance_score": 0.85
+    },
+    {
+      "name": "Balance of Forces",
+      "content": "Maintaining balance between opposing forces - light and dark, creation and destruction",
+      "trading_insight": "Risk/reward balance. Portfolio equilibrium. The Mayans knew: Excess invites correction.",
+      "source": "hardcoded",
+      "relevance_score": 0.9
+    },
+    {
+      "name": "Tzolkin Sacred Calendar",
+      "content": "260-day cycle of 20 day names and 13 numbers for sacred timing",
+      "trading_insight": "Short-term cycle timing. Some days are auspicious for trading, others for rest.",
+      "source": "hardcoded",
+      "relevance_score": 0.85
+    },
+    {
+      "name": "Haab Solar Calendar",
+      "content": "365-day solar calendar with 18 months of 20 days plus 5 Wayeb unlucky days",
+      "trading_insight": "Annual cycle alignment. Respect the Wayeb - dangerous days require caution (like FOMC weeks).",
+      "source": "hardcoded",
+      "relevance_score": 0.85
+    },
+    {
+      "name": "Long Count Prophecy",
+      "content": "The Great Cycle of 5,125 years enabling long-term pattern recognition",
+      "trading_insight": "Super-cycles exist. The Mayans tracked them. Bitcoin's halving is a Long Count event.",
+      "source": "hardcoded",
+      "relevance_score": 0.8
+    },
+    {
+      "name": "Kukulkan's Descent",
+      "content": "At equinox, the feathered serpent descends the pyramid of Chichen Itza",
+      "trading_insight": "Equinox moments in markets - balance points before directional moves. Watch for the serpent.",
+      "source": "hardcoded",
+      "relevance_score": 0.8
+    },
+    {
+      "name": "Cenote Depths",
+      "content": "Sacred cenotes as portals to the underworld, places of offering and revelation",
+      "trading_insight": "Drawdowns are cenote journeys. Descend with offerings (stop losses), emerge with wisdom.",
+      "source": "hardcoded",
+      "relevance_score": 0.75
+    }
+  ],
+  "core_principles": {
+    "cyclical_time": {
+      "description": "Time is not linear but cyclical - events repeat in patterns",
+      "trading_application": "Historical patterns repeat, cycle analysis",
+      "confidence": 0.95
+    },
+    "cosmic_order": {
+      "description": "Human affairs mirror celestial movements",
+      "trading_application": "Macro influences on micro events",
+      "confidence": 0.85
+    },
+    "balance": {
+      "description": "Maintaining balance between opposing forces",
+      "trading_application": "Risk/reward balance, portfolio equilibrium",
+      "confidence": 0.9
+    },
+    "prophecy": {
+      "description": "Understanding cycles enables prediction",
+      "trading_application": "Pattern-based forecasting",
+      "confidence": 0.8
+    }
+  },
+  "calendar_systems": {
+    "tzolkin": {
+      "days": 260,
+      "structure": "20 day names × 13 numbers",
+      "purpose": "Sacred/ritual calendar",
+      "trading_use": "Short-term cycle timing"
+    },
+    "haab": {
+      "days": 365,
+      "structure": "18 months × 20 days + 5 Wayeb days",
+      "purpose": "Solar/agricultural calendar",
+      "trading_use": "Annual cycle alignment"
+    },
+    "calendar_round": {
+      "days": 18980,
+      "years": 52,
+      "description": "Tzolkin and Haab alignment cycle",
+      "trading_use": "Major cycle turning points"
+    },
+    "long_count": {
+      "description": "Linear count from mythological creation date",
+      "units": {
+        "kin": 1,
+        "uinal": 20,
+        "tun": 360,
+        "katun": 7200,
+        "baktun": 144000
+      },
+      "trading_use": "Long-term epoch analysis"
+    }
+  },
+  "sacred_numbers": {
+    "0": "First civilization to use zero - nothingness as concept",
+    "9": "Lords of the Night, underworld levels",
+    "13": "Sky levels, cosmic layers",
+    "20": "Base of counting system (vigesimal)",
+    "52": "Calendar Round years",
+    "260": "Tzolkin days (13 × 20)",
+    "365": "Haab days (solar year)"
+  },
+  "astronomical_knowledge": {
+    "venus_cycle": {
+      "synodic_period": 584,
+      "importance": "War, transformation, death/rebirth",
+      "trading_insight": "Major turning points, volatility"
+    },
+    "eclipse_prediction": {
+      "description": "Sophisticated eclipse tables",
+      "trading_insight": "Black swan preparation"
+    },
+    "mars_cycle": {
+      "synodic_period": 780,
+      "significance": "Conflict, energy, action"
+    }
+  },
+  "day_signs": {
+    "imix": {
+      "meaning": "Crocodile/Water Lily",
+      "energy": "Primordial, beginning"
+    },
+    "ik": {
+      "meaning": "Wind/Breath",
+      "energy": "Spirit, communication"
+    },
+    "akbal": {
+      "meaning": "Night/House",
+      "energy": "Darkness, introspection"
+    },
+    "kan": {
+      "meaning": "Maize/Seed",
+      "energy": "Growth, abundance"
+    },
+    "chicchan": {
+      "meaning": "Serpent",
+      "energy": "Kundalini, transformation"
+    },
+    "cimi": {
+      "meaning": "Death",
+      "energy": "Ending, transition"
+    },
+    "manik": {
+      "meaning": "Hand/Deer",
+      "energy": "Skill, hunt"
+    },
+    "lamat": {
+      "meaning": "Star/Venus",
+      "energy": "Harmony, beauty"
+    },
+    "muluc": {
+      "meaning": "Water/Moon",
+      "energy": "Emotion, purification"
+    },
+    "oc": {
+      "meaning": "Dog",
+      "energy": "Loyalty, guidance"
+    },
+    "chuen": {
+      "meaning": "Monkey",
+      "energy": "Art, play, creativity"
+    },
+    "eb": {
+      "meaning": "Road/Grass",
+      "energy": "Journey, path"
+    },
+    "ben": {
+      "meaning": "Reed/Staff",
+      "energy": "Authority, pillar"
+    },
+    "ix": {
+      "meaning": "Jaguar",
+      "energy": "Magic, night, feminine"
+    },
+    "men": {
+      "meaning": "Eagle",
+      "energy": "Vision, freedom"
+    },
+    "cib": {
+      "meaning": "Owl/Vulture",
+      "energy": "Ancient wisdom, forgiveness"
+    },
+    "caban": {
+      "meaning": "Earth/Earthquake",
+      "energy": "Movement, evolution"
+    },
+    "etznab": {
+      "meaning": "Flint/Mirror",
+      "energy": "Truth, reflection"
+    },
+    "cauac": {
+      "meaning": "Storm/Rain",
+      "energy": "Cleansing, energy"
+    },
+    "ahau": {
+      "meaning": "Sun/Lord",
+      "energy": "Enlightenment, completion"
+    }
+  },
+  "cosmology": {
+    "xibalba": "Underworld - place of trials and transformation",
+    "middleworld": "Earth - human realm of action",
+    "upperworld": "Heavens - realm of gods and ancestors",
+    "world_tree": "Axis mundi connecting all realms"
+  },
+  "wikipedia_topics": [
+    "Maya calendar",
+    "Tzolkin",
+    "Haab",
+    "Mesoamerican Long Count calendar",
+    "Maya astronomy",
+    "Maya civilization",
+    "Maya numerals",
+    "Popol Vuh",
+    "Maya mythology",
+    "Dresden Codex"
+  ],
+  "learned_insights": [
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Tzolkin",
+      "content": "The tzolkʼin (Mayan pronunciation: [t͡sol ˈkʼin], formerly and commonly tzolkin) is the 260-day Mesoamerican calendar used by the Maya civilization of pre-Columbian Mesoamerica.\nThe tzolkʼin, the basic cycle of the Maya calendar, is a preeminent component in the society and rituals of the ancient and the modern Maya. The tzolkʼin is still used by several Maya communities in the Guatemalan highlands. While its use has been spreading in this region, this practice is opposed by Evangelical Christia",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:52:51.707964",
+      "content_hash": "238cff005e54a7cedcd6bb9ce47fe71e"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Tzolkin",
+      "content": "== The twenty day names ==\nThe tzolkʼin calendar combines a cycle of twenty named days with another cycle of thirteen numbers (the trecena), to produce 260 unique days (20 × 13 = 260). Each successive named day is numbered from 1 to 13, and then starting again at 1.\nThe 20 individual named days are the following:",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:52:51.707998",
+      "content_hash": "c9a54e8357318d472ab0bccaba8f047f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Tzolkin",
+      "content": "Imix : 'Crocodile' – the reptilian body of the planet earth, or world\nIk : 'Wind' – breath, life. Also violence.\nAkbal : 'Night-house' – darkness, the underworld, realm of the nocturnal jaguar-sun.\nKan : 'Maize' – sign of the young maize lord who brings abundance, ripeness. Also lizard, net.\nChicchan : 'Snake' – the celestial serpent\nCimi : 'Death'\nManik : 'Deer' – sign of the Lord of the Hunt\nLamat : 'Rabbit' – sign of what is also known as the planet Venus, sunset. The glyph may depict four gr",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:52:51.708063",
+      "content_hash": "a40e8298f8c2038ecdcb1cc5d10240b1"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Tzolkin",
+      "content": "The tzolkʼin was extensively used in Mayan inscriptions and codices. Symbolism related to the tzolkʼin is also observed in the Popol Vuh (which, though written in the early post-conquest period, is probably based on older texts). For instance, when Xmucane has set an impossible task for Xquic of collecting a netful of corn from one stalk and Xquic successfully completes it, she leaves the imprint of her net in the ground, and the day \"net\" is the opening of the Venus cycle which follows \"ahau\" (",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:52:51.708158",
+      "content_hash": "fe1669f069d71f87d9bc3a4a18b3b3c6"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Tzolkin",
+      "content": "For Maize cultivation.(The zenith transit days may have been significant for agriculture along the south coast of Guatemala because April 30 occurs just before the rainy season. Modern Maya plant their corn at the end of April or early in May. In the August 13 zenith transit the Maya initiate its current era in this day', approximating the harvest of the dried corn.\nFor modern Guatemalan highlanders, the 260 days are employed in training the Aj Kʼij, or 'calendar diviner'. Nine months after comm",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:52:51.708215",
+      "content_hash": "1f818b1920f8b340caa475d61eb81c61"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Maya astronomy",
+      "content": "Maya astronomy is the study of the Moon, planets, Milky Way, Sun, and astronomical phenomena by the Precolumbian Maya civilization of Mesoamerica.\nThe Classic Maya in particular developed some of the most accurate pre-telescope astronomy in the world, aided by their fully developed writing system and their positional numeral system, both of which are fully indigenous to Mesoamerica. The Classic Maya understood many astronomical phenomena: for example, their estimate of the length of the synodic ",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from mayan tradition",
+      "timestamp": "2025-12-25T19:53:05.945604",
+      "content_hash": "e15f0adc38f3cf5879126d689fec3264"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Maya astronomy",
+      "content": "In 46 BC Julius Caesar decreed that the year would be made up of twelve months of approximately 30 days each to make a year of 365 days and a leap year of 366 days. The civil year had 365.25 days. This is the Julian calendar. The solar year has 365.2422 days and by 1582 there was an appreciable discrepancy between the winter solstice and Christmas and the vernal equinox and Easter. Pope Gregory XIII, with the help of Italian astronomer Aloysius Lilius (Luigi Lilio), reformed this system by aboli",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:53:05.945684",
+      "content_hash": "d0a39eea378359a4a6211e6e4dffc102"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Maya astronomy",
+      "content": "Astronomers describe time as a number of days and a fraction of a day since noon January 1, −4712 Greenwich Mean Time. The Julian day starts at noon because they are interested in things that are visible at night. The number of days and fraction of a day elapsed since this time is a Julian day. The whole number of days elapsed since this time is a Julian day number.",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:53:05.945711",
+      "content_hash": "20dbd9abff1eec61e0b77853a4d3331f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Maya astronomy",
+      "content": "There are three main Maya calendars:\nThe Long Count is a count of days. The Long Count calendar was particularly notable for its accuracy in tracking celestial events. For example, the Maya were able to predict solar eclipses and the movements of Venus with remarkable precision. This knowledge was not only used for agricultural planning but also played a significant role in religious ceremonies and royal legitimization. There are examples of Long Counts with many places but most of them give fiv",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:53:05.945769",
+      "content_hash": "4a8bf81ff59f62427a9acfc9ed9e243d"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Maya astronomy",
+      "content": "The Maya and European calendars are correlated by using the Julian day number of the starting date of the current creation — 13.0.0.0.0, 4 Ajaw, 8 Kumk'u. The Julian day number of noon on this day was 584,283. This is the GMT correlation.",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:53:05.945789",
+      "content_hash": "4b9282038a3e6bd9fdbc567c203f1238"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Maya astronomy",
+      "content": "At the time of the Spanish conquest the Maya had many books. These were painted on folding bark cloth. The Spanish conquistadors and Catholic priests destroyed them whenever they found them. The most infamous example of this was the burning of a large number of these in Maní, Yucatán by Bishop Diego de Landa in July 1562. Only four of these codices exist today. These are the Dresden, Madrid, Paris and Grolier codices. The Dresden Codex is an astronomical Almanac. The Madrid Codex mainly consists",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:53:05.945828",
+      "content_hash": "efc04dc37c152fe472f6487b2c9669b1"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Maya astronomy",
+      "content": "The Maya erected a large number of stelae. These had a Long Count date. They also included a supplementary series. The supplementary series included lunar data – the number of days elapsed in the current lunation, the length of the lunation and the number of the lunation in a series of six. Some of them included an 819-day count which may be a count of the days in a cycle associated with Jupiter. See Jupiter and Saturn below. Some other astronomical events were recorded, for example the eclipse ",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:53:05.945876",
+      "content_hash": "31f5ec53bbe303c1ac72f9686346a0f0"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Maya astronomy",
+      "content": "=== Solar ===\nThe Maya were aware of the solstices and equinoxes. This is demonstrated in building alignments. More important to them were zenithal passage days. In the tropics the Sun passes directly overhead twice each year. Many known structures in Mayan temples were built to observe this. An example of such temples is the observatory at Xochicalco. The observatory is an underground chamber with a hole in the ceiling. Two days of the year on May 15 and July 29, the sun would directly illumina",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:53:05.945945",
+      "content_hash": "d7fe410e94827a0feaf5bf642e701a53"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Maya civilization",
+      "content": "The Maya civilization () was a Mesoamerican civilization that existed from antiquity to the early modern period. It is known by its ancient temples and glyphs (script). The Maya script is the most sophisticated and highly developed writing system in the pre-Columbian Americas. The civilization is also noted for its art, architecture, mathematics, calendar, and astronomical system.\nThe Maya civilization developed in the Maya Region, an area that today comprises southeastern Mexico, all of Guatema",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:53:10.701422",
+      "content_hash": "6240a26a1b89b0b3550e923b9be30ce0"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Maya numerals",
+      "content": "The Mayan numeral system was the system to represent numbers and calendar dates in the Maya civilization. It was a vigesimal (base-20) positional numeral system. The numerals are made up of three symbols: zero (a shell), one (a dot) and five (a bar). For example, thirteen is written as three dots in a horizontal row above two horizontal bars; sometimes it is also written as three vertical dots to the left of two vertical bars. With these three symbols, each of the twenty vigesimal digits could b",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:53:15.599695",
+      "content_hash": "65a417b9d6c3a78edca5b315d58f806e"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Maya numerals",
+      "content": "Other than the bar and dot notation, Maya numerals were sometimes illustrated by face type glyphs or pictures. The face glyph for a number represents the deity associated with the number. These face number glyphs were rarely used, and are mostly seen on some of the most elaborate monumental carvings.",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:53:15.599735",
+      "content_hash": "595970f539d4197c6b7caba9a205effd"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Maya numerals",
+      "content": "There are different representations of zero in the Dresden Codex, as can be seen at page 43b (which is concerned with the synodic cycle of Mars). It has been suggested that these pointed, oblong \"bread\" representations are calligraphic variants of the PET logogram, approximately meaning \"circular\" or \"rounded\", and perhaps the basis of a derived noun meaning \"totality\" or \"grouping\", such that the representations may be an appropriate marker for a number position which has reached its totality.",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:53:15.599756",
+      "content_hash": "122b48683674fc3aa14ec96d710db86f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Maya numerals",
+      "content": "== Modified vigesimal system in the Maya calendar ==\n The \"Long Count\" portion of the Maya calendar uses a variation on the strictly vigesimal numerals to show a Long Count date. In the second position, only the digits up to 17 are used, and the place value of the third position is not 20×20 = 400, as would otherwise be expected, but 18×20 = 360 so that one dot over two zeros signifies 360.  Presumably, this is because 360 is roughly the number of days in a year. (The Maya had however a quite ac",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:53:15.599813",
+      "content_hash": "cb1697d4cb417a6e5cc719b962dfdf69"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Maya numerals",
+      "content": "Maya numerals converter - online converter from decimal numeration to Maya numeral notation.\nAnthropomorphic Maya numbers - online story of number representations.\nBabelStone Mayan Numerals - free font for Unicode Mayan numeral characters.",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:53:15.599855",
+      "content_hash": "8e5cae3273e89eea428556d8319d0690"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Popol Vuh",
+      "content": "=== Francisco Ximénez's manuscript ===\nIn 1701, Francisco Ximénez, a Dominican priest, came to Santo Tomás Chichicastenango (also known as Santo Tomás Chuilá). This town was in the Quiché territory and is likely where Ximénez first recorded the work. Ximénez transcribed and translated the account, setting up parallel Kʼicheʼ and Spanish language columns in his manuscript. (He represented the Kʼicheʼ language  phonetically with Latin and Parra characters.) In or around 1714, Ximénez incorporated ",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:53:20.372615",
+      "content_hash": "7705432e1f47cc6acd5c29f089bdd285"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Popol Vuh",
+      "content": "It is generally believed that Ximénez borrowed a phonetic manuscript from a parishioner for his source, although Néstor Quiroa points out that \"such a manuscript has never been found, and thus Ximenez's work represents the only source for scholarly studies.\" This document would have been a phonetic rendering of an oral recitation performed in or around Santa Cruz del Quiché shortly following Pedro de Alvarado's 1524 conquest. By comparing the genealogy at the end of Popol Vuh with dated colonial",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:53:20.372736",
+      "content_hash": "b7b236660c00622bc2bcc02ef0eda53d"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Popol Vuh",
+      "content": "The Hero Twins plan to kill Vucub-Caquix and his sons, Zipacna and Cabracan.\nThey succeed, \"restoring order and balance to the world.\"\nBook Three",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:53:20.372810",
+      "content_hash": "8c0ff365c31a8fe86bda654cd4e189cf"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mayan",
+      "topic": "Maya mythology",
+      "content": "It is doubtful that mythological narratives were ever completely rendered hieroglyphically, even though a sort of 'strip books' may once have existed. The surviving Mayan books are mainly of a ritual and also (in the case of the Paris Codex) historical nature, and contain few mythical scenes. As a consequence, depictions on temple walls, stelae, and movable objects (especially the so-called 'ceramic codex') are used to aid reconstruction of pre-Spanish Mayan mythology. A main problem with depict",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:53:25.190329",
+      "content_hash": "04a08c6ead28730132ada8563013352b"
+    }
+  ],
+  "scan_history": [
+    {
+      "timestamp": "2025-12-15T10:26:06.595356",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:42:41.884175",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:53:33.792483",
+      "insights_found": 23,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:36:53.329245",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T14:56:49.927128",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:07:54.309919",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:56:09.575975",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T12:39:49.667388",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T13:54:16.111365",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T14:48:18.175373",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T12:10:36.881288",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:29:17.527787",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:45:21.278998",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T14:12:12.876242",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:05:48.322059",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:33:58.516204",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:50:32.394024",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T16:19:16.930027",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T17:29:41.281700",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    }
+  ]
+}

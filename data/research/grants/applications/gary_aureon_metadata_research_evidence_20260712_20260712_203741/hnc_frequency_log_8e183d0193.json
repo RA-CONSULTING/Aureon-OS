@@ -1,0 +1,358 @@
+[
+  {
+    "timestamp": "2025-11-30T21:41:05.927661+00:00",
+    "readings": [
+      {
+        "symbol": "AVAXGBP",
+        "price": 10.49,
+        "change24h": -3.2368312940213486,
+        "frequency": 174,
+        "resonance": 0.6763168705978652,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "BTCGBP",
+        "price": 68889,
+        "change24h": 0.20356878273656842,
+        "frequency": 396,
+        "resonance": 0.9796431217263432,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "ADAGBP",
+        "price": 0.320145,
+        "change24h": 1.5805857119703424,
+        "frequency": 396,
+        "resonance": 0.8419414288029657,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "LINKGBP",
+        "price": 10.04,
+        "change24h": 1.9848166266953533,
+        "frequency": 396,
+        "resonance": 0.8015183373304646,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "DOGEGBP",
+        "price": 0.112427,
+        "change24h": -0.0009053169699895487,
+        "frequency": 256,
+        "resonance": 0.9999094683030011,
+        "is_harmonic": true
+      },
+      {
+        "symbol": "ETHGBP",
+        "price": 2283.9,
+        "change24h": 0.9974107107722157,
+        "frequency": 396,
+        "resonance": 0.9002589289227785,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "LTCGBP",
+        "price": 63.36,
+        "change24h": -0.20590104286427238,
+        "frequency": 256,
+        "resonance": 0.9794098957135727,
+        "is_harmonic": true
+      },
+      {
+        "symbol": "DOTGBP",
+        "price": 1.71,
+        "change24h": 0.31443092006321743,
+        "frequency": 396,
+        "resonance": 0.9685569079936782,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "SOLGBP",
+        "price": 103.68,
+        "change24h": 0.796497594755094,
+        "frequency": 396,
+        "resonance": 0.9203502405244905,
+        "is_harmonic": false
+      }
+    ],
+    "composite_frequency": 340.22222222222223,
+    "average_resonance": 0.8964339111016844,
+    "phase": "CONSOLIDATION",
+    "phase_color": "\ud83d\udfe0",
+    "triadic_coherence": 0.2222222222222222,
+    "fear_greed": {
+      "value": 28,
+      "classification": "Fear",
+      "frequency": 273.12,
+      "timestamp": "1764460800"
+    },
+    "lighthouse_aligned": false
+  },
+  {
+    "timestamp": "2025-11-30T21:41:16.230854+00:00",
+    "readings": [
+      {
+        "symbol": "AVAXGBP",
+        "price": 10.49,
+        "change24h": -3.2368312940213486,
+        "frequency": 174,
+        "resonance": 0.6763168705978652,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "BTCGBP",
+        "price": 68889,
+        "change24h": 0.20356878273656842,
+        "frequency": 396,
+        "resonance": 0.9796431217263432,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "ADAGBP",
+        "price": 0.320145,
+        "change24h": 1.5805857119703424,
+        "frequency": 396,
+        "resonance": 0.8419414288029657,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "LINKGBP",
+        "price": 10.04,
+        "change24h": 1.9848166266953533,
+        "frequency": 396,
+        "resonance": 0.8015183373304646,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "DOGEGBP",
+        "price": 0.112427,
+        "change24h": -0.0009053169699895487,
+        "frequency": 256,
+        "resonance": 0.9999094683030011,
+        "is_harmonic": true
+      },
+      {
+        "symbol": "ETHGBP",
+        "price": 2283.9,
+        "change24h": 0.9974107107722157,
+        "frequency": 396,
+        "resonance": 0.9002589289227785,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "LTCGBP",
+        "price": 63.36,
+        "change24h": -0.20590104286427238,
+        "frequency": 256,
+        "resonance": 0.9794098957135727,
+        "is_harmonic": true
+      },
+      {
+        "symbol": "DOTGBP",
+        "price": 1.71,
+        "change24h": 0.31443092006321743,
+        "frequency": 396,
+        "resonance": 0.9685569079936782,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "SOLGBP",
+        "price": 103.68,
+        "change24h": 0.796497594755094,
+        "frequency": 396,
+        "resonance": 0.9203502405244905,
+        "is_harmonic": false
+      }
+    ],
+    "composite_frequency": 340.22222222222223,
+    "average_resonance": 0.8964339111016844,
+    "phase": "CONSOLIDATION",
+    "phase_color": "\ud83d\udfe0",
+    "triadic_coherence": 0.2222222222222222,
+    "fear_greed": {
+      "value": 28,
+      "classification": "Fear",
+      "frequency": 273.12,
+      "timestamp": "1764460800"
+    },
+    "lighthouse_aligned": false
+  },
+  {
+    "timestamp": "2025-11-30T21:41:26.510613+00:00",
+    "readings": [
+      {
+        "symbol": "AVAXGBP",
+        "price": 10.49,
+        "change24h": -3.2368312940213486,
+        "frequency": 174,
+        "resonance": 0.6763168705978652,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "BTCGBP",
+        "price": 68889,
+        "change24h": 0.20356878273656842,
+        "frequency": 396,
+        "resonance": 0.9796431217263432,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "ADAGBP",
+        "price": 0.320145,
+        "change24h": 1.5805857119703424,
+        "frequency": 396,
+        "resonance": 0.8419414288029657,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "LINKGBP",
+        "price": 10.04,
+        "change24h": 1.9848166266953533,
+        "frequency": 396,
+        "resonance": 0.8015183373304646,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "DOGEGBP",
+        "price": 0.112427,
+        "change24h": -0.0009053169699895487,
+        "frequency": 256,
+        "resonance": 0.9999094683030011,
+        "is_harmonic": true
+      },
+      {
+        "symbol": "ETHGBP",
+        "price": 2283.9,
+        "change24h": 0.9974107107722157,
+        "frequency": 396,
+        "resonance": 0.9002589289227785,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "LTCGBP",
+        "price": 63.36,
+        "change24h": -0.20590104286427238,
+        "frequency": 256,
+        "resonance": 0.9794098957135727,
+        "is_harmonic": true
+      },
+      {
+        "symbol": "DOTGBP",
+        "price": 1.71,
+        "change24h": 0.31443092006321743,
+        "frequency": 396,
+        "resonance": 0.9685569079936782,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "SOLGBP",
+        "price": 103.68,
+        "change24h": 0.796497594755094,
+        "frequency": 396,
+        "resonance": 0.9203502405244905,
+        "is_harmonic": false
+      }
+    ],
+    "composite_frequency": 340.22222222222223,
+    "average_resonance": 0.8964339111016844,
+    "phase": "CONSOLIDATION",
+    "phase_color": "\ud83d\udfe0",
+    "triadic_coherence": 0.2222222222222222,
+    "fear_greed": {
+      "value": 28,
+      "classification": "Fear",
+      "frequency": 273.12,
+      "timestamp": "1764460800"
+    },
+    "lighthouse_aligned": false
+  },
+  {
+    "timestamp": "2025-11-30T21:41:36.801121+00:00",
+    "readings": [
+      {
+        "symbol": "AVAXGBP",
+        "price": 10.49,
+        "change24h": -3.2368312940213486,
+        "frequency": 174,
+        "resonance": 0.6763168705978652,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "BTCGBP",
+        "price": 68889,
+        "change24h": 0.20356878273656842,
+        "frequency": 396,
+        "resonance": 0.9796431217263432,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "ADAGBP",
+        "price": 0.320145,
+        "change24h": 1.5805857119703424,
+        "frequency": 396,
+        "resonance": 0.8419414288029657,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "LINKGBP",
+        "price": 10.04,
+        "change24h": 1.9848166266953533,
+        "frequency": 396,
+        "resonance": 0.8015183373304646,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "DOGEGBP",
+        "price": 0.112427,
+        "change24h": -0.0009053169699895487,
+        "frequency": 256,
+        "resonance": 0.9999094683030011,
+        "is_harmonic": true
+      },
+      {
+        "symbol": "ETHGBP",
+        "price": 2283.9,
+        "change24h": 0.9974107107722157,
+        "frequency": 396,
+        "resonance": 0.9002589289227785,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "LTCGBP",
+        "price": 63.36,
+        "change24h": -0.20590104286427238,
+        "frequency": 256,
+        "resonance": 0.9794098957135727,
+        "is_harmonic": true
+      },
+      {
+        "symbol": "DOTGBP",
+        "price": 1.71,
+        "change24h": 0.31443092006321743,
+        "frequency": 396,
+        "resonance": 0.9685569079936782,
+        "is_harmonic": false
+      },
+      {
+        "symbol": "SOLGBP",
+        "price": 103.68,
+        "change24h": 0.796497594755094,
+        "frequency": 396,
+        "resonance": 0.9203502405244905,
+        "is_harmonic": false
+      }
+    ],
+    "composite_frequency": 340.22222222222223,
+    "average_resonance": 0.8964339111016844,
+    "phase": "CONSOLIDATION",
+    "phase_color": "\ud83d\udfe0",
+    "triadic_coherence": 0.2222222222222222,
+    "fear_greed": {
+      "value": 28,
+      "classification": "Fear",
+      "frequency": 273.12,
+      "timestamp": "1764460800"
+    },
+    "lighthouse_aligned": false
+  }
+]

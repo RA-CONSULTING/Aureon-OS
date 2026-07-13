@@ -1,0 +1,173 @@
+{
+  "schema_version": "aureon-ifs-drive-p1-targeted-evidence-readback-v1",
+  "generated_at": "2026-07-10T12:58:03+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_drive_p1_targeted_evidence_readback",
+  "gmail_or_drive_account_context": "gaxlec@gmail.com Google Drive connector, read-only search",
+  "summary": {
+    "drive_searches_reviewed": 12,
+    "drive_results_observed": 19,
+    "p1_applications_reviewed": 4,
+    "planning_or_draft_only_hits": 2,
+    "irrelevant_false_positive_searches": 3,
+    "private_finance_false_positive_searches": 2,
+    "sensitive_content_copied": false,
+    "confirmed_unlock_evidence_count": 0,
+    "direct_ifs_submissions_unlocked": 0,
+    "new_browser_submissions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false,
+    "drive_file_created_or_modified": false
+  },
+  "search_results": [
+    {
+      "query": "AKT6",
+      "route": "AKT6",
+      "results_observed": 0,
+      "classification": "NO_DRIVE_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No Drive result for AKT6."
+    },
+    {
+      "query": "KTP",
+      "route": "AKT6",
+      "results_observed": 3,
+      "classification": "PLANNING_AND_DRAFT_PACKS_ONLY",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned prior Aureon grant operating logs and the academic validation sprint PDF pack. These are planning/outreach materials, not an eligible knowledge-base lead commitment, TTO confirmation, four-FTE evidence, or signed role evidence.",
+      "sanitized_result_titles": [
+        "AUREON_GRANT_OPERATING_LOG_REFRESHED_20260705.md",
+        "AUREON_GRANT_OPERATING_LOG.md",
+        "03_Academic_Validation_Sprint_Email_Pack.pdf"
+      ]
+    },
+    {
+      "query": "four FTE",
+      "route": "AKT6",
+      "results_observed": 1,
+      "classification": "PRIVATE_FINANCE_FALSE_POSITIVE_EXCLUDED",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned a Future Leaders application PDF containing private finance/bank-detail material. It was not copied into the grant ledger and is not four-FTE evidence for AKT6.",
+      "sensitive_content_copied": false
+    },
+    {
+      "query": "QUB KTP",
+      "route": "AKT6",
+      "results_observed": 0,
+      "classification": "NO_DRIVE_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No Drive result for QUB KTP."
+    },
+    {
+      "query": "Ulster KTP",
+      "route": "AKT6",
+      "results_observed": 2,
+      "classification": "PLANNING_LOGS_ONLY",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned prior Aureon grant operating logs only. No Ulster lead/TTO commitment or AKT6 role evidence was found.",
+      "sanitized_result_titles": [
+        "AUREON_GRANT_OPERATING_LOG.md",
+        "AUREON_GRANT_OPERATING_LOG_REFRESHED_20260705.md"
+      ]
+    },
+    {
+      "query": "CMDC7",
+      "route": "CMDC7",
+      "results_observed": 0,
+      "classification": "NO_DRIVE_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No Drive result for CMDC7."
+    },
+    {
+      "query": "Clean Maritime",
+      "route": "CMDC7",
+      "results_observed": 1,
+      "classification": "IRRELEVANT_FALSE_POSITIVE",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned an unrelated ecommerce strategy markdown file. No maritime lead, vessel, site, permit, safety, budget, or partner commitment evidence was found.",
+      "sanitized_result_titles": [
+        "recommend-ecommerce-strategy.md"
+      ]
+    },
+    {
+      "query": "Belfast Harbour",
+      "route": "CMDC7",
+      "results_observed": 2,
+      "classification": "PRIVATE_FINANCE_FALSE_POSITIVE_EXCLUDED",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned private bank-statement false positives. Their contents were not copied into the grant ledger and do not evidence Belfast Harbour partner commitment.",
+      "sensitive_content_copied": false
+    },
+    {
+      "query": "Navantia",
+      "route": "CMDC7",
+      "results_observed": 0,
+      "classification": "NO_DRIVE_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No Drive result for Navantia."
+    },
+    {
+      "query": "Artemis",
+      "route": "CMDC7",
+      "results_observed": 0,
+      "classification": "NO_DRIVE_MATCH",
+      "unlock_evidence_found": false,
+      "finding": "No Drive result for Artemis."
+    },
+    {
+      "query": "maritime lead",
+      "route": "CMDC7",
+      "results_observed": 5,
+      "classification": "IRRELEVANT_FALSE_POSITIVES",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned unrelated documentation, research manuscript and lead-list files. No maritime project lead, asset/site, safety, permit, budget, or commitment evidence was found."
+    },
+    {
+      "query": "vessel permit",
+      "route": "CMDC7",
+      "results_observed": 5,
+      "classification": "IRRELEVANT_FALSE_POSITIVES",
+      "unlock_evidence_found": false,
+      "finding": "Drive returned unrelated workflow/readme files. No vessel or permit evidence was found."
+    }
+  ],
+  "route_impacts": [
+    {
+      "application_id": "APP-IFS-AKT6-2473-20260709",
+      "impact": "No Drive evidence confirmed an eligible knowledge-base lead, TTO/authorised lead contact, business four-FTE evidence, work package budget, or signed role commitment.",
+      "state_after_readback": "EVIDENCE_GATED",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "impact": "No Drive evidence confirmed a maritime lead, vessel/port/shipyard asset, trial site, safety case, permits, insurance basis, budget, or deployment plan.",
+      "state_after_readback": "EVIDENCE_GATED",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "impact": "No Drive evidence confirmed a maritime feasibility partner, asset context, scope, budget, work package, or partner commitment.",
+      "state_after_readback": "EVIDENCE_GATED",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "impact": "No Drive evidence confirmed a deployment partner, deployment asset/site, permissions, safety case, partner budget, or deployment schedule.",
+      "state_after_readback": "EVIDENCE_GATED",
+      "direct_submit_ready": false
+    }
+  ],
+  "controls": [
+    "Google Drive was searched read-only through the connector.",
+    "Private finance/bank-statement false positives were excluded from artifact content.",
+    "No Google Drive file was created, modified, moved, shared, downloaded as raw private finance evidence, or uploaded.",
+    "No IFS portal page was changed and no external action was performed.",
+    "No route was marked submit-ready from planning logs, outreach drafts, private finance false positives, or unrelated matches."
+  ],
+  "result": "DRIVE_P1_TARGETED_READBACK_NO_CONFIRMED_UNLOCK_EVIDENCE"
+}

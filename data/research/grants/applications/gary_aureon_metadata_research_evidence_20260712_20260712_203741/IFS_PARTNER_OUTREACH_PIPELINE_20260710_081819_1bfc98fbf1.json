@@ -1,0 +1,332 @@
+{
+  "schema_version": "aureon-ifs-partner-outreach-pipeline-v1",
+  "generated_at": "2026-07-10T08:18:19+01:00",
+  "operator": "Aureon",
+  "applicant": {
+    "owner": "Gary Leckey",
+    "organisation": "R&A Consulting and Brokerage Services Ltd",
+    "email_for_monitoring": "gaxlec@gmail.com"
+  },
+  "scope": "IFS_ONLY_GATED_ROUTE_PARTNER_TARGETING",
+  "result": "PARTNER_TARGET_PIPELINE_CREATED_DRAFT_ONLY_NO_EXTERNAL_SEND_NO_SUBMISSION",
+  "official_sources": [
+    {
+      "id": "ifs_uk_swiss_round_3",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2512/overview/2f0a03c4-44b7-42dc-8845-70751b6bc531",
+      "use": "Official Innovate UK IFS page for UK-Switzerland CR&D Round 3: UK business must collaborate with at least one non-linked Swiss implementation partner applying through Innosuisse; fields are Semiconductors, Life Sciences, and Engineering Biology."
+    },
+    {
+      "id": "innosuisse_switzerland_uk_call",
+      "url": "https://www.innosuisse.admin.ch/en/switzerland-uk-call-for-projects",
+      "use": "Official Innosuisse page: Swiss and UK participants submit to their own portals; partner search is supported by b2match/EEN; priority areas are Semiconductors, Life Sciences, and Engineering Biology."
+    },
+    {
+      "id": "innosuisse_bilateral_projects",
+      "url": "https://www.innosuisse.admin.ch/en/bilateral-projects",
+      "use": "Official Innosuisse bilateral-projects page: Swiss consortium generally needs at least one Swiss implementation partner plus a research institution, and at least one implementation partner from the partner country."
+    },
+    {
+      "id": "swisschips_research",
+      "url": "https://swisschips.ethz.ch/research.html",
+      "use": "SwissChips research page: ETH, EPFL and CSEM work packages cover IC design infrastructure, semiconductors, sensors, system demonstrators, reports and open-source software; international collaboration is case-by-case."
+    },
+    {
+      "id": "kandou_ai",
+      "url": "https://kandou.ai/",
+      "use": "Kandou AI official page: AI hardware connectivity, GPU/memory/network/rack connectivity, Copper MIMO, sales contact listed on site."
+    },
+    {
+      "id": "sensirion_contact",
+      "url": "https://sensirion.com/company/contact-locations",
+      "use": "Sensirion contact page: Swiss headquarters in Stafa, Switzerland, with general contact email and phone."
+    },
+    {
+      "id": "corintis",
+      "url": "https://corintis.com/",
+      "use": "Corintis official page: liquid cooling for high-power chips in data centers, relevant to semiconductor/AI infrastructure cooling."
+    },
+    {
+      "id": "artemis_technologies",
+      "url": "https://www.artemistechnologies.co.uk/",
+      "use": "Artemis Technologies official page: clean maritime technology company developing zero-emission commercial vessels and eFoiler technology."
+    },
+    {
+      "id": "artemis_clean_maritime_2026",
+      "url": "https://www.artemistechnologies.co.uk/news/secretary-of-state-visits-artemis-technologies-as-region-accelerates-delivery-of-clean-maritime-innovation/",
+      "use": "Artemis 2026 update: Belfast manufacturing and clean maritime innovation, EF-24 passenger ferry pilot and Belfast Maritime Consortium context."
+    },
+    {
+      "id": "belfast_harbour_green_seas",
+      "url": "https://www.belfast-harbour.co.uk/news/ni-green-seas-consortium-300/",
+      "use": "Belfast Harbour NI Green Seas page: consortium partners and decarbonisation focus including shore-side electricity, hydrogen vessels, battery storage and green port infrastructure."
+    },
+    {
+      "id": "belfast_harbour_esg_2024",
+      "url": "https://www.belfast-harbour.co.uk/wp-content/uploads/2025/07/Belfast-Harbour-ESG-Report-2024.pdf",
+      "use": "Belfast Harbour ESG 2024: Project Harlander electric autonomous shuttle pilot and zero-emission digitally managed mobility."
+    },
+    {
+      "id": "harland_wolff_commercial",
+      "url": "https://www.harland-wolff.com/commercial/",
+      "use": "Harland & Wolff commercial page: Belfast large drydocks/deep-water access and commercial vessel services; use with current-acquisition/admin caution."
+    },
+    {
+      "id": "harland_wolff_contact",
+      "url": "https://www.harland-wolff.com/contact/",
+      "use": "Harland & Wolff contact page: notes Navantia UK acquisition and gives Navantia UK contact channel; verify eligibility before any outreach."
+    }
+  ],
+  "uk_swiss_pipeline": {
+    "linked_application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+    "portal_application_number": "10210100",
+    "route_status": "IFS_DRAFT_EVIDENCE_DISCOVERY_COMPLETE_PARTNER_BUDGET_EVIDENCE_REQUIRED",
+    "current_gate": "Need named Swiss implementation partner, research institution or waiver, work-package split, budget/person-months, IP/data/export-control/TR&I and impact/award evidence before final completion or submission.",
+    "targets": [
+      {
+        "priority": 1,
+        "target": "Kandou AI / Kandou Bus SA",
+        "target_type": "Swiss implementation partner candidate",
+        "route_fit": "Semiconductors; AI hardware interconnect and energy-efficient AI infrastructure.",
+        "official_evidence": [
+          "kandou_ai"
+        ],
+        "public_contact_channel": "sales@kandou.ai (listed on official Kandou AI site)",
+        "aureon_work_package": "Aureon evidence automation for reproducibility records, claim control, benchmark evidence, project reporting and cross-partner audit trails.",
+        "required_evidence_to_unlock": [
+          "Swiss registered applicant confirmation",
+          "Innosuisse parallel application owner",
+          "technical theme and work package",
+          "person-months and budget",
+          "research institution or waiver route",
+          "IP/data/export-control/TR&I position"
+        ],
+        "outreach_status": "DRAFT_ONLY_NOT_SENT"
+      },
+      {
+        "priority": 2,
+        "target": "Sensirion AG",
+        "target_type": "Swiss implementation partner candidate",
+        "route_fit": "Semiconductors/sensors and embedded/cloud sensor systems.",
+        "official_evidence": [
+          "sensirion_contact"
+        ],
+        "public_contact_channel": "info@sensirion.com (listed on official Sensirion contact page)",
+        "aureon_work_package": "Aureon evidence automation for sensor-R&D evidence traceability, validation reporting, data-handling controls and funder-ready work-package records.",
+        "required_evidence_to_unlock": [
+          "Swiss registered applicant confirmation",
+          "Innosuisse parallel application owner",
+          "technical theme and work package",
+          "person-months and budget",
+          "research institution or waiver route",
+          "IP/data/export-control/TR&I position"
+        ],
+        "outreach_status": "DRAFT_ONLY_NOT_SENT"
+      },
+      {
+        "priority": 3,
+        "target": "Corintis",
+        "target_type": "Swiss implementation partner candidate",
+        "route_fit": "Semiconductor/AI infrastructure cooling; high-power chip liquid cooling.",
+        "official_evidence": [
+          "corintis"
+        ],
+        "public_contact_channel": "Official website contact route; exact public email not confirmed in current readback.",
+        "aureon_work_package": "Aureon evidence automation for cooling validation records, test source mapping, risk tagging and partner/funder reporting.",
+        "required_evidence_to_unlock": [
+          "Swiss registered applicant confirmation",
+          "Innosuisse parallel application owner",
+          "technical theme and work package",
+          "person-months and budget",
+          "research institution or waiver route",
+          "IP/data/export-control/TR&I position"
+        ],
+        "outreach_status": "DRAFT_ONLY_NOT_SENT"
+      },
+      {
+        "priority": 4,
+        "target": "SwissChips / ETH-EPFL-CSEM ecosystem",
+        "target_type": "Research-institution network / ecosystem route, not a confirmed implementation partner",
+        "route_fit": "Semiconductors; IC design infrastructure, sensors, demonstrators and open-source/software deliverables.",
+        "official_evidence": [
+          "swisschips_research"
+        ],
+        "public_contact_channel": "SwissChips Project Management Office via official SwissChips site.",
+        "aureon_work_package": "Aureon evidence automation for collaboration evidence, open-source/reproducibility records, claim control and project reporting.",
+        "required_evidence_to_unlock": [
+          "Named research-institution role",
+          "whether an implementation partner exists",
+          "case-by-case collaboration approval",
+          "IP/exploitation terms",
+          "budget and funding source"
+        ],
+        "outreach_status": "DRAFT_ONLY_NOT_SENT"
+      }
+    ],
+    "draft_template": {
+      "subject": "UK-Switzerland CR&D Round 3 collaboration query - evidence automation work package",
+      "body": "Dear [Partner team],\n\nR&A Consulting and Brokerage Services Ltd is preparing an Innovate UK / Innosuisse UK-Switzerland CR&D Round 3 route for Aureon, a local-first evidence automation and AI workflow assurance platform.\n\nAureon can contribute a UK work package focused on source-grounded evidence records, reproducibility logs, claim control, validation reporting, and funder-ready audit trails for a qualifying project in semiconductors, life sciences, or engineering biology.\n\nBefore we can progress the IFS draft, we need to confirm whether your organisation could act as a Swiss implementation partner, and whether a Swiss or eligible research institution route is available.\n\nCould you confirm: (1) whether the theme is a fit for your current R&D roadmap; (2) whether you can apply through Innosuisse as a Swiss implementation partner; (3) whether a research institution partner or waiver route is available; (4) the likely work-package split; (5) budget/person-month assumptions; and (6) any IP, data, export-control or Trusted Research issues we should account for?\n\nRegards,\nGary Leckey\nDirector, R&A Consulting and Brokerage Services Ltd\nAureon Institute"
+    }
+  },
+  "maritime_pipeline": {
+    "linked_application_ids": [
+      "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+      "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+      "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+      "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709"
+    ],
+    "route_status": "MARITIME_CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+    "current_gate": "Need named maritime lead partner, vessel/infrastructure asset, site, safety/permit basis, deployment/trial plan and partner budget before portal draft or submission.",
+    "targets": [
+      {
+        "priority": 1,
+        "target": "Artemis Technologies",
+        "target_type": "UK maritime technology / vessel lead candidate",
+        "route_fit": "ZEVI/CMDC partner-led routes for zero-emission vessels, Belfast manufacturing, EF-24/EF-12/eFoiler technology and operational pilots.",
+        "official_evidence": [
+          "artemis_technologies",
+          "artemis_clean_maritime_2026"
+        ],
+        "public_contact_channel": "Official Artemis website contact route.",
+        "aureon_work_package": "Aureon evidence automation for trial/deployment records, source evidence, safety/risk evidence, milestone reporting and funder-ready audit trails.",
+        "required_evidence_to_unlock": [
+          "Named lead partner commitment",
+          "vessel or infrastructure asset",
+          "deployment/test site",
+          "safety/permit basis",
+          "trial plan",
+          "partner budget and eligible costs",
+          "Aureon role and subcontract/collaboration status"
+        ],
+        "outreach_status": "DRAFT_ONLY_NOT_SENT"
+      },
+      {
+        "priority": 2,
+        "target": "Belfast Harbour",
+        "target_type": "Port/infrastructure lead or site partner candidate",
+        "route_fit": "ZEVI/CMDC partner-led routes needing port/site/infrastructure/decarbonisation context; Green Seas consortium and Green Port ambitions.",
+        "official_evidence": [
+          "belfast_harbour_green_seas",
+          "belfast_harbour_esg_2024"
+        ],
+        "public_contact_channel": "Official Belfast Harbour contact route; exact grant recipient not selected.",
+        "aureon_work_package": "Aureon evidence automation for port decarbonisation evidence, mobility pilot evidence, infrastructure records and compliance reporting.",
+        "required_evidence_to_unlock": [
+          "Named site owner/lead commitment",
+          "asset/site data access",
+          "safety/permit basis",
+          "trial/deployment plan",
+          "eligible costs and budget",
+          "partner work-package owner"
+        ],
+        "outreach_status": "DRAFT_ONLY_NOT_SENT"
+      },
+      {
+        "priority": 3,
+        "target": "Harland & Wolff / Navantia UK Belfast",
+        "target_type": "Shipyard/conversion/fabrication partner candidate with eligibility caution",
+        "route_fit": "Potential CMDC/ZEVI asset, repair, conversion, outfitting or shipyard role if current corporate eligibility and lead role are confirmed.",
+        "official_evidence": [
+          "harland_wolff_commercial",
+          "harland_wolff_contact"
+        ],
+        "public_contact_channel": "navantiauk@navantia.es and official contact routes listed on Harland & Wolff contact page; use with acquisition/admin caution.",
+        "aureon_work_package": "Aureon evidence automation for shipyard work-package evidence, conversion records, quality/safety evidence and funder reporting.",
+        "required_evidence_to_unlock": [
+          "Current eligible legal entity and lead role",
+          "asset/site/project scope",
+          "safety/permit basis",
+          "budget/eligible costs",
+          "partner work-package owner"
+        ],
+        "outreach_status": "DRAFT_ONLY_NOT_SENT"
+      },
+      {
+        "priority": 4,
+        "target": "NI Green Seas consortium pathway",
+        "target_type": "Consortium mapping route, not a single confirmed recipient",
+        "route_fit": "Clean maritime decarbonisation pathway linking Power NI, Belfast Harbour, Artemis Technologies, NIE Networks, Ulster University, Queen?s University Belfast and Mott MacDonald from prior Clean Maritime Demonstration Competition work.",
+        "official_evidence": [
+          "belfast_harbour_green_seas"
+        ],
+        "public_contact_channel": "Identify current consortium lead/contact before outreach; prior lead was Power NI in the cited project.",
+        "aureon_work_package": "Aureon evidence automation as assurance/reporting layer for consortium decarbonisation and deployment evidence.",
+        "required_evidence_to_unlock": [
+          "Current consortium status",
+          "lead applicant",
+          "eligible competition route",
+          "asset/site data",
+          "budget and work-package split"
+        ],
+        "outreach_status": "DRAFT_ONLY_NOT_SENT"
+      }
+    ],
+    "draft_template": {
+      "subject": "Clean maritime grant collaboration query - Aureon evidence automation work package",
+      "body": "Dear [Partner team],\n\nR&A Consulting and Brokerage Services Ltd is preparing partner-led clean maritime grant routes where Aureon could contribute an evidence automation and assurance work package.\n\nAureon can support source inventories, deployment/trial evidence records, risk and claim control, milestone reporting, and funder-ready audit trails. We are not claiming vessel, port, shipyard, safety, permit, or budget evidence ourselves; the route can only proceed with a named maritime lead and project asset.\n\nCould you confirm whether your organisation has a suitable vessel, infrastructure asset, port/shipyard site, deployment or trial plan, safety/permit basis, budget and eligible-cost position for a ZEVI or CMDC-style collaboration where Aureon acts as evidence/reporting work-package provider?\n\nRegards,\nGary Leckey\nDirector, R&A Consulting and Brokerage Services Ltd\nAureon Institute"
+    }
+  },
+  "other_current_ifs_gates": [
+    {
+      "application_id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+      "status": "NOT_GRANT_FINANCE_RISK_GATED",
+      "route_action": "No specific partner target advanced in this pack; hold until route-specific eligible lead, partner, facility, academic/RTO/public-sector organisation, farming lead, hardware lead or finance-risk decision is evidenced."
+    },
+    {
+      "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "status": "HARDWARE_LEAD_PARTNER_REQUIRED",
+      "route_action": "No specific partner target advanced in this pack; hold until route-specific eligible lead, partner, facility, academic/RTO/public-sector organisation, farming lead, hardware lead or finance-risk decision is evidenced."
+    },
+    {
+      "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+      "status": "NOT_ELIGIBLE_DIRECT",
+      "route_action": "No specific partner target advanced in this pack; hold until route-specific eligible lead, partner, facility, academic/RTO/public-sector organisation, farming lead, hardware lead or finance-risk decision is evidenced."
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+      "status": "AUTOMOTIVE_ZEV_PARTNER_REQUIRED",
+      "route_action": "No specific partner target advanced in this pack; hold until route-specific eligible lead, partner, facility, academic/RTO/public-sector organisation, farming lead, hardware lead or finance-risk decision is evidenced."
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+      "status": "MANUFACTURING_FACILITY_EVIDENCE_REQUIRED",
+      "route_action": "No specific partner target advanced in this pack; hold until route-specific eligible lead, partner, facility, academic/RTO/public-sector organisation, farming lead, hardware lead or finance-risk decision is evidenced."
+    },
+    {
+      "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+      "status": "FARMING_LEAD_REQUIRED",
+      "route_action": "No specific partner target advanced in this pack; hold until route-specific eligible lead, partner, facility, academic/RTO/public-sector organisation, farming lead, hardware lead or finance-risk decision is evidenced."
+    },
+    {
+      "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+      "status": "ACADEMIC_LEAD_REQUIRED",
+      "route_action": "No specific partner target advanced in this pack; hold until route-specific eligible lead, partner, facility, academic/RTO/public-sector organisation, farming lead, hardware lead or finance-risk decision is evidenced."
+    },
+    {
+      "application_id": "APP-IFS-AKT6-2473-20260709",
+      "status": "ACADEMIC_RTO_CATAPULT_LEAD_AND_4FTE_GATE",
+      "route_action": "No specific partner target advanced in this pack; hold until route-specific eligible lead, partner, facility, academic/RTO/public-sector organisation, farming lead, hardware lead or finance-risk decision is evidenced."
+    },
+    {
+      "application_id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+      "status": "PUBLIC_SECTOR_RESEARCH_ORG_REQUIRED",
+      "route_action": "No specific partner target advanced in this pack; hold until route-specific eligible lead, partner, facility, academic/RTO/public-sector organisation, farming lead, hardware lead or finance-risk decision is evidenced."
+    }
+  ],
+  "controls": {
+    "external_submission_performed": false,
+    "email_sent": false,
+    "portal_upload_performed": false,
+    "partner_invite_sent": false,
+    "final_submit_attempted": false,
+    "statuses_preserved": true,
+    "no_partner_commitment_claimed": true
+  },
+  "next_actions": [
+    "Use the UK-Switzerland template only after choosing an exact partner recipient and approving the exact payload at action time.",
+    "Use the maritime template only after choosing an exact maritime recipient and approving the exact payload at action time.",
+    "If any partner replies, record the reply as evidence before changing any route to submit-ready.",
+    "Do not finish UK-Switzerland Project Impact, costs, award terms or final submit until partner budget and work-package evidence is recorded."
+  ]
+}

@@ -1,0 +1,134 @@
+﻿{
+    "schema_version":  "aureon-ifs-adopt-farming-lead-evidence-audit-v1",
+    "generated_at":  "2026-07-10T09:32:12+01:00",
+    "operator":  "Aureon",
+    "scope":  "IFS_ONLY",
+    "event":  "ifs_adopt_farming_lead_evidence_audit",
+    "application_ids":  [
+                            "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+                            "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+                        ],
+    "competitions":  [
+                         {
+                             "application_id":  "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+                             "name":  "Full ADOPT Grant: Round 8",
+                             "official_url":  "https://apply-for-innovation-funding.service.gov.uk/competition/2491/overview/77ba6cb6-c14d-41f7-84de-e45446636e50",
+                             "deadline":  "2026-07-29T11:00:00+01:00"
+                         },
+                         {
+                             "application_id":  "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+                             "name":  "ADOPT Facilitator Support Grant: Round 10",
+                             "official_url":  "https://apply-for-innovation-funding.service.gov.uk/competition/2520/overview/7b03dc59-645f-426d-a08f-6c6e6b6d6e0e",
+                             "deadline":  "2026-08-12T11:00:00+01:00"
+                         }
+                     ],
+    "result":  "NO_ADOPT_SUBMIT_READY_ROUTE_CURRENT_EVIDENCE_ENGLAND_FARMING_LEAD_REQUIRED",
+    "official_ifs_requirements":  [
+                                      {
+                                          "route":  "Full ADOPT Round 8",
+                                          "requirement":  "Farming, growing or forestry businesses based in England can apply for on-farm trial and demonstration projects; competition closes 29 July 2026 at 11:00.",
+                                          "source":  "Official Full ADOPT IFS page lines 45-50"
+                                      },
+                                      {
+                                          "route":  "Full ADOPT Round 8",
+                                          "requirement":  "Project total costs must be GBP50,000 to GBP200,000 and project must include an ADOPT Project Facilitator and at least one other UK farmer, grower or forester claiming grant funding.",
+                                          "source":  "Official Full ADOPT IFS page lines 108-116"
+                                      },
+                                      {
+                                          "route":  "Full ADOPT Round 8",
+                                          "requirement":  "Lead must be active farming, growing or forestry business based in England, established as commercial, with eligible UK bank account, and collaborate with another farming/growing/forestry business.",
+                                          "source":  "Official Full ADOPT IFS page lines 121-128"
+                                      },
+                                      {
+                                          "route":  "Full ADOPT Round 8",
+                                          "requirement":  "R\u0026A could only participate if invited by an eligible lead; partners must be invited into IFS and project must keep farming/growing/forestry eligibility and cost-balance rules.",
+                                          "source":  "Official Full ADOPT IFS page lines 138-160"
+                                      },
+                                      {
+                                          "route":  "ADOPT Facilitator Round 10",
+                                          "requirement":  "England-based farmer, grower or forester can apply for GBP2,500 to engage an external registered Project Facilitator to support a Full ADOPT application.",
+                                          "source":  "Official Facilitator IFS page search result/opened page"
+                                      },
+                                      {
+                                          "route":  "ADOPT Facilitator Round 10",
+                                          "requirement":  "Applicant must be an active farming, growing or forestry business based in England, engage a registered Project Facilitator, and submit a Full ADOPT application before payment evidence.",
+                                          "source":  "Official Facilitator IFS page search result/opened page"
+                                      }
+                                  ],
+    "confirmed_findings":  {
+                               "confirmed_england_farming_growing_forestry_lead":  false,
+                               "confirmed_second_uk_farm_grower_forester_partner":  false,
+                               "confirmed_adopt_project_facilitator_registered":  false,
+                               "confirmed_on_farm_trial_site_or_cph":  false,
+                               "confirmed_project_facilitator_support_grant_applicant":  false,
+                               "confirmed_ra_invited_as_partner_or_subcontractor":  false,
+                               "direct_ifs_submission_unlocked":  false
+                           },
+    "local_evidence_readback":  [
+                                    {
+                                        "path":  "applications.json",
+                                        "finding":  "Full ADOPT is recorded as FARMING_LEAD_REQUIRED and Facilitator Support as NOT_ELIGIBLE_DIRECT from current evidence."
+                                    },
+                                    {
+                                        "path":  "IFS_CURRENT_FIT_MATRIX_20260709.md",
+                                        "finding":  "Matrix states R\u0026A should not submit ADOPT directly; use only if an eligible farming/growing/forestry lead or client invites Aureon."
+                                    },
+                                    {
+                                        "path":  "AUREON_GRANT_OPERATOR_24_7_PLAN_20260709.md",
+                                        "finding":  "Plan marks ADOPT as unlikely fit unless an agriculture partner/use case exists."
+                                    },
+                                    {
+                                        "path":  "Downloads/Documents/Desktop filename search",
+                                        "finding":  "No ADOPT, FarmPEP, ADAS, farmer, grower, forestry, CPH, or on-farm evidence file found; one unrelated PEFCphiS research PDF appeared on broad agro terms."
+                                    }
+                                ],
+    "drive_searches":  [
+                           {
+                               "query":  "ADOPT",
+                               "result_summary":  "Returned broad grant/planning files and unrelated technical files. No active England farming/growing/forestry applicant evidence or ADOPT facilitator engagement found."
+                           },
+                           {
+                               "query":  "farming",
+                               "result_summary":  "Returned War Room/codex/writing files and unrelated material. No confirmed farm business, farm site, CPH, or England farm lead evidence found."
+                           },
+                           {
+                               "query":  "Project Facilitator",
+                               "result_summary":  "Returned planning and unrelated files. No registered ADOPT Project Facilitator engagement or invoice evidence found."
+                           },
+                           {
+                               "query":  "FarmPEP",
+                               "result_summary":  "No Google Drive results."
+                           },
+                           {
+                               "query":  "ADAS",
+                               "result_summary":  "No Google Drive results."
+                           }
+                       ],
+    "drive_files_inspected":  [
+                                  {
+                                      "title":  "RA_Grant_War_Room_Package.md",
+                                      "id":  "1_V8v6tYCL-LsMxrju_emMQcikxl_ZNly",
+                                      "finding":  "Planning package classifies Full ADOPT as not viable because it is England farming only and R\u0026A is Northern Ireland/not farming. It does not evidence an eligible farm lead or facilitator route."
+                                  }
+                              ],
+    "route_action":  {
+                         "portal_draft_opened":  false,
+                         "final_submission_attempted":  false,
+                         "partner_invite_sent":  false,
+                         "email_sent":  false,
+                         "upload_performed":  false,
+                         "reason":  "Official ADOPT rules require active England farming/growing/forestry applicant evidence and farming consortium/facilitator evidence. Current Aureon evidence does not confirm those gates."
+                     },
+    "next_actions":  [
+                         "Do not submit Full ADOPT directly as R\u0026A.",
+                         "Do not submit ADOPT Facilitator Support directly as R\u0026A.",
+                         "Only change Full ADOPT to draft-ready if an active England farming/growing/forestry lead and another UK farming/growing/forestry partner invite Aureon with project role, site, facilitator and cost evidence.",
+                         "Only change Facilitator Support to draft-ready if an eligible England farming/growing/forestry applicant engages a registered Project Facilitator and asks Aureon to support the application record."
+                     ],
+    "controls":  [
+                     "No unsupported farming lead claim made",
+                     "No unsupported Project Facilitator claim made",
+                     "No unsupported farm site, CPH, permit, collaborator, budget, or partner invite claim made",
+                     "No IFS portal mutation, email, upload, partner invite, or final submission performed"
+                 ]
+}

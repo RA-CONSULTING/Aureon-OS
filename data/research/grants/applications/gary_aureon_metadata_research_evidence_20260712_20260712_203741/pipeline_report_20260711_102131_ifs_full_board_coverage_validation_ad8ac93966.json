@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-07-11T10:21:31+01:00",
+  "operator": "Aureon",
+  "event": "ifs_full_board_coverage_validation",
+  "artifact": "applications/IFS_FULL_BOARD_COVERAGE_VALIDATION_20260711_102131.json",
+  "markdown": "applications/IFS_FULL_BOARD_COVERAGE_VALIDATION_20260711_102131.md",
+  "result": "IFS_FULL_BOARD_COVERAGE_VALIDATION_PASSED",
+  "validation_passed": true,
+  "ifs_applications_total": 20,
+  "submitted_monitor_only": 4,
+  "active_not_submitted": 16,
+  "direct_submit_ready_routes": 0,
+  "new_browser_submissions_available": 0,
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false
+}

@@ -1,0 +1,58 @@
+{
+  "schema_version": "aureon-ifs-submitted-track-live-verified-v1",
+  "generated_at": "2026-07-11T07:26:28+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_submitted_track_live_verified",
+  "result": "IFS_SUBMITTED_TRACK_PAGES_LIVE_VERIFIED",
+  "live_readback_method": "Runtime-only authenticated HTTP session; SAML handoff followed; no secret stored in artifact.",
+  "submitted_track_readbacks": [
+    {
+      "application_id": "APP-IFS-NEXT-WAVE-10209601",
+      "portal_application_number": "10209601",
+      "title": "Application Status - Aureon Evidence Studio for Createch AI Workflows - Innovation Funding Service",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/application/10209601/track",
+      "submitted_signal": true
+    },
+    {
+      "application_id": "APP-IFS-FLF-R11-2499-20260709",
+      "portal_application_number": "10209992",
+      "title": "Application Status - Aureon Evidence OS for AI-Driven Scientific Discovery and Auditable SME Automation - Innovation Funding Service",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/application/10209992/track",
+      "submitted_signal": true
+    },
+    {
+      "application_id": "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+      "portal_application_number": "10210032",
+      "title": "Application Status - Aureon Flex Evidence OS: AI Assurance for Consumer-Led Flexibility - Innovation Funding Service",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/application/10210032/track",
+      "submitted_signal": true
+    },
+    {
+      "application_id": "APP-IFS-CFI-SEN-2511-20260709",
+      "portal_application_number": "10210045",
+      "title": "Application Status - Aureon SEN Evidence OS: Fair Early Identification Support - Innovation Funding Service",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/application/10210045/track",
+      "submitted_signal": true
+    }
+  ],
+  "summary": {
+    "track_pages_checked": 4,
+    "submitted_signal_count": 4,
+    "not_submitted_signal_count": 0,
+    "provider_verified_submitted_ifs_count": 4,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false
+  },
+  "controls": [
+    "Runtime IFS credential was used only in memory for authenticated readback.",
+    "No plaintext password or secret was printed or written.",
+    "No IFS portal field was changed.",
+    "No application was reopened.",
+    "No final submission, upload, email send, contact form, or partner invite was performed."
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "aureon-ifs-uk-swiss-completion-manifest-v1",
+  "generated_at": "2026-07-10T06:39:26+01:00",
+  "operator": "Aureon",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "status": "COMPLETION_WORKBOOK_AND_APPENDIX_DRAFTS_READY_PARTNER_EVIDENCE_REQUIRED",
+  "artifacts": [
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_COMPLETION_WORKBOOK_20260710.md",
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_COMPLETION_WORKBOOK_20260710.json",
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_20260710.md",
+    "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_Q9_APPROACH_APPENDIX_20260710.pdf",
+    "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_Q10_TEAM_RESOURCES_APPENDIX_20260710.pdf",
+    "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_Q14_PROJECT_PLAN_APPENDIX_20260710.pdf",
+    "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_Q15_RISK_REGISTER_APPENDIX_20260710.pdf"
+  ],
+  "not_for_final_submission_until": [
+    "named Swiss implementation partner evidence",
+    "named research institute or waiver evidence",
+    "selected qualifying IFS theme",
+    "partner work-package split and person months",
+    "consortium budget and finance basis",
+    "IP and data plan",
+    "export-control and TR&I review"
+  ]
+}

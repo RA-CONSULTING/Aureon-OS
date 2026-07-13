@@ -1,0 +1,16 @@
+﻿{
+    "schema_version":  "aureon-pipeline-report-v1",
+    "generated_at":  "2026-07-10T09:34:46+01:00",
+    "operator":  "Aureon",
+    "event":  "ifs_ckaf_public_sector_research_org_evidence_audit",
+    "result":  "NO_CKAF_SUBMIT_READY_ROUTE_CURRENT_EVIDENCE_PUBLIC_SECTOR_RESEARCH_ORG_REQUIRED",
+    "application_id":  "APP-IFS-CKAF-AUTUMN-2478-20260709",
+    "artifact":  "applications/IFS_CKAF_2478_PUBLIC_SECTOR_RESEARCH_ORG_EVIDENCE_AUDIT_20260710_093446.json",
+    "markdown":  "applications/IFS_CKAF_2478_PUBLIC_SECTOR_RESEARCH_ORG_EVIDENCE_AUDIT_20260710_093446.md",
+    "direct_ifs_submissions_unlocked":  0,
+    "new_browser_submissions_available":  0,
+    "portal_changed":  false,
+    "external_submission_performed":  false,
+    "email_sent":  false,
+    "reason":  "CKAF requires eligible public-sector research organisation/body lead and public-sector Knowledge Asset evidence not confirmed in current Aureon evidence."
+}

@@ -1,0 +1,52 @@
+{
+  "schema_version": "aureon-openocean-reply-control-v1",
+  "generated_at": "2026-07-11T22:59:34.856499+01:00",
+  "operator": "Aureon",
+  "mode": "PRIVATE_INVESTOR_PIPELINE",
+  "event": "openocean_reply_staged",
+  "result": "OPENOCEAN_REPLY_STAGED_FORMAL_PITCH_ROUTE_ACKNOWLEDGEMENT",
+  "recipient_context": {
+    "target_name": "OpenOcean",
+    "thread_subject": "B2B automation evidence workflow - route fit question",
+    "original_email": "helsinki@openocean.vc",
+    "official_pitch_submission_email": "info@openocean.vc",
+    "official_pitch_source": "https://www.openocean.vc/contact",
+    "official_focus_source": "https://www.openocean.vc/",
+    "incoming_request_summary": "OpenOcean asked Gary to submit a pitch deck on their website with a few key data points before they can respond promptly."
+  },
+  "incoming_reply_evidence": [
+    ".codex-remote-attachments/019f51fa-66fe-79c3-83c3-97835146045a/49357b20-2a5d-4247-9400-69aeab936aa7/1-Photo-1.jpg",
+    ".codex-remote-attachments/019f51fa-66fe-79c3-83c3-97835146045a/49357b20-2a5d-4247-9400-69aeab936aa7/2-Photo-2.jpg"
+  ],
+  "reply_body": "Hi OpenOcean team,\n\nThank you for coming back to me and for the clear steer.\n\nI will submit Aureon through the OpenOcean pitch route with a deck and the key data points you need. I have also checked your current contact page, which points pitch submissions to info@openocean.vc, so I will use that route unless there is a preferred upload link you would rather I use.\n\nFor context before the formal submission: Aureon Evidence OS sits in the part of the market where OpenOcean's AI/data infrastructure and automation software themes overlap. It is a local-first AI workflow layer for evidence-heavy business operations: every claim needs a source, every review needs a gate, and every external handoff needs an audit trail.\n\nThe first wedge is deliberately practical. SMEs and advisory teams already have the material they need across email, folders, portals, screenshots, documents and code, but they lose time and confidence turning it into controlled grant packs, compliance files, accounting support records and investor diligence material. Aureon turns that scattered work into source-grounded evidence packs with human review, blocked-claim handling and operator receipts.\n\nThe reason I think this is more than a workflow tool is the data layer underneath it. As the system runs, it creates structured evidence metadata around what was used, what was excluded, what was reviewed, what changed and what was safe to send. That is the defensible layer: not another generic AI wrapper, but an evidence-control system for businesses that need to move faster without losing proof.\n\nI will keep the submission concise and include:\n\n- product and wedge;\n- market and buyer pain;\n- current working operator evidence;\n- data/workflow moat;\n- commercial route;\n- stage, roadmap and funding ask.\n\nBest regards,\nGary Leckey\nR&A Consulting and Brokerage Services Ltd",
+  "reply_sha256": "32803b8d4b0260b7be0718abb56c8ce895d5e7b11f20ccaa9cb191887db39e68",
+  "validation": {
+    "prohibited_terms_found": [],
+    "required_phrases_missing": [],
+    "line_count": 24,
+    "word_count": 294,
+    "passed": true
+  },
+  "validation_rules": [
+    "No attachment is included in the email reply.",
+    "No private finance, bank, tax, payroll, password, token, raw ledger or grant portal credential data is included.",
+    "No customer traction, partner commitment, validated technical performance, regulatory approval or funding guarantee is claimed.",
+    "The reply acknowledges OpenOcean's request for deck and key data points.",
+    "The reply references the official OpenOcean pitch route observed on the current contact page: info@openocean.vc.",
+    "The commercial framing is tailored to OpenOcean's AI/data infrastructure and automation software focus."
+  ],
+  "pitch_submission_requirements": [
+    "Pitch deck",
+    "Product and wedge",
+    "Market and buyer pain",
+    "Current working operator evidence",
+    "Data/workflow moat",
+    "Commercial route",
+    "Stage, roadmap and funding ask"
+  ],
+  "controls": [
+    "Reply only; no deck, file upload, contact form submission, portal mutation or attachment is performed by this staging run.",
+    "Submission-route follow-up is staged separately because OpenOcean requested deck and key data points.",
+    "The body avoids private finance, raw ledgers, passwords, tokens, tax, payroll and unsupported traction claims."
+  ]
+}

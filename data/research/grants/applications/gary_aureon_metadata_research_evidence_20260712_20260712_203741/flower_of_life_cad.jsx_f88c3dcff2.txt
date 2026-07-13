@@ -1,0 +1,570 @@
+import { useState } from "react";
+
+const PHI = 1.618033988749895;
+const SQRT3 = Math.sqrt(3);
+const TAU = Math.PI * 2;
+
+// Solfeggio frequencies mapped to Flower of Life positions
+const AURIS_FREQS = {
+  centre: { hz: 528, name: "LOVE", color: "#00FF00", chakra: "Heart" },
+  ring1: [
+    { hz: 396, name: "Liberation", color: "#FF0000", chakra: "Root" },
+    { hz: 417, name: "Change", color: "#FF6600", chakra: "Sacral" },
+    { hz: 432, name: "Hope", color: "#FFCC00", chakra: "Solar" },
+    { hz: 639, name: "Gratitude", color: "#0066FF", chakra: "Throat" },
+    { hz: 741, name: "Joy", color: "#6600CC", chakra: "Third Eye" },
+    { hz: 963, name: "Awe", color: "#FFFFFF", chakra: "Crown" },
+  ],
+  ring2: [
+    { hz: 174, name: "Foundation", color: "#8B0000" },
+    { hz: 285, name: "Healing", color: "#CC4400" },
+    { hz: 396, name: "Liberation", color: "#FF0000" },
+    { hz: 417, name: "Change", color: "#FF6600" },
+    { hz: 432, name: "Hope", color: "#FFCC00" },
+    { hz: 528, name: "Love Echo", color: "#00FF00" },
+    { hz: 639, name: "Gratitude", color: "#0066FF" },
+    { hz: 741, name: "Joy", color: "#6600CC" },
+    { hz: 852, name: "Intuition", color: "#9900CC" },
+    { hz: 963, name: "Awe", color: "#FFFFFF" },
+    { hz: 528.422, name: "Lumina", color: "#FFD700" },
+    { hz: 174, name: "Foundation", color: "#8B0000" },
+  ],
+};
+
+function generateFlowerOfLife(cx, cy, r) {
+  const centres = [{ x: cx, y: cy, ring: 0, idx: 0 }];
+  // Ring 1
+  for (let i = 0; i < 6; i++) {
+    const angle = (i * TAU) / 6 - Math.PI / 6;
+    centres.push({
+      x: cx + r * Math.cos(angle),
+      y: cy + r * Math.sin(angle),
+      ring: 1,
+      idx: i,
+    });
+  }
+  // Ring 2
+  for (let i = 0; i < 6; i++) {
+    const angle = (i * TAU) / 6 - Math.PI / 6;
+    centres.push({
+      x: cx + 2 * r * Math.cos(angle),
+      y: cy + 2 * r * Math.sin(angle),
+      ring: 2,
+      idx: i * 2,
+    });
+    const angleMid = ((i + 0.5) * TAU) / 6 - Math.PI / 6;
+    centres.push({
+      x: cx + SQRT3 * r * Math.cos(angleMid),
+      y: cy + SQRT3 * r * Math.sin(angleMid),
+      ring: 2,
+      idx: i * 2 + 1,
+    });
+  }
+  return centres.slice(0, 19);
+}
+
+function getFreqForNode(ring, idx) {
+  if (ring === 0) return AURIS_FREQS.centre;
+  if (ring === 1) return AURIS_FREQS.ring1[idx % 6];
+  return AURIS_FREQS.ring2[idx % 12];
+}
+
+export default function FlowerOfLifeCAD() {
+  const [view, setView] = useState("plan");
+  const [showInterference, setShowInterference] = useState(true);
+  const [showFreqs, setShowFreqs] = useState(true);
+  const [showTECs, setShowTECs] = useState(true);
+  const [showDimensions, setShowDimensions] = useState(true);
+
+  const W = 800;
+  const H = 900;
+  const CX = 400;
+  const CY = 420;
+  const R = 90; // spacing between centres (represents 15cm balls)
+  const BALL_R = 42; // visual ball radius
+
+  const nodes = generateFlowerOfLife(CX, CY, R);
+
+  // Constructive interference nodes (midpoints of Vesica Piscis overlaps)
+  const interferenceNodes = [];
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const dx = nodes[j].x - nodes[i].x;
+      const dy = nodes[j].y - nodes[i].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < R * 1.2) {
+        interferenceNodes.push({
+          x: (nodes[i].x + nodes[j].x) / 2,
+          y: (nodes[i].y + nodes[j].y) / 2,
+          strength: 1 - dist / (R * 1.2),
+          pair: [i, j],
+        });
+      }
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-950 text-white p-4">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-2xl font-bold text-center text-amber-400 mb-1">
+          AUREON HARMONIC THERMODYNAMICS
+        </h1>
+        <h2 className="text-lg text-center text-amber-200 mb-1">
+          Flower of Life Plasma Array — Design Specification
+        </h2>
+        <p className="text-center text-gray-400 text-sm mb-4">
+          Gary Leckey | Aureon Institute | April 2026
+        </p>
+
+        {/* Controls */}
+        <div className="flex flex-wrap gap-2 justify-center mb-4">
+          {[
+            ["plan", "Plan View"],
+            ["side", "Side Section"],
+            ["wiring", "Wiring"],
+          ].map(([v, label]) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={`px-3 py-1 rounded text-sm ${
+                view === v
+                  ? "bg-amber-500 text-black font-bold"
+                  : "bg-gray-800 text-gray-300"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+          <span className="w-px bg-gray-700 mx-1" />
+          {[
+            [showInterference, setShowInterference, "Interference"],
+            [showFreqs, setShowFreqs, "Frequencies"],
+            [showTECs, setShowTECs, "TECs"],
+            [showDimensions, setShowDimensions, "Dimensions"],
+          ].map(([val, setter, label]) => (
+            <button
+              key={label}
+              onClick={() => setter(!val)}
+              className={`px-3 py-1 rounded text-sm ${
+                val ? "bg-green-800 text-green-200" : "bg-gray-800 text-gray-500"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Main SVG */}
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full bg-gray-900 rounded-lg border border-gray-700">
+          <defs>
+            <radialGradient id="plasma-glow">
+              <stop offset="0%" stopColor="#9944ff" stopOpacity="0.6" />
+              <stop offset="50%" stopColor="#6622cc" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#000000" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id="interference-glow">
+              <stop offset="0%" stopColor="#ffaa00" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#ff4400" stopOpacity="0" />
+            </radialGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
+          {/* Title */}
+          <text x={CX} y={30} textAnchor="middle" fill="#fbbf24" fontSize="14" fontWeight="bold">
+            {view === "plan" ? "PLAN VIEW — FLOWER OF LIFE ARRAY" : 
+             view === "side" ? "SIDE SECTION — A-A'" : "WIRING DIAGRAM"}
+          </text>
+
+          {view === "plan" && (
+            <g>
+              {/* Interference pattern background */}
+              {showInterference && interferenceNodes.map((node, i) => (
+                <circle
+                  key={`int-${i}`}
+                  cx={node.x}
+                  cy={node.y}
+                  r={12 + node.strength * 8}
+                  fill="url(#interference-glow)"
+                  opacity={0.3 + node.strength * 0.4}
+                />
+              ))}
+
+              {/* Vesica Piscis overlaps (the sacred geometry) */}
+              {nodes.map((node, i) => (
+                <circle
+                  key={`fol-${i}`}
+                  cx={node.x}
+                  cy={node.y}
+                  r={BALL_R}
+                  fill="none"
+                  stroke="#333366"
+                  strokeWidth="0.5"
+                  strokeDasharray="4,4"
+                  opacity="0.4"
+                />
+              ))}
+
+              {/* Plasma balls */}
+              {nodes.map((node, i) => {
+                const freq = getFreqForNode(node.ring, node.idx);
+                return (
+                  <g key={`ball-${i}`}>
+                    {/* Glow */}
+                    <circle
+                      cx={node.x}
+                      cy={node.y}
+                      r={BALL_R}
+                      fill="url(#plasma-glow)"
+                    />
+                    {/* Glass sphere */}
+                    <circle
+                      cx={node.x}
+                      cy={node.y}
+                      r={BALL_R * 0.85}
+                      fill="none"
+                      stroke={freq.color}
+                      strokeWidth={node.ring === 0 ? 3 : 1.5}
+                      opacity={0.8}
+                    />
+                    {/* Centre electrode */}
+                    <circle
+                      cx={node.x}
+                      cy={node.y}
+                      r={4}
+                      fill="#cccccc"
+                      stroke="#ffffff"
+                      strokeWidth="1"
+                    />
+                    {/* Plasma filaments */}
+                    {[0, 1, 2, 3, 4, 5].map((f) => {
+                      const a = (f * TAU) / 6 + i * 0.5;
+                      const len = BALL_R * 0.7;
+                      return (
+                        <line
+                          key={f}
+                          x1={node.x}
+                          y1={node.y}
+                          x2={node.x + len * Math.cos(a)}
+                          y2={node.y + len * Math.sin(a)}
+                          stroke={freq.color}
+                          strokeWidth="1"
+                          opacity="0.3"
+                        />
+                      );
+                    })}
+                    {/* Frequency label */}
+                    {showFreqs && (
+                      <>
+                        <text
+                          x={node.x}
+                          y={node.y - 6}
+                          textAnchor="middle"
+                          fill={freq.color}
+                          fontSize={node.ring === 0 ? "11" : "9"}
+                          fontWeight={node.ring === 0 ? "bold" : "normal"}
+                          filter="url(#glow)"
+                        >
+                          {freq.hz} Hz
+                        </text>
+                        <text
+                          x={node.x}
+                          y={node.y + 8}
+                          textAnchor="middle"
+                          fill="#aaaaaa"
+                          fontSize="7"
+                        >
+                          {freq.name}
+                        </text>
+                      </>
+                    )}
+                    {/* Node number */}
+                    <text
+                      x={node.x}
+                      y={node.y + (showFreqs ? 18 : 4)}
+                      textAnchor="middle"
+                      fill="#666"
+                      fontSize="7"
+                    >
+                      N{i + 1}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* TEC modules at centre */}
+              {showTECs && (
+                <g>
+                  <rect
+                    x={CX - 25}
+                    y={CY - 25}
+                    width={50}
+                    height={50}
+                    fill="none"
+                    stroke="#ff6600"
+                    strokeWidth="2"
+                    strokeDasharray="3,2"
+                    rx="3"
+                  />
+                  <text
+                    x={CX}
+                    y={CY + 38}
+                    textAnchor="middle"
+                    fill="#ff6600"
+                    fontSize="8"
+                    fontWeight="bold"
+                  >
+                    TEC ARRAY (100 modules)
+                  </text>
+                  <text
+                    x={CX}
+                    y={CY + 47}
+                    textAnchor="middle"
+                    fill="#cc5500"
+                    fontSize="7"
+                  >
+                    HARVEST POINT
+                  </text>
+                </g>
+              )}
+
+              {/* Dimensions */}
+              {showDimensions && (
+                <g>
+                  {/* Overall diameter */}
+                  <line x1={CX - 2 * R - BALL_R} y1={CY + 2 * R + 60} x2={CX + 2 * R + BALL_R} y2={CY + 2 * R + 60} stroke="#888" strokeWidth="1" markerEnd="url(#arrow)" />
+                  <line x1={CX - 2 * R - BALL_R} y1={CY + 2 * R + 55} x2={CX - 2 * R - BALL_R} y2={CY + 2 * R + 65} stroke="#888" strokeWidth="1" />
+                  <line x1={CX + 2 * R + BALL_R} y1={CY + 2 * R + 55} x2={CX + 2 * R + BALL_R} y2={CY + 2 * R + 65} stroke="#888" strokeWidth="1" />
+                  <text x={CX} y={CY + 2 * R + 75} textAnchor="middle" fill="#aaa" fontSize="10">
+                    ~60 cm total array diameter
+                  </text>
+
+                  {/* Ball diameter */}
+                  <line x1={CX - BALL_R} y1={CY - 2 * R - 45} x2={CX + BALL_R} y2={CY - 2 * R - 45} stroke="#888" strokeWidth="1" />
+                  <line x1={CX - BALL_R} y1={CY - 2 * R - 50} x2={CX - BALL_R} y2={CY - 2 * R - 40} stroke="#888" strokeWidth="1" />
+                  <line x1={CX + BALL_R} y1={CY - 2 * R - 50} x2={CX + BALL_R} y2={CY - 2 * R - 40} stroke="#888" strokeWidth="1" />
+                  <text x={CX} y={CY - 2 * R - 52} textAnchor="middle" fill="#aaa" fontSize="9">
+                    15 cm per ball
+                  </text>
+
+                  {/* Spacing */}
+                  <text x={CX + R / 2 + 5} y={CY - R / 2 - 10} fill="#666" fontSize="8" transform={`rotate(-30, ${CX + R / 2 + 5}, ${CY - R / 2 - 10})`}>
+                    r = 15 cm (centre to centre)
+                  </text>
+                </g>
+              )}
+
+              {/* Metatron's Cube overlay (connecting lines) */}
+              {showInterference && nodes.slice(0, 7).map((n1, i) =>
+                nodes.slice(0, 7).map((n2, j) =>
+                  i < j ? (
+                    <line
+                      key={`met-${i}-${j}`}
+                      x1={n1.x}
+                      y1={n1.y}
+                      x2={n2.x}
+                      y2={n2.y}
+                      stroke="#ffffff"
+                      strokeWidth="0.3"
+                      opacity="0.15"
+                    />
+                  ) : null
+                )
+              )}
+            </g>
+          )}
+
+          {view === "side" && (
+            <g>
+              {/* Cross section A-A' through centre row */}
+              {/* Base plate */}
+              <rect x={50} y={500} width={700} height={10} fill="#444" stroke="#666" strokeWidth="1" rx="2" />
+              <text x={400} y={525} textAnchor="middle" fill="#888" fontSize="10">ALUMINIUM BASE PLATE (heat sink)</text>
+
+              {/* 5 balls in cross section */}
+              {[-2, -1, 0, 1, 2].map((pos, i) => {
+                const bx = CX + pos * R;
+                const by = 380;
+                const isCenter = pos === 0;
+                return (
+                  <g key={`side-${i}`}>
+                    {/* Glass sphere */}
+                    <circle cx={bx} cy={by} r={BALL_R} fill="none" stroke="#6644aa" strokeWidth="2" />
+                    {/* Plasma fill */}
+                    <circle cx={bx} cy={by} r={BALL_R - 3} fill="#220044" opacity="0.5" />
+                    {/* Electrode */}
+                    <line x1={bx} y1={by + BALL_R} x2={bx} y2={500} stroke="#cccccc" strokeWidth="2" />
+                    <circle cx={bx} cy={by} r={4} fill="#cccccc" />
+                    {/* TEC under each ball */}
+                    <rect x={bx - 18} y={by + BALL_R + 2} width={36} height={8} fill="#ff6600" stroke="#ff8800" strokeWidth="1" rx="1" />
+                    <text x={bx} y={by + BALL_R + 22} textAnchor="middle" fill="#ff6600" fontSize="7">
+                      TEC{isCenter ? " ×100" : " ×4"}
+                    </text>
+                    {/* Heatsink fins */}
+                    {[-12, -4, 4, 12].map((fx) => (
+                      <rect key={fx} x={bx + fx - 1} y={by + BALL_R + 12} width={2} height={20} fill="#888" />
+                    ))}
+                    {/* Frequency label */}
+                    <text x={bx} y={by - BALL_R - 8} textAnchor="middle" fill="#aaa" fontSize="9">
+                      {isCenter ? "528 Hz" : pos === -1 || pos === 1 ? "639/396 Hz" : "174/963 Hz"}
+                    </text>
+                    {/* Constructive interference arrows at centre */}
+                    {isCenter && (
+                      <>
+                        <text x={bx} y={by - BALL_R - 20} textAnchor="middle" fill="#ffaa00" fontSize="8" fontWeight="bold">
+                          CONSTRUCTIVE NODE
+                        </text>
+                        <line x1={bx - 60} y1={by} x2={bx - 10} y2={by} stroke="#ffaa00" strokeWidth="1" markerEnd="url(#arrow)" opacity="0.6" />
+                        <line x1={bx + 60} y1={by} x2={bx + 10} y2={by} stroke="#ffaa00" strokeWidth="1" markerEnd="url(#arrow)" opacity="0.6" />
+                      </>
+                    )}
+                  </g>
+                );
+              })}
+
+              {/* RF source antenna */}
+              <line x1={CX} y1={150} x2={CX} y2={250} stroke="#00aaff" strokeWidth="2" />
+              <polygon points={`${CX - 15},150 ${CX + 15},150 ${CX},130`} fill="#00aaff" />
+              <text x={CX} y={120} textAnchor="middle" fill="#00aaff" fontSize="10" fontWeight="bold">
+                RF SOURCE (2.4 GHz)
+              </text>
+              <text x={CX} y={260} textAnchor="middle" fill="#0088cc" fontSize="8">
+                ↓ Broadcast to all nodes ↓
+              </text>
+
+              {/* Dimensions */}
+              <line x1={50} y1={380 - BALL_R} x2={50} y2={500} stroke="#888" strokeWidth="1" />
+              <text x={35} y={440} fill="#888" fontSize="8" transform="rotate(-90,35,440)">~22 cm height</text>
+
+              {/* DC bus */}
+              <line x1={100} y1={490} x2={700} y2={490} stroke="#ff0000" strokeWidth="2" />
+              <text x={400} y={488} textAnchor="middle" fill="#ff0000" fontSize="8">DC OUTPUT BUS (+)</text>
+              <line x1={100} y1={496} x2={700} y2={496} stroke="#0000ff" strokeWidth="2" />
+              <text x={400} y={506} textAnchor="middle" fill="#0000ff" fontSize="8">DC OUTPUT BUS (−)</text>
+            </g>
+          )}
+
+          {view === "wiring" && (
+            <g>
+              {/* Simplified wiring block diagram */}
+              {/* RF Source */}
+              <rect x={300} y={40} width={200} height={40} fill="#003366" stroke="#0088ff" strokeWidth="2" rx="5" />
+              <text x={400} y={65} textAnchor="middle" fill="#00aaff" fontSize="12" fontWeight="bold">RF SOURCE (50kW)</text>
+
+              {/* Arrow down */}
+              <line x1={400} y1={80} x2={400} y2={110} stroke="#0088ff" strokeWidth="2" />
+              <text x={410} y={100} fill="#0066aa" fontSize="8">2.4 GHz broadcast</text>
+
+              {/* Flower of Life array */}
+              <rect x={150} y={110} width={500} height={100} fill="#1a0033" stroke="#6644aa" strokeWidth="2" rx="8" />
+              <text x={400} y={135} textAnchor="middle" fill="#9966ff" fontSize="13" fontWeight="bold">FLOWER OF LIFE ARRAY</text>
+              <text x={400} y={152} textAnchor="middle" fill="#7744cc" fontSize="10">19 Plasma Balls × Solfeggio Frequencies</text>
+              <text x={400} y={168} textAnchor="middle" fill="#6633aa" fontSize="9">Sacred Geometry → Constructive Interference at Centre</text>
+              <text x={400} y={182} textAnchor="middle" fill="#5522aa" fontSize="8">FWM Products: 528+639→1167, 639-528→111, 2×528-639→417...</text>
+              <text x={400} y={198} textAnchor="middle" fill="#5522aa" fontSize="8">Full Rainbow generated from geometry</text>
+
+              {/* Two output channels */}
+              <line x1={300} y1={210} x2={300} y2={250} stroke="#ff6600" strokeWidth="2" />
+              <line x1={500} y1={210} x2={500} y2={250} stroke="#00cc00" strokeWidth="2" />
+
+              {/* Channel A: Heat */}
+              <rect x={200} y={250} width={200} height={50} fill="#331100" stroke="#ff6600" strokeWidth="2" rx="5" />
+              <text x={300} y={272} textAnchor="middle" fill="#ff8800" fontSize="11" fontWeight="bold">CHANNEL A: HEAT</text>
+              <text x={300} y={288} textAnchor="middle" fill="#cc6600" fontSize="9">172 TEC modules (100 centre + 72 ring)</text>
+
+              {/* Channel B: Static */}
+              <rect x={400} y={250} width={200} height={50} fill="#002200" stroke="#00cc00" strokeWidth="2" rx="5" />
+              <text x={500} y={272} textAnchor="middle" fill="#00ff00" fontSize="11" fontWeight="bold">CHANNEL B: STATIC</text>
+              <text x={500} y={288} textAnchor="middle" fill="#00aa00" fontSize="9">Copper tape + Schottky bridge</text>
+
+              {/* Both merge */}
+              <line x1={300} y1={300} x2={300} y2={330} stroke="#ff6600" strokeWidth="2" />
+              <line x1={500} y1={300} x2={500} y2={330} stroke="#00cc00" strokeWidth="2" />
+              <line x1={300} y1={330} x2={500} y2={330} stroke="#ffaa00" strokeWidth="2" />
+              <line x1={400} y1={330} x2={400} y2={350} stroke="#ffaa00" strokeWidth="2" />
+
+              {/* Boost + Storage */}
+              <rect x={300} y={350} width={200} height={40} fill="#332200" stroke="#ffaa00" strokeWidth="2" rx="5" />
+              <text x={400} y={367} textAnchor="middle" fill="#ffcc00" fontSize="11" fontWeight="bold">BOOST + SUPERCAP</text>
+              <text x={400} y={381} textAnchor="middle" fill="#cc9900" fontSize="9">MT3608 → 10F 5.5V → Battery Bank</text>
+
+              {/* Split to brain and output */}
+              <line x1={400} y1={390} x2={400} y2={410} stroke="#ffaa00" strokeWidth="2" />
+              <line x1={250} y1={410} x2={550} y2={410} stroke="#ffaa00" strokeWidth="2" />
+              <line x1={250} y1={410} x2={250} y2={430} stroke="#ffaa00" strokeWidth="1" />
+              <line x1={400} y1={410} x2={400} y2={430} stroke="#ffaa00" strokeWidth="1" />
+              <line x1={550} y1={410} x2={550} y2={430} stroke="#ffaa00" strokeWidth="1" />
+
+              {/* Queen Brain */}
+              <rect x={170} y={430} width={160} height={50} fill="#002233" stroke="#00aaff" strokeWidth="2" rx="5" />
+              <text x={250} y={452} textAnchor="middle" fill="#00ccff" fontSize="10" fontWeight="bold">QUEEN AI (ESP32)</text>
+              <text x={250} y={466} textAnchor="middle" fill="#0088aa" fontSize="8">+ AD9850 DDS + ORCA</text>
+
+              {/* HNC Field back to batteries */}
+              <path d="M 170,455 Q 120,455 120,380 Q 120,340 170,370" fill="none" stroke="#00ff88" strokeWidth="1" strokeDasharray="4,3" />
+              <text x={95} y={400} fill="#00ff88" fontSize="7" transform="rotate(-90,95,400)">12.67 Hz HNC field</text>
+
+              {/* Output */}
+              <rect x={320} y={430} width={160} height={50} fill="#003300" stroke="#00ff00" strokeWidth="2" rx="5" />
+              <text x={400} y={452} textAnchor="middle" fill="#00ff00" fontSize="10" fontWeight="bold">OUTPUT: 80W</text>
+              <text x={400} y={466} textAnchor="middle" fill="#00aa00" fontSize="8">Mini PC / LED / Charge</text>
+
+              {/* Battery Bank */}
+              <rect x={470} y={430} width={160} height={50} fill="#222200" stroke="#aaaa00" strokeWidth="2" rx="5" />
+              <text x={550} y={452} textAnchor="middle" fill="#cccc00" fontSize="10" fontWeight="bold">BATTERY BANK</text>
+              <text x={550} y={466} textAnchor="middle" fill="#999900" fontSize="8">LiFePO4 + HNC drain reduction</text>
+
+              {/* Frequency control feedback */}
+              <path d="M 250,430 Q 250,420 300,415 Q 400,405 400,300 Q 400,250 400,210" fill="none" stroke="#00aaff" strokeWidth="1" strokeDasharray="3,3" />
+              <text x={430} y={240} fill="#00aaff" fontSize="7">Frequency control</text>
+            </g>
+          )}
+
+          {/* Specs panel */}
+          <rect x={10} y={H - 120} width={W - 20} height={110} fill="#111" stroke="#333" strokeWidth="1" rx="5" />
+          <text x={20} y={H - 100} fill="#fbbf24" fontSize="11" fontWeight="bold">SPECIFICATIONS</text>
+          <text x={20} y={H - 84} fill="#ccc" fontSize="9">Array: 19 × 15cm plasma balls in Flower of Life (2-ring hexagonal)</text>
+          <text x={20} y={H - 70} fill="#ccc" fontSize="9">TECs: 172 × TEC1-12706 (100 at centre node, 4 per ring node)</text>
+          <text x={20} y={H - 56} fill="#ccc" fontSize="9">RF: 50kW @ 2.4 GHz broadcast | Brain: ESP32-C3 + AD9850 (6.2 mW)</text>
+          <text x={20} y={H - 42} fill="#ccc" fontSize="9">Seebeck: 38 mV/°C measured | ΔT at centre: 63-67°C | Array gain: 3.6×</text>
+          <text x={20} y={H - 28} fill="#ccc" fontSize="9">Output: ~80W net (centre 73.8W + rings 6.4W) | Surplus after Mini PC: 65W</text>
+          <text x={20} y={H - 14} fill="#aaa" fontSize="8">"In her darkest day I was the flame, and in her brightest light I will be the protector."</text>
+        </svg>
+
+        {/* BOM */}
+        <div className="mt-4 bg-gray-900 border border-gray-700 rounded-lg p-4">
+          <h3 className="text-amber-400 font-bold mb-2">BILL OF MATERIALS</h3>
+          <div className="grid grid-cols-3 gap-1 text-sm">
+            {[
+              ["19× Plasma balls (15cm)", "£190", "eBay/Amazon"],
+              ["172× TEC1-12706", "£430", "eBay bulk"],
+              ["19× ESP32-C3 SuperMini", "£95", "AliExpress"],
+              ["19× AD9850 DDS", "£95", "eBay"],
+              ["Copper tape (20m roll)", "£5", "Amazon"],
+              ["1N5817 diodes (100pk)", "£5", "eBay"],
+              ["Supercaps 10F ×19", "£57", "eBay"],
+              ["MT3608 boost ×19", "£38", "eBay"],
+              ["Thermal paste ×5", "£10", "Amazon"],
+              ["Copper heat pipes ×19", "£95", "eBay"],
+              ["Aluminium base plate", "£30", "metals4u"],
+              ["RF source (50kW)", "£600", "Industrial"],
+              ["Wiring + connectors", "£50", "eBay"],
+              ["TOTAL", "£1,700", ""],
+            ].map(([item, cost, source], i) => (
+              <div key={i} className={`col-span-3 grid grid-cols-3 ${i === 13 ? "border-t border-amber-500 pt-1 font-bold text-amber-400" : "text-gray-300"}`}>
+                <span>{item}</span>
+                <span className="text-right">{cost}</span>
+                <span className="text-right text-gray-500">{source}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

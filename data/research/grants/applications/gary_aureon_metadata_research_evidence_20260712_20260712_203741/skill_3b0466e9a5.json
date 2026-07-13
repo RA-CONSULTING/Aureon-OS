@@ -1,0 +1,16 @@
+{
+  "asset_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_2ec6a115d5af\\index.html",
+  "barcode_standard": "Code 39-style local renderer",
+  "detected_families": [
+    "coding"
+  ],
+  "kind": "barcode_label_generator",
+  "metadata_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_2ec6a115d5af\\skill.json",
+  "prompt": "Build a local barcode label generator tool for the warehouse team, with run instructions and proof.",
+  "public_url": "/aureon_adaptive_skills/build_a_local_barcode_label_generator_tool_for_t_2ec6a115d5af/index.html",
+  "runbook_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_2ec6a115d5af\\RUNBOOK.md",
+  "schema_version": "aureon-barcode-label-generator-v1",
+  "skill_contract": "generate printable local warehouse barcode labels from CSV/newline rows",
+  "task_family": "coding",
+  "tool_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_2ec6a115d5af\\tool.py"
+}

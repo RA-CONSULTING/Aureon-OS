@@ -1,0 +1,152 @@
+{
+  "evidence_path": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\evidence\\aureon_voice\\aureon_expression_profile.json",
+  "facet_counts": {
+    "accounting_legal": 5,
+    "ai_generated_or_systemic": 5,
+    "code_tooling": 5,
+    "hnc_harmonic": 5,
+    "human_voice": 5,
+    "math_equation": 4,
+    "mystic_symbolic": 2,
+    "sensory_affect": 3,
+    "trading_action": 5
+  },
+  "generated_at": "2026-07-11T08:31:40+0100",
+  "root": "C:\\Users\\user\\aureon-trading",
+  "schema_features": [
+    "aureon_expression_profile_v1"
+  ],
+  "source_count": 5,
+  "sources": [
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/vault/voice/whole_knowledge_voice.py",
+      "sample": "It builds a typed expression profile from repo/vault knowledge, translates runtime state into human-readable language, and composes short or long voice artifacts with evidence preserved separately."
+    },
+    {
+      "char_count": 22503,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "mystic_symbolic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/core/aureon_language_cortex.py",
+      "sample": "#!/usr/bin/env python3 \"\"\" aureon_language_cortex.py \u2014 The Queen's internal language understanding."
+    },
+    {
+      "char_count": 24000,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "hnc_harmonic",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "py",
+      "path": "aureon/inhouse_ai/llm_adapter.py",
+      "sample": "\"\"\" LLM Adapter Layer \u2014 In-House Sovereign AI \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501"
+    },
+    {
+      "char_count": 13934,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "sensory_affect",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "md",
+      "path": "data/research/grants/applications/PRIVATE_INVESTOR_TARGET_LIST_20260711_20260711_081935.md",
+      "sample": "- Generated: 2026-07-11T08:19:35.490801+01:00 - Result: PRIVATE_INVESTOR_TARGET_LIST_CREATED_NO_OUTREACH_SENT - Targets: 23"
+    },
+    {
+      "char_count": 18282,
+      "facets": [
+        "human_voice",
+        "ai_generated_or_systemic",
+        "math_equation",
+        "hnc_harmonic",
+        "trading_action",
+        "accounting_legal",
+        "code_tooling"
+      ],
+      "kind": "md",
+      "path": "data/research/grants/applications/IFS_UK_SWISS_COMPANY_RESEARCH_EVIDENCE_PACK_20260711_20260711_074747.md",
+      "sample": "- Generated: 2026-07-11T07:47:47.617163+01:00 - Result: COMPANY_RESEARCH_EVIDENCE_PACK_GENERATED_NO_ROUTE_UNLOCK - Application: APP-IFS-UK-SWISS-CRD-R3-2512-20260709 / portal 10210100 - Direct submit ready from this pack: false - Safe portal action now: false"
+    }
+  ],
+  "voice_guidance": {
+    "dominant_facets": [
+      [
+        "accounting_legal",
+        5
+      ],
+      [
+        "ai_generated_or_systemic",
+        5
+      ],
+      [
+        "code_tooling",
+        5
+      ],
+      [
+        "hnc_harmonic",
+        5
+      ],
+      [
+        "human_voice",
+        5
+      ]
+    ],
+    "hnc_source_paths": [
+      "aureon/vault/voice/whole_knowledge_voice.py",
+      "aureon/core/aureon_language_cortex.py",
+      "aureon/inhouse_ai/llm_adapter.py",
+      "data/research/grants/applications/PRIVATE_INVESTOR_TARGET_LIST_20260711_20260711_081935.md",
+      "data/research/grants/applications/IFS_UK_SWISS_COMPANY_RESEARCH_EVIDENCE_PACK_20260711_20260711_074747.md"
+    ],
+    "human_samples": [
+      "It builds a typed expression profile from repo/vault knowledge, translates runtime state into human-readable language, and composes short or long voice artifacts with evidence preserved separately.",
+      "#!/usr/bin/env python3 \"\"\" aureon_language_cortex.py \u2014 The Queen's internal language understanding.",
+      "\"\"\" LLM Adapter Layer \u2014 In-House Sovereign AI \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501",
+      "- Generated: 2026-07-11T08:19:35.490801+01:00 - Result: PRIVATE_INVESTOR_TARGET_LIST_CREATED_NO_OUTREACH_SENT - Targets: 23",
+      "- Generated: 2026-07-11T07:47:47.617163+01:00 - Result: COMPANY_RESEARCH_EVIDENCE_PACK_GENERATED_NO_ROUTE_UNLOCK - Application: APP-IFS-UK-SWISS-CRD-R3-2512-20260709 / portal 10210100 - Direct submit ready from this pack: false - Safe portal action now: false"
+    ],
+    "principles": [
+      "Translate state before showing metrics.",
+      "Prefer concrete human scenes over dashboard language.",
+      "Name evidence and limits without exposing secrets.",
+      "Let math and HNC terms guide the metaphor, not drown the reader.",
+      "Vary sentence openings and paragraph shapes."
+    ],
+    "sensory_source_paths": [
+      "aureon/vault/voice/whole_knowledge_voice.py",
+      "aureon/core/aureon_language_cortex.py",
+      "data/research/grants/applications/PRIVATE_INVESTOR_TARGET_LIST_20260711_20260711_081935.md"
+    ]
+  },
+  "warnings": []
+}

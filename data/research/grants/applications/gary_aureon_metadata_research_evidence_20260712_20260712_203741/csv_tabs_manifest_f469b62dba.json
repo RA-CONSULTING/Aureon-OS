@@ -1,0 +1,68 @@
+[
+  {
+    "sheet": "Read Me",
+    "csv": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\csv_tabs\\Read_Me.csv",
+    "rows": 13,
+    "max_columns": 2
+  },
+  {
+    "sheet": "Company Profile",
+    "csv": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\csv_tabs\\Company_Profile.csv",
+    "rows": 17,
+    "max_columns": 5
+  },
+  {
+    "sheet": "Project Packages",
+    "csv": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\csv_tabs\\Project_Packages.csv",
+    "rows": 11,
+    "max_columns": 6
+  },
+  {
+    "sheet": "Funding Pipeline",
+    "csv": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\csv_tabs\\Funding_Pipeline.csv",
+    "rows": 27,
+    "max_columns": 11
+  },
+  {
+    "sheet": "Application Tracker",
+    "csv": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\csv_tabs\\Application_Tracker.csv",
+    "rows": 15,
+    "max_columns": 8
+  },
+  {
+    "sheet": "Evidence Register",
+    "csv": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\csv_tabs\\Evidence_Register.csv",
+    "rows": 14,
+    "max_columns": 6
+  },
+  {
+    "sheet": "Validation Checklist",
+    "csv": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\csv_tabs\\Validation_Checklist.csv",
+    "rows": 12,
+    "max_columns": 5
+  },
+  {
+    "sheet": "Partner Map",
+    "csv": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\csv_tabs\\Partner_Map.csv",
+    "rows": 13,
+    "max_columns": 5
+  },
+  {
+    "sheet": "Comms Log",
+    "csv": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\csv_tabs\\Comms_Log.csv",
+    "rows": 7,
+    "max_columns": 5
+  },
+  {
+    "sheet": "Self Email Draft",
+    "csv": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\csv_tabs\\Self_Email_Draft.csv",
+    "rows": 6,
+    "max_columns": 2
+  },
+  {
+    "sheet": "Source Register",
+    "csv": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\csv_tabs\\Source_Register.csv",
+    "rows": 33,
+    "max_columns": 3
+  }
+]

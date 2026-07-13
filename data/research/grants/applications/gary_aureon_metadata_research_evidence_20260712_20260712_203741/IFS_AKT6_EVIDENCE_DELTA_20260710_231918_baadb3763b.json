@@ -1,0 +1,126 @@
+{
+  "schema_version": "aureon-ifs-akt6-evidence-delta-v1",
+  "generated_at": "2026-07-10T23:19:18+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_akt6_evidence_delta",
+  "application_id": "APP-IFS-AKT6-2473-20260709",
+  "competition": "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+  "status_after_delta": "AKT6_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+  "evidence_checked": {
+    "official_ifs_route": {
+      "competition": "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+      "source_url": "https://apply-for-innovation-funding.service.gov.uk/competition/2473/overview/d9a164dd-2094-4590-baa7-a057279d80a3",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "lead_requirement": "UK registered higher education institution, further education institution, research and technology organisation, or Catapult.",
+      "business_requirement": "UK registered business partner with four or more full-time equivalent employees and minimum contribution basis."
+    },
+    "local_paths_checked": [
+      "C:/Users/user/aureon-trading/data/research/grants/applications",
+      "C:/Users/user/aureon-trading/data/research/grants/contacts",
+      "C:/Users/user/Documents",
+      "C:/Users/user/Downloads",
+      "C:/Users/user/Desktop"
+    ],
+    "local_search_terms": [
+      "AKT6",
+      "KTP",
+      "Accelerated Knowledge Transfer",
+      "QUB",
+      "Ulster",
+      "knowledge-base lead",
+      "TTO",
+      "four FTE",
+      "4 FTE",
+      "work package",
+      "partner commitment",
+      "budget"
+    ],
+    "google_drive_queries": [
+      "AKT6",
+      "KTP Aureon",
+      "Accelerated Knowledge Transfer",
+      "QUB Aureon",
+      "Ulster Aureon",
+      "four FTE"
+    ]
+  },
+  "findings": [
+    {
+      "source": "Aureon grant workspace",
+      "finding": "Existing AKT6 artifacts consistently classify the route as knowledge-base-led. They identify QUB, Ulster, Invest NI and Belfast Met as outreach targets, not confirmed leads or authorised applicants.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_ACCELERATED_KNOWLEDGE_TRANSFER_PARTNERSHIPS_6_AKT6_20260710_134854_20260710_134902.md",
+      "finding": "A clean formal AKT6 portal text exists, but it explicitly leaves the eligible knowledge-base lead, authorised contact, four-FTE evidence, work package and budget to be completed from partner evidence.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "applications/outreach_payloads",
+      "finding": "Outreach-ready AKT6 evidence requests exist for QUB, Ulster, Invest NI and Belfast Met. They are suitable for evidence acquisition after action-time send approval, but they are not partner commitments.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Google Drive: Aureon Grant War Room - 2026-07-04",
+      "finding": "The Drive war-room row confirms AKT6 is a partner-led route and says to ask QUB or Ulster whether they can lead before 15 July 2026. It does not include a signed or authorised lead confirmation.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Google Drive: AUREON_GRANT_OPERATING_LOG_REFRESHED_20260705.md",
+      "finding": "The Drive operating log records academic and knowledge-transfer routes as requiring a knowledge-base partner. It does not include a later AKT6 lead, TTO contact, four-FTE proof, or budget commitment.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Documents/Downloads/Desktop targeted search",
+      "finding": "Local notes and draft outreach material were found, including references to QUB and Ulster. No signed lead confirmation, authorised TTO contact, four-FTE evidence, work package budget, or partner role confirmation was found.",
+      "unlock_evidence": false
+    }
+  ],
+  "missing_evidence": [
+    "eligible UK knowledge-base lead",
+    "TTO or authorised lead contact",
+    "UK business four-FTE evidence",
+    "work package and budget basis",
+    "signed role confirmation"
+  ],
+  "outreach_ready_refs": [
+    "applications/outreach_payloads/P1-AKT6-QUB-KTP_20260710_140752.md",
+    "applications/outreach_payloads/P1-AKT6-ULSTER-KTP_20260710_140752.md",
+    "applications/outreach_payloads/P1-AKT6-INVEST-NI-KTP_20260710_140752.md",
+    "applications/outreach_payloads/P1-AKT6-BELFAST-MET-CONNECTED_20260710_140752.md",
+    "applications/IFS_P1_AKT6_QUB_KTP_OUTREACH_DRAFT_20260710_114411.eml",
+    "applications/IFS_P1_AKT6_ULSTER_KTP_OUTREACH_DRAFT_20260710_114411.eml"
+  ],
+  "source_refs": {
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_230938.json",
+    "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_230853.json",
+    "official_current_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_231134.json",
+    "p1_partner_acquisition_register": "applications/IFS_P1_PARTNER_ACQUISITION_REGISTER_20260710_140752.json",
+    "drive_p1_targeted_evidence_readback": "applications/IFS_DRIVE_P1_TARGETED_EVIDENCE_READBACK_20260710_125803.json",
+    "live_drive_route_unlock_readback": "applications/IFS_LIVE_DRIVE_ROUTE_UNLOCK_READBACK_20260710_142308.json",
+    "route_gate_evidence_search": "applications/IFS_ROUTE_GATE_EVIDENCE_SEARCH_20260710_135633.json",
+    "formal_language_qa": "applications/IFS_FORMAL_LANGUAGE_QA_20260710_134902.json",
+    "p1_stop_go_audit": "applications/IFS_P1_STOP_GO_AUDIT_20260710_143920.json"
+  },
+  "decision": {
+    "direct_submit_ready": false,
+    "safe_portal_action_now": false,
+    "new_browser_submission_available": false,
+    "external_send_ready_now": false,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "why_not_now": "The current local, Drive and Aureon evidence set contains draft outreach and clean text, but not the authorised knowledge-base lead, four-FTE evidence, budget/work-package confirmation or signed role evidence required before an AKT6 IFS application can truthfully be opened or submitted.",
+    "next_operator_action": "Use the existing AKT6 outreach payloads to obtain an eligible knowledge-base lead and route evidence. Re-run this evidence delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+  },
+  "controls": [
+    "Local and Drive evidence references were classified for grant-side use only.",
+    "No IFS portal field was changed.",
+    "No IFS AKT6 draft was opened.",
+    "No application was submitted.",
+    "No external email, contact form, partner invite or upload action was performed.",
+    "No password, runtime secret, bank detail or private finance payload was written to this artifact.",
+    "No internal draft language was introduced into funder-facing text."
+  ],
+  "result": "AKT6_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY"
+}

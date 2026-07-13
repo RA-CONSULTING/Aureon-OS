@@ -1,0 +1,1920 @@
+{
+  "blockers": [
+    {
+      "domain": "runtime",
+      "id": "runtime_feed.offline",
+      "next_action": "Start the local read-only runtime status endpoint.",
+      "reason": "Real-time feed is offline; show audit/manifest state only.",
+      "severity": "medium"
+    },
+    {
+      "domain": "saas_security",
+      "id": "saas_inventory.security_blockers",
+      "next_action": "Route through HNC SaaS Security and authorized local retests.",
+      "reason": "2 SaaS security blockers remain.",
+      "severity": "high"
+    },
+    {
+      "domain": "frontend",
+      "id": "frontend_evolution.blocked_work_orders",
+      "next_action": "Resolve blocker status or create safe read-only status adapters.",
+      "reason": "26 frontend evolution work orders are blocked.",
+      "severity": "medium"
+    },
+    {
+      "domain": "self_improvement",
+      "id": "capability.app_generation",
+      "next_action": "Keep generated code behind audit, benchmark, patch, retest, and explicit apply records.",
+      "reason": "App Generation And Local Tool Builder is blocked_missing_manifest.",
+      "severity": "medium"
+    },
+    {
+      "domain": "research",
+      "id": "capability.research_search_and_vault",
+      "next_action": "Keep research outputs source-linked and visible in the vault/research tab.",
+      "reason": "Research, Search, And Vault Memory is blocked_missing_manifest.",
+      "severity": "medium"
+    },
+    {
+      "domain": "accounting",
+      "id": "capability.accounting_document_brain",
+      "next_action": "Refresh the accounting registry and show every missing evidence item before final-ready claims.",
+      "reason": "Accounting Accounts And Evidence Builder is blocked_missing_manifest.",
+      "severity": "medium"
+    },
+    {
+      "domain": "saas_security",
+      "id": "capability.saas_security_cognition",
+      "next_action": "Show blockers clearly and only test owned/local/staging surfaces.",
+      "reason": "HNC SaaS Security And Authorized Test Lab is blocked_security_review.",
+      "severity": "medium"
+    },
+    {
+      "domain": "self_improvement",
+      "id": "capability.continuous_self_enhancement",
+      "next_action": "Keep observer running and use blockers as the next improvement queue.",
+      "reason": "Continuous Audit, Benchmark, Fix, Retest Loop is blocked_missing_manifest.",
+      "severity": "medium"
+    }
+  ],
+  "capability_modes": [
+    {
+      "authority_level": "autonomous_reasoning_and_contract_creation",
+      "autonomous_allowed": true,
+      "blocked_actions": [
+        "Inventing or displaying fake live data.",
+        "Revealing secrets, API keys, credential values, or private tokens.",
+        "Bypassing HNC evidence gates or hiding low confidence.",
+        "Treating a generated answer as source evidence."
+      ],
+      "data_sources": [
+        "operator prompt",
+        "vault memory",
+        "goal route map",
+        "organism pulse"
+      ],
+      "domain": "operator",
+      "frontend_contract": {
+        "display_mode": "conversation_turn",
+        "must_show": [
+          "question",
+          "route",
+          "evidence",
+          "confidence",
+          "next_action"
+        ],
+        "target_screen": "overview"
+      },
+      "hnc_checks": [
+        "source_evidence_required",
+        "manifest_freshness_checked",
+        "data_contract_declared",
+        "no_fake_state_or_hidden_totals",
+        "confidence_and_blockers_visible",
+        "safe_authority_boundary_checked",
+        "result_retest_or_visual_smoke_required"
+      ],
+      "id": "conversation_goal_router",
+      "next_action": "Use this route for operator dialogue and self-questioning before selecting a deeper capability.",
+      "safe_actions": [
+        "Ask/answer internal questions.",
+        "Create goal/task/job/work-order contracts.",
+        "Explain current evidence and blockers to the operator."
+      ],
+      "status": "ready",
+      "systems": [
+        "GoalCapabilityMap",
+        "OrganismContractStack",
+        "ThoughtBus",
+        "Queen meaning resolver",
+        "Ollama/in-house LLM adapters"
+      ],
+      "title": "Conversation And Goal Router",
+      "triggers": [
+        "operator message",
+        "self-question",
+        "new goal",
+        "unclear blocker"
+      ]
+    },
+    {
+      "authority_level": "generate_read_only_ui_contracts",
+      "autonomous_allowed": true,
+      "blocked_actions": [
+        "Inventing or displaying fake live data.",
+        "Revealing secrets, API keys, credential values, or private tokens.",
+        "Bypassing HNC evidence gates or hiding low confidence.",
+        "Executing legacy dashboard code inside the unified shell without an adapter."
+      ],
+      "data_sources": [
+        "docs/audits/aureon_saas_system_inventory.json",
+        "docs/audits/aureon_frontend_unification_plan.json",
+        "docs/audits/aureon_frontend_evolution_queue.json"
+      ],
+      "domain": "frontend",
+      "frontend_contract": {
+        "display_mode": "dashboard_panel",
+        "must_show": [
+          "source_path",
+          "target_screen",
+          "data_contract",
+          "acceptance_tests"
+        ],
+        "target_screen": "self_improvement"
+      },
+      "hnc_checks": [
+        "source_evidence_required",
+        "manifest_freshness_checked",
+        "data_contract_declared",
+        "no_fake_state_or_hidden_totals",
+        "confidence_and_blockers_visible",
+        "safe_authority_boundary_checked",
+        "result_retest_or_visual_smoke_required"
+      ],
+      "id": "frontend_design_orchestrator",
+      "next_action": "Convert high-priority ready work orders into read-only adapters and visual smoke tests.",
+      "safe_actions": [
+        "Choose canonical screen.",
+        "Propose or generate read-only status panels.",
+        "Show source path, freshness, blocker, and safety boundary."
+      ],
+      "status": "ready_with_backlog",
+      "systems": [
+        "AureonSaaSSystemInventory",
+        "AureonFrontendUnificationPlan",
+        "AureonFrontendEvolutionQueue",
+        "React/Vite unified shell"
+      ],
+      "title": "Frontend Design And Layout Orchestrator",
+      "triggers": [
+        "new dashboard need",
+        "legacy screen found",
+        "operator needs visibility",
+        "important blocker"
+      ]
+    },
+    {
+      "authority_level": "proposal_patch_test_retest",
+      "autonomous_allowed": true,
+      "blocked_actions": [
+        "Inventing or displaying fake live data.",
+        "Revealing secrets, API keys, credential values, or private tokens.",
+        "Bypassing HNC evidence gates or hiding low confidence.",
+        "Deploying to production or restarting critical services without an apply handoff."
+      ],
+      "data_sources": [
+        "capability growth audit",
+        "self-enhancement lifecycle",
+        "test results",
+        "repo self-catalog"
+      ],
+      "domain": "self_improvement",
+      "frontend_contract": {
+        "display_mode": "generated_app_surface",
+        "must_show": [
+          "requested_change",
+          "files_changed",
+          "tests_run",
+          "retest_status"
+        ],
+        "target_screen": "self_improvement"
+      },
+      "hnc_checks": [
+        "source_evidence_required",
+        "manifest_freshness_checked",
+        "data_contract_declared",
+        "no_fake_state_or_hidden_totals",
+        "confidence_and_blockers_visible",
+        "safe_authority_boundary_checked",
+        "result_retest_or_visual_smoke_required"
+      ],
+      "id": "app_generation",
+      "next_action": "Keep generated code behind audit, benchmark, patch, retest, and explicit apply records.",
+      "safe_actions": [
+        "Generate scoped local code proposals.",
+        "Run compile/tests/build/lint.",
+        "Queue restart/apply handoff when needed."
+      ],
+      "status": "blocked_missing_manifest",
+      "systems": [
+        "AureonCapabilityGrowthLoop",
+        "SelfEnhancementEngine",
+        "CodeArchitect",
+        "SkillLibrary",
+        "OrganismContractStack"
+      ],
+      "title": "App Generation And Local Tool Builder",
+      "triggers": [
+        "missing capability",
+        "new workflow",
+        "frontend adapter",
+        "benchmark failure"
+      ]
+    },
+    {
+      "authority_level": "prompt_contract_and_asset_request",
+      "autonomous_allowed": true,
+      "blocked_actions": [
+        "Inventing or displaying fake live data.",
+        "Revealing secrets, API keys, credential values, or private tokens.",
+        "Bypassing HNC evidence gates or hiding low confidence.",
+        "Using generated images as proof of real-world facts.",
+        "Creating misleading charts without source data."
+      ],
+      "data_sources": [
+        "source manifest",
+        "report facts",
+        "frontend screen plan",
+        "repo asset folders"
+      ],
+      "domain": "presentation",
+      "frontend_contract": {
+        "display_mode": "image_prompt_contract",
+        "must_show": [
+          "visual_goal",
+          "source_facts",
+          "generated_asset_label",
+          "review_status"
+        ],
+        "target_screen": "research"
+      },
+      "hnc_checks": [
+        "source_evidence_required",
+        "manifest_freshness_checked",
+        "data_contract_declared",
+        "no_fake_state_or_hidden_totals",
+        "confidence_and_blockers_visible",
+        "safe_authority_boundary_checked",
+        "result_retest_or_visual_smoke_required"
+      ],
+      "id": "image_generation_request",
+      "next_action": "Use generated visuals for explanation and interface clarity, never as hidden evidence.",
+      "safe_actions": [
+        "Generate a visual brief from real source evidence.",
+        "Request or attach a generated image asset.",
+        "Label generated visuals as generated."
+      ],
+      "status": "ready_for_prompt_contract",
+      "systems": [
+        "frontend asset registry",
+        "report renderer",
+        "visual prompt contract",
+        "HNC evidence gate"
+      ],
+      "title": "Image And Visual Asset Generation",
+      "triggers": [
+        "visual explanation needed",
+        "frontend design asset missing",
+        "report needs diagram",
+        "operator needs clarity"
+      ]
+    },
+    {
+      "authority_level": "read_research_ingest_summarise",
+      "autonomous_allowed": true,
+      "blocked_actions": [
+        "Inventing or displaying fake live data.",
+        "Revealing secrets, API keys, credential values, or private tokens.",
+        "Bypassing HNC evidence gates or hiding low confidence.",
+        "Treating unsourced memory as authoritative current fact."
+      ],
+      "data_sources": [
+        ".obsidian",
+        "docs",
+        "uploads",
+        "public source links",
+        "repo catalog"
+      ],
+      "domain": "research",
+      "frontend_contract": {
+        "display_mode": "search_report",
+        "must_show": [
+          "sources",
+          "freshness",
+          "confidence",
+          "unknowns"
+        ],
+        "target_screen": "research"
+      },
+      "hnc_checks": [
+        "source_evidence_required",
+        "manifest_freshness_checked",
+        "data_contract_declared",
+        "no_fake_state_or_hidden_totals",
+        "confidence_and_blockers_visible",
+        "safe_authority_boundary_checked",
+        "result_retest_or_visual_smoke_required"
+      ],
+      "id": "research_search_and_vault",
+      "next_action": "Keep research outputs source-linked and visible in the vault/research tab.",
+      "safe_actions": [
+        "Search local memory.",
+        "Read source documents.",
+        "Ingest source-linked summaries.",
+        "Flag missing/uncertain evidence."
+      ],
+      "status": "blocked_missing_manifest",
+      "systems": [
+        "ObsidianBridge",
+        "ResearchCorpusIndex",
+        "Queen meaning resolver",
+        "RepoSelfCatalog",
+        "ThoughtBus research intents"
+      ],
+      "title": "Research, Search, And Vault Memory",
+      "triggers": [
+        "research question",
+        "source missing",
+        "fresh public fact needed",
+        "vault recall"
+      ]
+    },
+    {
+      "authority_level": "generate_manual_filing_support_documents",
+      "autonomous_allowed": true,
+      "blocked_actions": [
+        "Inventing or displaying fake live data.",
+        "Revealing secrets, API keys, credential values, or private tokens.",
+        "Bypassing HNC evidence gates or hiding low confidence.",
+        "HMRC submission.",
+        "Companies House filing.",
+        "Tax payment.",
+        "Fake receipts or fake CIS statements."
+      ],
+      "data_sources": [
+        "bank feeds",
+        "uploads",
+        "accounting outputs",
+        "evidence manifests",
+        "generated accounts pack"
+      ],
+      "domain": "accounting",
+      "frontend_contract": {
+        "display_mode": "document_link",
+        "must_show": [
+          "period",
+          "data_coverage",
+          "documents",
+          "manual_filing_required",
+          "exceptions"
+        ],
+        "target_screen": "accounting"
+      },
+      "hnc_checks": [
+        "source_evidence_required",
+        "manifest_freshness_checked",
+        "data_contract_declared",
+        "no_fake_state_or_hidden_totals",
+        "confidence_and_blockers_visible",
+        "safe_authority_boundary_checked",
+        "result_retest_or_visual_smoke_required"
+      ],
+      "id": "accounting_document_brain",
+      "next_action": "Refresh the accounting registry and show every missing evidence item before final-ready claims.",
+      "safe_actions": [
+        "Generate final-ready support documents.",
+        "Classify transactions.",
+        "Prepare evidence requests.",
+        "Show manual filing checklist."
+      ],
+      "status": "blocked_missing_manifest",
+      "systems": [
+        "AccountingContextBridge",
+        "AccountingSystemRegistry",
+        "CombinedBankData",
+        "Kings_Accounting_Suite",
+        "UK accounting requirements brain"
+      ],
+      "title": "Accounting Accounts And Evidence Builder",
+      "triggers": [
+        "accounts",
+        "tax",
+        "VAT",
+        "CIS",
+        "Companies House",
+        "HMRC",
+        "missing evidence"
+      ]
+    },
+    {
+      "authority_level": "observe_plan_and_delegate_to_existing_trading_gates",
+      "autonomous_allowed": true,
+      "blocked_actions": [
+        "Inventing or displaying fake live data.",
+        "Revealing secrets, API keys, credential values, or private tokens.",
+        "Bypassing HNC evidence gates or hiding low confidence.",
+        "LLM direct order placement outside the explicit live trading executor."
+      ],
+      "data_sources": [
+        "runtime feed",
+        "exchange state metadata",
+        "trade logs",
+        "decision audit",
+        "risk config"
+      ],
+      "domain": "trading",
+      "frontend_contract": {
+        "display_mode": "decision_audit",
+        "must_show": [
+          "mode",
+          "authority",
+          "collateral",
+          "risk",
+          "decision_path",
+          "costs",
+          "api_governor",
+          "verification"
+        ],
+        "target_screen": "trading"
+      },
+      "hnc_checks": [
+        "source_evidence_required",
+        "manifest_freshness_checked",
+        "data_contract_declared",
+        "no_fake_state_or_hidden_totals",
+        "confidence_and_blockers_visible",
+        "safe_authority_boundary_checked",
+        "result_retest_or_visual_smoke_required"
+      ],
+      "id": "trading_cognition_surface",
+      "next_action": "Bring the local runtime feed online and clear guard blockers before live action.",
+      "safe_actions": [
+        "Observe balances and positions.",
+        "Explain proposed decision logic.",
+        "Publish risk and blocker state.",
+        "Act only through the existing live executor when runtime guards allow it.",
+        "Record every action with timestamp, source, blocker state, and verification result."
+      ],
+      "status": "runtime_feed_offline",
+      "systems": [
+        "dynamic_margin_sizer",
+        "temporal_trade_cognition",
+        "unified_margin_brain",
+        "Kraken margin decision path",
+        "ThoughtBus"
+      ],
+      "title": "Trading Cognition And Dynamic Positioning",
+      "triggers": [
+        "market opportunity",
+        "margin sizing",
+        "Kraken collateral",
+        "position risk",
+        "temporal ETA"
+      ]
+    },
+    {
+      "authority_level": "authorized_local_or_owned_scope_test_fix_retest",
+      "autonomous_allowed": true,
+      "blocked_actions": [
+        "Inventing or displaying fake live data.",
+        "Revealing secrets, API keys, credential values, or private tokens.",
+        "Bypassing HNC evidence gates or hiding low confidence.",
+        "Third-party attacks without written authorization.",
+        "Destructive payloads.",
+        "Credential theft."
+      ],
+      "data_sources": [
+        "security blueprint",
+        "authorized attack lab report",
+        "SaaS inventory",
+        "release gate evidence"
+      ],
+      "domain": "saas_security",
+      "frontend_contract": {
+        "display_mode": "release_gate",
+        "must_show": [
+          "scope",
+          "findings",
+          "fixes",
+          "retest",
+          "release_blockers"
+        ],
+        "target_screen": "saas_security"
+      },
+      "hnc_checks": [
+        "source_evidence_required",
+        "manifest_freshness_checked",
+        "data_contract_declared",
+        "no_fake_state_or_hidden_totals",
+        "confidence_and_blockers_visible",
+        "safe_authority_boundary_checked",
+        "result_retest_or_visual_smoke_required"
+      ],
+      "id": "saas_security_cognition",
+      "next_action": "Show blockers clearly and only test owned/local/staging surfaces.",
+      "safe_actions": [
+        "Run authorized local/owned-scope checks.",
+        "Queue fixes.",
+        "Retest and block release until evidence passes."
+      ],
+      "status": "blocked_security_review",
+      "systems": [
+        "HNCSaaSSecurityArchitect",
+        "HNCAuthorizedAttackLab",
+        "HNCSaaSCognitiveBridge",
+        "OWASP ASVS map",
+        "OrganismContractStack"
+      ],
+      "title": "HNC SaaS Security And Authorized Test Lab",
+      "triggers": [
+        "security blocker",
+        "release gate",
+        "tenant isolation",
+        "auth risk",
+        "stress test"
+      ]
+    },
+    {
+      "authority_level": "safe_loop_with_apply_handoff",
+      "autonomous_allowed": true,
+      "blocked_actions": [
+        "Inventing or displaying fake live data.",
+        "Revealing secrets, API keys, credential values, or private tokens.",
+        "Bypassing HNC evidence gates or hiding low confidence.",
+        "Infinite uncontrolled mutation loop.",
+        "Silent rewrite of critical code without tests."
+      ],
+      "data_sources": [
+        "runtime pulse",
+        "audit manifests",
+        "test reports",
+        "benchmarks",
+        "vault memory"
+      ],
+      "domain": "self_improvement",
+      "frontend_contract": {
+        "display_mode": "self_improvement_loop",
+        "must_show": [
+          "audit",
+          "benchmark",
+          "fix",
+          "retest",
+          "apply_status"
+        ],
+        "target_screen": "self_improvement"
+      },
+      "hnc_checks": [
+        "source_evidence_required",
+        "manifest_freshness_checked",
+        "data_contract_declared",
+        "no_fake_state_or_hidden_totals",
+        "confidence_and_blockers_visible",
+        "safe_authority_boundary_checked",
+        "result_retest_or_visual_smoke_required"
+      ],
+      "id": "continuous_self_enhancement",
+      "next_action": "Keep observer running and use blockers as the next improvement queue.",
+      "safe_actions": [
+        "Refresh manifests.",
+        "Benchmark domains.",
+        "Queue work orders.",
+        "Write vault memory.",
+        "Report restart/apply requirements."
+      ],
+      "status": "blocked_missing_manifest",
+      "systems": [
+        "RuntimeObserver",
+        "SystemReadinessAudit",
+        "MindWiringAudit",
+        "CapabilityGrowthLoop",
+        "RepoSelfCatalog",
+        "FrontendEvolutionQueue"
+      ],
+      "title": "Continuous Audit, Benchmark, Fix, Retest Loop",
+      "triggers": [
+        "blind spot",
+        "stale data",
+        "failed test",
+        "new capability request",
+        "old system discovered"
+      ]
+    }
+  ],
+  "generated_at": "2026-07-12T23:26:05.925278+00:00",
+  "goal": "repo-wide SaaS navigation and end-user integration readiness",
+  "hnc_control_contract": {
+    "anti_hallucination_gates": [
+      "source_evidence_required",
+      "manifest_freshness_checked",
+      "data_contract_declared",
+      "no_fake_state_or_hidden_totals",
+      "confidence_and_blockers_visible",
+      "safe_authority_boundary_checked",
+      "result_retest_or_visual_smoke_required"
+    ],
+    "authority_matrix": {
+      "accounting_documents": "autonomous_generation_manual_filing_only",
+      "app_generation": "autonomous_patch_allowed_only_with_tests_and_scope",
+      "conversation": "autonomous_allowed_with_evidence",
+      "frontend_design": "autonomous_allowed_read_only_or_tested_patch",
+      "image_generation": "autonomous_prompt_contract_generated_asset_must_be_labelled",
+      "saas_security_tests": "owned_or_local_authorized_scope_only",
+      "search_and_research": "autonomous_allowed_read_only",
+      "secrets": "metadata_status_only_never_reveal_values",
+      "trading_orders": "delegated_to_existing_live_trading_gates_only"
+    },
+    "decision_ladder": [
+      "perceive_current_goal_or_blind_spot",
+      "recall_vault_and_manifest_evidence",
+      "classify_domain_and_select_capability",
+      "run_hnc_anti_drift_gates",
+      "create_contract_or_presentation_intent",
+      "render_or_execute_only_within_authority",
+      "verify_with_tests_or_source_reconciliation",
+      "publish_status_back_to_frontend_vault_and_thoughtbus"
+    ],
+    "drift_controls": [
+      "No frontend panel may show trusted data without source_path and freshness.",
+      "Generated media and generated reports must be labelled as generated.",
+      "Low confidence or missing evidence must become a visible blocker.",
+      "Unsafe side effects must become manual or gated actions, not hidden autonomy."
+    ]
+  },
+  "notes": [
+    "The switchboard lets cognition choose between conversation, search, app generation, image/visual requests, accounting, trading observation, SaaS security, and self-enhancement.",
+    "Every generated UI/report/action must carry source evidence, freshness, confidence, and a safe authority boundary.",
+    "Aureon may evolve frontend/app surfaces through scoped work orders and tests; unsafe side effects stay blocked or manual."
+  ],
+  "presentation_intents": [
+    {
+      "display_mode": "dashboard_panel",
+      "generated_artifact_contract": {
+        "acceptance_tests": [
+          "Manifest exposes source path, target screen, safety boundary, and status.",
+          "Unified frontend renders the work order without importing/executing the legacy system.",
+          "Any missing/stale/fake data is displayed as a blocker instead of trusted."
+        ],
+        "data_contract": {
+          "expected_topic": "trading.status",
+          "safe_fields": [
+            "mode",
+            "positions",
+            "risk",
+            "decision",
+            "blocked_reason",
+            "last_updated"
+          ],
+          "secret_policy": "metadata_only_hide_values",
+          "source_called_apis": [
+            "/api/predator",
+            "/api/status",
+            "/api/stealth",
+            "route:/",
+            "route:/api/intelligence",
+            "route:/api/kills",
+            "route:/api/positions",
+            "route:/api/predator",
+            "route:/api/stats",
+            "route:/api/status",
+            "route:/api/stealth",
+            "route:/ws",
+            "wsUrl"
+          ],
+          "source_path": "aureon/bots/orca_command_center.py"
+        },
+        "frontend_action": "Create a read-only blocker card in Trading before any interactive control."
+      },
+      "hnc_evidence": {
+        "evidence": {
+          "auth_requirement": "required",
+          "called_apis": [
+            "/api/predator",
+            "/api/status",
+            "/api/stealth",
+            "route:/",
+            "route:/api/intelligence",
+            "route:/api/kills",
+            "route:/api/positions",
+            "route:/api/predator",
+            "route:/api/stats",
+            "route:/api/status",
+            "route:/api/stealth",
+            "route:/ws",
+            "wsUrl"
+          ],
+          "legacy_action": "keep_or_link",
+          "missing_next_step": "Inventory for migration into the unified observation shell.",
+          "safety_class": "live_trading_boundary",
+          "wiring_status": "partial"
+        },
+        "required_gates": [
+          "source_evidence_required",
+          "manifest_freshness_checked",
+          "data_contract_declared",
+          "no_fake_state_or_hidden_totals",
+          "confidence_and_blockers_visible",
+          "safe_authority_boundary_checked",
+          "result_retest_or_visual_smoke_required"
+        ],
+        "safety_boundary": "Read-only observation card; no live trading, official filing, payment, credential reveal, or external mutation."
+      },
+      "id": "intent.frontend_evolution_aureon_bots_orca_command_center_py",
+      "next_action": "Resolve blocker or archive decision before migration.",
+      "priority": 100,
+      "reason": "Local Python dashboard or command server for orca command center.",
+      "source_paths": [
+        "aureon/bots/orca_command_center.py"
+      ],
+      "status": "blocked_security_review",
+      "target_screen": "trading",
+      "title": "Wire Orca Command Center into Trading"
+    },
+    {
+      "display_mode": "dashboard_panel",
+      "generated_artifact_contract": {
+        "acceptance_tests": [
+          "Manifest exposes source path, target screen, safety boundary, and status.",
+          "Unified frontend renders the work order without importing/executing the legacy system.",
+          "Any missing/stale/fake data is displayed as a blocker instead of trusted."
+        ],
+        "data_contract": {
+          "expected_topic": "trading.status",
+          "safe_fields": [
+            "mode",
+            "positions",
+            "risk",
+            "decision",
+            "blocked_reason",
+            "last_updated"
+          ],
+          "secret_policy": "metadata_only_hide_values",
+          "source_called_apis": [],
+          "source_path": "aureon/command_centers/aureon_atn_command_center.py"
+        },
+        "frontend_action": "Create frontend/src/components/unified/AureonAtnCommandCenterStatusCard.tsx and mount it in the Trading screen."
+      },
+      "hnc_evidence": {
+        "evidence": {
+          "auth_requirement": "read_only_or_unknown",
+          "called_apis": [],
+          "legacy_action": "keep_or_link",
+          "missing_next_step": "Inventory for migration into the unified observation shell.",
+          "safety_class": "observation",
+          "wiring_status": "partial"
+        },
+        "required_gates": [
+          "source_evidence_required",
+          "manifest_freshness_checked",
+          "data_contract_declared",
+          "no_fake_state_or_hidden_totals",
+          "confidence_and_blockers_visible",
+          "safe_authority_boundary_checked",
+          "result_retest_or_visual_smoke_required"
+        ],
+        "safety_boundary": "Read-only observation card; no live trading, official filing, payment, credential reveal, or external mutation."
+      },
+      "id": "intent.frontend_evolution_aureon_command_centers_aureon_atn_command_center_py",
+      "next_action": "Generate the read-only adapter/component and add a focused smoke test.",
+      "priority": 100,
+      "reason": "Local Python dashboard or command server for aureon atn command center.",
+      "source_paths": [
+        "aureon/command_centers/aureon_atn_command_center.py"
+      ],
+      "status": "ready_for_frontend_adapter",
+      "target_screen": "trading",
+      "title": "Wire Aureon Atn Command Center into Trading"
+    },
+    {
+      "display_mode": "dashboard_panel",
+      "generated_artifact_contract": {
+        "acceptance_tests": [
+          "Manifest exposes source path, target screen, safety boundary, and status.",
+          "Unified frontend renders the work order without importing/executing the legacy system.",
+          "Any missing/stale/fake data is displayed as a blocker instead of trusted."
+        ],
+        "data_contract": {
+          "expected_topic": "trading.status",
+          "safe_fields": [
+            "mode",
+            "positions",
+            "risk",
+            "decision",
+            "blocked_reason",
+            "last_updated"
+          ],
+          "secret_policy": "metadata_only_hide_values",
+          "source_called_apis": [
+            "`${protocol}//${window.location.host}/ws`",
+            "route:/",
+            "route:/api/portfolio",
+            "route:/api/signals",
+            "route:/api/status",
+            "route:/ws"
+          ],
+          "source_path": "aureon/command_centers/aureon_command_center_enhanced.py"
+        },
+        "frontend_action": "Create frontend/src/components/unified/AureonCommandCenterEnhancedStatusCard.tsx and mount it in the Trading screen."
+      },
+      "hnc_evidence": {
+        "evidence": {
+          "auth_requirement": "read_only_or_unknown",
+          "called_apis": [
+            "`${protocol}//${window.location.host}/ws`",
+            "route:/",
+            "route:/api/portfolio",
+            "route:/api/signals",
+            "route:/api/status",
+            "route:/ws"
+          ],
+          "legacy_action": "keep_or_link",
+          "missing_next_step": "Inventory for migration into the unified observation shell.",
+          "safety_class": "observation",
+          "wiring_status": "partial"
+        },
+        "required_gates": [
+          "source_evidence_required",
+          "manifest_freshness_checked",
+          "data_contract_declared",
+          "no_fake_state_or_hidden_totals",
+          "confidence_and_blockers_visible",
+          "safe_authority_boundary_checked",
+          "result_retest_or_visual_smoke_required"
+        ],
+        "safety_boundary": "Read-only observation card; no live trading, official filing, payment, credential reveal, or external mutation."
+      },
+      "id": "intent.frontend_evolution_aureon_command_centers_aureon_command_center_enhanced_py",
+      "next_action": "Generate the read-only adapter/component and add a focused smoke test.",
+      "priority": 100,
+      "reason": "Local Python dashboard or command server for aureon command center enhanced.",
+      "source_paths": [
+        "aureon/command_centers/aureon_command_center_enhanced.py"
+      ],
+      "status": "ready_for_frontend_adapter",
+      "target_screen": "trading",
+      "title": "Wire Aureon Command Center Enhanced into Trading"
+    },
+    {
+      "display_mode": "dashboard_panel",
+      "generated_artifact_contract": {
+        "acceptance_tests": [
+          "Manifest exposes source path, target screen, safety boundary, and status.",
+          "Unified frontend renders the work order without importing/executing the legacy system.",
+          "Any missing/stale/fake data is displayed as a blocker instead of trusted."
+        ],
+        "data_contract": {
+          "expected_topic": "self_improvement.status",
+          "safe_fields": [
+            "audit",
+            "benchmark",
+            "queued_fix",
+            "retest_status",
+            "restart_required"
+          ],
+          "secret_policy": "metadata_only_hide_values",
+          "source_called_apis": [
+            "/api/flight-check",
+            "/api/live-toggle",
+            "/api/trading-toggle",
+            "`${protocol}//${window.location.host}/ws`"
+          ],
+          "source_path": "aureon/command_centers/aureon_command_center.py"
+        },
+        "frontend_action": "Create a read-only blocker card in Self-Improvement before any interactive control."
+      },
+      "hnc_evidence": {
+        "evidence": {
+          "auth_requirement": "required",
+          "called_apis": [
+            "/api/flight-check",
+            "/api/live-toggle",
+            "/api/trading-toggle",
+            "`${protocol}//${window.location.host}/ws`"
+          ],
+          "legacy_action": "keep_or_link",
+          "missing_next_step": "Inventory for migration into the unified observation shell.",
+          "safety_class": "live_trading_boundary",
+          "wiring_status": "partial"
+        },
+        "required_gates": [
+          "source_evidence_required",
+          "manifest_freshness_checked",
+          "data_contract_declared",
+          "no_fake_state_or_hidden_totals",
+          "confidence_and_blockers_visible",
+          "safe_authority_boundary_checked",
+          "result_retest_or_visual_smoke_required"
+        ],
+        "safety_boundary": "Read-only observation card; no live trading, official filing, payment, credential reveal, or external mutation."
+      },
+      "id": "intent.frontend_evolution_aureon_command_centers_aureon_command_center_py",
+      "next_action": "Resolve blocker or archive decision before migration.",
+      "priority": 100,
+      "reason": "Local Python dashboard or command server for aureon command center.",
+      "source_paths": [
+        "aureon/command_centers/aureon_command_center.py"
+      ],
+      "status": "blocked_security_review",
+      "target_screen": "self_improvement",
+      "title": "Wire Aureon Command Center into Self-Improvement"
+    },
+    {
+      "display_mode": "dashboard_panel",
+      "generated_artifact_contract": {
+        "acceptance_tests": [
+          "Manifest exposes source path, target screen, safety boundary, and status.",
+          "Unified frontend renders the work order without importing/executing the legacy system.",
+          "Any missing/stale/fake data is displayed as a blocker instead of trusted."
+        ],
+        "data_contract": {
+          "expected_topic": "self_improvement.status",
+          "safe_fields": [
+            "audit",
+            "benchmark",
+            "queued_fix",
+            "retest_status",
+            "restart_required"
+          ],
+          "secret_policy": "metadata_only_hide_values",
+          "source_called_apis": [],
+          "source_path": "aureon/command_centers/aureon_queen_realtime_command_center.py"
+        },
+        "frontend_action": "Create frontend/src/components/unified/AureonQueenRealtimeCommandCenterStatusCard.tsx and mount it in the Self-Improvement screen."
+      },
+      "hnc_evidence": {
+        "evidence": {
+          "auth_requirement": "read_only_or_unknown",
+          "called_apis": [],
+          "legacy_action": "keep_or_link",
+          "missing_next_step": "Inventory for migration into the unified observation shell.",
+          "safety_class": "observation",
+          "wiring_status": "partial"
+        },
+        "required_gates": [
+          "source_evidence_required",
+          "manifest_freshness_checked",
+          "data_contract_declared",
+          "no_fake_state_or_hidden_totals",
+          "confidence_and_blockers_visible",
+          "safe_authority_boundary_checked",
+          "result_retest_or_visual_smoke_required"
+        ],
+        "safety_boundary": "Read-only observation card; no live trading, official filing, payment, credential reveal, or external mutation."
+      },
+      "id": "intent.frontend_evolution_aureon_command_centers_aureon_queen_realtime_command_center_py",
+      "next_action": "Generate the read-only adapter/component and add a focused smoke test.",
+      "priority": 100,
+      "reason": "Local Python dashboard or command server for aureon queen realtime command center.",
+      "source_paths": [
+        "aureon/command_centers/aureon_queen_realtime_command_center.py"
+      ],
+      "status": "ready_for_frontend_adapter",
+      "target_screen": "self_improvement",
+      "title": "Wire Aureon Queen Realtime Command Center into Self-Improvement"
+    },
+    {
+      "display_mode": "dashboard_panel",
+      "generated_artifact_contract": {
+        "acceptance_tests": [
+          "Manifest exposes source path, target screen, safety boundary, and status.",
+          "Unified frontend renders the work order without importing/executing the legacy system.",
+          "Any missing/stale/fake data is displayed as a blocker instead of trusted."
+        ],
+        "data_contract": {
+          "expected_topic": "self_improvement.status",
+          "safe_fields": [
+            "audit",
+            "benchmark",
+            "queued_fix",
+            "retest_status",
+            "restart_required"
+          ],
+          "secret_policy": "metadata_only_hide_values",
+          "source_called_apis": [],
+          "source_path": "aureon/command_centers/aureon_war_band_enhanced.py"
+        },
+        "frontend_action": "Create frontend/src/components/unified/AureonWarBandEnhancedStatusCard.tsx and mount it in the Self-Improvement screen."
+      },
+      "hnc_evidence": {
+        "evidence": {
+          "auth_requirement": "read_only_or_unknown",
+          "called_apis": [],
+          "legacy_action": "keep_or_link",
+          "missing_next_step": "Inventory for migration into the unified observation shell.",
+          "safety_class": "observation",
+          "wiring_status": "partial"
+        },
+        "required_gates": [
+          "source_evidence_required",
+          "manifest_freshness_checked",
+          "data_contract_declared",
+          "no_fake_state_or_hidden_totals",
+          "confidence_and_blockers_visible",
+          "safe_authority_boundary_checked",
+          "result_retest_or_visual_smoke_required"
+        ],
+        "safety_boundary": "Read-only observation card; no live trading, official filing, payment, credential reveal, or external mutation."
+      },
+      "id": "intent.frontend_evolution_aureon_command_centers_aureon_war_band_enhanced_py",
+      "next_action": "Generate the read-only adapter/component and add a focused smoke test.",
+      "priority": 100,
+      "reason": "Local Python dashboard or command server for aureon war band enhanced.",
+      "source_paths": [
+        "aureon/command_centers/aureon_war_band_enhanced.py"
+      ],
+      "status": "ready_for_frontend_adapter",
+      "target_screen": "self_improvement",
+      "title": "Wire Aureon War Band Enhanced into Self-Improvement"
+    },
+    {
+      "display_mode": "dashboard_panel",
+      "generated_artifact_contract": {
+        "acceptance_tests": [
+          "Manifest exposes source path, target screen, safety boundary, and status.",
+          "Unified frontend renders the work order without importing/executing the legacy system.",
+          "Any missing/stale/fake data is displayed as a blocker instead of trusted."
+        ],
+        "data_contract": {
+          "expected_topic": "security.status",
+          "safe_fields": [
+            "release_gate",
+            "findings",
+            "fixes",
+            "retest_status",
+            "authorization_scope"
+          ],
+          "secret_policy": "metadata_only_hide_values",
+          "source_called_apis": [
+            "supabase:update-kyc-status"
+          ],
+          "source_path": "frontend/src/components/AdminKYCDashboard.tsx"
+        },
+        "frontend_action": "Create a read-only blocker card in SaaS Security before any interactive control."
+      },
+      "hnc_evidence": {
+        "evidence": {
+          "auth_requirement": "required",
+          "called_apis": [
+            "supabase:update-kyc-status"
+          ],
+          "legacy_action": "",
+          "missing_next_step": "Decide whether to migrate into the unified shell, expose through navigation, or archive.",
+          "safety_class": "payment_or_kyc_boundary",
+          "wiring_status": "orphaned"
+        },
+        "required_gates": [
+          "source_evidence_required",
+          "manifest_freshness_checked",
+          "data_contract_declared",
+          "no_fake_state_or_hidden_totals",
+          "confidence_and_blockers_visible",
+          "safe_authority_boundary_checked",
+          "result_retest_or_visual_smoke_required"
+        ],
+        "safety_boundary": "Read-only observation card; no live trading, official filing, payment, credential reveal, or external mutation."
+      },
+      "id": "intent.frontend_evolution_frontend_src_components_adminkycdashboard_tsx",
+      "next_action": "Resolve blocker or archive decision before migration.",
+      "priority": 100,
+      "reason": "frontend component for saas security: AdminKYCDashboard.",
+      "source_paths": [
+        "frontend/src/components/AdminKYCDashboard.tsx"
+      ],
+      "status": "blocked_security_review",
+      "target_screen": "saas_security",
+      "title": "Wire Adminkycdashboard into SaaS Security"
+    },
+    {
+      "display_mode": "dashboard_panel",
+      "generated_artifact_contract": {
+        "acceptance_tests": [
+          "Manifest exposes source path, target screen, safety boundary, and status.",
+          "Unified frontend renders the work order without importing/executing the legacy system.",
+          "Any missing/stale/fake data is displayed as a blocker instead of trusted."
+        ],
+        "data_contract": {
+          "expected_topic": "security.status",
+          "safe_fields": [
+            "release_gate",
+            "findings",
+            "fixes",
+            "retest_status",
+            "authorization_scope"
+          ],
+          "secret_policy": "metadata_only_hide_values",
+          "source_called_apis": [
+            "supabase:verify-payment"
+          ],
+          "source_path": "frontend/src/components/AdminPaymentVerification.tsx"
+        },
+        "frontend_action": "Create a read-only blocker card in SaaS Security before any interactive control."
+      },
+      "hnc_evidence": {
+        "evidence": {
+          "auth_requirement": "required",
+          "called_apis": [
+            "supabase:verify-payment"
+          ],
+          "legacy_action": "",
+          "missing_next_step": "Decide whether to migrate into the unified shell, expose through navigation, or archive.",
+          "safety_class": "payment_or_kyc_boundary",
+          "wiring_status": "orphaned"
+        },
+        "required_gates": [
+          "source_evidence_required",
+          "manifest_freshness_checked",
+          "data_contract_declared",
+          "no_fake_state_or_hidden_totals",
+          "confidence_and_blockers_visible",
+          "safe_authority_boundary_checked",
+          "result_retest_or_visual_smoke_required"
+        ],
+        "safety_boundary": "Read-only observation card; no live trading, official filing, payment, credential reveal, or external mutation."
+      },
+      "id": "intent.frontend_evolution_frontend_src_components_adminpaymentverification_tsx",
+      "next_action": "Resolve blocker or archive decision before migration.",
+      "priority": 100,
+      "reason": "frontend component for saas security: AdminPaymentVerification.",
+      "source_paths": [
+        "frontend/src/components/AdminPaymentVerification.tsx"
+      ],
+      "status": "blocked_security_review",
+      "target_screen": "saas_security",
+      "title": "Wire Adminpaymentverification into SaaS Security"
+    },
+    {
+      "display_mode": "dashboard_panel",
+      "generated_artifact_contract": {
+        "acceptance_tests": [
+          "Manifest exposes source path, target screen, safety boundary, and status.",
+          "Unified frontend renders the work order without importing/executing the legacy system.",
+          "Any missing/stale/fake data is displayed as a blocker instead of trusted."
+        ],
+        "data_contract": {
+          "expected_topic": "security.status",
+          "safe_fields": [
+            "release_gate",
+            "findings",
+            "fixes",
+            "retest_status",
+            "authorization_scope"
+          ],
+          "secret_policy": "metadata_only_hide_values",
+          "source_called_apis": [],
+          "source_path": "frontend/src/components/auth/APIKeySecurityGuide.tsx"
+        },
+        "frontend_action": "Create a read-only blocker card in SaaS Security before any interactive control."
+      },
+      "hnc_evidence": {
+        "evidence": {
+          "auth_requirement": "required",
+          "called_apis": [],
+          "legacy_action": "",
+          "missing_next_step": "Decide whether to migrate into the unified shell, expose through navigation, or archive.",
+          "safety_class": "live_trading_boundary",
+          "wiring_status": "orphaned"
+        },
+        "required_gates": [
+          "source_evidence_required",
+          "manifest_freshness_checked",
+          "data_contract_declared",
+          "no_fake_state_or_hidden_totals",
+          "confidence_and_blockers_visible",
+          "safe_authority_boundary_checked",
+          "result_retest_or_visual_smoke_required"
+        ],
+        "safety_boundary": "Read-only observation card; no live trading, official filing, payment, credential reveal, or external mutation."
+      },
+      "id": "intent.frontend_evolution_frontend_src_components_auth_apikeysecurityguide_tsx",
+      "next_action": "Resolve blocker or archive decision before migration.",
+      "priority": 100,
+      "reason": "frontend component for trading: APIKeySecurityGuide.",
+      "source_paths": [
+        "frontend/src/components/auth/APIKeySecurityGuide.tsx"
+      ],
+      "status": "blocked_security_review",
+      "target_screen": "saas_security",
+      "title": "Wire Apikeysecurityguide into SaaS Security"
+    },
+    {
+      "display_mode": "dashboard_panel",
+      "generated_artifact_contract": {
+        "acceptance_tests": [
+          "Manifest exposes source path, target screen, safety boundary, and status.",
+          "Unified frontend renders the work order without importing/executing the legacy system.",
+          "Any missing/stale/fake data is displayed as a blocker instead of trusted."
+        ],
+        "data_contract": {
+          "expected_topic": "security.status",
+          "safe_fields": [
+            "release_gate",
+            "findings",
+            "fixes",
+            "retest_status",
+            "authorization_scope"
+          ],
+          "secret_policy": "metadata_only_hide_values",
+          "source_called_apis": [
+            "supabase:create-aureon-session"
+          ],
+          "source_path": "frontend/src/components/AuthForm.tsx"
+        },
+        "frontend_action": "Create a read-only blocker card in SaaS Security before any interactive control."
+      },
+      "hnc_evidence": {
+        "evidence": {
+          "auth_requirement": "required",
+          "called_apis": [
+            "supabase:create-aureon-session"
+          ],
+          "legacy_action": "",
+          "missing_next_step": "Decide whether to migrate into the unified shell, expose through navigation, or archive.",
+          "safety_class": "payment_or_kyc_boundary",
+          "wiring_status": "orphaned"
+        },
+        "required_gates": [
+          "source_evidence_required",
+          "manifest_freshness_checked",
+          "data_contract_declared",
+          "no_fake_state_or_hidden_totals",
+          "confidence_and_blockers_visible",
+          "safe_authority_boundary_checked",
+          "result_retest_or_visual_smoke_required"
+        ],
+        "safety_boundary": "Read-only observation card; no live trading, official filing, payment, credential reveal, or external mutation."
+      },
+      "id": "intent.frontend_evolution_frontend_src_components_authform_tsx",
+      "next_action": "Resolve blocker or archive decision before migration.",
+      "priority": 100,
+      "reason": "frontend component for saas security: AuthForm.",
+      "source_paths": [
+        "frontend/src/components/AuthForm.tsx"
+      ],
+      "status": "blocked_security_review",
+      "target_screen": "saas_security",
+      "title": "Wire Authform into SaaS Security"
+    },
+    {
+      "display_mode": "dashboard_panel",
+      "generated_artifact_contract": {
+        "acceptance_tests": [
+          "Manifest exposes source path, target screen, safety boundary, and status.",
+          "Unified frontend renders the work order without importing/executing the legacy system.",
+          "Any missing/stale/fake data is displayed as a blocker instead of trusted."
+        ],
+        "data_contract": {
+          "expected_topic": "organism.status",
+          "safe_fields": [
+            "status",
+            "health",
+            "blockers",
+            "last_updated"
+          ],
+          "secret_policy": "metadata_only_hide_values",
+          "source_called_apis": [],
+          "source_path": "frontend/src/components/warroom/GasTankDisplay.tsx"
+        },
+        "frontend_action": "Create a read-only blocker card in Overview before any interactive control."
+      },
+      "hnc_evidence": {
+        "evidence": {
+          "auth_requirement": "required",
+          "called_apis": [],
+          "legacy_action": "",
+          "missing_next_step": "Decide whether to migrate into the unified shell, expose through navigation, or archive.",
+          "safety_class": "payment_or_kyc_boundary",
+          "wiring_status": "orphaned"
+        },
+        "required_gates": [
+          "source_evidence_required",
+          "manifest_freshness_checked",
+          "data_contract_declared",
+          "no_fake_state_or_hidden_totals",
+          "confidence_and_blockers_visible",
+          "safe_authority_boundary_checked",
+          "result_retest_or_visual_smoke_required"
+        ],
+        "safety_boundary": "Read-only observation card; no live trading, official filing, payment, credential reveal, or external mutation."
+      },
+      "id": "intent.frontend_evolution_frontend_src_components_warroom_gastankdisplay_tsx",
+      "next_action": "Resolve blocker or archive decision before migration.",
+      "priority": 100,
+      "reason": "frontend component for operator: GasTankDisplay.",
+      "source_paths": [
+        "frontend/src/components/warroom/GasTankDisplay.tsx"
+      ],
+      "status": "blocked_security_review",
+      "target_screen": "overview",
+      "title": "Wire Gastankdisplay into Overview"
+    },
+    {
+      "display_mode": "dashboard_panel",
+      "generated_artifact_contract": {
+        "acceptance_tests": [
+          "Manifest exposes source path, target screen, safety boundary, and status.",
+          "Unified frontend renders the work order without importing/executing the legacy system.",
+          "Any missing/stale/fake data is displayed as a blocker instead of trusted."
+        ],
+        "data_contract": {
+          "expected_topic": "organism.status",
+          "safe_fields": [
+            "status",
+            "health",
+            "blockers",
+            "last_updated"
+          ],
+          "secret_policy": "metadata_only_hide_values",
+          "source_called_apis": [],
+          "source_path": "frontend/src/components/WarRoomDashboard.tsx"
+        },
+        "frontend_action": "Create a read-only blocker card in Overview before any interactive control."
+      },
+      "hnc_evidence": {
+        "evidence": {
+          "auth_requirement": "required",
+          "called_apis": [],
+          "legacy_action": "",
+          "missing_next_step": "Decide whether to migrate into the unified shell, expose through navigation, or archive.",
+          "safety_class": "live_trading_boundary",
+          "wiring_status": "orphaned"
+        },
+        "required_gates": [
+          "source_evidence_required",
+          "manifest_freshness_checked",
+          "data_contract_declared",
+          "no_fake_state_or_hidden_totals",
+          "confidence_and_blockers_visible",
+          "safe_authority_boundary_checked",
+          "result_retest_or_visual_smoke_required"
+        ],
+        "safety_boundary": "Read-only observation card; no live trading, official filing, payment, credential reveal, or external mutation."
+      },
+      "id": "intent.frontend_evolution_frontend_src_components_warroomdashboard_tsx",
+      "next_action": "Resolve blocker or archive decision before migration.",
+      "priority": 100,
+      "reason": "frontend component for operator: WarRoomDashboard.",
+      "source_paths": [
+        "frontend/src/components/WarRoomDashboard.tsx"
+      ],
+      "status": "blocked_security_review",
+      "target_screen": "overview",
+      "title": "Wire Warroomdashboard into Overview"
+    },
+    {
+      "display_mode": "generated_app_surface",
+      "generated_artifact_contract": {
+        "artifact_type": "React status card",
+        "verification": [
+          "npm run build",
+          "npm run lint",
+          "visual smoke test"
+        ],
+        "write_scope": "frontend/src/components/unified"
+      },
+      "hnc_evidence": {
+        "required_gates": [
+          "source_evidence_required",
+          "manifest_freshness_checked",
+          "data_contract_declared",
+          "no_fake_state_or_hidden_totals",
+          "confidence_and_blockers_visible",
+          "safe_authority_boundary_checked",
+          "result_retest_or_visual_smoke_required"
+        ],
+        "source_manifest": "aureon_frontend_evolution_queue.json"
+      },
+      "id": "intent.frontend_adapters_from_old_systems",
+      "next_action": "Take the highest-priority work order and generate a read-only adapter with tests.",
+      "priority": 98,
+      "reason": "460 old/frontend surfaces are ready to become unified console adapters.",
+      "source_paths": [
+        "docs/audits/aureon_frontend_evolution_queue.json"
+      ],
+      "status": "ready_to_queue_adapters",
+      "target_screen": "self_improvement",
+      "title": "Build read-only adapters from older dashboard systems"
+    },
+    {
+      "display_mode": "dashboard_panel",
+      "generated_artifact_contract": {
+        "artifact_type": "status line",
+        "fake_data_policy": "blocked"
+      },
+      "hnc_evidence": {
+        "required_gates": [
+          "source_evidence_required",
+          "manifest_freshness_checked",
+          "data_contract_declared",
+          "no_fake_state_or_hidden_totals",
+          "confidence_and_blockers_visible",
+          "safe_authority_boundary_checked",
+          "result_retest_or_visual_smoke_required"
+        ],
+        "source_manifest": "aureon_organism_runtime_status.json"
+      },
+      "id": "intent.runtime_feed_visibility",
+      "next_action": "Start the safe runtime status service or ignition process that exposes the read-only terminal-state endpoint.",
+      "priority": 95,
+      "reason": "The local runtime feed is offline, so the frontend must display manifest/audit state instead of fake live state.",
+      "source_paths": [
+        "docs/audits/aureon_organism_runtime_status.json"
+      ],
+      "status": "blocked_waiting_for_runtime_feed",
+      "target_screen": "overview",
+      "title": "Show runtime feed as offline until real data arrives"
+    },
+    {
+      "display_mode": "release_gate",
+      "generated_artifact_contract": {
+        "artifact_type": "read-only blocker wall",
+        "interactive_controls": "disabled_until_review"
+      },
+      "hnc_evidence": {
+        "required_gates": [
+          "source_evidence_required",
+          "manifest_freshness_checked",
+          "data_contract_declared",
+          "no_fake_state_or_hidden_totals",
+          "confidence_and_blockers_visible",
+          "safe_authority_boundary_checked",
+          "result_retest_or_visual_smoke_required"
+        ],
+        "source_manifest": "aureon_saas_system_inventory.json"
+      },
+      "id": "intent.security_blocker_wall",
+      "next_action": "Wire blockers into the SaaS Security screen and queue fixes through authorized local tests.",
+      "priority": 94,
+      "reason": "2 security blockers are present in the SaaS inventory.",
+      "source_paths": [
+        "docs/audits/aureon_saas_system_inventory.json"
+      ],
+      "status": "blocked_security_review",
+      "target_screen": "saas_security",
+      "title": "Surface security blockers before interactive controls"
+    }
+  ],
+  "repo_root": "C:\\Users\\user\\aureon-trading-nav-contract-20260712",
+  "route_map": {
+    "accounting_capabilities": {
+      "artifact_count": 4,
+      "combined_bank_data": {
+        "csv_source_count": 0,
+        "duplicate_rows_removed": 0,
+        "evidence_file_count": 0,
+        "flow_provider_summary": {},
+        "pdf_source_count": 0,
+        "rows_in_period_before_dedupe": 0,
+        "source_accounts": [],
+        "source_provider_summary": {},
+        "transaction_source_count": 0,
+        "unique_rows_in_period": 0
+      },
+      "domain_counts": {
+        "accounting_registry": 3,
+        "accounting_status_tools": 6,
+        "accounting_support": 9,
+        "cash_flow": 1,
+        "cis": 6,
+        "compliance_audit": 9,
+        "compound_projection": 3,
+        "exchange_reconciliation": 14,
+        "financial_analysis": 6,
+        "gateway_orchestration": 5,
+        "invoice": 2,
+        "king_accounting": 3,
+        "ledger_double_entry": 9,
+        "reports_exports": 2,
+        "tax_computation": 11,
+        "tax_intelligence": 1,
+        "transaction_import": 7,
+        "vat": 2
+      },
+      "module_count": 99
+    },
+    "audit_mode": false,
+    "capability_status_counts": {
+      "blocked_missing_manifest": 4,
+      "blocked_security_review": 1,
+      "ready": 1,
+      "ready_for_prompt_contract": 1,
+      "ready_with_backlog": 1,
+      "runtime_feed_offline": 1
+    },
+    "contract_capabilities": {
+      "contract_schema_version": "aureon-organism-contract-v1",
+      "contract_types": [
+        "goal",
+        "skill",
+        "task",
+        "job",
+        "work_order",
+        "directive",
+        "result"
+      ],
+      "queue_count": 0,
+      "topics": {
+        "blocked": "organism.contract.blocked",
+        "claimed": "organism.contract.work_order.claimed",
+        "completed": "organism.contract.work_order.completed",
+        "directive": "organism.contract.directive",
+        "failed": "organism.contract.work_order.failed",
+        "goal": "organism.contract.goal.created",
+        "job": "organism.contract.job.created",
+        "result": "organism.contract.result",
+        "skill": "organism.contract.skill.registered",
+        "status": "organism.contract.status",
+        "task": "organism.contract.task.created",
+        "work_order": "organism.contract.work_order.queued"
+      }
+    },
+    "directive": "For every goal, Aureon must consider and safely use all relevant available skills, tools, logic modules, code systems, memory, and ThoughtBus routes as one connected organism.",
+    "directive_version": "goal-capability-v1",
+    "errors": [
+      "azyra operator tool snapshot failed: No module named 'aureon.integrations.azyra'",
+      "office logistics tool snapshot failed: No module named 'aureon.integrations.office'"
+    ],
+    "goal_loop": [
+      "understand_goal",
+      "recall_obsidian_memory",
+      "inspect_current_state",
+      "inventory_capabilities",
+      "create_goal_contract",
+      "choose_safest_route",
+      "decompose_to_task_contracts",
+      "use_relevant_systems",
+      "queue_work_orders",
+      "publish_thoughtbus_intent",
+      "observe_result",
+      "write_memory",
+      "ask_next_question"
+    ],
+    "organism": {
+      "domains": {
+        "__init__": 1,
+        "_path_setup": 1,
+        "accounting": 235,
+        "alignment": 3,
+        "analytics": 29,
+        "atn": 4,
+        "autonomous": 87,
+        "brain": 9,
+        "bridges": 17,
+        "code_architect": 9,
+        "cognition": 30,
+        "command_centers": 16,
+        "contract_stack": 9,
+        "conversion": 11,
+        "core": 49,
+        "counter_intel": 34,
+        "decoders": 12,
+        "exchanges": 25,
+        "generated": 2,
+        "harmonic": 29,
+        "inhouse_ai": 3,
+        "integrations": 11,
+        "intelligence": 24,
+        "market_data": 39,
+        "miner": 2,
+        "monitors": 20,
+        "observer": 14,
+        "portfolio": 25,
+        "probability": 42,
+        "queen": 111,
+        "registry": 9,
+        "s51": 6,
+        "scanners": 18,
+        "search": 4,
+        "simulation": 25,
+        "status": 1,
+        "strategies": 18,
+        "swarm_motion": 4,
+        "thought_bus": 6,
+        "trading": 64,
+        "trading_decision": 48,
+        "utils": 25,
+        "vault": 14,
+        "whale_tracking": 34,
+        "wisdom": 30
+      },
+      "node_count": 1209
+    },
+    "presentation_intent_status_counts": {
+      "blocked_security_review": 9,
+      "blocked_waiting_for_runtime_feed": 1,
+      "ready_for_frontend_adapter": 4,
+      "ready_to_queue_adapters": 1
+    },
+    "real_orders_allowed": false,
+    "recommended_routes": [
+      {
+        "reason": "Every goal should start with memory recall and current state inspection.",
+        "risk": "low",
+        "route": "memory_and_state",
+        "systems": [
+          "ObsidianBridge",
+          "ThoughtBus",
+          "self_questioning_state"
+        ]
+      },
+      {
+        "reason": "Aureon should know which subsystems are available before selecting actions.",
+        "risk": "low",
+        "route": "organism_wiring",
+        "systems": [
+          "mind_wiring_audit",
+          "organism_spine",
+          "self_check_scanner"
+        ]
+      },
+      {
+        "authorized_self_attack_required": true,
+        "public_unhackable_claim_allowed": false,
+        "reason": "SaaS security goals require an HNC-led blueprint, historical defensive tactic memory, authorized self-attacks, tenant isolation, identity and policy controls, LLM/tool governance, release-blocking tests, and auditable implementation work orders.",
+        "requires_validation": true,
+        "risk": "high",
+        "route": "hnc_saas_security_architect",
+        "systems": [
+          "HNCSaaSSecurityArchitect",
+          "HNCAuthorizedAttackLab",
+          "HNC system inventory",
+          "OrganismContractStack",
+          "AureonCapabilityGrowthLoop",
+          "AureonSystemReadinessAudit",
+          "OWASP ASVS",
+          "OWASP Top 10",
+          "NIST zero-trust model"
+        ],
+        "unhackable_internal_goal_active": true
+      },
+      {
+        "reason": "Frontend/SaaS product goals need every UI, API, dashboard, generated output, and safety boundary counted before the canonical observation shell is wired.",
+        "requires_validation": true,
+        "risk": "medium",
+        "route": "saas_product_inventory",
+        "systems": [
+          "AureonSaaSSystemInventory",
+          "AureonFrontendUnificationPlan",
+          "React/Vite unified observation shell",
+          "Supabase function inventory",
+          "legacy dashboard transition map",
+          "frontend public manifest mirror"
+        ]
+      },
+      {
+        "reason": "Code goals should become auditable proposals, tests, and safe patches.",
+        "risk": "medium",
+        "route": "safe_code_repair",
+        "systems": [
+          "repo task bridge",
+          "safe code control",
+          "cognitive authoring loop"
+        ]
+      }
+    ],
+    "route_surfaces": {
+      "accounting": [
+        "AccountingContextBridge",
+        "AccountingSystemRegistry",
+        "CompanyRawDataIntake",
+        "CombinedBankData",
+        "AutonomousFullAccountsWorkflow",
+        "Kings_Accounting_Suite",
+        "HNCGateway",
+        "KingLedger",
+        "KingAccounting",
+        "HNC reports/export/tax/VAT/CIS engines",
+        "company compliance audit",
+        "final-ready accounts pack generator",
+        "accounting evidence authoring",
+        "petty-cash voucher templates",
+        "receipt and invoice evidence requests",
+        "UK accounting requirements brain",
+        "accountant self-question checklist",
+        "manual Companies House/HMRC filing boundary"
+      ],
+      "azyra_operator": [
+        "AzyraClient configurable API bridge",
+        "AzyraOperatorBridge local desktop bridge",
+        "azyra_operator_* ToolRegistry bindings",
+        "AzyraOperationsKnowledgeBase module map and task planner",
+        "Azyra procedure catalog and validator",
+        "Azyra calibration session recorder",
+        "Azyra email/message intake planner",
+        "Azyra Companion process/window probe",
+        "SafeDesktopControl dry-run/live gates",
+        "operator screenshot/focus/mouse/keyboard actions",
+        "submit-key and window-close env guards",
+        "task specs across CRM, Customs, Forwarding, Freight, Transport, Financials, and WMS"
+      ],
+      "capability_growth": [
+        "AureonCapabilityGrowthLoop",
+        "audit-benchmark-fix-retest-repeat cycle",
+        "domain capability scoring",
+        "safe benchmark checks",
+        "SkillLibrary improvement authoring",
+        "OrganismContractStack improvement queues",
+        "Obsidian capability-growth memory note"
+      ],
+      "code": [
+        "safe code control",
+        "repo task bridge",
+        "cognitive authoring loop"
+      ],
+      "contracts": [
+        "OrganismContractStack",
+        "GoalContract",
+        "SkillContract",
+        "TaskContract",
+        "JobContract",
+        "WorkOrderContract",
+        "organism.contract.* ThoughtBus topics",
+        "persistent local work-order queue"
+      ],
+      "coordination": [
+        "ThoughtBus",
+        "OrganismContractStack",
+        "authoring.research",
+        "autonomy.goal.directive",
+        "autonomy.self_question.*"
+      ],
+      "memory": [
+        "ObsidianBridge",
+        "state/self_questioning_ai_cycles.jsonl",
+        "ThoughtBus recall"
+      ],
+      "office_admin": [
+        "logistics_admin_capability_matrix",
+        "logistics_admin_cognitive_cycle",
+        "logistics_admin_autonomous_job_tick",
+        "logistics_office_solo_cycle",
+        "logistics_office_workweek_monitor_tick",
+        "logistics_office_workweek_dispatch_tick",
+        "logistics_office_self_audit",
+        "logistics_operations_readiness_audit",
+        "desktop_email_create_job/validate/run queue",
+        "spreadsheet summariser and office queue builder",
+        "Azyra operator bridge for gated WMS/ERP live record updates"
+      ],
+      "reasoning": [
+        "OllamaBridge",
+        "mind wiring audit",
+        "self-check scanner",
+        "cognition pipeline",
+        "organism spine"
+      ],
+      "research": [
+        "ResearchCorpusIndex",
+        "Queen meaning resolver research context",
+        "docs/**/*.md corpus",
+        "docs/research index",
+        "ObsidianBridge",
+        "vault memory search",
+        "ThoughtBus research intents"
+      ],
+      "saas_product_inventory": [
+        "AureonSaaSSystemInventory",
+        "AureonFrontendUnificationPlan",
+        "React/Vite unified observation shell",
+        "Supabase function inventory",
+        "vault UI and legacy dashboard inventory",
+        "generated accounting document surfaces",
+        "frontend public manifest mirror",
+        "canonical screens for trading, accounting, research, cognition, SaaS security, self-improvement, and admin"
+      ],
+      "saas_security": [
+        "HNCSaaSSecurityArchitect",
+        "HNCAuthorizedAttackLab",
+        "HNC system inventory",
+        "OWASP ASVS control matrix",
+        "OWASP Top 10 threat mapping",
+        "NIST zero-trust runtime model",
+        "authorized self-attack benchmarks",
+        "break-in simulation and stress-test loop",
+        "historical defensive tactic memory",
+        "tenant isolation contract",
+        "LLM tool-governance release gates",
+        "manual filing/payment and live-trading authority boundaries",
+        "OrganismContractStack SaaS security work orders",
+        "Obsidian SaaS security memory note"
+      ],
+      "self_catalog": [
+        "AureonRepoSelfCatalog",
+        "file-by-file role labels",
+        "docs/audits/aureon_repo_self_catalog.json",
+        "docs/audits/aureon_repo_self_catalog.csv",
+        "Obsidian repo self-catalog note",
+        "per-file LLM context without secret contents"
+      ],
+      "self_enhancement": [
+        "AureonCapabilityGrowthLoop",
+        "AureonSystemReadinessAudit",
+        "AureonRepoSelfCatalog",
+        "RepoWideOrganizationAudit",
+        "MindWiringAudit",
+        "SelfQuestioningAI",
+        "SelfEnhancementEngine",
+        "CodeArchitect",
+        "SkillValidator",
+        "SkillLibrary",
+        "OrganismContractStack",
+        "restart/apply handoff"
+      ],
+      "tools": [
+        "ToolRegistry built-ins",
+        "VM control tool definitions",
+        "Azyra operator tool definitions",
+        "Office logistics/admin tool definitions",
+        "voice intent routes"
+      ],
+      "trading": [
+        "dynamic margin sizer",
+        "temporal trade cognition",
+        "unified margin brain",
+        "Kraken margin decision path"
+      ]
+    },
+    "safety_rules": [
+      "Never place live orders from the self-questioning loop.",
+      "Never mutate exchange state unless explicit live-trading gates are enabled and a human-approved trading path owns the action.",
+      "Never expose or overwrite secrets, API keys, exchange state, portfolio state, trade logs, or local machine state.",
+      "Prefer audit, simulation, read-only inspection, Obsidian memory, and ThoughtBus publication for autonomous reasoning.",
+      "Direct code changes must go through the repo/code-control path, not spontaneous model output.",
+      "Accounting goals may generate final-ready manual filing packs on demand, but Companies House, HMRC, tax, and penalty filing/payment remain manual.",
+      "Azyra desktop operation must use the AzyraOperatorBridge and SafeDesktopControl gates; live clicks, typing, submit keys, and window-close hotkeys require explicit local enablement.",
+      "SaaS security goals must pursue unhackable as an internal benchmark loop through authorized self-attack, stress tests, repair, retest, and release gates."
+    ],
+    "tool_registry": {
+      "builtin_tools": [
+        "read_state",
+        "read_positions",
+        "read_prices",
+        "publish_thought",
+        "execute_shell",
+        "web_search",
+        "web_fetch",
+        "repo_search",
+        "skill_base_status"
+      ],
+      "count": 42,
+      "external_skill_routes": [
+        "news_search",
+        "stock_price",
+        "crypto_price",
+        "paper_search"
+      ],
+      "office_logistics_tools": [],
+      "vm_tools": [
+        "vm_create_session",
+        "vm_list_sessions",
+        "vm_set_default_session",
+        "vm_destroy_session",
+        "vm_session_status",
+        "vm_arm",
+        "vm_disarm",
+        "vm_emergency_stop",
+        "vm_clear_emergency_stop",
+        "vm_screenshot"
+      ]
+    }
+  },
+  "safety_contract": {
+    "llm_can_attack_third_party_targets": false,
+    "llm_can_create_presentation_intents": true,
+    "llm_can_file_hmrc_or_companies_house": false,
+    "llm_can_generate_frontend_or_app_code_after_tests": true,
+    "llm_can_make_payments": false,
+    "llm_can_place_direct_live_orders": false,
+    "llm_can_publish_thoughtbus_status": true,
+    "llm_can_queue_work_orders": true,
+    "llm_can_request_labelled_generated_visuals": true,
+    "llm_can_select_capability": true,
+    "runtime_can_place_live_orders_via_existing_gates": false,
+    "secret_values_hidden": true,
+    "unsafe_actions_become_blockers": true
+  },
+  "schema_version": "aureon-autonomous-capability-switchboard-v1",
+  "status": "switchboard_ready_with_blockers",
+  "summary": {
+    "action_mode": "safe_observation",
+    "autonomous_capability_count": 9,
+    "blocked_capability_count": 5,
+    "blocker_count": 8,
+    "canonical_screen_count": 7,
+    "capability_count": 9,
+    "frontend_work_order_count": 563,
+    "presentation_intent_count": 15,
+    "ready_adapter_count": 460,
+    "runtime_feed_status": "offline",
+    "security_blocker_count": 2,
+    "trading_action_allowed": false
+  }
+}

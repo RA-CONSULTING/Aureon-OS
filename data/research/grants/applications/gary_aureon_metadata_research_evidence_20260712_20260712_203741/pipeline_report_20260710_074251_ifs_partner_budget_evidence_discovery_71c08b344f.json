@@ -1,0 +1,31 @@
+﻿{
+    "operator":  "Aureon",
+    "generated_at":  "2026-07-10T07:42:51+01:00",
+    "event":  "ifs_partner_budget_evidence_discovery",
+    "scope":  "IFS_ONLY",
+    "application":  "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+    "portal_application_number":  "10210100",
+    "result":  "NO_CONFIRMED_PARTNER_OR_BUDGET_EVIDENCE_FOUND",
+    "application_status_after_discovery":  "IFS_DRAFT_EVIDENCE_DISCOVERY_COMPLETE_PARTNER_BUDGET_EVIDENCE_REQUIRED",
+    "artifacts":  [
+                      "applications/IFS_PARTNER_BUDGET_EVIDENCE_DISCOVERY_20260710_074251.json",
+                      "applications/IFS_PARTNER_BUDGET_EVIDENCE_DISCOVERY_20260710_074251.md"
+                  ],
+    "evidence_flags":  {
+                           "confirmed_swiss_implementation_partner":  false,
+                           "confirmed_research_institute_or_waiver":  false,
+                           "confirmed_partner_commitment_or_loi":  false,
+                           "confirmed_partner_budget_or_person_months":  false,
+                           "confirmed_total_eligible_project_costs":  false,
+                           "confirmed_export_control_tri_review":  false,
+                           "ready_for_final_ifs_submission":  false
+                       },
+    "controls":  [
+                     "No final IFS submission attempted",
+                     "No Project Impact final submit attempted",
+                     "No award terms accepted",
+                     "No partner invitation, email, file upload, or Drive upload attempted",
+                     "No Q17 costs or finance values invented",
+                     "No CAPTCHA/MFA/provider-control bypass or plaintext password storage attempted"
+                 ]
+}

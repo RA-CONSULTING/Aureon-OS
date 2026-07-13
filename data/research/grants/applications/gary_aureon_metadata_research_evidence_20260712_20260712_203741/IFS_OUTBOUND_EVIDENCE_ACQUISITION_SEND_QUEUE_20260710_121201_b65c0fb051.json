@@ -1,0 +1,490 @@
+{
+  "schema_version": "aureon-ifs-outbound-evidence-acquisition-send-queue-v1",
+  "generated_at": "2026-07-10T12:12:01+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_outbound_evidence_acquisition_send_queue",
+  "source_artifacts": {
+    "p1_payloads": "applications/IFS_P1_OUTREACH_PAYLOADS_20260710_114411.json",
+    "p2_payloads": "applications/IFS_P2_OUTREACH_PAYLOADS_20260710_115624.json",
+    "remaining_route_queue": "applications/IFS_REMAINING_ROUTE_ACTION_QUEUE_20260710_104541.json",
+    "uk_swiss_partner_pipeline": "applications/IFS_PARTNER_OUTREACH_PIPELINE_20260710_081819.json"
+  },
+  "queue": [
+    {
+      "queue_id": "P1:P1-AKT6-QUB-KTP",
+      "source_group": "P1",
+      "source_artifact": "applications/IFS_P1_OUTREACH_PAYLOADS_20260710_114411.json",
+      "route": "AKT6",
+      "target": "Queen's University Belfast KTP",
+      "application_ids": [
+        "APP-IFS-AKT6-2473-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_P1_AKT6_QUB_KTP_OUTREACH_DRAFT_20260710_114411.eml",
+      "sha256": "9936a1701dd86bf67380f702dbcdcacf1520923fadfa974f5cef797f9fb6f010",
+      "to": "ktp@qub.ac.uk",
+      "subject": " Time-sensitive AKT6 fit check: Aureon evidence automation validation sprint",
+      "body_char_count": 1475,
+      "public_channel": "QUB KTP public route; email evidenced from QUB KTP news/contact pages.",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "P1:P1-AKT6-ULSTER-KTP",
+      "source_group": "P1",
+      "source_artifact": "applications/IFS_P1_OUTREACH_PAYLOADS_20260710_114411.json",
+      "route": "AKT6",
+      "target": "Ulster University KTP / Business Partnerships",
+      "application_ids": [
+        "APP-IFS-AKT6-2473-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_P1_AKT6_ULSTER_KTP_OUTREACH_DRAFT_20260710_114411.eml",
+      "sha256": "b1233f9ed55a8030a1c12cec2d2935e44b86e48098901e9686ba62c5c49b7b39",
+      "to": "a.fullerton@ulster.ac.uk, p.gilpin@ulster.ac.uk",
+      "subject": " Time-sensitive AKT6 fit check: Aureon evidence automation validation sprint",
+      "body_char_count": 1478,
+      "public_channel": "Ulster University public KTP and collaboration contact pages.",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "P1:P1-CMDC7-IUKBC-SUPPORT",
+      "source_group": "P1",
+      "source_artifact": "applications/IFS_P1_OUTREACH_PAYLOADS_20260710_114411.json",
+      "route": "CMDC7",
+      "target": "Innovate UK / Business Connect CMDC7 support",
+      "application_ids": [
+        "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+        "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+        "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_P1_CMDC7_IUKBC_TRANSPORT_SUPPORT_REQUEST_20260710_114411.eml",
+      "sha256": "bb2838bd24bf375df1e2e67dcd87946180459f0e3f38ac8183295c23cba8a72b",
+      "to": "support@iuk.ukri.org",
+      "subject": "CMDC7 partner support request: Belfast evidence automation SME seeking maritime lead",
+      "body_char_count": 1255,
+      "public_channel": "CMDC7 support email and Business Connect Transport partner-support route.",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "P1:P1-CMDC7-BELFAST-HARBOUR",
+      "source_group": "P1",
+      "source_artifact": "applications/IFS_P1_OUTREACH_PAYLOADS_20260710_114411.json",
+      "route": "CMDC7",
+      "target": "Belfast Harbour",
+      "application_ids": [
+        "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+        "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+        "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_P1_CMDC7_BELFAST_HARBOUR_OUTREACH_DRAFT_20260710_114411.eml",
+      "sha256": "a8c94c05e1fe3c1e81640ecfcb9d63bffa589bb26c0f4ae7cb1d770a558c7632",
+      "to": "info@belfast-harbour.co.uk",
+      "subject": "CMDC7 fit check: Aureon evidence automation collaborator route",
+      "body_char_count": 1374,
+      "public_channel": "Belfast Harbour public contact route; recipient needs final action-time verification before send.",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "P1:P1-CMDC7-NI-MARITIME",
+      "source_group": "P1",
+      "source_artifact": "applications/IFS_P1_OUTREACH_PAYLOADS_20260710_114411.json",
+      "route": "CMDC7",
+      "target": "NI Maritime & Offshore",
+      "application_ids": [
+        "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+        "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+        "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_P1_CMDC7_NI_MARITIME_OFFSHORE_OUTREACH_DRAFT_20260710_114411.eml",
+      "sha256": "6cffab2feadd1e5589bb23f27e40a06f04e60e10fd1e6b5eb6c9820f394ba62f",
+      "to": "contact@nimaritime.com",
+      "subject": "CMDC7 partner route query: Belfast evidence automation SME",
+      "body_char_count": 1329,
+      "public_channel": "NI Maritime & Offshore public contact route; recipient needs final action-time verification before send.",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "P1:P1-CMDC7-NAVANTIA-UK",
+      "source_group": "P1",
+      "source_artifact": "applications/IFS_P1_OUTREACH_PAYLOADS_20260710_114411.json",
+      "route": "CMDC7",
+      "target": "Navantia UK",
+      "application_ids": [
+        "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+        "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+        "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_P1_CMDC7_NAVANTIA_UK_OUTREACH_DRAFT_20260710_114411.eml",
+      "sha256": "d8c64adfae75fc6406b34580bab18c4dc290392b6fc17b22bc750fa06b8148d2",
+      "to": "info@navantia.co.uk",
+      "subject": "CMDC7 fit check: Aureon evidence automation work package",
+      "body_char_count": 1374,
+      "public_channel": "Navantia UK public contact route; legal entity and recipient need final action-time verification before send.",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "P1:P1-CMDC7-ARTEMIS-CONTACT-FORM",
+      "source_group": "P1",
+      "source_artifact": "applications/IFS_P1_OUTREACH_PAYLOADS_20260710_114411.json",
+      "route": "CMDC7",
+      "target": "Artemis Technologies",
+      "application_ids": [
+        "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+        "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+        "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709"
+      ],
+      "payload_type": "contact_form_payload",
+      "path": "applications/IFS_P1_CMDC7_ARTEMIS_CONTACT_FORM_PAYLOAD_20260710_114411.txt",
+      "sha256": "fbb75f1b6c1ea0dc873d1c43210cc3c7b42d1a8d3faceac889b835f414a1c2c9",
+      "to": "",
+      "subject": "CMDC7 fit check: Aureon evidence automation work package",
+      "body_char_count": 1228,
+      "public_channel": "Official contact-form style route; no verified general grant email selected.",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "P2:P2-ACTASAP-QUB-INNOVATION",
+      "source_group": "P2",
+      "source_artifact": "applications/IFS_P2_OUTREACH_PAYLOADS_20260710_115624.json",
+      "route": "ACTASAP",
+      "target": "Queen's University Belfast Innovation Programmes",
+      "application_ids": [
+        "APP-IFS-ACTASAP-PILOT-2502-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_P2_ACTASAP_QUB_INNOVATION_OUTREACH_DRAFT_20260710_115624.eml",
+      "sha256": "6f59d2d239778e1a2e77dbd5fa95cfd137ac61ec2d65f1607c80ce659ed7277b",
+      "to": "c.hegarty@qub.ac.uk, p.nawa@qub.ac.uk",
+      "subject": " ACTASAP fit check: Aureon as non-funded evidence validation collaborator",
+      "body_char_count": 1613,
+      "public_channel": "QUB public Innovation Programmes contacts; ACTASAP IFS route.",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "P2:P2-ACTASAP-ULSTER-INNOVATION",
+      "source_group": "P2",
+      "source_artifact": "applications/IFS_P2_OUTREACH_PAYLOADS_20260710_115624.json",
+      "route": "ACTASAP",
+      "target": "Ulster University Innovation Services",
+      "application_ids": [
+        "APP-IFS-ACTASAP-PILOT-2502-20260709"
+      ],
+      "payload_type": "contact_route_payload",
+      "path": "applications/IFS_P2_ACTASAP_ULSTER_INNOVATION_CONTACT_ROUTE_PAYLOAD_20260710_115624.txt",
+      "sha256": "c2989a6d1d4a75bf66d7126509b15d6756605540e2e26a5b7f7a94e1e0817d79",
+      "to": "",
+      "subject": "ACTASAP fit check: Aureon as non-funded evidence validation collaborator",
+      "body_char_count": 1448,
+      "public_channel": "Ulster Innovation Services public Get in Touch route; no direct generic email selected.",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "P2:P2-ADOPT-SUPPORT-HUB",
+      "source_group": "P2",
+      "source_artifact": "applications/IFS_P2_OUTREACH_PAYLOADS_20260710_115624.json",
+      "route": "ADOPT",
+      "target": "ADOPT Support Hub",
+      "application_ids": [
+        "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_P2_ADOPT_SUPPORT_HUB_OUTREACH_DRAFT_20260710_115624.eml",
+      "sha256": "4d3b84b6760b44cde823cde5213effb50bdef2553ddfc4d1ab470f222866666c",
+      "to": "adoptsupport@adas.co.uk",
+      "subject": "Full ADOPT fit check: farmer-led evidence automation trial route",
+      "body_char_count": 1557,
+      "public_channel": "ADOPT Support Hub public email from IFS/Farming Innovation Programme/Business Connect pages.",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "P2:P2-ADOPT-FACILITATOR-IUKBC",
+      "source_group": "P2",
+      "source_artifact": "applications/IFS_P2_OUTREACH_PAYLOADS_20260710_115624.json",
+      "route": "ADOPT",
+      "target": "Innovate UK Business Connect ADOPT facilitator route",
+      "application_ids": [
+        "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_P2_ADOPT_FACILITATOR_IUKBC_OUTREACH_DRAFT_20260710_115624.eml",
+      "sha256": "309593be7b2f01d64b48c31bc3b6ddcdcfeac3da437ac42e0ea418f0de5e0d9c",
+      "to": "ADOPTfacilitator@iukbc.org.uk",
+      "subject": " ADOPT facilitator route query: evidence automation SME for farmer-led trial",
+      "body_char_count": 1327,
+      "public_channel": "ADOPT facilitator route listed by the Farming Innovation Programme.",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "REMAINING:1:CKAF",
+      "source_group": "REMAINING_ROUTE",
+      "source_artifact": "applications/IFS_REMAINING_ROUTE_ACTION_QUEUE_20260710_104541.json",
+      "route": "CKAF",
+      "target": "GOTT CKAF team",
+      "application_ids": [
+        "APP-IFS-CKAF-AUTUMN-2478-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_CKAF_GOTT_CKAF_TEAM_OUTREACH_DRAFT_20260710_104541.eml",
+      "sha256": "c2002357d026ff56490ac570b856cab047256aeb03c535eceb34b404ac3818b0",
+      "to": "grantfund.gott@dsit.gov.uk",
+      "subject": "CKAF Autumn fit check - Aureon support for eligible public sector Knowledge Asset lead",
+      "body_char_count": 987,
+      "public_channel": "GOV.UK CKAF questions email",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "REMAINING:2:DRIVE35",
+      "source_group": "REMAINING_ROUTE",
+      "source_artifact": "applications/IFS_REMAINING_ROUTE_ACTION_QUEUE_20260710_104541.json",
+      "route": "DRIVE35",
+      "target": "Advanced Propulsion Centre general enquiries",
+      "application_ids": [
+        "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+        "APP-IFS-DRIVE35-SCALE-UP-2445-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_DRIVE35_ADVANCED_PROPULSION_CENTRE_GENERAL_ENQUIRIES_OUTREACH_DRAFT_20260710_104541.eml",
+      "sha256": "7f47d47108ffe875fd395df828871d557f932a82297f8075c1ecbfff2f50a824",
+      "to": "info@apcuk.co.uk",
+      "subject": "DRIVE35 partner fit check - Aureon evidence automation support",
+      "body_char_count": 1041,
+      "public_channel": "APC public general enquiries email",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "REMAINING:3:DRIVE35",
+      "source_group": "REMAINING_ROUTE",
+      "source_artifact": "applications/IFS_REMAINING_ROUTE_ACTION_QUEUE_20260710_104541.json",
+      "route": "DRIVE35",
+      "target": "Wrightbus innovation contact route",
+      "application_ids": [
+        "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+        "APP-IFS-DRIVE35-SCALE-UP-2445-20260709"
+      ],
+      "payload_type": "contact_route_payload",
+      "path": "applications/IFS_DRIVE35_WRIGHTBUS_INNOVATION_CONTACT_ROUTE_OUTREACH_DRAFT_20260710_104541.eml",
+      "sha256": "2a91e894be07da5585de3af3c9349b513b42bab69d0237769d223426675c900b",
+      "to": "",
+      "subject": "Innovation partnership query - Aureon support for zero emission vehicle grant evidence",
+      "body_char_count": 798,
+      "public_channel": "Public switchboard/contact route requires verified recipient",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "REMAINING:4:ZEVI2",
+      "source_group": "REMAINING_ROUTE",
+      "source_artifact": "applications/IFS_REMAINING_ROUTE_ACTION_QUEUE_20260710_104541.json",
+      "route": "ZEVI2",
+      "target": "National Shipbuilding Office Secretariat",
+      "application_ids": [
+        "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+        "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+        "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_ZEVI2_NATIONAL_SHIPBUILDING_OFFICE_SECRETARIAT_OUTREACH_DRAFT_20260710_104541.eml",
+      "sha256": "7259e6908e84ca9e80d19ab028d10e515bea936044297f68b15e35d01e318464",
+      "to": "NSO-Secretariat@mod.gov.uk",
+      "subject": "ZEVI 2 UK shipyard capability route check - Aureon evidence automation support",
+      "body_char_count": 986,
+      "public_channel": "IFS-listed NSO advisory contact",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "REMAINING:5:QUANTUM",
+      "source_group": "REMAINING_ROUTE",
+      "source_artifact": "applications/IFS_REMAINING_ROUTE_ACTION_QUEUE_20260710_104541.json",
+      "route": "QUANTUM",
+      "target": "QCi3 Hub contact",
+      "application_ids": [
+        "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_QUANTUM_QCI3_HUB_CONTACT_OUTREACH_DRAFT_20260710_104541.eml",
+      "sha256": "98bc881ee4f3a5e8e1912803fccb0745cd3701a70052e118bf9aefa1c7d9906e",
+      "to": "engage.qci3@physics.ox.ac.uk",
+      "subject": " Quantum hardware CR&D partner fit check - Aureon evidence automation support",
+      "body_char_count": 1024,
+      "public_channel": "UKNQTP listed QCi3 contact",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "UK_SWISS:1",
+      "source_group": "UK_SWISS_LIVE_DRAFT_10210100",
+      "source_artifact": "applications/IFS_PARTNER_OUTREACH_PIPELINE_20260710_081819.json",
+      "route": "UK-SWITZERLAND_CRD_R3",
+      "target": "IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_CORINTIS_20260710",
+      "application_ids": [
+        "APP-IFS-UK-SWISS-CRD-R3-2512-20260709"
+      ],
+      "payload_type": "contact_route_payload",
+      "path": "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_CORINTIS_20260710.eml",
+      "sha256": "b8fadff826385ecf6efa816ef3d7268a0d00678e1c4c1ac1fc76a5713241e751",
+      "to": "",
+      "subject": "UK-Switzerland CR&D Round 3 collaboration query - Semiconductors",
+      "body_char_count": 1158,
+      "public_channel": "UK-Switzerland partner pipeline target route",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "UK_SWISS:2",
+      "source_group": "UK_SWISS_LIVE_DRAFT_10210100",
+      "source_artifact": "applications/IFS_PARTNER_OUTREACH_PIPELINE_20260710_081819.json",
+      "route": "UK-SWITZERLAND_CRD_R3",
+      "target": "IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_ENGINEERING_BIOLOGY_SWISS_ECOSYSTEM_VIA_BASELAUNCH_THE_CULTURED_HUB_BUHL_20260710",
+      "application_ids": [
+        "APP-IFS-UK-SWISS-CRD-R3-2512-20260709"
+      ],
+      "payload_type": "contact_route_payload",
+      "path": "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_ENGINEERING_BIOLOGY_SWISS_ECOSYSTEM_VIA_BASELAUNCH_THE_CULTURED_HUB_BUHL_20260710.eml",
+      "sha256": "0b7f3c5d023b6f6e485b2729df5418fcc210c6b7a79508e6c62a1cca61cf96f8",
+      "to": "",
+      "subject": "UK-Switzerland CR&D Round 3 collaboration query - Engineering Biology",
+      "body_char_count": 1243,
+      "public_channel": "UK-Switzerland partner pipeline target route",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "UK_SWISS:3",
+      "source_group": "UK_SWISS_LIVE_DRAFT_10210100",
+      "source_artifact": "applications/IFS_PARTNER_OUTREACH_PIPELINE_20260710_081819.json",
+      "route": "UK-SWITZERLAND_CRD_R3",
+      "target": "IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_KANDOU_20260710",
+      "application_ids": [
+        "APP-IFS-UK-SWISS-CRD-R3-2512-20260709"
+      ],
+      "payload_type": "contact_route_payload",
+      "path": "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_KANDOU_20260710.eml",
+      "sha256": "cb122b2584113cba02287c92eb94f7993b4aef810667cd92e054a2fc5acd2441",
+      "to": "",
+      "subject": "UK-Switzerland CR&D Round 3 collaboration query - Semiconductors",
+      "body_char_count": 1162,
+      "public_channel": "UK-Switzerland partner pipeline target route",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "UK_SWISS:4",
+      "source_group": "UK_SWISS_LIVE_DRAFT_10210100",
+      "source_artifact": "applications/IFS_PARTNER_OUTREACH_PIPELINE_20260710_081819.json",
+      "route": "UK-SWITZERLAND_CRD_R3",
+      "target": "IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_SENSIRION_20260710",
+      "application_ids": [
+        "APP-IFS-UK-SWISS-CRD-R3-2512-20260709"
+      ],
+      "payload_type": "contact_route_payload",
+      "path": "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_SENSIRION_20260710.eml",
+      "sha256": "30848179ed74e6a077b6165ee2764394fa750efbbdf2df704fe82b1f13b561bf",
+      "to": "",
+      "subject": "UK-Switzerland CR&D Round 3 collaboration query - Semiconductors",
+      "body_char_count": 1157,
+      "public_channel": "UK-Switzerland partner pipeline target route",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    },
+    {
+      "queue_id": "UK_SWISS:5",
+      "source_group": "UK_SWISS_LIVE_DRAFT_10210100",
+      "source_artifact": "applications/IFS_PARTNER_OUTREACH_PIPELINE_20260710_081819.json",
+      "route": "UK-SWITZERLAND_CRD_R3",
+      "target": "IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_SWISSCHIPS_ETH_ZURICH_SEMICONDUCTOR_ECOSYSTEM_20260710",
+      "application_ids": [
+        "APP-IFS-UK-SWISS-CRD-R3-2512-20260709"
+      ],
+      "payload_type": "contact_route_payload",
+      "path": "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_SWISSCHIPS_ETH_ZURICH_SEMICONDUCTOR_ECOSYSTEM_20260710.eml",
+      "sha256": "62efc71eda989d0df103314e9df4844aab19c23778359d7287801de0fc99b2ec",
+      "to": "",
+      "subject": "UK-Switzerland CR&D Round 3 collaboration query - Semiconductors",
+      "body_char_count": 1141,
+      "public_channel": "UK-Switzerland partner pipeline target route",
+      "status": "READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+      "external_action_performed": false,
+      "requires_exact_action_time_approval": true
+    }
+  ],
+  "summary": {
+    "queue_items_total": 21,
+    "sendable_email_drafts": 13,
+    "contact_route_payloads_or_missing_recipient": 8,
+    "covered_application_ids": [
+      "APP-IFS-ACTASAP-PILOT-2502-20260709",
+      "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+      "APP-IFS-AKT6-2473-20260709",
+      "APP-IFS-CKAF-AUTUMN-2478-20260709",
+      "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+      "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+      "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+      "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+      "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+      "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709"
+    ],
+    "covered_application_count": 15,
+    "direct_ifs_submissions_unlocked": 0,
+    "new_browser_submissions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false
+  },
+  "controls": [
+    "This queue is a manifest of exact draft payloads and SHA-256 hashes.",
+    "No email was sent.",
+    "No contact route was submitted.",
+    "No IFS portal field was changed.",
+    "Each external action requires exact action-time approval for the queue item, destination and payload hash."
+  ],
+  "result": "OUTBOUND_EVIDENCE_ACQUISITION_SEND_QUEUE_READY_NOT_SENT"
+}

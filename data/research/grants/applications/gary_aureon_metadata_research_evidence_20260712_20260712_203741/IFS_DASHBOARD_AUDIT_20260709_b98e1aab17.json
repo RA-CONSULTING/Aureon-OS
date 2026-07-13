@@ -1,0 +1,66 @@
+{
+  "generated_at_utc": "2026-07-09T13:42:44.781Z",
+  "observed_timezone": "Europe/London",
+  "operator": "Aureon",
+  "source": "IFS applicant dashboard via signed-in Chrome session",
+  "dashboard_url": "https://apply-for-innovation-funding.service.gov.uk/applicant/dashboard",
+  "current_submitted_applications": [
+    {
+      "application_number": "10210045",
+      "title": "Aureon SEN Evidence OS: Fair Early Identification Support",
+      "competition": "CfI: Earlier identification of UK children with SEN",
+      "portal_state": "Awaiting assessment / Submitted"
+    },
+    {
+      "application_number": "10209601",
+      "title": "Aureon Evidence Studio for Createch AI Workflows",
+      "competition": "Next Wave: Breakthrough Wave 1",
+      "portal_state": "Awaiting assessment / Submitted"
+    },
+    {
+      "application_number": "10210032",
+      "title": "Aureon Flex Evidence OS: AI Assurance for Consumer-Led Flexibility",
+      "competition": "Consumer Led Flexibility for the Clean Energy Superpower Mission",
+      "portal_state": "Awaiting assessment / Submitted"
+    },
+    {
+      "application_number": "10209992",
+      "title": "Aureon Evidence OS for AI-Driven Scientific Discovery and Auditable SME Automation",
+      "competition": "Future Leaders Fellowships: Round 11, business and non-academic",
+      "portal_state": "Awaiting assessment / Submitted"
+    }
+  ],
+  "previous_applications_visible": [
+    {
+      "application_number": "10143721",
+      "title": "Project A.L.F.I.E. - Advanced Launch Force for Integrated Efficiency",
+      "competition": "Innovate UK Smart grants: July 2024",
+      "portal_state": "Ineligible"
+    },
+    {
+      "application_number": "10162520",
+      "title": "Untitled application",
+      "competition": "Innovate UK innovation loans future economy: Round 20",
+      "portal_state": "Not submitted"
+    },
+    {
+      "application_number": "10163647",
+      "title": "Development of a Multi-Layer Active Shielding System (EPAS) for Deep Space Micrometeoroid and Dust Protection",
+      "competition": "ATI Programme strategic batch: EoI - May 2025",
+      "portal_state": "Application submitted"
+    },
+    {
+      "application_number": "10167738",
+      "title": "Untitled application",
+      "competition": "Innovate UK innovation loans future economy: Round 21",
+      "portal_state": "Not submitted"
+    },
+    {
+      "application_number": "10169785",
+      "title": "Untitled application",
+      "competition": "Contracts for Innovation: Quantum Sensors and PNT Missions Primer",
+      "portal_state": "Not submitted"
+    }
+  ],
+  "decision": "No complete current IFS draft was visible for immediate submission. Current Aureon IFS applications are already submitted; previous not-submitted entries are old loan or closed/legacy competition records and were not submitted."
+}

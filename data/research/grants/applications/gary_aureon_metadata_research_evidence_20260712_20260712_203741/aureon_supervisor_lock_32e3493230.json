@@ -1,0 +1,53 @@
+﻿{
+    "status":  "active",
+    "pid":  13120,
+    "repo_root":  "C:\\Users\\user\\aureon-trading",
+    "mode":  "LIVE_TRADING_OPERATOR_CONFIRMED + COGNITIVE_ORDER_INTENT_AUTHORITY + PRODUCTION_SUPERVISOR",
+    "frontend_port":  8081,
+    "market_status_port":  8791,
+    "runtime_feed_url":  "http://127.0.0.1:8791/api/terminal-state",
+    "runtime_flight_test_url":  "http://127.0.0.1:8791/api/flight-test",
+    "runtime_reboot_advice_url":  "http://127.0.0.1:8791/api/reboot-advice",
+    "started_at":  "2026-05-22T19:21:18.8752771+01:00",
+    "heartbeat_at":  "2026-05-22T19:21:18.8752771+01:00",
+    "process":  {
+                    "pid":  13120,
+                    "parent_pid":  9588,
+                    "name":  "powershell.exe",
+                    "command_line":  "powershell.exe  -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\user\\aureon-trading\\AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1\" -Production -LiveTrading -ConfirmLiveTrading -FullCognitiveOrderCapability -WaitForRefresh -MarketStatusPort 8791 -FrontendPort 8081"
+                },
+    "parent_tree":  [
+                        {
+                            "pid":  13120,
+                            "parent_pid":  9588,
+                            "name":  "powershell.exe",
+                            "command_line":  "powershell.exe  -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\user\\aureon-trading\\AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1\" -Production -LiveTrading -ConfirmLiveTrading -FullCognitiveOrderCapability -WaitForRefresh -MarketStatusPort 8791 -FrontendPort 8081"
+                        },
+                        {
+                            "pid":  9588,
+                            "parent_pid":  17628,
+                            "name":  "cmd.exe",
+                            "command_line":  "C:\\Windows\\system32\\cmd.exe /c \"\"C:\\Users\\user\\aureon-trading\\AUREON_PRODUCTION_LIVE.cmd\" -LiveTrading -ConfirmLiveTrading -FullCognitiveOrderCapability -WaitForRefresh -MarketStatusPort 8791 -FrontendPort 8081\""
+                        },
+                        {
+                            "pid":  17628,
+                            "parent_pid":  9564,
+                            "name":  "powershell.exe",
+                            "command_line":  "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+                        },
+                        {
+                            "pid":  9564,
+                            "parent_pid":  8828,
+                            "name":  "WindowsTerminal.exe",
+                            "command_line":  "\"C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminal_1.24.11321.0_x64__8wekyb3d8bbwe\\WindowsTerminal.exe\" "
+                        },
+                        {
+                            "pid":  8828,
+                            "parent_pid":  8672,
+                            "name":  "explorer.exe",
+                            "command_line":  "C:\\Windows\\Explorer.EXE"
+                        },
+                        null
+                    ],
+    "policy":  "single production supervisor per repo; market runtime restart remains flight-test and downtime gated"
+}

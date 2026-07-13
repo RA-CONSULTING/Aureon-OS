@@ -1,0 +1,77 @@
+{
+  "generated_at": "2026-05-23T20:24:03.894870+00:00",
+  "keyword": "keyword_search",
+  "matched_paths": [
+    "tests/test_swarm_search_mapping_stress_audit.py"
+  ],
+  "mode": "real_local_text_keyword_search",
+  "patterns": [
+    "*"
+  ],
+  "require_all_terms": false,
+  "results": [
+    {
+      "line": 10,
+      "match_terms": [
+        "keyword_search"
+      ],
+      "path": "tests/test_swarm_search_mapping_stress_audit.py",
+      "snippet": "from aureon.search.local_keyword_search import run_keyword_search"
+    },
+    {
+      "line": 104,
+      "match_terms": [
+        "keyword_search"
+      ],
+      "path": "tests/test_swarm_search_mapping_stress_audit.py",
+      "snippet": "def test_local_keyword_search_reads_real_test_text_and_surfaces_audit_proof(tmp_path):"
+    },
+    {
+      "line": 113,
+      "match_terms": [
+        "keyword_search"
+      ],
+      "path": "tests/test_swarm_search_mapping_stress_audit.py",
+      "snippet": "result = run_keyword_search("
+    },
+    {
+      "line": 121,
+      "match_terms": [
+        "keyword_search"
+      ],
+      "path": "tests/test_swarm_search_mapping_stress_audit.py",
+      "snippet": "assert result[\"status\"] == \"keyword_search_completed\""
+    },
+    {
+      "line": 124,
+      "match_terms": [
+        "keyword_search"
+      ],
+      "path": "tests/test_swarm_search_mapping_stress_audit.py",
+      "snippet": "assert report[\"summary\"][\"keyword_search_active\"] is True"
+    },
+    {
+      "line": 126,
+      "match_terms": [
+        "keyword_search"
+      ],
+      "path": "tests/test_swarm_search_mapping_stress_audit.py",
+      "snippet": "assert report[\"keyword_search_rows\"]"
+    }
+  ],
+  "scope": "tests",
+  "source_paths": {
+    "public": "frontend/public/aureon_swarm_keyword_search_latest.json",
+    "state": "state/aureon_swarm_keyword_search_latest.json"
+  },
+  "status": "keyword_search_completed",
+  "summary": {
+    "credential_files_skipped": true,
+    "match_count": 6,
+    "matched_file_count": 1,
+    "max_results": 12,
+    "no_synthetic_capture": true,
+    "scanned_file_count": 325,
+    "skipped_file_count": 1
+  }
+}

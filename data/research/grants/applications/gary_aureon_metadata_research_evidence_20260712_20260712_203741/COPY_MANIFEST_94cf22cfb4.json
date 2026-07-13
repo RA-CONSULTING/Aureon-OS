@@ -1,0 +1,642 @@
+[
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\04_Engineering_Hardware\\whitepapers\\HNC_Harmonic_LIDAR_v2_AluminiumFluid_Leckey.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Harmonic_LIDAR_v2_AluminiumFluid_Leckey.docx",
+    "sha256": "84b7d5765788fced946d280c6992121a9b28241afd6167862ceb92ecff5ea6d7",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_Harmonic_LIDAR_v2_AluminiumFluid_Leckey.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\04_Engineering_Hardware\\whitepapers\\HNC_Harmonic_LIDAR_WhitePaper_Leckey_2026.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Harmonic_LIDAR_WhitePaper_Leckey_2026.docx",
+    "sha256": "5dbeec043b82a5514c554715d69b15a72b86e0867ab261f6fab52abc1f4d29d6",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_Harmonic_LIDAR_WhitePaper_Leckey_2026.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\EPAS_ZPE_White_Paper_Leckey_2026.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/EPAS_ZPE_White_Paper_Leckey_2026.docx",
+    "sha256": "81a06e59dce26c775fcc1086c0d9745c182c829bdf3bb7fc02f4c023b2d2e78f",
+    "priority": "P0",
+    "theme": "evidence_os_system_architecture",
+    "file_name": "EPAS_ZPE_White_Paper_Leckey_2026.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\The_Doorbell_Hypothesis_Leckey.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/The_Doorbell_Hypothesis_Leckey.docx",
+    "sha256": "0e3dc22e70860967a3dc3ba9ae7aa5149a27ee67d473f183acbe839a16b74f44",
+    "priority": "P0",
+    "theme": "evidence_os_system_architecture",
+    "file_name": "The_Doorbell_Hypothesis_Leckey.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\HNC_Project_Druid_EPAS_Technical_Framework.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Project_Druid_EPAS_Technical_Framework.docx",
+    "sha256": "aa082f9fa8b926213278c67c8072009487a685c6d2181f73db53f7abc42ef64f",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_Project_Druid_EPAS_Technical_Framework.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\EPAS_Unified_Architecture_WhitePaper_Leckey.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/EPAS_Unified_Architecture_WhitePaper_Leckey.docx",
+    "sha256": "5aa37df44f83bea290eb08547d29b619516ecb6de27f77277c113c82ed61ffe4",
+    "priority": "P0",
+    "theme": "evidence_os_system_architecture",
+    "file_name": "EPAS_Unified_Architecture_WhitePaper_Leckey.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\Project_Alfie_A_Theoretical_Framework.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Project_Alfie_A_Theoretical_Framework.pdf",
+    "sha256": "4322cbb0fa255ad83dfc677c91a6af189b876ca4ce5bff9e38eb3c700c451759",
+    "priority": "P0",
+    "theme": "evidence_os_system_architecture",
+    "file_name": "Project_Alfie_A_Theoretical_Framework.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\01_Theory\\whitepapers\\The_LuminaCell_v2_Architecture.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/The_LuminaCell_v2_Architecture.pdf",
+    "sha256": "cf67ac31ac506e460ff6ce51e600f5ef10818d1f8a1a5a258e31b821d379a377",
+    "priority": "P0",
+    "theme": "evidence_os_system_architecture",
+    "file_name": "The_LuminaCell_v2_Architecture.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\01_Theory\\whitepapers\\Lumina_Subsystem_Integrated_Quantum_Amplifier.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Lumina_Subsystem_Integrated_Quantum_Amplifier.pdf",
+    "sha256": "aa42fb86c76ae559d4d5c71e5a367ce058c9417655ffa00109f74c8c9cce034f",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "Lumina_Subsystem_Integrated_Quantum_Amplifier.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\The_Sagittarius_Convergence_Leckey_2026.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/The_Sagittarius_Convergence_Leckey_2026.docx",
+    "sha256": "b0f0a1aac796f806ef125e7ef9f60da8f4bd086f82bb4919d7bb19844615c889",
+    "priority": "P0",
+    "theme": "evidence_os_system_architecture",
+    "file_name": "The_Sagittarius_Convergence_Leckey_2026.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\EPAS_Unified_Architecture_Project_Druid.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/EPAS_Unified_Architecture_Project_Druid.pdf",
+    "sha256": "44b4c87024af240e640449c3a81a7538c1c3d2ac7ded0093a541bdf8278b49c8",
+    "priority": "P0",
+    "theme": "evidence_os_system_architecture",
+    "file_name": "EPAS_Unified_Architecture_Project_Druid.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\Project_Druid_Technical_Architecture.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Project_Druid_Technical_Architecture.pdf",
+    "sha256": "966d0ed18210d344aef0b33fcaf6ecbe9e811efbfc097db6431d992f515cc5d0",
+    "priority": "P0",
+    "theme": "evidence_os_system_architecture",
+    "file_name": "Project_Druid_Technical_Architecture.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\EPAS_Unified_Architecture_v2.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/EPAS_Unified_Architecture_v2.docx",
+    "sha256": "2c9755abbf224b9562fe94f8cb8d4208c94fb54a1bd284f547d119275ca6c700",
+    "priority": "P0",
+    "theme": "evidence_os_system_architecture",
+    "file_name": "EPAS_Unified_Architecture_v2.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\The_Sagittarius_Convergence_v2_Corrected.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/The_Sagittarius_Convergence_v2_Corrected.docx",
+    "sha256": "e49fcf550ef984f2ca5b3662e01c792df7645daf825a1aea20a1cddab35b1a08",
+    "priority": "P0",
+    "theme": "evidence_os_system_architecture",
+    "file_name": "The_Sagittarius_Convergence_v2_Corrected.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\Harmonic_Solar_System_Survey_Leckey.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Harmonic_Solar_System_Survey_Leckey.docx",
+    "sha256": "1446a9e0ae0b0aef9e98b9f519c3f5eec091cf0205dd48c9f8d0d0e637c64926",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "Harmonic_Solar_System_Survey_Leckey.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\HNC_Grand_Unified_Framework_Leckey_2026.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Grand_Unified_Framework_Leckey_2026.pdf",
+    "sha256": "33e464e0c343739d45197fda4a7842e4313415843d859efff4675d49820ff371",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_Grand_Unified_Framework_Leckey_2026.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\Leckey_HNC_Evolutionary_Framework_arXiv.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Leckey_HNC_Evolutionary_Framework_arXiv.pdf",
+    "sha256": "1b7df96edc7b8c15f3b74852c51603266b3244ef0191208be01e244a7520e8a4",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "Leckey_HNC_Evolutionary_Framework_arXiv.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\05_Validation_Verification\\B.SEER VALDATION FRAMEWORK.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/B.SEER_VALDATION_FRAMEWORK.docx",
+    "sha256": "0c743b1b572ed90e13e65a7326599a71586b315791ae1f14b74a8a6dcbdadd29",
+    "priority": "P0",
+    "theme": "validation_and_verification",
+    "file_name": "B.SEER VALDATION FRAMEWORK.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\Harmonic_Reality_Framework_and_the_Master.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Harmonic_Reality_Framework_and_the_Master.pdf",
+    "sha256": "7c16f5bdf7a08169b231c23928bcbc61d8851c47edfec743361bd0e02f32e43c",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "Harmonic_Reality_Framework_and_the_Master.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\HNC_Grand_Unified_Framework_Leckey_2026.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Grand_Unified_Framework_Leckey_2026.docx",
+    "sha256": "de4c29869fc5f533139ccd071c844575672be98d9403be71b5b7d2e85c52eae8",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_Grand_Unified_Framework_Leckey_2026.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\The_Harmonic_Nexus_Core_HNC_A_Unified_Framework.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/The_Harmonic_Nexus_Core_HNC_A_Unified_Framework.pdf",
+    "sha256": "b4c484de9b7ad83e2e7075e081b4152a1827b4b05d5b646c003abf351d0b79dd",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "The_Harmonic_Nexus_Core_HNC_A_Unified_Framework.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\aureon-trading\\Antarctic research\\HNC_White_Paper_v3-1.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_White_Paper_v3-1.pdf",
+    "sha256": "296fd4d36ada6963dd03d01a93c948ddc5e93b49aaf5020a5423066e2e20b133",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_White_Paper_v3-1.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\validation_and_evidence\\AureonResearch\\03_Evidence_Analytics\\whitepapers\\AUREON_WHITE_PAPER_RESEARCH_HUB.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/AUREON_WHITE_PAPER_RESEARCH_HUB.pdf",
+    "sha256": "74a4857c945926f12e99ba04db7f436fb0f9504ceb0cd51690da8a867b91c8f3",
+    "priority": "P0",
+    "theme": "validation_and_verification",
+    "file_name": "AUREON_WHITE_PAPER_RESEARCH_HUB.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\aureon-trading\\Antarctic research\\HNC_White_Paper_v3-1.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_White_Paper_v3-1.docx",
+    "sha256": "77bd1f9364271d0f7feddd7542a0ea54df3caea71b854b711a2269d9ad2149a4",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_White_Paper_v3-1.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\Project_Alfie_SysTechDev2026_v5.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Project_Alfie_SysTechDev2026_v5.docx",
+    "sha256": "50bc4c1f66f1fee1530ae67df8f8c602c3dddc06e30e1da3673878950786bc79",
+    "priority": "P0",
+    "theme": "evidence_os_system_architecture",
+    "file_name": "Project_Alfie_SysTechDev2026_v5.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\Project_Alfie_SysTechDev2026_v5_conf.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Project_Alfie_SysTechDev2026_v5_conf.docx",
+    "sha256": "0032131a47334a88913d37e5849c2c1bf68b0251339056ab1953bfc0558f1a39",
+    "priority": "P0",
+    "theme": "evidence_os_system_architecture",
+    "file_name": "Project_Alfie_SysTechDev2026_v5_conf.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\validation_and_evidence\\AureonResearch\\03_Evidence_Analytics\\whitepapers\\COMPLETE_EVIDENCE_SYNTHESIS.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/COMPLETE_EVIDENCE_SYNTHESIS.pdf",
+    "sha256": "7b6051b2dc2c1035b388e204c188273c9ca3ba36f43fc5ab157f24dcad5ee0e3",
+    "priority": "P0",
+    "theme": "validation_and_verification",
+    "file_name": "COMPLETE_EVIDENCE_SYNTHESIS.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\publication_and_outreach\\AureonResearch\\01_Theory\\whitepapers\\Tandem_in_Unity_A_Unified_Framework_v1.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Tandem_in_Unity_A_Unified_Framework_v1.pdf",
+    "sha256": "9b240451b5281c3cb091094315664226ecc9c98ecdfdf00e84fafa6d931366ab",
+    "priority": "P0",
+    "theme": "aureon_research_output",
+    "file_name": "Tandem_in_Unity_A_Unified_Framework_v1.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\publication_and_outreach\\AureonResearch\\01_Theory\\whitepapers\\Tandem_in_Unity_A_Unified_Framework_v2.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Tandem_in_Unity_A_Unified_Framework_v2.pdf",
+    "sha256": "0647eabba426d8a5b06773b8aeb0b3c1211861549dfcf15d9548e6ddbc559409",
+    "priority": "P0",
+    "theme": "aureon_research_output",
+    "file_name": "Tandem_in_Unity_A_Unified_Framework_v2.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\A_Dynamic_Systems_Model_of_Coherence_Growth.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/A_Dynamic_Systems_Model_of_Coherence_Growth.pdf",
+    "sha256": "daaf247622e2a80fb30a02691d69bbf75bb59f95fef2095f1e6ea0c9f620e7fb",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "A_Dynamic_Systems_Model_of_Coherence_Growth.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\Harmonic_Nexus_Theory_of_Becoming.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Harmonic_Nexus_Theory_of_Becoming.pdf",
+    "sha256": "b04038b51c289573162b12885caf6967b0d80cbf5376e68ad72329fa2d600932",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "Harmonic_Nexus_Theory_of_Becoming.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\HNC_Grand_Unified_v2_PrimarySource_Leckey_2026.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Grand_Unified_v2_PrimarySource_Leckey_2026.docx",
+    "sha256": "365ca43f35e802cfa371af61bf2ddee504ad7a21f16e1f5a24203d45703a4c48",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_Grand_Unified_v2_PrimarySource_Leckey_2026.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\HNC_Grand_Unified_v2_PrimarySource_Leckey_2026_rev2.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Grand_Unified_v2_PrimarySource_Leckey_2026_rev2.docx",
+    "sha256": "0071afff94a62aeda6b9d07f783f9638c5248b8dc2f241c8d3388ed1eb729604",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_Grand_Unified_v2_PrimarySource_Leckey_2026_rev2.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\HNC_Grand_Unified_v3_ClearTables_Leckey_2026.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Grand_Unified_v3_ClearTables_Leckey_2026.docx",
+    "sha256": "24a9991d00be4fbeebb9d216424107296573ddeb838f8b68c3d3a35ad699a65d",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_Grand_Unified_v3_ClearTables_Leckey_2026.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\HNC_Grand_Unified_v4_Fixed_Leckey_2026.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Grand_Unified_v4_Fixed_Leckey_2026.docx",
+    "sha256": "ab397e25d0fc2bb676b8b3f01cc014d8b5e0d5af126839ebb35204bc09e2e8f2",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_Grand_Unified_v4_Fixed_Leckey_2026.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\HNC_Grand_Unified_v4_Mobile_Leckey_2026.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Grand_Unified_v4_Mobile_Leckey_2026.docx",
+    "sha256": "b726b2a01300515aaa664f3e3ae2d240784fa559b5c92c9fcbfb61409dcd5b92",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_Grand_Unified_v4_Mobile_Leckey_2026.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\The_Harmonic_Nexus_Core_and_Auris_Conjecture.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/The_Harmonic_Nexus_Core_and_Auris_Conjecture.pdf",
+    "sha256": "e94542e965add10f34e4e21d858f0c2af9231890a80696bc97a77531c1a3f099",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "The_Harmonic_Nexus_Core_and_Auris_Conjecture.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\publication_and_outreach\\AureonResearch\\01_Theory\\whitepapers\\The_Math_Angel_Protocol_A_Mathematical_Framework.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/The_Math_Angel_Protocol_A_Mathematical_Framework.docx",
+    "sha256": "02edd6d946b6b7224f7ec68414d02caf2b8dc3630d37f55e89021533c3de3dab",
+    "priority": "P0",
+    "theme": "aureon_research_output",
+    "file_name": "The_Math_Angel_Protocol_A_Mathematical_Framework.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\HNC_Evolutionary_Framework.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Evolutionary_Framework.pdf",
+    "sha256": "c7a836e1a819606ed519fe67ac1e3977094be1e873ef289ab5049779cc059e1e",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_Evolutionary_Framework.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\Quantum_Gravity_in_the_Act_A_Two_Stage.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Quantum_Gravity_in_the_Act_A_Two_Stage.pdf",
+    "sha256": "89e116db45e683c88acc355c9ee998b6dcfbd4b2c06ccc886bae80511119f746",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "Quantum_Gravity_in_the_Act_A_Two_Stage.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\Quantum_Gravity_in_the_Act_QGITA_Lighthouse.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Quantum_Gravity_in_the_Act_QGITA_Lighthouse.pdf",
+    "sha256": "bddf643511cf0df0c97add88b30c2c7486b0834e9a6e4deed5a18d140592f475",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "Quantum_Gravity_in_the_Act_QGITA_Lighthouse.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\04_Engineering_Hardware\\whitepapers\\The_HNC_and_the_Aureon_Trading_Framework.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/The_HNC_and_the_Aureon_Trading_Framework.pdf",
+    "sha256": "8393507aa8d9bf74dd6fc2e77c380ce036c087af2192f9fdb9638e4e7e34cb08",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "The_HNC_and_the_Aureon_Trading_Framework.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\Unified_Framework_of_Symbolic_Emergence.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Unified_Framework_of_Symbolic_Emergence.pdf",
+    "sha256": "70523c3b2cb3f7a0ae74449e07301ce3877e43dd3bda350902e586cf02ddbd6f",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "Unified_Framework_of_Symbolic_Emergence.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\validation_and_evidence\\AureonResearch\\01_Theory\\whitepapers\\Harmonic_Nexus_Theory_Part_2_Validation.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Harmonic_Nexus_Theory_Part_2_Validation.pdf",
+    "sha256": "218799887889d5bbf52d5a87640791825b7b6203064758c6be23a88fbf549a9a",
+    "priority": "P0",
+    "theme": "validation_and_verification",
+    "file_name": "Harmonic_Nexus_Theory_Part_2_Validation.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\aureon-trading\\Antarctic research\\HNC_Empirical_Audit_v3-1.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Empirical_Audit_v3-1.pdf",
+    "sha256": "adac8f797ca57088a0c6c5fd2cf9ccde2d800a6d335a8ff63dbe0c1a910558ef",
+    "priority": "P0",
+    "theme": "validation_and_verification",
+    "file_name": "HNC_Empirical_Audit_v3-1.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\06_LOCAL_DELTA_IMPORTS_20260705\\.kimi_openclaw\\workspace\\aureon-trading\\docs\\research\\whitepapers\\Leckey_HNC_Evolutionary_Framework_arXiv.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Leckey_HNC_Evolutionary_Framework_arXiv_dd8081100c.pdf",
+    "sha256": "dd8081100c358606743a7343f9d8b7df66fd1e2ae0bb46275eaa6bbbfe52ad30",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "Leckey_HNC_Evolutionary_Framework_arXiv.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\publication_and_outreach\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\Feasibility_Assessment_of_the_Electro_Plasma.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Feasibility_Assessment_of_the_Electro_Plasma.pdf",
+    "sha256": "e56c7ff3af6464dc910c6688ec81f5a6937b2b0a08b74953a090c82cfccbf263",
+    "priority": "P0",
+    "theme": "aureon_research_output",
+    "file_name": "Feasibility_Assessment_of_the_Electro_Plasma.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\publication_and_outreach\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\Modeling_Light_Dynamics_Through_Astronomical.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Modeling_Light_Dynamics_Through_Astronomical.pdf",
+    "sha256": "532f2add505e456478ee02111680b55042afe314bf639cdf889d1de7a31cec97",
+    "priority": "P0",
+    "theme": "aureon_research_output",
+    "file_name": "Modeling_Light_Dynamics_Through_Astronomical.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\publication_and_outreach\\AureonResearch\\01_Theory\\whitepapers\\Tandem_in_Unity_Unifying_Resonant_Fields_v1.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Tandem_in_Unity_Unifying_Resonant_Fields_v1.pdf",
+    "sha256": "ec0f7df7ba7cf632d7508942e93b8f247d934522a253a3c9afc7333eddfbe2a5",
+    "priority": "P0",
+    "theme": "aureon_research_output",
+    "file_name": "Tandem_in_Unity_Unifying_Resonant_Fields_v1.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\publication_and_outreach\\AureonResearch\\01_Theory\\whitepapers\\Tandem_in_Unity_Unifying_Resonant_Fields_v2.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Tandem_in_Unity_Unifying_Resonant_Fields_v2.pdf",
+    "sha256": "6ada121bd7d741d4ef7e0ab2d1614c89b35d3402ff4cba33964fa61c075d2093",
+    "priority": "P0",
+    "theme": "aureon_research_output",
+    "file_name": "Tandem_in_Unity_Unifying_Resonant_Fields_v2.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\Project_Druid_SysTechDev2026_v5.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Project_Druid_SysTechDev2026_v5.docx",
+    "sha256": "b930be808c10fa8c8814a73a4388913546cec9276fa0e6da4bbda3cf78caef76",
+    "priority": "P0",
+    "theme": "evidence_os_system_architecture",
+    "file_name": "Project_Druid_SysTechDev2026_v5.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\Project_Druid_SysTechDev2026_v5_conf.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Project_Druid_SysTechDev2026_v5_conf.docx",
+    "sha256": "23405710b73a3b9b015e74433f969bc72ab7f1f51e75c4154230f00e3836928e",
+    "priority": "P0",
+    "theme": "evidence_os_system_architecture",
+    "file_name": "Project_Druid_SysTechDev2026_v5_conf.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\publication_and_outreach\\AureonResearch\\01_Theory\\whitepapers\\Lambda_Materialization_Gradient_Integrity.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Lambda_Materialization_Gradient_Integrity.docx",
+    "sha256": "22a77c424be5b5e047f9c8c0fd3d72849c51cfcc995248071b9b6b36fda04d7f",
+    "priority": "P0",
+    "theme": "aureon_research_output",
+    "file_name": "Lambda_Materialization_Gradient_Integrity.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\publication_and_outreach\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\The_Dormant_Seed.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/The_Dormant_Seed.docx",
+    "sha256": "74cc76ed2c269fec958eac598b1697b7240277572e0ba1a2ef96c16942bfae2c",
+    "priority": "P0",
+    "theme": "aureon_research_output",
+    "file_name": "The_Dormant_Seed.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\Emergent_Symbolic_Resonance_and_Algorithmic_v1.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Emergent_Symbolic_Resonance_and_Algorithmic_v1.pdf",
+    "sha256": "c49f038434a23fa138b9552ce7d5968274ced15292f3796fc27e018dfbaee86f",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "Emergent_Symbolic_Resonance_and_Algorithmic_v1.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\Emergent_Symbolic_Resonance_and_Algorithmic_v2.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Emergent_Symbolic_Resonance_and_Algorithmic_v2.pdf",
+    "sha256": "7ea4e8799e17c27ce48e855dcf38d450414484b36f6c52f7ec2797162ee2dc92",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "Emergent_Symbolic_Resonance_and_Algorithmic_v2.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\Emergent_Symbolic_Resonance_and_Lifelike.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Emergent_Symbolic_Resonance_and_Lifelike.pdf",
+    "sha256": "5705855d4fe170888108285d7f868ad1ad499da067049cc32082ed7d9cc124ae",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "Emergent_Symbolic_Resonance_and_Lifelike.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\HNC_Aureon_Unified_WhitePaper.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Aureon_Unified_WhitePaper.pdf",
+    "sha256": "36f8ac42bc3092350b511e5a15627fbb4b9ca78a2a05c79fd004cc9a3e4489c2",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_Aureon_Unified_WhitePaper.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\HNC_research_paper_2026-04-07.md.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_research_paper_2026-04-07.md.pdf",
+    "sha256": "4780f86f77e6eccefc1c8fb42b605ca62082a588b420f1724f24145c3d486a5b",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_research_paper_2026-04-07.md.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_Now.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_Now.pdf",
+    "sha256": "889faf1a907a41de9bcd91d2ad2f4a2ee1ad7723c392260e91e482c61d949ce0",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_Now.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\epas_druid_lidar_space\\AureonResearch\\02_Cosmic_Intelligence\\EPAS_ZPE_RESEARCH_PAPER.md",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/EPAS_ZPE_RESEARCH_PAPER.md",
+    "sha256": "4c9027c6e76294757f3499097c0bbdfc0d73995d528c4d18fdc6a9cd75628fcc",
+    "priority": "P0",
+    "theme": "evidence_os_system_architecture",
+    "file_name": "EPAS_ZPE_RESEARCH_PAPER.md"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\atlantic_maeshowe_archaeology\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\Maeshowe_Seer_Decode_Report.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Maeshowe_Seer_Decode_Report.docx",
+    "sha256": "6a6de04554ab7bc784eee6619f8806e4138ef9000b4795a62a2d5e571a62dd7b",
+    "priority": "P0",
+    "theme": "geospatial_archaeology_research",
+    "file_name": "Maeshowe_Seer_Decode_Report.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\atlantic_maeshowe_archaeology\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\Maeshowe_Seer_Decode_Report_2026.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/Maeshowe_Seer_Decode_Report_2026.docx",
+    "sha256": "850caff6cd614079274fb9a8b41e863fe874f64691cd2583e6018ee4bd705684",
+    "priority": "P0",
+    "theme": "geospatial_archaeology_research",
+    "file_name": "Maeshowe_Seer_Decode_Report_2026.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\HNC_2026_Prediction_Of_2026_WOW_Signal_B.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_2026_Prediction_Of_2026_WOW_Signal_B.docx",
+    "sha256": "86774a817cb6bc5a3c769e4cf6f8817d1e2d24a2b65fe930b303ffe4cd7182ab",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_2026_Prediction_Of_2026_WOW_Signal_B.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\HNC_MYCELIUM_WHITEPAPER.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_MYCELIUM_WHITEPAPER.docx",
+    "sha256": "40ff489f8d5f49d4e16b01065da64010b3b20df242ce760fd6fd4d77e45f957d",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_MYCELIUM_WHITEPAPER.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\whitepapers\\The_Source_Oscillator_Constraint_Whitepaper.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/The_Source_Oscillator_Constraint_Whitepaper.docx",
+    "sha256": "7f742a14cb67e6c37c167a69ada4c425ed3564f5dcbfc5d53721c8849ca341aa",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "The_Source_Oscillator_Constraint_Whitepaper.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\validation_and_evidence\\AureonResearch\\03_Evidence_Analytics\\whitepapers\\FRESH_DATA_UPDATE_MAR24.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/FRESH_DATA_UPDATE_MAR24.pdf",
+    "sha256": "8da9e2b213608ec9946d7d7442a81381395d1af2c0fc725111bdab8d59789406",
+    "priority": "P0",
+    "theme": "validation_and_verification",
+    "file_name": "FRESH_DATA_UPDATE_MAR24.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\validation_and_evidence\\AureonResearch\\05_Validation_Verification\\HNC_VERIFICATION_AUDIT_v2_2026-04-07.md.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_VERIFICATION_AUDIT_v2_2026-04-07.md.pdf",
+    "sha256": "f0d945532bfe84fc411540a17e86390c2278eebf3ef53099755ddc781e6ee134",
+    "priority": "P0",
+    "theme": "validation_and_verification",
+    "file_name": "HNC_VERIFICATION_AUDIT_v2_2026-04-07.md.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\validation_and_evidence\\AureonResearch\\03_Evidence_Analytics\\whitepapers\\The_Barons_Banner.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/The_Barons_Banner.pdf",
+    "sha256": "31cf0b38ffd108955d587fbc8c67f5ed0883e8007456dbdff430fabc37a98f86",
+    "priority": "P0",
+    "theme": "validation_and_verification",
+    "file_name": "The_Barons_Banner.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\validation_and_evidence\\AureonResearch\\03_Evidence_Analytics\\whitepapers\\What_Does_Life_Mean_To_You_Validation.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/What_Does_Life_Mean_To_You_Validation.pdf",
+    "sha256": "c873de2cc6abfeeeea74014f3b0303553c04703feb8f25c1ae6f90d4bac431aa",
+    "priority": "P0",
+    "theme": "validation_and_verification",
+    "file_name": "What_Does_Life_Mean_To_You_Validation.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\publication_and_outreach\\AureonResearch\\01_Theory\\AUREON_WHITEPAPER.md",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/AUREON_WHITEPAPER.md",
+    "sha256": "a5913f9563b028b505183e46b89837a483a4914206bbc5a231f4419eb87129f1",
+    "priority": "P0",
+    "theme": "aureon_research_output",
+    "file_name": "AUREON_WHITEPAPER.md"
+  },
+  {
+    "source_path": "C:\\Users\\user\\aureon-trading\\.claude\\worktrees\\beautiful-allen\\docs\\research\\whitepapers\\HNC_Grand_Unified_v2_PrimarySource_Leckey_2026.docx",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Grand_Unified_v2_PrimarySource_Leckey_2026_cdf6ab9f95.docx",
+    "sha256": "cdf6ab9f95d1100799b692b4a3b78c78bf86115f9580d3916abe4ab5d04c47b3",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_Grand_Unified_v2_PrimarySource_Leckey_2026.docx"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\HNC_UNIFIED_WHITE_PAPER.md",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_UNIFIED_WHITE_PAPER.md",
+    "sha256": "93521c62bc88450a10bdd3eff8297ee93144413ed85443a09966e8c859f50ccf",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_UNIFIED_WHITE_PAPER.md"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\hnc_core_theory\\AureonResearch\\01_Theory\\HNC_WHITEPAPER_VERIFIED.md",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_WHITEPAPER_VERIFIED.md",
+    "sha256": "d70d33502fb924ca17ede73e28a0e2c137ec5cc058892e38f90707215937ed28",
+    "priority": "P0",
+    "theme": "hnc_harmonic_coherence",
+    "file_name": "HNC_WHITEPAPER_VERIFIED.md"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\validation_and_evidence\\AureonResearch\\03_Evidence_Analytics\\AUREON_WHITE_PAPER_RESEARCH_HUB.md",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/AUREON_WHITE_PAPER_RESEARCH_HUB.md",
+    "sha256": "d8f7f7acfbc51605c16c3549d64996cf1157f422263371b397b7502a15027bba",
+    "priority": "P0",
+    "theme": "validation_and_verification",
+    "file_name": "AUREON_WHITE_PAPER_RESEARCH_HUB.md"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\validation_and_evidence\\AureonResearch\\05_Validation_Verification\\HNC_Claims_to_Evidence_Traceability.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Claims_to_Evidence_Traceability.pdf",
+    "sha256": "6befe02e3ce7ad34301c89a6701d95b860942b6fe9e5ae194642af57f73403b5",
+    "priority": "P0",
+    "theme": "validation_and_verification",
+    "file_name": "HNC_Claims_to_Evidence_Traceability.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\validation_and_evidence\\AureonResearch\\05_Validation_Verification\\HNC_Methodology_Summary.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Methodology_Summary.pdf",
+    "sha256": "c27edf80f0278efedb5a33295872746efbe5a986ca2d8f5cebecec5f828a73e4",
+    "priority": "P0",
+    "theme": "validation_and_verification",
+    "file_name": "HNC_Methodology_Summary.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\validation_and_evidence\\AureonResearch\\05_Validation_Verification\\HNC_Replication_Process_System.pdf",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_Replication_Process_System.pdf",
+    "sha256": "2b5c297cd5f557975f2c04962892992424193fb0a669f9c24de236fb42f84241",
+    "priority": "P0",
+    "theme": "validation_and_verification",
+    "file_name": "HNC_Replication_Process_System.pdf"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\validation_and_evidence\\AureonResearch\\05_Validation_Verification\\HNC_VERIFICATION_AUDIT_2026-04-07.md",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_VERIFICATION_AUDIT_2026-04-07.md",
+    "sha256": "4418b5d34e9e431b8837cf3ceb4e815f3ef4426dd7f1d2749e46d784c26aa8a1",
+    "priority": "P0",
+    "theme": "validation_and_verification",
+    "file_name": "HNC_VERIFICATION_AUDIT_2026-04-07.md"
+  },
+  {
+    "source_path": "C:\\Users\\user\\Aureon_Work_Hub_20260705\\01_LOCAL_RESEARCH_CORPUS\\validation_and_evidence\\AureonResearch\\05_Validation_Verification\\HNC_VERIFICATION_AUDIT_v2_2026-04-07.md",
+    "evidence_copy": "applications/research_paper_evidence_20260711_20260711_094604/HNC_VERIFICATION_AUDIT_v2_2026-04-07.md",
+    "sha256": "4e888d7a1213e236b944411ecf78d6667ed285842d2a6c83f20ee0d4575c6b4c",
+    "priority": "P0",
+    "theme": "validation_and_verification",
+    "file_name": "HNC_VERIFICATION_AUDIT_v2_2026-04-07.md"
+  }
+]

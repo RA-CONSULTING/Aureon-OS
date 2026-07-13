@@ -1,0 +1,206 @@
+{
+  "schema_version": "aureon-ifs-company-compliance-readback-v1",
+  "generated_at": "2026-07-10T14:35:31+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_company_compliance_readback",
+  "source_refs": {
+    "company_overview": "https://find-and-update.company-information.service.gov.uk/company/NI696693",
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_143222.json",
+    "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_143221.json",
+    "official_ifs_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_143047.json"
+  },
+  "summary": {
+    "ifs_applications_linked": 20,
+    "company_active": true,
+    "accounts_current": true,
+    "confirmation_statement_warning_active": true,
+    "compliance_risk_status": "CONFIRMATION_STATEMENT_OVERDUE_ON_COMPANIES_HOUSE",
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "company_filing_performed": false,
+    "credentials_entered": false
+  },
+  "official_evidence": {
+    "source": "Companies House public company overview",
+    "url": "https://find-and-update.company-information.service.gov.uk/company/NI696693",
+    "source_class": "A_OFFICIAL_PUBLIC_REGISTER",
+    "observed_company_name": "R&A CONSULTING AND BROKERAGE SERVICES LTD",
+    "observed_company_number": "NI696693",
+    "observed_company_status": "Active",
+    "observed_registered_office": "1 Quadrant Place, Belfast, Northern Ireland, BT12 4HX",
+    "observed_accounts": {
+      "next_accounts_made_up_to": "30 April 2027",
+      "next_accounts_due_by": "31 January 2028",
+      "last_accounts_made_up_to": "30 April 2026"
+    },
+    "observed_confirmation_statement": {
+      "warning": "Confirmation statement overdue",
+      "next_statement_date": "25 April 2026",
+      "due_by": "9 May 2026",
+      "last_statement_dated": "25 April 2025"
+    },
+    "web_line_refs": [
+      "Companies House overview lines 39-43",
+      "Companies House overview lines 49-72",
+      "Companies House overview lines 73-77"
+    ]
+  },
+  "route_impacts": [
+    {
+      "application_id": "APP-IFS-NEXT-WAVE-10209601",
+      "status": "SUBMITTED",
+      "deadline": "2026-08-11T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-FLF-R11-2499-20260709",
+      "status": "SUBMITTED",
+      "deadline": "2026-11-04T11:00:00+00:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+      "status": "INNOVATION_LOANS_REPAYABLE_FINANCE_CAPACITY_AND_ACTION_APPROVAL_REQUIRED",
+      "deadline": "open-no-submission-deadline",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+      "status": "SUBMITTED",
+      "deadline": "2026-08-26T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "status": "IFS_DRAFT_80_PERCENT_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-03T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-CFI-SEN-2511-20260709",
+      "status": "SUBMITTED",
+      "deadline": "2026-08-05T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "status": "QUANTUM_HARDWARE_LEAD_ACCESS_CONSORTIUM_AND_BUDGET_EVIDENCE_REQUIRED",
+      "deadline": "2026-09-18T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+      "status": "ADOPT_FACILITATOR_ENGLAND_FARM_BUSINESS_AND_REGISTERED_FACILITATOR_EVIDENCE_REQUIRED",
+      "deadline": "2026-08-12T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+      "status": "DRIVE35_COLLAB3_ZEV_PARTNER_MATCH_FUNDING_AND_TIER1_EVIDENCE_REQUIRED",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+      "status": "DRIVE35_SCALEUP_ZEV_MANUFACTURING_FACILITY_AND_COINVESTMENT_EVIDENCE_REQUIRED",
+      "deadline": "open-no-submission-deadline",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+      "status": "ADOPT_FULL_FARMING_LEAD_AND_PARTNER_EVIDENCE_REQUIRED",
+      "deadline": "2026-07-29T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+      "status": "ACTASAP_ACADEMIC_LEAD_AND_TTO_EVIDENCE_REQUIRED",
+      "deadline": "2026-07-28T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-AKT6-2473-20260709",
+      "status": "AKT6_KNOWLEDGE_BASE_LEAD_AND_4FTE_EVIDENCE_REQUIRED",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+      "status": "CKAF_PUBLIC_SECTOR_RESEARCH_ORG_AND_KNOWLEDGE_ASSET_EVIDENCE_REQUIRED",
+      "deadline": "2026-09-01T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "impact": "Company is active and accounts are current, but the confirmation statement warning remains active; keep this as a due-diligence risk on IFS routes until a later public readback shows it cleared.",
+      "direct_submit_ready": false
+    }
+  ],
+  "controls": [
+    "Companies House was read as a public source only.",
+    "No Companies House filing was performed.",
+    "No credentials were entered.",
+    "No IFS portal field was changed.",
+    "No application is marked direct-submit-ready from this compliance readback."
+  ],
+  "next_actions": [
+    "When the confirmation statement is filed, rerun this readback and remove the risk only if Companies House shows it cleared.",
+    "Continue active-route evidence acquisition for partner, lead, budget, asset, permission, facility and hardware gates."
+  ],
+  "result": "IFS_COMPANY_COMPLIANCE_READBACK_RISK_STILL_ACTIVE"
+}

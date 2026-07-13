@@ -1,0 +1,39 @@
+{
+  "schema_version": "aureon-ifs-draft-created-v1",
+  "generated_at": "2026-07-10T06:19:56+01:00",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "portal_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210100",
+  "competition": "UK-Switzerland CR&D Round 3",
+  "credential_source": "AUREON_GRANT_IFS_PASSWORD_STORE Windows-user-encrypted CLIXML, used runtime-only",
+  "actions_completed": [
+    "Authenticated to IFS via stored runtime credential",
+    "Created new IFS draft application 10210100",
+    "Saved application title, start date 1 February 2027, duration 24 months, non-resubmission flag",
+    "Saved research category as Industrial research",
+    "Saved project summary, public description, and scope text from Aureon repo pack with partner caveats"
+  ],
+  "sections_saved": [
+    "Application details",
+    "Research category",
+    "Project summary",
+    "Public description",
+    "Scope"
+  ],
+  "remaining_gates": [
+    "Named Swiss implementation partner evidence",
+    "Named research institute evidence or documented waiver condition",
+    "Consortium work package split and budget",
+    "Subsidy basis and project finance completion",
+    "Application team and partner invitations",
+    "Questions 1-17 not fully completed",
+    "Terms, review, and final submit not completed"
+  ],
+  "submission_status": "DRAFT_CREATED_PARTIAL_SECTIONS_SAVED_NOT_SUBMITTED",
+  "controls": [
+    "No plaintext password printed or written",
+    "No CAPTCHA/MFA bypass attempted",
+    "No partner invitation, upload, email send, Drive upload, or final submission attempted",
+    "No unsupported partner claims entered"
+  ]
+}

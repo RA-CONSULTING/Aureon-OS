@@ -1,0 +1,688 @@
+{
+  "adaptive_skill_evidence": {
+    "created_for_prompt": true,
+    "name": "universal_adaptive_skill_forge",
+    "reusable": true,
+    "skill_contract": "create local skill capsules for prompt families Aureon has not specialized yet"
+  },
+  "adaptive_skill_report": {
+    "adaptive_skill": {
+      "created_for_prompt": true,
+      "name": "universal_adaptive_skill_forge",
+      "reusable": true,
+      "skill_contract": "create local skill capsules for prompt families Aureon has not specialized yet"
+    },
+    "artifact_manifest": {
+      "asset_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+      "build_id": "4b1a8d741656",
+      "kind": "adaptive_skill_capsule",
+      "metadata_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\skill.json",
+      "preview_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+      "preview_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html",
+      "project_id": "aureon-adaptive_skill-4b1a8d741656",
+      "public_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html",
+      "runbook_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\RUNBOOK.md",
+      "subject": "coding",
+      "tool_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\tool.py",
+      "uniqueness_contract": {
+        "build_id": "4b1a8d741656",
+        "family": "adaptive_skill",
+        "policy": "fresh_project_per_coding_request",
+        "project_id": "aureon-adaptive_skill-4b1a8d741656",
+        "prompt_sha256": "266d421a6413dabe13d9b3b1827530154aa6ec928a8357cf8b67a57f696d4764",
+        "reuse_allowed_for_handover": false,
+        "rule": "Every coding/app/tool artifact must be a fresh project instance, even when the prompt resembles an older job."
+      }
+    },
+    "artifact_quality_report": {
+      "artifact_manifest": {
+        "asset_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+        "build_id": "4b1a8d741656",
+        "kind": "adaptive_skill_capsule",
+        "metadata_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\skill.json",
+        "preview_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+        "preview_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html",
+        "project_id": "aureon-adaptive_skill-4b1a8d741656",
+        "public_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html",
+        "runbook_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\RUNBOOK.md",
+        "subject": "coding",
+        "tool_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\tool.py",
+        "uniqueness_contract": {
+          "build_id": "4b1a8d741656",
+          "family": "adaptive_skill",
+          "policy": "fresh_project_per_coding_request",
+          "project_id": "aureon-adaptive_skill-4b1a8d741656",
+          "prompt_sha256": "266d421a6413dabe13d9b3b1827530154aa6ec928a8357cf8b67a57f696d4764",
+          "reuse_allowed_for_handover": false,
+          "rule": "Every coding/app/tool artifact must be a fresh project instance, even when the prompt resembles an older job."
+        }
+      },
+      "browser_render_proof": {
+        "local_probe": true,
+        "preview_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html",
+        "proof_status": "adaptive_preview_ready",
+        "public_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html"
+      },
+      "checks": [
+        {
+          "blocking": true,
+          "evidence": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+          "id": "adaptive_skill_preview_exists",
+          "label": "Browser preview exists",
+          "ok": true
+        },
+        {
+          "blocking": true,
+          "evidence": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\skill.json",
+          "id": "adaptive_skill_metadata_exists",
+          "label": "Skill metadata exists",
+          "ok": true
+        },
+        {
+          "blocking": true,
+          "evidence": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\tool.py",
+          "id": "adaptive_skill_run_contract_exists",
+          "label": "Local run contract exists",
+          "ok": true
+        },
+        {
+          "blocking": true,
+          "evidence": "generic capsule only",
+          "id": "domain_specific_worker_present",
+          "label": "Finished domain-specific worker exists when a tool is requested",
+          "ok": false
+        },
+        {
+          "blocking": true,
+          "evidence": "no external API calls",
+          "id": "local_only_generation",
+          "label": "Skill was generated locally",
+          "ok": true
+        },
+        {
+          "blocking": true,
+          "evidence": "4b1a8d741656",
+          "id": "unique_build_id_present",
+          "label": "Fresh build id is present in artifact paths",
+          "ok": true
+        },
+        {
+          "blocking": true,
+          "evidence": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html",
+          "id": "no_stale_handover_reuse",
+          "label": "Handover points at this build's fresh artifact",
+          "ok": true
+        }
+      ],
+      "generated_at": "2026-05-22T18:17:50.457361+00:00",
+      "handover_ready": false,
+      "minimum_score": 0.8,
+      "provider_policy": "local_only_v1",
+      "regeneration_attempts": [
+        {
+          "attempt": 1,
+          "reason": "generic capsule held because the client asked for a finished domain tool",
+          "status": "needs_regeneration"
+        }
+      ],
+      "schema_version": "aureon-artifact-quality-report-v1",
+      "score": 0.68,
+      "snags": [
+        {
+          "blocking": true,
+          "id": "missing_domain_specific_worker",
+          "next_action": "teach Aureon a domain-specific local worker, then rerun the request",
+          "title": "Generic adaptive capsule is not a finished tool"
+        }
+      ],
+      "status": "artifact_quality_blocked",
+      "task_family": "coding"
+    },
+    "ok": true,
+    "output_files": [
+      "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+      "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\skill.json",
+      "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\RUNBOOK.md",
+      "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\tool.py",
+      "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html"
+    ],
+    "schema_version": "aureon-adaptive-skill-capsule-v1",
+    "status": "adaptive_skill_capsule_ready",
+    "writes": [
+      {
+        "bytes": 3183,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html"
+      },
+      {
+        "bytes": 1730,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\skill.json"
+      },
+      {
+        "bytes": 601,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\RUNBOOK.md"
+      },
+      {
+        "bytes": 1185,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\tool.py"
+      }
+    ]
+  },
+  "applied_change_evidence": {
+    "applied": true,
+    "applied_scope": "local artifact/code evidence generated where safe; target repo patch remains reviewable through SafeCodeControl",
+    "approval_gate": "after_apply",
+    "generated_files": [
+      "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+      "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\skill.json",
+      "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\RUNBOOK.md",
+      "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\tool.py"
+    ],
+    "proposal": {
+      "created_at": 1779473870.481647,
+      "kind": "capability_forge_coding_job",
+      "metadata": {
+        "approval_gate": "after_apply",
+        "detected_families": [
+          "coding"
+        ],
+        "expression_context": {
+          "blockers": [],
+          "created_at": 1779473870.481647,
+          "evidence_path": "C:\\Users\\user\\aureon-trading\\state\\aureon_code_expression_last_run.json",
+          "goal": "Build a local quantum spline inventory generator tool with run instructions and proof.",
+          "novelty_checks": {
+            "duplicates_removed": 0,
+            "paragraphs_in": 4,
+            "paragraphs_out": 4,
+            "raw_telemetry_rewritten": 0,
+            "repeated_openings_adjusted": 0
+          },
+          "ok": true,
+          "redaction_applied": false,
+          "runtime_summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language.",
+          "schema_features": [
+            "aureon_code_expression_context_v1"
+          ],
+          "senses": {
+            "feel": "I feel a steady synthetic state while I hold the next action as propose_code.",
+            "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+            "see": "I see Build a local quantum spline inventory generator tool with run instructions and as the nearest signal in the field.",
+            "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof.",
+            "touch": "I touch the work through tools, files, goals, memory, and verified outcomes."
+          },
+          "source_count": 90,
+          "top_facets": [
+            "trading_action",
+            "math_equation",
+            "code_tooling",
+            "ai_generated_or_systemic",
+            "hnc_harmonic",
+            "human_voice"
+          ],
+          "voice_summary": "I am using the whole-knowledge voice core for Build a local quantum spline inventory generator tool with run instructions and proof.. The active profile is pulling from trading action, mathematical pattern, code and tools, system reasoning, HNC harmonic signal, and human voice, so the answer can carry system evidence without sounding like a raw log. I see Build a local quantum spline inventory generator tool with run instructions and as the nearest signal in the field. I feel a steady synthetic state while I hold the next action as propose_code. I hear the system as a quiet baseline until a harmonic reading is present. I touch the work through tools, files, goals, memory, and verified out...",
+          "warnings": []
+        },
+        "generated_files": [
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\skill.json",
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\RUNBOOK.md",
+          "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\tool.py"
+        ],
+        "provider_policy": "local_only_v1",
+        "safe_authority": "no live trading, payment, filing, credential, or destructive OS bypass"
+      },
+      "patch_text": "",
+      "source": "aureon_capability_forge",
+      "status": "pending_review",
+      "summary": "Local capability forge scoped this coding/UI request, generated local artifacts when suitable, and queued safe route evidence for after-apply review.",
+      "target_files": [
+        "aureon/autonomous/aureon_capability_forge.py",
+        "aureon/autonomous/aureon_artifact_quality_gate.py",
+        "frontend/src/components/generated/AureonCodingOrganismConsole.tsx",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\skill.json",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\RUNBOOK.md",
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\tool.py"
+      ],
+      "title": "Build a local quantum spline inventory generator tool with run instructions and proof."
+    },
+    "safe_route": "SafeCodeControl.propose",
+    "state_path": "C:\\Users\\user\\aureon-trading\\state\\aureon_capability_forge_safe_code_state.json"
+  },
+  "approval_state": {
+    "approved": false,
+    "next_action": "approve, reject, or request revision from the cockpit",
+    "policy": "after_apply",
+    "reviewer": "operator_or_codex",
+    "state": "blocked_by_quality_gate"
+  },
+  "artifact_manifest": {
+    "asset_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+    "build_id": "4b1a8d741656",
+    "kind": "adaptive_skill_capsule",
+    "metadata_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\skill.json",
+    "preview_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+    "preview_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html",
+    "project_id": "aureon-adaptive_skill-4b1a8d741656",
+    "public_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html",
+    "runbook_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\RUNBOOK.md",
+    "subject": "coding",
+    "tool_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\tool.py",
+    "uniqueness_contract": {
+      "build_id": "4b1a8d741656",
+      "family": "adaptive_skill",
+      "policy": "fresh_project_per_coding_request",
+      "project_id": "aureon-adaptive_skill-4b1a8d741656",
+      "prompt_sha256": "266d421a6413dabe13d9b3b1827530154aa6ec928a8357cf8b67a57f696d4764",
+      "reuse_allowed_for_handover": false,
+      "rule": "Every coding/app/tool artifact must be a fresh project instance, even when the prompt resembles an older job."
+    }
+  },
+  "artifact_quality_report": {
+    "artifact_manifest": {
+      "asset_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+      "build_id": "4b1a8d741656",
+      "kind": "adaptive_skill_capsule",
+      "metadata_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\skill.json",
+      "preview_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+      "preview_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html",
+      "project_id": "aureon-adaptive_skill-4b1a8d741656",
+      "public_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html",
+      "runbook_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\RUNBOOK.md",
+      "subject": "coding",
+      "tool_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\tool.py",
+      "uniqueness_contract": {
+        "build_id": "4b1a8d741656",
+        "family": "adaptive_skill",
+        "policy": "fresh_project_per_coding_request",
+        "project_id": "aureon-adaptive_skill-4b1a8d741656",
+        "prompt_sha256": "266d421a6413dabe13d9b3b1827530154aa6ec928a8357cf8b67a57f696d4764",
+        "reuse_allowed_for_handover": false,
+        "rule": "Every coding/app/tool artifact must be a fresh project instance, even when the prompt resembles an older job."
+      }
+    },
+    "browser_render_proof": {
+      "local_probe": true,
+      "preview_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html",
+      "proof_status": "adaptive_preview_ready",
+      "public_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html"
+    },
+    "checks": [
+      {
+        "blocking": true,
+        "evidence": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+        "id": "adaptive_skill_preview_exists",
+        "label": "Browser preview exists",
+        "ok": true
+      },
+      {
+        "blocking": true,
+        "evidence": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\skill.json",
+        "id": "adaptive_skill_metadata_exists",
+        "label": "Skill metadata exists",
+        "ok": true
+      },
+      {
+        "blocking": true,
+        "evidence": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\tool.py",
+        "id": "adaptive_skill_run_contract_exists",
+        "label": "Local run contract exists",
+        "ok": true
+      },
+      {
+        "blocking": true,
+        "evidence": "generic capsule only",
+        "id": "domain_specific_worker_present",
+        "label": "Finished domain-specific worker exists when a tool is requested",
+        "ok": false
+      },
+      {
+        "blocking": true,
+        "evidence": "no external API calls",
+        "id": "local_only_generation",
+        "label": "Skill was generated locally",
+        "ok": true
+      },
+      {
+        "blocking": true,
+        "evidence": "4b1a8d741656",
+        "id": "unique_build_id_present",
+        "label": "Fresh build id is present in artifact paths",
+        "ok": true
+      },
+      {
+        "blocking": true,
+        "evidence": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html",
+        "id": "no_stale_handover_reuse",
+        "label": "Handover points at this build's fresh artifact",
+        "ok": true
+      }
+    ],
+    "generated_at": "2026-05-22T18:17:50.457361+00:00",
+    "handover_ready": false,
+    "minimum_score": 0.8,
+    "provider_policy": "local_only_v1",
+    "regeneration_attempts": [
+      {
+        "attempt": 1,
+        "reason": "generic capsule held because the client asked for a finished domain tool",
+        "status": "needs_regeneration"
+      }
+    ],
+    "schema_version": "aureon-artifact-quality-report-v1",
+    "score": 0.68,
+    "snags": [
+      {
+        "blocking": true,
+        "id": "missing_domain_specific_worker",
+        "next_action": "teach Aureon a domain-specific local worker, then rerun the request",
+        "title": "Generic adaptive capsule is not a finished tool"
+      }
+    ],
+    "status": "artifact_quality_blocked",
+    "task_family": "coding"
+  },
+  "authority_boundaries": [
+    "No paid/cloud provider call in local-only v1.",
+    "No credential values emitted.",
+    "No live trading, payment, filing, or destructive OS authority changes.",
+    "Coding work uses safe local routes and after-apply evidence review."
+  ],
+  "build_id": "4b1a8d741656",
+  "detected_families": [
+    "coding"
+  ],
+  "director_brief": {
+    "approval_gate": "after_apply",
+    "goal": "Build locally, prove locally, regenerate weak work, and hand over only after quality gates pass.",
+    "no_bypass": [
+      "live_trading",
+      "payments",
+      "filings",
+      "credentials",
+      "destructive_os_actions"
+    ],
+    "provider_policy": "local_only_v1",
+    "uniqueness_policy": "fresh_project_per_coding_request"
+  },
+  "external_api_calls": [],
+  "full_stack_system_report": {},
+  "generated_at": "2026-05-22T18:17:50.387022+00:00",
+  "handover_ready": false,
+  "interactive_artifact_report": {},
+  "job_id": "capability-forge-4b1a8d741656",
+  "local_tools_used": [
+    {
+      "mode": "read_only",
+      "name": "Repo search",
+      "surface": "rg / RepoSelfCatalog"
+    },
+    {
+      "mode": "local_safe_route",
+      "name": "SafeCodeControl",
+      "surface": "aureon.autonomous.aureon_safe_code_control"
+    },
+    {
+      "mode": "local_quality_gate",
+      "name": "Artifact quality gate",
+      "surface": "aureon.autonomous.aureon_artifact_quality_gate"
+    },
+    {
+      "mode": "local_validation",
+      "name": "Focused pytest/build",
+      "surface": "pytest / npm run build"
+    },
+    {
+      "mode": "local_file_generation",
+      "name": "Adaptive local app forge",
+      "surface": "frontend/public/aureon_generated_apps"
+    },
+    {
+      "mode": "local_file_generation",
+      "name": "Adaptive local skill forge",
+      "surface": "frontend/public/aureon_adaptive_skills"
+    }
+  ],
+  "ok": false,
+  "output_files": [
+    "state/aureon_capability_forge_last_run.json",
+    "docs/audits/aureon_capability_forge.json",
+    "docs/audits/aureon_capability_forge.md",
+    "frontend/public/aureon_capability_forge.json",
+    "frontend/public/aureon_artifact_quality_report.json",
+    "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\index.html",
+    "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\skill.json",
+    "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\RUNBOOK.md",
+    "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_4b1a8d741656\\tool.py",
+    "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_4b1a8d741656/index.html"
+  ],
+  "project_id": "aureon-coding-4b1a8d741656",
+  "prompt": "Build a local quantum spline inventory generator tool with run instructions and proof.",
+  "provider_policy": "local_only_v1",
+  "recruited_crew": [
+    {
+      "day_to_day": "lock goal, deliverables, constraints, and acceptance proof",
+      "department": "scope",
+      "role": "Client Brief Broker",
+      "temporary": true
+    },
+    {
+      "day_to_day": "scan local repo first and use official docs as reference-only patterns",
+      "department": "research",
+      "role": "Skill Headhunter",
+      "temporary": true
+    },
+    {
+      "day_to_day": "hire the temporary specialist crew and define handoffs",
+      "department": "orchestration",
+      "role": "Subcontractor Crew Builder",
+      "temporary": true
+    },
+    {
+      "day_to_day": "reject weak artifacts before handover",
+      "department": "qa",
+      "role": "Quality Gate Inspector",
+      "temporary": true
+    },
+    {
+      "day_to_day": "publish evidence and wait for approval",
+      "department": "handover",
+      "role": "Release Manager",
+      "temporary": true
+    },
+    {
+      "day_to_day": "scope patch contract and authority boundaries",
+      "department": "engineering",
+      "role": "Code Architect",
+      "temporary": true
+    },
+    {
+      "day_to_day": "route code work through safe local authoring",
+      "department": "engineering",
+      "role": "Implementation Worker",
+      "temporary": true
+    },
+    {
+      "day_to_day": "run tests/build proof before approval",
+      "department": "qa",
+      "role": "Test Pilot",
+      "temporary": true
+    },
+    {
+      "day_to_day": "check secrets and unsafe mutation boundaries",
+      "department": "security",
+      "role": "Security Auditor",
+      "temporary": true
+    },
+    {
+      "day_to_day": "create a reusable local skill path when the prompt has no specialized worker yet",
+      "department": "self_improvement",
+      "role": "Adaptive Skill Composer",
+      "temporary": true
+    }
+  ],
+  "reference_patterns": [
+    {
+      "external_api_call_allowed": false,
+      "name": "OpenAI Agents SDK",
+      "pattern": "agents, tools, handoffs, guardrails, tracing, sandbox state",
+      "provider_policy": "reference_only",
+      "url": "https://developers.openai.com/api/docs/guides/agents"
+    },
+    {
+      "external_api_call_allowed": false,
+      "name": "Anthropic tool use",
+      "pattern": "client tools, server tools, strict schemas, tool_result loop",
+      "provider_policy": "reference_only",
+      "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview"
+    },
+    {
+      "external_api_call_allowed": false,
+      "name": "Claude Code subagents",
+      "pattern": "specialist workers with isolated context and scoped tool access",
+      "provider_policy": "reference_only",
+      "url": "https://code.claude.com/docs/en/sub-agents"
+    },
+    {
+      "external_api_call_allowed": false,
+      "name": "Gemini function calling",
+      "pattern": "OpenAPI-shaped function calls and automatic function execution",
+      "provider_policy": "reference_only",
+      "url": "https://ai.google.dev/gemini-api/docs/function-calling"
+    },
+    {
+      "external_api_call_allowed": false,
+      "name": "Gemini Veo video flow",
+      "pattern": "image/storyboard seed, async video operation, poll until ready",
+      "provider_policy": "reference_only",
+      "url": "https://ai.google.dev/gemini-api/docs/video"
+    },
+    {
+      "external_api_call_allowed": false,
+      "name": "AutoGen multi-agent chat",
+      "pattern": "conversable agents coordinating tools and human feedback",
+      "provider_policy": "reference_only",
+      "url": "https://microsoft.github.io/autogen/0.2/docs/Use-Cases/agent_chat/"
+    },
+    {
+      "external_api_call_allowed": false,
+      "name": "Semantic Kernel orchestration",
+      "pattern": "sequential, concurrent, group, and handoff orchestration",
+      "provider_policy": "reference_only",
+      "url": "https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/"
+    },
+    {
+      "external_api_call_allowed": false,
+      "name": "GitHub Copilot cloud agent",
+      "pattern": "delegate prompt to agent, inspect session, review resulting changes",
+      "provider_policy": "reference_only",
+      "url": "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/start-copilot-sessions"
+    },
+    {
+      "external_api_call_allowed": false,
+      "name": "Jules coding agent",
+      "pattern": "autonomous coding task in repo context with human review",
+      "provider_policy": "reference_only",
+      "url": "https://jules.google/docs/"
+    },
+    {
+      "external_api_call_allowed": false,
+      "name": "Runway video models",
+      "pattern": "video models expose text/image-to-video as job artifacts",
+      "provider_policy": "reference_only",
+      "url": "https://docs.dev.runwayml.com/guides/models/"
+    },
+    {
+      "external_api_call_allowed": false,
+      "name": "Adobe Firefly Services",
+      "pattern": "creative generation at scale with credentials kept server-side",
+      "provider_policy": "reference_only",
+      "url": "https://developer.adobe.com/firefly-services/docs/guides/"
+    },
+    {
+      "external_api_call_allowed": false,
+      "name": "Canva Connect design metadata",
+      "pattern": "design preview/edit/view metadata with expiring URLs",
+      "provider_policy": "reference_only",
+      "url": "https://www.canva.dev/docs/connect/api-reference/designs/get-design/"
+    }
+  ],
+  "regeneration_attempts": [
+    {
+      "attempt": 1,
+      "reason": "generic capsule held because the client asked for a finished domain tool",
+      "status": "needs_regeneration"
+    }
+  ],
+  "schema_version": "aureon-local-capability-forge-v1",
+  "specialized_skill_report": {},
+  "status": "capability_forge_quality_blocked",
+  "summary": {
+    "adaptive_skill_created": true,
+    "artifact_quality_passed": false,
+    "artifact_quality_score": 0.68,
+    "blocking_snag_count": 1,
+    "build_id": "4b1a8d741656",
+    "crew_count": 10,
+    "detected_family_count": 1,
+    "external_api_call_count": 0,
+    "fresh_project_per_request": true,
+    "full_stack_system_created": false,
+    "handover_ready": false,
+    "local_tool_count": 6,
+    "project_id": "aureon-coding-4b1a8d741656",
+    "reference_pattern_count": 12,
+    "safe_code_route_recorded": true,
+    "task_family": "coding"
+  },
+  "task_family": "coding",
+  "uniqueness_contract": {
+    "build_id": "4b1a8d741656",
+    "family": "coding",
+    "policy": "fresh_project_per_coding_request",
+    "project_id": "aureon-coding-4b1a8d741656",
+    "prompt_sha256": "266d421a6413dabe13d9b3b1827530154aa6ec928a8357cf8b67a57f696d4764",
+    "reuse_allowed_for_handover": false,
+    "rule": "Every coding/app/tool artifact must be a fresh project instance, even when the prompt resembles an older job."
+  },
+  "visual_asset_report": {},
+  "write_info": {
+    "authoring_path": [
+      "classify_task_family",
+      "recruit_local_crew",
+      "reference_patterns_marked_reference_only",
+      "local_visual_or_safe_code_route",
+      "adaptive_skill_composer_for_missing_capabilities",
+      "artifact_quality_gate",
+      "after_apply_approval_state",
+      "state/docs/frontend evidence publish"
+    ],
+    "evidence_writes": [
+      {
+        "bytes": 32852,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\state\\aureon_capability_forge_last_run.json"
+      },
+      {
+        "bytes": 32852,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_capability_forge.json"
+      },
+      {
+        "bytes": 3371,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_capability_forge.md"
+      },
+      {
+        "bytes": 32852,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_capability_forge.json"
+      }
+    ],
+    "writer": "AureonCapabilityForge"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "filename": "symbolic_compiler_layer.json",
+  "description": "Symbolic Compiler Layer for Auris: Translates human intent to field resonance",
+  "components": {
+    "class": "SymbolicCompiler",
+    "purpose": "Translates natural language into executable harmonic instructions",
+    "integration_point": "Within AurisEngine class or externally instantiated using an AurisEngine instance",
+    "core_logic": {
+      "1": "Tokenize input text and identify emotional keywords",
+      "2": "Query auris_codex.json for associated frequency and decay parameters",
+      "3": "Synthesize a harmonic waveform using aggregated frequency and averaged decay",
+      "4": "Call auris.broadcast(...) with synthesized data"
+    },
+    "example_usage": [
+      "compiler.process_intent('Send peace and joy')",
+      "compiler.process_intent('Generate a resonance of hope')"
+    ]
+  },
+  "code_snippet": "Refer to user-supplied Python sketch in last message for actual implementation."
+}

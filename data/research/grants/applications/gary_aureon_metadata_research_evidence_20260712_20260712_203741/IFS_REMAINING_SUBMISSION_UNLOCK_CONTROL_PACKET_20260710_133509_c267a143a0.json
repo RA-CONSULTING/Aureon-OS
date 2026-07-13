@@ -1,0 +1,326 @@
+{
+  "schema_version": "aureon-ifs-remaining-submission-unlock-control-packet-v1",
+  "generated_at": "2026-07-10T13:35:09+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_remaining_submission_unlock_control_packet",
+  "source_refs": {
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_133029.json",
+    "official_current_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_131758.json",
+    "drive_remaining_targeted_evidence_readback": "applications/IFS_DRIVE_REMAINING_TARGETED_EVIDENCE_READBACK_20260710_131430.json",
+    "remaining_route_action_queue": "applications/IFS_REMAINING_ROUTE_ACTION_QUEUE_20260710_104541.json",
+    "remaining_route_outreach_pdf_pack": "applications/IFS_REMAINING_ROUTE_OUTREACH_PDF_PACK_20260710_120126.json",
+    "partner_outreach_pipeline": "applications/IFS_PARTNER_OUTREACH_PIPELINE_20260710_081819.json",
+    "outbound_evidence_acquisition_send_queue": "applications/IFS_OUTBOUND_EVIDENCE_ACQUISITION_SEND_QUEUE_20260710_121201.json",
+    "public_contact_route_verification": "applications/IFS_PUBLIC_CONTACT_ROUTE_VERIFICATION_20260710_123016.json"
+  },
+  "summary": {
+    "remaining_applications_reviewed": 9,
+    "unlock_contacts_total": 10,
+    "email_draft_routes": 5,
+    "contact_route_payloads": 5,
+    "loan_routes_held_outside_grant_queue": 1,
+    "confirmed_unlock_evidence_count": 0,
+    "direct_ifs_submissions_unlocked": 0,
+    "new_browser_submissions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false
+  },
+  "control_items": [
+    {
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "name": "UK-Switzerland CR&D Round 3",
+      "deadline": "2026-09-03T11:00:00+01:00",
+      "current_state": "IFS_DRAFT_80_PERCENT_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route": "UK_SWITZERLAND_CRD_R3_LIVE_DRAFT_10210100",
+      "unlock_contacts": [
+        {
+          "queue_id": "UK_SWISS:1",
+          "target": "Corintis",
+          "channel_state": "CONTACT_ROUTE_PAYLOAD_NO_VERIFIED_EMAIL_SELECTED",
+          "payload": "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_CORINTIS_20260710.eml",
+          "sha256": "b8fadff826385ecf6efa816ef3d7268a0d00678e1c4c1ac1fc76a5713241e751",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT"
+        },
+        {
+          "queue_id": "UK_SWISS:2",
+          "target": "Swiss engineering biology ecosystem via BaseLaunch / The Cultured Hub / Buhl",
+          "channel_state": "CONTACT_ROUTE_PAYLOAD_NO_VERIFIED_EMAIL_SELECTED",
+          "payload": "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_ENGINEERING_BIOLOGY_SWISS_ECOSYSTEM_VIA_BASELAUNCH_THE_CULTURED_HUB_BUHL_20260710.eml",
+          "sha256": "0b7f3c5d023b6f6e485b2729df5418fcc210c6b7a79508e6c62a1cca61cf96f8",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT"
+        },
+        {
+          "queue_id": "UK_SWISS:3",
+          "target": "Kandou",
+          "channel_state": "CONTACT_ROUTE_PAYLOAD_NO_VERIFIED_EMAIL_SELECTED",
+          "payload": "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_KANDOU_20260710.eml",
+          "sha256": "cb122b2584113cba02287c92eb94f7993b4aef810667cd92e054a2fc5acd2441",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT"
+        },
+        {
+          "queue_id": "UK_SWISS:4",
+          "target": "Sensirion",
+          "channel_state": "CONTACT_ROUTE_PAYLOAD_NO_VERIFIED_EMAIL_SELECTED",
+          "payload": "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_SENSIRION_20260710.eml",
+          "sha256": "30848179ed74e6a077b6165ee2764394fa750efbbdf2df704fe82b1f13b561bf",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT"
+        },
+        {
+          "queue_id": "UK_SWISS:5",
+          "target": "SwissChips / ETH Zurich semiconductor ecosystem",
+          "channel_state": "CONTACT_ROUTE_PAYLOAD_NO_VERIFIED_EMAIL_SELECTED",
+          "payload": "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_SWISSCHIPS_ETH_ZURICH_SEMICONDUCTOR_ECOSYSTEM_20260710.eml",
+          "sha256": "62efc71eda989d0df103314e9df4844aab19c23778359d7287801de0fc99b2ec",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT"
+        }
+      ],
+      "evidence_required_to_unlock": [
+        "Swiss implementation partner confirms participation and authorised contact.",
+        "At least one required research institute is identified, or written waiver/route guidance confirms the research-institute requirement is not applicable.",
+        "Partner commitment letter or equivalent written commitment is received.",
+        "Partner budget, eligible-cost split, work-package split, and project role are evidenced.",
+        "Permit/licence and export-control positions are documented for the proposed scope.",
+        "Project finances and Project Impact values can be completed without guessing."
+      ],
+      "portal_action_after_unlock": "Only after every evidence item above is present: resume IFS draft 10210100 and complete partner, finance, export/permit, and Project Impact sections from evidence.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+      "name": "Commercialising Knowledge Assets Fund (CKAF) Autumn",
+      "deadline": "2026-09-01T11:00:00+01:00",
+      "current_state": "CKAF_PUBLIC_SECTOR_RESEARCH_ORG_AND_KNOWLEDGE_ASSET_EVIDENCE_REQUIRED",
+      "route": "CKAF_AUTUMN",
+      "unlock_contacts": [
+        {
+          "queue_id": "REMAINING:1:CKAF",
+          "target": "GOTT CKAF team",
+          "channel_state": "EXACT_PUBLIC_EMAIL_VERIFIED_READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+          "payload": "applications/IFS_CKAF_GOTT_CKAF_TEAM_OUTREACH_DRAFT_20260710_104541.eml",
+          "sha256": "c2002357d026ff56490ac570b856cab047256aeb03c535eceb34b404ac3818b0",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT",
+          "destination": "grantfund.gott@dsit.gov.uk"
+        }
+      ],
+      "evidence_required_to_unlock": [
+        "Eligible public-sector research organisation or PRSE/UKRI wholly owned institute confirms lead applicant role.",
+        "Knowledge asset ownership and IP/right-to-commercialise position are evidenced.",
+        "Senior support or authorised lead evidence is received.",
+        "Aureon/R&A support or procurement role is authorised and compliant with CKAF rules."
+      ],
+      "portal_action_after_unlock": "Only after every evidence item above is present: support an eligible public-sector lead; do not submit as R&A lead.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+      "name": "DRIVE35 Innovation Fund: Collaborate 3",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "current_state": "DRIVE35_COLLAB3_ZEV_PARTNER_MATCH_FUNDING_AND_TIER1_EVIDENCE_REQUIRED",
+      "route": "DRIVE35_COLLABORATE_3",
+      "unlock_contacts": [
+        {
+          "queue_id": "REMAINING:2:DRIVE35",
+          "target": "Advanced Propulsion Centre general enquiries",
+          "channel_state": "EXACT_PUBLIC_EMAIL_VERIFIED_READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+          "payload": "applications/IFS_DRIVE35_ADVANCED_PROPULSION_CENTRE_GENERAL_ENQUIRIES_OUTREACH_DRAFT_20260710_104541.eml",
+          "sha256": "7f47d47108ffe875fd395df828871d557f932a82297f8075c1ecbfff2f50a824",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT",
+          "destination": "info@apcuk.co.uk"
+        },
+        {
+          "queue_id": "REMAINING:3:DRIVE35",
+          "target": "Wrightbus innovation contact route",
+          "channel_state": "CONTACT_ROUTE_PAYLOAD_REQUIRES_VERIFIED_RECIPIENT_OR_FORM",
+          "payload": "applications/IFS_DRIVE35_WRIGHTBUS_INNOVATION_CONTACT_ROUTE_OUTREACH_DRAFT_20260710_104541.eml",
+          "sha256": "2a91e894be07da5585de3af3c9349b513b42bab69d0237769d223426675c900b",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT"
+        }
+      ],
+      "evidence_required_to_unlock": [
+        "Vehicle manufacturer, Tier 1 supplier, or eligible automotive lead confirms participation.",
+        "Zero-emission vehicle work package and Aureon/R&A role are confirmed.",
+        "Match funding and partner budget evidence are received.",
+        "Eligible budget, consortium role, and delivery responsibility are documented."
+      ],
+      "portal_action_after_unlock": "Only after every evidence item above is present: create or complete DRIVE35 Collaborate 3 draft under the evidenced consortium/lead.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+      "name": "DRIVE35: Scale Up Fund",
+      "deadline": "open-no-submission-deadline",
+      "current_state": "DRIVE35_SCALEUP_ZEV_MANUFACTURING_FACILITY_AND_COINVESTMENT_EVIDENCE_REQUIRED",
+      "route": "DRIVE35_SCALE_UP",
+      "unlock_contacts": [
+        {
+          "queue_id": "REMAINING:2:DRIVE35",
+          "target": "Advanced Propulsion Centre general enquiries",
+          "channel_state": "EXACT_PUBLIC_EMAIL_VERIFIED_READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+          "payload": "applications/IFS_DRIVE35_ADVANCED_PROPULSION_CENTRE_GENERAL_ENQUIRIES_OUTREACH_DRAFT_20260710_104541.eml",
+          "sha256": "7f47d47108ffe875fd395df828871d557f932a82297f8075c1ecbfff2f50a824",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT",
+          "destination": "info@apcuk.co.uk"
+        },
+        {
+          "queue_id": "REMAINING:3:DRIVE35",
+          "target": "Wrightbus innovation contact route",
+          "channel_state": "CONTACT_ROUTE_PAYLOAD_REQUIRES_VERIFIED_RECIPIENT_OR_FORM",
+          "payload": "applications/IFS_DRIVE35_WRIGHTBUS_INNOVATION_CONTACT_ROUTE_OUTREACH_DRAFT_20260710_104541.eml",
+          "sha256": "2a91e894be07da5585de3af3c9349b513b42bab69d0237769d223426675c900b",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT"
+        }
+      ],
+      "evidence_required_to_unlock": [
+        "Zero-emission vehicle manufacturing facility or site is identified and authorised for the project.",
+        "Co-investment evidence and capital investment plan are received.",
+        "Eligible GBP5m-plus project cost basis and delivery capacity are documented.",
+        "Manufacturing scale-up plan, site role, and Aureon/R&A role are evidenced."
+      ],
+      "portal_action_after_unlock": "Only after every evidence item above is present: evaluate whether a Scale Up Fund application is appropriate; keep out of immediate queue until facility and co-investment are real.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+      "name": "Zero Emission Vessels and Infrastructure 2: Alternative Fuels",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "current_state": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route": "ZEVI2_ALTERNATIVE_FUELS",
+      "unlock_contacts": [
+        {
+          "queue_id": "REMAINING:4:ZEVI2",
+          "target": "National Shipbuilding Office Secretariat",
+          "channel_state": "EXACT_PUBLIC_EMAIL_VERIFIED_READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+          "payload": "applications/IFS_ZEVI2_NATIONAL_SHIPBUILDING_OFFICE_SECRETARIAT_OUTREACH_DRAFT_20260710_104541.eml",
+          "sha256": "7259e6908e84ca9e80d19ab028d10e515bea936044297f68b15e35d01e318464",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT",
+          "destination": "NSO-Secretariat@mod.gov.uk"
+        }
+      ],
+      "evidence_required_to_unlock": [
+        "UK maritime lead confirms role and eligibility.",
+        "Alternative-fuel vessel or infrastructure asset is identified with permission to reference.",
+        "Three-year demonstration commitment, site, permit, insurance, and safety basis are documented.",
+        "Eligible budget, match funding or partner costs, and Aureon/R&A role are evidenced."
+      ],
+      "portal_action_after_unlock": "Only after every evidence item above is present: create or complete ZEVI2 Alternative Fuels draft under the evidenced maritime lead and asset.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+      "name": "Zero Emission Vessels and Infrastructure 2: Electric Power",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "current_state": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route": "ZEVI2_ELECTRIC_POWER",
+      "unlock_contacts": [
+        {
+          "queue_id": "REMAINING:4:ZEVI2",
+          "target": "National Shipbuilding Office Secretariat",
+          "channel_state": "EXACT_PUBLIC_EMAIL_VERIFIED_READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+          "payload": "applications/IFS_ZEVI2_NATIONAL_SHIPBUILDING_OFFICE_SECRETARIAT_OUTREACH_DRAFT_20260710_104541.eml",
+          "sha256": "7259e6908e84ca9e80d19ab028d10e515bea936044297f68b15e35d01e318464",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT",
+          "destination": "NSO-Secretariat@mod.gov.uk"
+        }
+      ],
+      "evidence_required_to_unlock": [
+        "UK maritime lead confirms role and eligibility.",
+        "Electric-power vessel or infrastructure asset is identified with permission to reference.",
+        "Three-year demonstration commitment, site, permit, insurance, and safety basis are documented.",
+        "Eligible budget, match funding or partner costs, and Aureon/R&A role are evidenced."
+      ],
+      "portal_action_after_unlock": "Only after every evidence item above is present: create or complete ZEVI2 Electric Power draft under the evidenced maritime lead and asset.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+      "name": "Zero Emission Vessels and Infrastructure 2: Energy Efficiency",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "current_state": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route": "ZEVI2_ENERGY_EFFICIENCY",
+      "unlock_contacts": [
+        {
+          "queue_id": "REMAINING:4:ZEVI2",
+          "target": "National Shipbuilding Office Secretariat",
+          "channel_state": "EXACT_PUBLIC_EMAIL_VERIFIED_READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+          "payload": "applications/IFS_ZEVI2_NATIONAL_SHIPBUILDING_OFFICE_SECRETARIAT_OUTREACH_DRAFT_20260710_104541.eml",
+          "sha256": "7259e6908e84ca9e80d19ab028d10e515bea936044297f68b15e35d01e318464",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT",
+          "destination": "NSO-Secretariat@mod.gov.uk"
+        }
+      ],
+      "evidence_required_to_unlock": [
+        "UK maritime lead confirms role and eligibility.",
+        "Vessel or infrastructure asset is identified with permission to reference.",
+        "Three-year demonstration commitment, site, permit, insurance, and safety basis are documented.",
+        "Eligible budget, match funding or partner costs, and Aureon/R&A role are evidenced."
+      ],
+      "portal_action_after_unlock": "Only after every evidence item above is present: create or complete ZEVI2 Energy Efficiency draft under the evidenced maritime lead and asset.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "name": "Scaling performance of quantum computing hardware: CR&D",
+      "deadline": "2026-09-18T11:00:00+01:00",
+      "current_state": "QUANTUM_HARDWARE_LEAD_ACCESS_CONSORTIUM_AND_BUDGET_EVIDENCE_REQUIRED",
+      "route": "QUANTUM_HARDWARE_CRD",
+      "unlock_contacts": [
+        {
+          "queue_id": "REMAINING:5:QUANTUM",
+          "target": "QCi3 Hub contact",
+          "channel_state": "EXACT_PUBLIC_EMAIL_VERIFIED_READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+          "payload": "applications/IFS_QUANTUM_QCI3_HUB_CONTACT_OUTREACH_DRAFT_20260710_104541.eml",
+          "sha256": "98bc881ee4f3a5e8e1912803fccb0745cd3701a70052e118bf9aefa1c7d9906e",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT",
+          "destination": "engage.qci3@physics.ox.ac.uk"
+        }
+      ],
+      "evidence_required_to_unlock": [
+        "Eligible quantum hardware business or RTO lead confirms role.",
+        "Hardware/facility access, facility owner, or device-level platform is evidenced.",
+        "Consortium commitment, partner roles, and partner budgets are documented.",
+        "Performance roadmap, validation plan, and Aureon/R&A support role are confirmed."
+      ],
+      "portal_action_after_unlock": "Only after every evidence item above is present: create or complete quantum hardware CR&D draft with the evidenced hardware lead and consortium.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+      "name": "Innovation Loans Expression of Interest",
+      "deadline": "open-no-submission-deadline",
+      "current_state": "INNOVATION_LOANS_REPAYABLE_FINANCE_CAPACITY_AND_ACTION_APPROVAL_REQUIRED",
+      "route": "INNOVATION_LOANS_EOI",
+      "unlock_contacts": [],
+      "evidence_required_to_unlock": [
+        "Specific action-time approval confirms the company deliberately wants repayable finance rather than grant funding.",
+        "Repayment capacity evidence, cash-flow forecast, loan amount, interest/repayment affordability, and credit-risk pack are available.",
+        "The route is confirmed as suitable for the business and not mixed into the grant-submit queue.",
+        "Any finance-sensitive evidence is handled outside public grant artifacts and without copying private bank details into logs."
+      ],
+      "portal_action_after_unlock": "Do not submit as a grant. Only consider a loan EOI after deliberate repayable-finance approval and finance evidence are present.",
+      "direct_submit_ready": false
+    }
+  ],
+  "readiness_rule": {
+    "do_not_mark_submit_ready_until": [
+      "Every required route-specific evidence item is present in an auditable local or Drive/Gmail-derived artifact.",
+      "The evidence identifies authorised legal entities, named contacts, partner roles, assets/sites, budgets, permissions, facilities, and permitted Aureon/R&A role.",
+      "The IFS portal answers can be completed without guessing partner, lead, finance, asset/site, facility, permit, export, IP, budget, or loan facts.",
+      "The final portal submission receives exact action-time approval for the destination application and payload."
+    ],
+    "current_readiness": "NO_REMAINING_ROUTE_DIRECT_SUBMIT_READY"
+  },
+  "controls": [
+    "No external email was sent.",
+    "No contact route was submitted.",
+    "No IFS portal field was changed.",
+    "No partner invitation, upload, award terms acceptance, or final submission was performed.",
+    "Innovation Loans remains outside the grant queue unless repayable finance is deliberately approved.",
+    "This packet is an internal Aureon submission control artifact, not a representation that evidence exists."
+  ],
+  "result": "REMAINING_SUBMISSION_UNLOCK_CONTROL_PACKET_READY_NO_EXTERNAL_ACTION"
+}

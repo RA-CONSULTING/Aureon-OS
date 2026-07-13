@@ -1,0 +1,102 @@
+{
+  "schema_version": "aureon-ifs-uk-swiss-public-data-finance-live-update-v1",
+  "generated_at": "2026-07-12T12:23:39+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_uk_swiss_public_data_finance_live_update",
+  "result": "IFS_UK_SWISS_PUBLIC_DATA_FINANCE_UPDATED_PROJECT_IMPACT_PROVIDER_BLOCK_NO_FINAL_SUBMISSION",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "competition": "UK-Switzerland CR&D Round 3",
+  "company": "R&A Consulting and Brokerage Services Ltd",
+  "company_number": "NI696693",
+  "live_portal_changes_performed": {
+    "project_costs_saved": true,
+    "project_costs_marked_complete": true,
+    "funding_section_marked_complete": true,
+    "project_impact_submit_pressed": false,
+    "award_terms_accepted": false,
+    "final_submit_pressed": false,
+    "email_sent": false
+  },
+  "live_ifs_finance_readback": {
+    "observed_at": "2026-07-12T12:23:39+01:00",
+    "application_progress_percent": 93,
+    "project_costs_status": "Complete",
+    "project_location_status": "Complete",
+    "organisation_status": "Complete",
+    "funding_status": "Complete",
+    "finances_overview_status": "Complete",
+    "total_costs_gbp": 216194,
+    "funding_level_percent": 70.0,
+    "funding_sought_gbp": 151336,
+    "company_contribution_gbp": 64858,
+    "other_public_sector_funding_gbp": 0
+  },
+  "live_project_cost_readback": {
+    "labour_gross_employee_cost_gbp": 90081,
+    "working_days_per_year": 232,
+    "days_to_be_spent": 464,
+    "labour_total_gbp": 180162,
+    "overheads_basis": "20 percent of labour costs",
+    "overheads_total_gbp": 36032,
+    "materials_gbp": 0,
+    "capital_usage_gbp": 0,
+    "subcontracting_gbp": 0,
+    "travel_and_subsistence_gbp": 0,
+    "other_costs_gbp": 0,
+    "unsupported_other_cost_removed_gbp": 29990,
+    "unsupported_reserve_removed_from_previous_250000_total_gbp": 33806,
+    "paye_scheme_option_preserved": "NOT_REGISTERED"
+  },
+  "public_data_basis": {
+    "source_cost_basis_json": "applications/IFS_PUBLIC_DATA_PROJECT_COST_BASIS_20260712_115116.json",
+    "source_finance_edit_packet": "applications/IFS_UK_SWISS_PUBLIC_DATA_FINANCE_EDIT_PACKET_20260712_115550.json",
+    "basis_pdf": "output/pdf/ifs/IFS_PUBLIC_DATA_PROJECT_COST_BASIS_20260712_115416.pdf",
+    "public_sources": [
+      "ONS ASHE Table 14 2025 provisional, SOC20 1137 median annual pay GBP 90,081",
+      "UKRI Innovate UK non-academic organisation cost guidance, 20 percent labour-overhead option",
+      "GOV.UK HMRC mileage rates checked for travel-cost exclusion where no journey evidence exists"
+    ]
+  },
+  "project_impact_retry": {
+    "status": "PROVIDER_NUMERIC_FIELD_NOT_PERSISTING_AFTER_CURRENT_RETRY",
+    "attempted_field": "Number of Full Time Equivalent (FTE) employees",
+    "attempted_value": "1",
+    "visible_before_continue": true,
+    "review_page_after_continue": "blank",
+    "survey_submit_pressed": false,
+    "blank_numeric_fields_on_review": [
+      "Number of Full Time Equivalent (FTE) employees",
+      "Number of innovation Full Time Equivalent (FTE) employees",
+      "Expected number of additional FTE employees as a result of this support",
+      "Total operating profit or loss",
+      "Total innovation expenditure",
+      "Proportion of turnover from innovative products and services",
+      "Expected additional turnover as a result of this support",
+      "Number of Research and Development (R&D) projects",
+      "Number received commercialisation training",
+      "Number received innovation training"
+    ],
+    "persisted_non_numeric_values_visible": {
+      "Catapult centre engagement related to this support": "No",
+      "Innovate UK Business Connect engagement related to this support": "No",
+      "Expected new products, services or processes as a result of this support": "Yes within 2 years",
+      "Commercial readiness level related to this support": "CRL2 - Basic market awareness demonstrated",
+      "Technology readiness level related to this support": "TRL 4 - Technology validated in lab"
+    },
+    "evidence_screenshot": "applications/rendered/ifs_uk_swiss_10210100_project_impact_review_blank_after_finance_update_20260712_1219.png",
+    "existing_support_email_package_ready_not_sent": "applications/IFS_UK_SWISS_PROJECT_IMPACT_SUPPORT_REFRESH_DRAFT_20260712_20260712_114526.eml"
+  },
+  "remaining_gates": [
+    "Project Impact numeric values must persist visibly on the provider review page before Project Impact Submit is pressed.",
+    "Award terms and conditions remain a separate legal acceptance step and were not accepted in this run.",
+    "Final IFS Submit remains disabled or not safe while Project Impact and award terms are incomplete.",
+    "Swiss partner and partner-budget evidence remain required before treating the application as final-submit-ready."
+  ],
+  "outputs": {
+    "json": "applications/IFS_UK_SWISS_PUBLIC_DATA_FINANCE_LIVE_UPDATE_20260712_122339.json",
+    "markdown": "applications/IFS_UK_SWISS_PUBLIC_DATA_FINANCE_LIVE_UPDATE_20260712_122339.md",
+    "pipeline_report": "pipelines/pipeline_report_20260712_122339_ifs_uk_swiss_public_data_finance_live_update.json"
+  }
+}

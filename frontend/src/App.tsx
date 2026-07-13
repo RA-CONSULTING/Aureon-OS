@@ -11,6 +11,7 @@ import {
   Gauge,
   LineChart,
   Lock,
+  Map,
   Radio,
   RefreshCcw,
   Search,
@@ -38,6 +39,7 @@ import { AureonDirectorCapabilityBridgeConsole } from "@/components/generated/Au
 import { AureonAgentCompanyConsole } from "@/components/generated/AureonAgentCompanyConsole";
 import { AureonGoldCapitalIntelligenceConsole } from "@/components/generated/AureonGoldCapitalIntelligenceConsole";
 import { ExchangeCredentialsManager } from "@/components/ExchangeCredentialsManager";
+import { RepoNavigationPanel } from "@/components/RepoNavigationPanel";
 import {
   CapabilitySwitchboardManifest,
   FrontendScreenPlan,
@@ -1488,7 +1490,7 @@ const safetyTone: Record<string, string> = {
   admin_or_tenant_boundary: "border-yellow-500/30 bg-yellow-500/10 text-yellow-300",
 };
 
-type DashboardTabId = "overview" | "live-ops" | "coding" | "trading" | "security" | "inventory" | "agents" | "evidence";
+type DashboardTabId = "overview" | "repo-map" | "live-ops" | "coding" | "trading" | "security" | "inventory" | "agents" | "evidence";
 type BlockerFilter = "all" | "critical" | "security" | "runtime" | "stale";
 type WorkOrderFilter = "all" | "blocked" | "ready" | "archive" | "screen";
 type SurfaceFilter = "all" | "observation" | "security" | "live" | "credential" | "missing";
@@ -1503,6 +1505,7 @@ interface DashboardTabConfig {
 
 const dashboardTabs: DashboardTabConfig[] = [
   { id: "overview", title: "Overview", summary: "Health, blockers, runtime, and next actions.", icon: Eye },
+  { id: "repo-map", title: "Repo Map", summary: "Whole-repo systems, capability routes, and public contract.", icon: Map },
   { id: "live-ops", title: "Live Ops", summary: "Runtime shell, interfaces, and live telemetry.", icon: Radio },
   { id: "coding", title: "Coding", summary: "Prompt lane, forge, tests, and handover proof.", icon: Settings },
   { id: "trading", title: "Trading", summary: "Trading state, exchange checks, and risk gates.", icon: LineChart },
@@ -6679,6 +6682,10 @@ function AppShell() {
               <DomainSpreadPanel topDomains={topDomains} totalSurfaceCount={summary.surface_count} />
               <CurrentScreenFocusPanel screen={activeScreen} />
             </div>
+          </TabsContent>
+
+          <TabsContent value="repo-map" className="mt-0 space-y-5" data-testid="dashboard-content-repo-map">
+            <RepoNavigationPanel />
           </TabsContent>
 
           <TabsContent value="live-ops" className="mt-0 space-y-5" data-testid="dashboard-content-live-ops">

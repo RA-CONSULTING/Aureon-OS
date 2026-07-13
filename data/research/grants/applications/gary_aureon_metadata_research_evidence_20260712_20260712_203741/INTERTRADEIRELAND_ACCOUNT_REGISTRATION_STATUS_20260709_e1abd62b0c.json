@@ -1,0 +1,28 @@
+{
+  "generated_at": "2026-07-09T15:21:54+01:00",
+  "operator": "Aureon",
+  "account": {
+    "provider": "InterTradeIreland",
+    "email": "gaxlec@gmail.com",
+    "status": "EMAIL_VERIFICATION_REQUIRED",
+    "registration_result": "Portal displayed Verification Email Sent after account registration.",
+    "password_stored": false
+  },
+  "application": {
+    "id": "APP-INTERTRADEIRELAND-BUSINESS-EXPLORER-EXPLORE-20260709",
+    "funder": "InterTradeIreland",
+    "programme": "Business Explorer - Explore",
+    "status": "ACCOUNT_CREATED_EMAIL_VERIFICATION_REQUIRED",
+    "url": "https://intertradeireland.com/innovation/business-explorer/business-support/explore-application",
+    "prepared_pack": "applications/INTERTRADEIRELAND_BUSINESS_EXPLORER_EXPLORE_FIELD_PACK_20260709.md",
+    "status_note": "applications/INTERTRADEIRELAND_BUSINESS_EXPLORER_EXPLORE_STATUS_20260709.md"
+  },
+  "portal_observations": [
+    "Business Explorer Explore application page required login before the application form was exposed.",
+    "Login attempt returned Invalid email or password.",
+    "Registration page accepted account creation and displayed Verification Email Sent.",
+    "Gmail verification could not be completed through browser automation because Gmail caused the Chrome automation call to time out."
+  ],
+  "next_action": "Verify the InterTradeIreland email, then complete the Explore application using the staged field pack."
+}
+

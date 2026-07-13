@@ -1,0 +1,416 @@
+{
+  "schema_version": "aureon-continuous-funding-monitor-current-refresh-v1",
+  "generated_at": "2026-07-10T23:20:57+01:00",
+  "operator": "Aureon",
+  "applicant": "R&A Consulting and Brokerage Services Ltd",
+  "lead_contact": "Gary Anthony Leckey",
+  "event": "continuous_funding_monitor_reconciled",
+  "result": "CONTINUOUS_MONITOR_RECONCILED_NO_NEW_SUBMIT_READY_ROUTE",
+  "ledger_summary": {
+    "total_opportunities": 46,
+    "opportunity_status_counts": {
+      "ACADEMIC_HOST_REQUIRED": 1,
+      "ADVISOR_OR_CLIENT_ROUTE_REQUIRED": 1,
+      "CLOSED": 1,
+      "EVIDENCE_GATED": 1,
+      "OPEN": 36,
+      "PARTNER_REQUIRED": 1,
+      "PENDING": 2,
+      "RESEARCH_ORG_EPSRC_ROUTE_REQUIRED": 1,
+      "RESEARCH_ORG_STFC_ROUTE_REQUIRED": 1,
+      "SHORTLIST_UPLOAD_ONLY": 1
+    },
+    "total_applications": 29,
+    "application_status_counts": {
+      "ACADEMIC_HOST_REQUIRED": 1,
+      "ACCOUNT_CREATED_EMAIL_VERIFICATION_REQUIRED": 1,
+      "ACTASAP_ACADEMIC_LEAD_AND_TTO_EVIDENCE_REQUIRED": 1,
+      "ADOPT_FACILITATOR_ENGLAND_FARM_BUSINESS_AND_REGISTERED_FACILITATOR_EVIDENCE_REQUIRED": 1,
+      "ADOPT_FULL_FARMING_LEAD_AND_PARTNER_EVIDENCE_REQUIRED": 1,
+      "AKT6_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY": 1,
+      "CKAF_PUBLIC_SECTOR_RESEARCH_ORG_AND_KNOWLEDGE_ASSET_EVIDENCE_REQUIRED": 1,
+      "DRIVE35_COLLAB3_ZEV_PARTNER_MATCH_FUNDING_AND_TIER1_EVIDENCE_REQUIRED": 1,
+      "DRIVE35_SCALEUP_ZEV_MANUFACTURING_FACILITY_AND_COINVESTMENT_EVIDENCE_REQUIRED": 1,
+      "EVIDENCE_GATED": 1,
+      "IFS_DRAFT_80_PERCENT_EVIDENCE_DELTA_NO_UNLOCK_Q4_Q6_Q17_FINANCE_IMPACT_TERMS_GATED": 1,
+      "INNOVATION_LOANS_REPAYABLE_FINANCE_CAPACITY_AND_ACTION_APPROVAL_REQUIRED": 1,
+      "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK": 6,
+      "PARTNER_OUTREACH_DRAFT": 1,
+      "PARTNER_REQUIRED": 1,
+      "QUANTUM_HARDWARE_LEAD_ACCESS_CONSORTIUM_AND_BUDGET_EVIDENCE_REQUIRED": 1,
+      "RESEARCH_ORG_LEAD_AND_JAPAN_PARTNER_REQUIRED": 1,
+      "SHORTLIST_REQUIRED": 1,
+      "SUBMITTED": 6
+    },
+    "ifs_applications_total": 20,
+    "submitted_ifs_applications": 4,
+    "submitted_airr_applications": 2,
+    "active_not_submitted_ifs_applications": 16,
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0
+  },
+  "submitted_records_preserved": [
+    {
+      "id": "APP-AIRR-001",
+      "name": "AIRR Compute: AI Open Access Application",
+      "portal_application_number": null,
+      "submitted_at": "2026-07-09T06:57:00+01:00",
+      "deadline": "2026-07-17T16:00:00+01:00"
+    },
+    {
+      "id": "APP-IFS-NEXT-WAVE-10209601",
+      "name": "Aureon Evidence Studio for Createch AI Workflows",
+      "portal_application_number": "10209601",
+      "submitted_at": "2026-07-07T13:47:00+01:00",
+      "deadline": "2026-08-11T11:00:00+01:00"
+    },
+    {
+      "id": "APP-IFS-FLF-R11-2499-20260709",
+      "name": "Aureon AI Evidence OS - Future Leaders Fellowship Round 11 Pack",
+      "portal_application_number": "10209992",
+      "submitted_at": "2026-07-09T11:07:00+01:00",
+      "deadline": "2026-11-04T11:00:00+00:00"
+    },
+    {
+      "id": "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+      "name": "Aureon Flex Evidence OS: AI Assurance for Consumer-Led Flexibility",
+      "portal_application_number": "10210032",
+      "submitted_at": "2026-07-09T13:45:00+01:00",
+      "deadline": "2026-08-26T11:00:00+01:00"
+    },
+    {
+      "id": "APP-IFS-CFI-SEN-2511-20260709",
+      "name": "Aureon SEN Evidence OS: Fair Early Identification Support",
+      "portal_application_number": "10210045",
+      "submitted_at": "2026-07-09T14:31:00+01:00",
+      "deadline": "2026-08-05T11:00:00+01:00"
+    },
+    {
+      "id": "APP-AIRR-RAPID-ACCESS-20260709",
+      "name": "Aureon Rapid Evidence Evaluation Sprint",
+      "portal_application_number": null,
+      "submitted_at": "2026-07-09T15:02:00+01:00",
+      "deadline": "open-no-closing-date"
+    }
+  ],
+  "official_route_refresh": {
+    "ifs": {
+      "source_url": "https://apply-for-innovation-funding.service.gov.uk/competition/search",
+      "readback": "Official IFS search showed 20 open competitions. Current local IFS queue also has 20 IFS application records, so no new official IFS route is missing from the queue.",
+      "official_competition_count": 20,
+      "missing_from_aureon_queue_count": 0,
+      "direct_submit_ready_routes": 0
+    },
+    "uk_swiss_crd_round_3": {
+      "source_url": "https://apply-for-innovation-funding.service.gov.uk/competition/2512/overview/2f0a03c4-44b7-42dc-8845-70751b6bc531",
+      "readback": "Open until 2026-09-03 11:00 UK time. Requires at least one Swiss implementation partner and at least one research institute unless the Swiss applicant waiver applies.",
+      "local_application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "portal_application_number": "10210100",
+      "local_state": "80 percent draft, still gated by Swiss partner, research institute or waiver, budget, finance, permit and export-control evidence."
+    },
+    "eurostars_call_11": {
+      "source_url": "https://www.eurekanetwork.org/programmes-and-calls/eurostars/eurostars-call-for-projects-september-2026/",
+      "readback": "Call 11 is open from 2026-07-09 to 2026-09-10 14:00 CET. It requires an innovative SME lead and at least two independent entities from at least two Eurostars countries.",
+      "local_application_id": "APP-EUREKA-EUROSTARS-CALL11-20260709",
+      "local_state": "Partner-required monitor route; not direct-submit-ready from current Aureon evidence."
+    },
+    "intertradeireland_seedcorn": {
+      "source_url": "https://intertradeireland.com/funding/seedcorn",
+      "readback": "Seedcorn page shows extended slide deck or business plan upload open until 2026-08-07 13:00 only for successfully shortlisted applicants.",
+      "local_application_id": "APP-INTERTRADEIRELAND-SEEDCORN-MONITOR-20260710",
+      "local_state": "Shortlist-required monitor route; no shortlist evidence found in current local ledgers."
+    },
+    "ukri_nerc_global_partnerships_seedcorn": {
+      "source_url": "https://www.ukri.org/opportunity/environmental-sciences-global-partnerships-seedcorn-fund-2026/",
+      "readback": "Open until 2026-07-16 16:00 UK time. Lead must be based at a UK research organisation eligible for NERC funding.",
+      "local_state": "Research-organisation-led route; possible partner/support evidence only, not R&A direct lead."
+    },
+    "ukri_japan_uk_advanced_connectivity": {
+      "source_url": "https://www.ukri.org/opportunity/",
+      "readback": "UKRI Funding Finder listed the Japan-UK Advanced Connectivity Technologies call as open, published 2026-07-10, opening 2026-07-10 09:00 UK time and closing 2026-10-06 16:00 UK time. UK applicants must be EPSRC-eligible research organisations and Japanese applicants must be NICT-eligible.",
+      "local_opportunity_id": "UKRI-EPSRC-JAPAN-UK-ADVANCED-CONNECTIVITY-20261006",
+      "local_application_id": "APP-UKRI-JAPAN-UK-ADVANCED-CONNECTIVITY-PARTNER-20260710",
+      "local_state": "Research-organisation-led partner/support monitor route; not direct-submit-ready for R&A."
+    }
+  },
+  "live_portal_state": {
+    "source_artifact": "applications/IFS_LIVE_PORTAL_READBACK_EVIDENCE_SEARCH_20260710_122332.json",
+    "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+    "portal_application_number": "10210100",
+    "portal_progress": "80 percent complete",
+    "result": "LIVE_PORTAL_READBACK_NO_SAFE_BINARY_DECLARATION_NO_NEW_SUBMIT_READY_ROUTE",
+    "portal_changed": false,
+    "external_submission_performed": false
+  },
+  "route_blockers": [
+    {
+      "application_id": "APP-IFS-AKT6-2473-20260709",
+      "status": "AKT6_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "queue": "NEAREST_DEADLINE_EVIDENCE_REQUIRED",
+      "missing_evidence": [
+        "eligible UK knowledge-base lead",
+        "TTO or authorised lead contact",
+        "UK business four-FTE evidence",
+        "work package, budget and signed role confirmation"
+      ],
+      "operator_next_action": "Use the AKT6 knowledge-base draft and partner notes to seek an eligible lead; do not open final IFS submission without lead and FTE evidence."
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "queue": "NEAREST_DEADLINE_MARITIME_EVIDENCE_REQUIRED",
+      "missing_evidence": [
+        "UK maritime lead",
+        "vessel or port/shipyard asset",
+        "trial site permissions",
+        "safety case, permits and insurance basis",
+        "eligible budget and deployment plan"
+      ],
+      "operator_next_action": "Use the maritime evidence request pack; do not create or submit a portal draft without named asset/site/budget evidence."
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "queue": "NEAREST_DEADLINE_MARITIME_EVIDENCE_REQUIRED",
+      "missing_evidence": [
+        "UK maritime lead",
+        "feasibility partner and asset context",
+        "scope, budget and work package",
+        "partner commitment evidence"
+      ],
+      "operator_next_action": "Use the maritime evidence request pack; do not create or submit a portal draft without named partner and eligible-cost evidence."
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "queue": "NEAREST_DEADLINE_MARITIME_EVIDENCE_REQUIRED",
+      "missing_evidence": [
+        "UK maritime deployment lead",
+        "deployment asset or site",
+        "permissions and safety case",
+        "partner budget and deployment schedule"
+      ],
+      "operator_next_action": "Use the maritime evidence request pack; do not create or submit a portal draft without deployment partner evidence."
+    },
+    {
+      "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+      "status": "ACTASAP_ACADEMIC_LEAD_AND_TTO_EVIDENCE_REQUIRED",
+      "deadline": "2026-07-28T11:00:00+01:00",
+      "queue": "ACADEMIC_LEAD_EVIDENCE_REQUIRED",
+      "missing_evidence": [
+        "eligible UK academic institution lead",
+        "TTO or authorised research-office contact",
+        "scope and validation work package",
+        "budget and commitment evidence"
+      ],
+      "operator_next_action": "Use academic outreach drafts and research metadata; hold IFS submission until academic lead evidence exists."
+    },
+    {
+      "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+      "status": "ADOPT_FULL_FARMING_LEAD_AND_PARTNER_EVIDENCE_REQUIRED",
+      "deadline": "2026-07-29T11:00:00+01:00",
+      "queue": "FARMING_LEAD_EVIDENCE_REQUIRED",
+      "missing_evidence": [
+        "England farming, growing or forestry lead",
+        "collaborating farm business",
+        "farm problem statement",
+        "facilitator or support role evidence"
+      ],
+      "operator_next_action": "Use ADOPT support/facilitator contacts; do not apply as R&A direct applicant."
+    },
+    {
+      "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+      "status": "ADOPT_FACILITATOR_ENGLAND_FARM_BUSINESS_AND_REGISTERED_FACILITATOR_EVIDENCE_REQUIRED",
+      "deadline": "2026-08-12T11:00:00+01:00",
+      "queue": "FARMING_FACILITATOR_ROUTE_GATED",
+      "missing_evidence": [
+        "England farm business context",
+        "registered facilitator evidence",
+        "role and procurement evidence"
+      ],
+      "operator_next_action": "Keep as partner/service route only; direct R&A application remains unsupported."
+    },
+    {
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "status": "IFS_DRAFT_80_PERCENT_EVIDENCE_DELTA_NO_UNLOCK_Q4_Q6_Q17_FINANCE_IMPACT_TERMS_GATED",
+      "deadline": "2026-09-03T11:00:00+01:00",
+      "queue": "LIVE_DRAFT_PARTNER_BUDGET_EXPORT_GATED",
+      "missing_evidence": [
+        "Swiss implementation partner",
+        "research institute or waiver evidence",
+        "partner commitment letter",
+        "partner budget and eligible-cost split",
+        "permit/licence position",
+        "export-control position",
+        "project finances and Project Impact"
+      ],
+      "operator_next_action": "Resume IFS draft 10210100 only when partner, budget, permit/export and finance evidence exists; do not complete Q4/Q6 from assumptions."
+    },
+    {
+      "application_id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+      "status": "CKAF_PUBLIC_SECTOR_RESEARCH_ORG_AND_KNOWLEDGE_ASSET_EVIDENCE_REQUIRED",
+      "deadline": "2026-09-01T11:00:00+01:00",
+      "queue": "PUBLIC_SECTOR_RESEARCH_ORG_REQUIRED",
+      "missing_evidence": [
+        "eligible public-sector research organisation lead",
+        "knowledge-asset ownership evidence",
+        "senior support or authorised lead evidence",
+        "Aureon support/procurement role"
+      ],
+      "operator_next_action": "Use CKAF GOTT query and route metadata; do not submit as R&A lead."
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+      "status": "DRIVE35_COLLAB3_ZEV_PARTNER_MATCH_FUNDING_AND_TIER1_EVIDENCE_REQUIRED",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "queue": "ZEV_PARTNER_MATCH_FUNDING_REQUIRED",
+      "missing_evidence": [
+        "vehicle manufacturer or Tier 1 partner",
+        "ZEV work package",
+        "match funding evidence",
+        "eligible budget and consortium role"
+      ],
+      "operator_next_action": "Use APC/Wrightbus outreach drafts; hold submission until partner and match funding are evidenced."
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "queue": "MARITIME_PARTNER_ASSET_BUDGET_REQUIRED",
+      "missing_evidence": [
+        "UK maritime lead",
+        "vessel/infrastructure asset",
+        "three-year demonstration commitment",
+        "eligible budget and permissions"
+      ],
+      "operator_next_action": "Use maritime evidence pack; do not submit without lead, asset and budget evidence."
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "queue": "MARITIME_PARTNER_ASSET_BUDGET_REQUIRED",
+      "missing_evidence": [
+        "UK maritime lead",
+        "electric-power vessel or infrastructure asset",
+        "three-year demonstration commitment",
+        "eligible budget and permissions"
+      ],
+      "operator_next_action": "Use maritime evidence pack; do not submit without lead, asset and budget evidence."
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "queue": "MARITIME_PARTNER_ASSET_BUDGET_REQUIRED",
+      "missing_evidence": [
+        "UK maritime lead",
+        "alternative-fuel vessel or infrastructure asset",
+        "three-year demonstration commitment",
+        "eligible budget and permissions"
+      ],
+      "operator_next_action": "Use maritime evidence pack; do not submit without lead, asset and budget evidence."
+    },
+    {
+      "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "status": "QUANTUM_HARDWARE_LEAD_ACCESS_CONSORTIUM_AND_BUDGET_EVIDENCE_REQUIRED",
+      "deadline": "2026-09-18T11:00:00+01:00",
+      "queue": "QUANTUM_HARDWARE_LEAD_REQUIRED",
+      "missing_evidence": [
+        "eligible quantum hardware lead",
+        "facility or hardware access",
+        "consortium commitment",
+        "budget and validation plan"
+      ],
+      "operator_next_action": "Use quantum research metadata and QCi3 outreach draft; hold submission until hardware lead/access evidence exists."
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+      "status": "DRIVE35_SCALEUP_ZEV_MANUFACTURING_FACILITY_AND_COINVESTMENT_EVIDENCE_REQUIRED",
+      "deadline": "open-no-submission-deadline",
+      "queue": "ZEV_MANUFACTURING_FACILITY_REQUIRED",
+      "missing_evidence": [
+        "ZEV manufacturing facility or site",
+        "co-investment evidence",
+        "eligible GBP5m plus project cost basis",
+        "manufacturing scale-up plan"
+      ],
+      "operator_next_action": "Keep out of immediate submit queue until facility and co-investment evidence exists."
+    },
+    {
+      "application_id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+      "status": "INNOVATION_LOANS_REPAYABLE_FINANCE_CAPACITY_AND_ACTION_APPROVAL_REQUIRED",
+      "deadline": "open-no-submission-deadline",
+      "queue": "LOAN_FINANCE_RISK_GATED",
+      "missing_evidence": [
+        "repayable finance approval",
+        "repayment capacity evidence",
+        "cash-flow forecast",
+        "specific action-time approval for loan route"
+      ],
+      "operator_next_action": "Do not treat as grant submission; keep out of grant queue unless repayable finance is deliberately approved."
+    }
+  ],
+  "evidence_index": {
+    "local_grant_ledgers": [
+      "applications.json",
+      "opportunities.json",
+      "pipeline.json",
+      "autopilot_status.json",
+      "activity.log"
+    ],
+    "latest_route_artifacts": [
+      "applications/IFS_CURRENT_ACTION_REGISTER_20260710_231921.json",
+      "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_232050.json",
+      "applications/IFS_LIVE_PORTAL_READBACK_EVIDENCE_SEARCH_20260710_122332.json",
+      "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_230645.json"
+    ],
+    "work_corpus": [
+      "AUREON_UNIFIED_WORK_CORPUS_20260709.md",
+      "AUREON_UNIFIED_WORK_CORPUS_20260709.json",
+      "MASTER_WORK_INDEX_20260705.md",
+      "PUBLIC_WORK_SOURCE_REGISTRY_20260705.md"
+    ],
+    "metadata_work_packages": [
+      "Aureon Evidence OS for controlled AI and grant operations",
+      "HNC coherence and validation framework for AI-driven discovery",
+      "AI-assisted compliance and SME evidence automation",
+      "Engineering, hardware and quantum-adjacent evidence workflow",
+      "Deployment-trial evidence assurance for partner-led sectors"
+    ],
+    "public_profile_evidence": [
+      {
+        "source": "Companies House officer and PSC pages for Gary Anthony Leckey / R&A Consulting and Brokerage Services Ltd",
+        "claim_class": "Class A legal/control evidence when refreshed directly from Companies House.",
+        "reuse_rule": "Use for legal entity and control context only."
+      },
+      {
+        "source": "ResearchGate, Academia and ORCID profile pointers",
+        "claim_class": "Profile/dissemination pointers.",
+        "reuse_rule": "Browser-verify before formal quotation or attaching to a funder pack."
+      }
+    ]
+  },
+  "controls": [
+    "No plaintext password or secret was printed or stored.",
+    "No CAPTCHA, MFA or provider control bypass was attempted.",
+    "No portal field was changed by this reconciliation run.",
+    "No email, partner invite, upload, award terms acceptance or final submission was performed.",
+    "Submitted IFS and AIRR records were preserved."
+  ],
+  "artifacts": {
+    "run_json": "AUREON_CONTINUOUS_FUNDING_MONITOR_20260710_232057.json",
+    "run_markdown": "applications/AUREON_CONTINUOUS_FUNDING_MONITOR_20260710_232057.md",
+    "pipeline_report": "pipelines/pipeline_report_20260710_232057_continuous_funding_monitor.json"
+  },
+  "source_artifacts": [
+    "applications/IFS_CURRENT_ACTION_REGISTER_20260710_231921.json",
+    "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_232050.json",
+    "applications/IFS_LIVE_PORTAL_READBACK_EVIDENCE_SEARCH_20260710_122332.json",
+    "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_230645.json"
+  ]
+}

@@ -1,0 +1,9 @@
+﻿{
+    "status":  "pending",
+    "surface":  "mind",
+    "requested_by":  "AUREON_WAKE_UP_FULL_AUTONOMOUS supervisor",
+    "reason":  "launcher_detected_pending_mind_hub_update_deferred_until_downtime",
+    "change_id":  "mind_hub_goal_pursuit_flight_test",
+    "requested_at":  "2026-05-15T15:27:53.0052315+01:00",
+    "policy":  "reboot only after internal flight test and configured downtime window approve"
+}

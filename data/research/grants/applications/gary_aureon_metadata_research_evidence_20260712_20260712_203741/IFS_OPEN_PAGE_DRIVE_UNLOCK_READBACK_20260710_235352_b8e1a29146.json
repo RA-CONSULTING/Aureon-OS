@@ -1,0 +1,330 @@
+{
+  "schema_version": "aureon-ifs-open-page-drive-unlock-readback-v1",
+  "generated_at": "2026-07-10T23:53:52+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_open_page_drive_unlock_readback",
+  "open_ifs_page": {
+    "portal_application_number": "10210100",
+    "url": "https://apply-for-innovation-funding.service.gov.uk/application/10210100",
+    "competition": "UK-Switzerland CR&D Round 3",
+    "application_progress_readback": "36%",
+    "portal_changed": false,
+    "portal_action_available": false
+  },
+  "source_refs": {
+    "prior_live_overview_readback": "applications/IFS_UK_SWISS_LIVE_OVERVIEW_READBACK_20260710_234506.json",
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_234507.json",
+    "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_234507.json",
+    "full_board_validation": "applications/IFS_FULL_BOARD_COVERAGE_VALIDATION_20260710_234508.json"
+  },
+  "summary": {
+    "drive_queries_reviewed": 13,
+    "metadata_results_reviewed": 55,
+    "fetched_candidate_files_reviewed": 5,
+    "route_unlock_evidence_found": 0,
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0,
+    "safe_portal_actions_available": 0,
+    "private_finance_values_copied": false,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false
+  },
+  "searches": [
+    {
+      "query": "AKT Aureon",
+      "result_count": 4,
+      "result_class": "WAR_ROOM_CONTEXT_ONLY",
+      "classification": "Aureon Grant War Room records were found, but no AKT6 academic lead, TTO authority, four-FTE evidence, work package commitment or budget evidence was found.",
+      "result_titles": [
+        "Aureon Grant War Room - 2026-07-04",
+        "Aureon Grant War Room - 2026-07-04.xlsx"
+      ]
+    },
+    {
+      "query": "academic validation",
+      "result_count": 5,
+      "result_class": "DRAFT_AND_RESEARCH_ONLY",
+      "classification": "Academic validation and research materials were found. They support a validation narrative, but they are not an academic lead, signed partner commitment, approved scope or budget.",
+      "result_titles": [
+        "SCEMDA_HNC_LSC_Academic_White_Paper.pdf",
+        "Validation_Metrics_Ledger_v.docx",
+        "03_Academic_Validation_Sprint_Email_Pack.pdf"
+      ]
+    },
+    {
+      "query": "Innosuisse",
+      "result_count": 4,
+      "result_class": "WAR_ROOM_CONTEXT_ONLY",
+      "classification": "War Room material was found. No Innosuisse application status, Swiss implementation partner, research institute or Swiss budget commitment was found.",
+      "result_titles": [
+        "Aureon Grant War Room - 2026-07-04",
+        "Aureon Grant War Room - 2026-07-04.xlsx"
+      ]
+    },
+    {
+      "query": "Swiss partner",
+      "result_count": 5,
+      "result_class": "PLANNING_AND_OPERATING_LOG_ONLY",
+      "classification": "Grant planning and operating-log material was found. No named Swiss implementation partner, partner commitment letter, research institute or waiver, partner budget split, permit or export-control evidence was found.",
+      "result_titles": [
+        "Aureon Grant War Room - 2026-07-04",
+        "AUREON_GRANT_OPERATING_LOG.md"
+      ]
+    },
+    {
+      "query": "CMDC7",
+      "result_count": 0,
+      "result_class": "NO_RESULTS",
+      "classification": "No Drive result was found for CMDC7. No clean maritime lead, vessel, port, shipyard, site permission, safety case, insurance or budget evidence was found.",
+      "result_titles": []
+    },
+    {
+      "query": "ADOPT Aureon",
+      "result_count": 5,
+      "result_class": "WAR_ROOM_AND_PLANNING_ONLY",
+      "classification": "Grant planning material was found. No England farmer, grower or forester lead, field-lab problem statement, facilitator role evidence or procurement route was found.",
+      "result_titles": [
+        "Aureon Grant War Room - 2026-07-04",
+        "EIC_ACCELERATOR_STEP1_SHORT_PROPOSAL_DRAFT_20260706.pdf"
+      ]
+    },
+    {
+      "query": "partner commitment",
+      "result_count": 5,
+      "result_class": "OUTREACH_DRAFT_OR_UNRELATED_ONLY",
+      "classification": "The search returned mostly unrelated tooling files plus the academic validation email pack. No signed partner commitment or authorised partner reply was found.",
+      "result_titles": [
+        "SKILL.md",
+        "CLAUDE_MD_TESTING.md",
+        "03_Academic_Validation_Sprint_Email_Pack.pdf"
+      ]
+    },
+    {
+      "query": "research institute",
+      "result_count": 5,
+      "result_class": "RESEARCH_AND_WAR_ROOM_ONLY",
+      "classification": "Aureon research material and War Room records were found. No committed research institute, waiver evidence, PI/TTO authorisation or budget was found.",
+      "result_titles": [
+        "AUREON_WHITE_PAPER_RESEARCH_HUB.md",
+        "Aureon Grant War Room - 2026-07-04"
+      ]
+    },
+    {
+      "query": "budget Aureon",
+      "result_count": 5,
+      "result_class": "WAR_ROOM_OR_RESEARCH_ONLY",
+      "classification": "War Room and research records were found. No current IFS-ready budget, eligible-cost split, match-funding evidence or partner finance confirmation was found.",
+      "result_titles": [
+        "Aureon Grant War Room - 2026-07-04",
+        "AUREON_WHITE_PAPER_RESEARCH_HUB.md"
+      ]
+    },
+    {
+      "query": "Queens Ulster",
+      "result_count": 5,
+      "result_class": "WAR_ROOM_CONTEXT_ONLY",
+      "classification": "The War Room identifies Queen's University Belfast and Ulster University as target partners, but no commitment, reply, TTO authority, PI lead or budget was found.",
+      "result_titles": [
+        "Aureon Grant War Room - 2026-07-04",
+        "AUREON_GRANT_OPERATING_LOG.md"
+      ]
+    },
+    {
+      "query": "maritime Aureon",
+      "result_count": 5,
+      "result_class": "RESEARCH_OR_UNRELATED_ONLY",
+      "classification": "Research documents were found, but no maritime lead, vessel, port, shipyard, demonstration asset, safety, insurance, permission or budget evidence was found.",
+      "result_titles": [
+        "Atlantic_Seaboard_Substrate_v.docx",
+        "Atlantic_Seaboard_Substrate_v1.pdf"
+      ]
+    },
+    {
+      "query": "Belfast Harbour",
+      "result_count": 5,
+      "result_class": "UNRELATED_OR_PRIVATE_FINANCE_ONLY",
+      "classification": "The search did not produce Belfast Harbour partner evidence. Some finance-adjacent file titles appeared; private finance content was not used or copied.",
+      "result_titles": [
+        "Statement__GBP_20240701-20240731.pdf",
+        "Statement__GBP_20241101-20241130.pdf",
+        "Statement__GBP_20250301-20250331.pdf"
+      ]
+    },
+    {
+      "query": "ACTASAP Aureon",
+      "result_count": 2,
+      "result_class": "WAR_ROOM_PACKAGE_ONLY",
+      "classification": "The R&A Grant War Room package was found. It is not an eligible academic-institution lead, TTO commitment, approved ACTASAP scope or budget.",
+      "result_titles": [
+        "RA_Grant_War_Room_Package.pdf",
+        "RA_Grant_War_Room_Package.md"
+      ]
+    }
+  ],
+  "fetched_candidates": [
+    {
+      "title": "Aureon Grant War Room - 2026-07-04",
+      "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+      "classification": "Structured grant operating source. It records that Gary remains approval authority, company compliance was a blocker, partners were not clear and budget evidence was not started. It does not unlock an IFS submission.",
+      "sensitive_values_copied": false
+    },
+    {
+      "title": "03_Academic_Validation_Sprint_Email_Pack.pdf",
+      "url": "https://drive.google.com/file/d/1Gwy7fl-jo8Mc5HD4lRopWuhocVuf7V3S",
+      "classification": "Draft academic outreach pack. It requests an academic partner and says no email was sent. It is not a partner acceptance or lead commitment.",
+      "sensitive_values_copied": false
+    },
+    {
+      "title": "AUREON_WHITE_PAPER_RESEARCH_HUB.md",
+      "url": "https://drive.google.com/file/d/1Fe8YaOtUiYB8ThdT-o9GrzHN_T1n-o7C",
+      "classification": "Research narrative source only. It contains broad technical claims that require claim control and does not provide IFS partner, cost, permit or export-control evidence.",
+      "sensitive_values_copied": false
+    },
+    {
+      "title": "RA_Grant_War_Room_Package.md",
+      "url": "https://drive.google.com/file/d/1_V8v6tYCL-LsMxrju_emMQcikxl_ZNly",
+      "classification": "Historic grant package and answer library. It contains sensitive finance identifiers and informal/internal language; those values were not copied and the content is not safe for direct IFS import without sanitation and current-route verification.",
+      "sensitive_values_copied": false
+    },
+    {
+      "title": "SCEMDA_HNC_LSC_Academic_White_Paper.pdf",
+      "url": "https://drive.google.com/file/d/1R3zY9UOC6imgLRszXkcNy34ya3dE2NR6",
+      "classification": "Draft academic review white paper. It supports research-method narrative and claim discipline, but it is not a partner, budget, permit, export-control or route eligibility unlock.",
+      "sensitive_values_copied": false
+    }
+  ],
+  "application_impacts": [
+    {
+      "application_id": "APP-IFS-AKT6-2473-20260709",
+      "impact": "Academic validation documents and War Room target lists exist, but no AKT6 academic lead, TTO authorisation, four-FTE evidence, work package commitment or budget was found.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+      "impact": "Academic and ACTASAP searches found draft packs only; no eligible academic-institution lead, TTO commitment, approved scope or budget was found.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+      "impact": "ADOPT searches found planning material only; no England farm/grower/forester lead, field-lab problem statement or facilitator evidence was found.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+      "impact": "ADOPT searches found planning material only; no farm context, facilitator commitment or support-role procurement evidence was found.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "impact": "The open IFS page remains 36 percent complete. Drive searches found planning/research files only; no Swiss implementation partner, research institute or waiver, Innosuisse status, partner budget split, permit/licence, export-control, finance or Project Impact evidence was found.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "impact": "CMDC7 and maritime searches did not find a maritime lead, vessel, port, shipyard, site permission, safety case, insurance or budget.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "impact": "CMDC7 and maritime searches did not find a maritime lead, asset context, scope commitment or budget.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "impact": "CMDC7 and maritime searches did not find a maritime lead, vessel/port/shipyard, permissions, safety, insurance or budget.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+      "impact": "Research-institute searches found research/War Room material only; no public-sector research organisation lead or public knowledge-asset owner evidence was found.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+      "impact": "DRIVE35/ZEV evidence was not found; vehicle manufacturer or Tier 1 partner, match funding, eligible budget and consortium role gates remain.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+      "impact": "DRIVE35/ZEV evidence was not found; ZEV manufacturing facility/site, co-investment and eligible project-cost evidence remain missing.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+      "impact": "Maritime and harbour searches found no eligible lead, vessel or infrastructure asset, demonstration commitment, permissions or budget.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+      "impact": "Maritime and harbour searches found no electric-power maritime lead, vessel or infrastructure asset, demonstration commitment, permissions or budget.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+      "impact": "Maritime and harbour searches found no energy-efficiency maritime lead, vessel or infrastructure asset, demonstration commitment, permissions or budget.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "impact": "Research and quantum-adjacent material may support narrative, but no quantum hardware lead, facility access, consortium commitment or budget was found.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+      "impact": "Finance-adjacent file titles appeared, but repayable finance remains outside the grant queue until deliberate loan approval, cash-flow forecast and repayment-capacity evidence are recorded.",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    }
+  ],
+  "controls": [
+    "IFS portal was read only; no field was changed.",
+    "No IFS application was submitted.",
+    "No Drive file was created, edited, moved, copied, shared, deleted or uploaded.",
+    "Sensitive finance values observed in Drive candidate content were not copied.",
+    "No email, contact form, partner invite, terms acceptance or upload action was performed.",
+    "No application was marked direct-submit-ready from this readback."
+  ],
+  "next_aureon_actions": [
+    "Keep IFS 10210100 open only for readback until Swiss partner, research institute or waiver, Innosuisse status, budget split, permit/licence, export-control, finance and Project Impact evidence exists.",
+    "Use academic validation material for partner outreach only after exact target and payload approval.",
+    "Do not import the RA Grant War Room package directly into IFS; sanitize sensitive values and internal language before any reuse.",
+    "Re-run targeted Drive/local/Gmail evidence search after any partner reply, commitment letter, budget, support letter, receipt or portal update appears."
+  ],
+  "result": "IFS_OPEN_PAGE_DRIVE_UNLOCK_READBACK_NO_CONFIRMED_UNLOCK_EVIDENCE"
+}

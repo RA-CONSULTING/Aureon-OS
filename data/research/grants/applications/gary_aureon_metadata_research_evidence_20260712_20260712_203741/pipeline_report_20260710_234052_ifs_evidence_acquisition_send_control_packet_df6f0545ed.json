@@ -1,0 +1,23 @@
+{
+  "schema_version": "aureon-pipeline-report-v1",
+  "generated_at": "2026-07-10T23:40:52+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_evidence_acquisition_send_control_packet",
+  "artifact": "applications/IFS_EVIDENCE_ACQUISITION_SEND_CONTROL_PACKET_20260710_234052.json",
+  "markdown": "applications/IFS_EVIDENCE_ACQUISITION_SEND_CONTROL_PACKET_20260710_234052.md",
+  "report": "pipelines/pipeline_report_20260710_234052_ifs_evidence_acquisition_send_control_packet.json",
+  "result": "IFS_EVIDENCE_ACQUISITION_SEND_CONTROL_PACKET_READY_NOT_SENT",
+  "source_send_queue": "applications/IFS_OUTBOUND_EVIDENCE_ACQUISITION_SEND_QUEUE_20260710_233602.json",
+  "source_formal_qa": "applications/IFS_OUTBOUND_PAYLOAD_FORMAL_QA_20260710_233709.json",
+  "queue_items_total": 21,
+  "sendable_email_drafts": 13,
+  "contact_route_or_recipient_verification_items": 8,
+  "covered_application_count": 15,
+  "direct_ifs_submissions_unlocked": 0,
+  "new_browser_submissions_available": 0,
+  "email_sent": false,
+  "contact_route_submitted": false,
+  "portal_changed": false,
+  "external_submission_performed": false
+}

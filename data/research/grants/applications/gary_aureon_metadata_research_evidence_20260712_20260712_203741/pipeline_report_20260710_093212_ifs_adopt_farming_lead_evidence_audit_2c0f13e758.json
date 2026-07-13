@@ -1,0 +1,19 @@
+﻿{
+    "schema_version":  "aureon-pipeline-report-v1",
+    "generated_at":  "2026-07-10T09:32:12+01:00",
+    "operator":  "Aureon",
+    "event":  "ifs_adopt_farming_lead_evidence_audit",
+    "result":  "NO_ADOPT_SUBMIT_READY_ROUTE_CURRENT_EVIDENCE_ENGLAND_FARMING_LEAD_REQUIRED",
+    "application_ids":  [
+                            "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+                            "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+                        ],
+    "artifact":  "applications/IFS_ADOPT_2491_2520_FARMING_LEAD_EVIDENCE_AUDIT_20260710_093212.json",
+    "markdown":  "applications/IFS_ADOPT_2491_2520_FARMING_LEAD_EVIDENCE_AUDIT_20260710_093212.md",
+    "direct_ifs_submissions_unlocked":  0,
+    "new_browser_submissions_available":  0,
+    "portal_changed":  false,
+    "external_submission_performed":  false,
+    "email_sent":  false,
+    "reason":  "ADOPT routes require England farming/growing/forestry applicant and project/facilitator evidence not confirmed in current Aureon evidence."
+}

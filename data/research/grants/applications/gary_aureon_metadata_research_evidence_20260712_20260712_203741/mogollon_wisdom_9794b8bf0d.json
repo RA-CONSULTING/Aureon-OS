@@ -1,0 +1,435 @@
+{
+  "civilization": "Mogollon",
+  "last_updated": "2025-12-30T18:32:45.573654",
+  "version": "1.0.0",
+  "sources": [
+    "hardcoded",
+    "wikipedia"
+  ],
+  "core_principles": {
+    "earth_connection": {
+      "description": "Deep reciprocal relationship with land - humans as stewards, not owners",
+      "trading_application": "Long-term sustainable strategies over short-term extraction",
+      "confidence": 0.85
+    },
+    "water_wisdom": {
+      "description": "Sophisticated water management in arid environment - canals, reservoirs, timing",
+      "trading_application": "Resource allocation, liquidity management, scarcity awareness",
+      "confidence": 0.9
+    },
+    "community_resilience": {
+      "description": "Collective survival through cooperation, shared resources, mutual aid",
+      "trading_application": "Diversification, portfolio resilience, community intelligence",
+      "confidence": 0.85
+    },
+    "adaptive_migration": {
+      "description": "Strategic relocation following resources and climate shifts",
+      "trading_application": "Sector rotation, following opportunity flows",
+      "confidence": 0.8
+    }
+  },
+  "environmental_wisdom": {
+    "desert_agriculture": {
+      "description": "Dry farming techniques, flood irrigation, crop selection for arid conditions",
+      "trading_insight": "Adapting strategies to market conditions"
+    },
+    "seasonal_rounds": {
+      "description": "Cyclical movement patterns following resource availability",
+      "trading_insight": "Seasonal trading patterns, rotation strategies"
+    },
+    "fire_management": {
+      "description": "Controlled burning to manage landscapes and encourage growth",
+      "trading_insight": "Controlled volatility, creative destruction"
+    }
+  },
+  "cultural_practices": {
+    "pit_houses": {
+      "description": "Semi-subterranean dwellings using earth for insulation",
+      "trading_insight": "Protection strategies, defensive positioning"
+    },
+    "pottery_tradition": {
+      "description": "Distinctive Mimbres pottery with cosmic imagery and life-death symbolism",
+      "trading_insight": "Craftsmanship, quality over quantity"
+    },
+    "trade_networks": {
+      "description": "Extensive networks connecting to Mesoamerica, Pacific Coast, Plains",
+      "trading_insight": "Multi-market connectivity, arbitrage opportunities"
+    }
+  },
+  "astronomical_knowledge": {
+    "solstice_markers": {
+      "description": "Architectural alignments marking seasonal transitions",
+      "trading_insight": "Key calendar dates, seasonal turning points"
+    },
+    "lunar_tracking": {
+      "description": "Moon phase observation for planting and ceremonial timing",
+      "trading_insight": "Short-term cycle awareness"
+    }
+  },
+  "survival_principles": {
+    "storage_wisdom": {
+      "description": "Food storage for lean times, surplus management",
+      "trading_application": "Capital preservation, reserve maintenance"
+    },
+    "risk_distribution": {
+      "description": "Planting multiple locations to ensure some harvest succeeds",
+      "trading_application": "Position diversification, non-correlated assets"
+    },
+    "patience": {
+      "description": "Waiting for right conditions rather than forcing action",
+      "trading_application": "Selective entry, avoiding overtrading"
+    }
+  },
+  "wikipedia_topics": [
+    "Mogollon culture",
+    "Mimbres culture",
+    "Ancestral Puebloans",
+    "Casas Grandes",
+    "Southwestern archaeology",
+    "Gila Cliff Dwellings",
+    "Prehistoric Southwestern cultural divisions",
+    "Chaco Canyon",
+    "Mesoamerican trade",
+    "Ancient Pueblo peoples"
+  ],
+  "learned_insights": [
+    {
+      "source": "Wikipedia",
+      "civilization": "mogollon",
+      "topic": "Mogollon culture",
+      "content": "Both geometric and figurative designs grew increasingly sophisticated and diverse over time. Classic Mimbres Black-on-White pottery (Style III) is characterized by elaborate geometric designs, refined brushwork, including very fine linework, and may include figures of one or more animals, humans, or other images bounded either by simple rim bands or by geometric decoration. Bird figures are common on Mimbres pots, including images such as turkeys feeding on insects and a man trapping birds in a ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:49:25.939199",
+      "content_hash": "6326926a5ac79258b5a657b0f2eca9e9"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mogollon",
+      "topic": "Ancestral Puebloans",
+      "content": "The Ancestral Puebloans, also known as Ancestral Pueblo peoples or the Basketmaker-Pueblo culture, were an ancient Native American culture of Pueblo peoples spanning the present-day Four Corners region of the United States, comprising southeastern Utah, northeastern Arizona, northwestern New Mexico, and southwestern Colorado. They are believed to have developed, at least in part, from the Oshara tradition, which developed from the Picosa culture.\nThe Ancestral Puebloans lived in a range of struc",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:49:35.550390",
+      "content_hash": "77e49d97ba0a3bab632669d634b1ebf8"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mogollon",
+      "topic": "Ancestral Puebloans",
+      "content": "The name \"Anasazi\" has come to mean \"ancient people,\" although the word itself is Navajo, meaning \"enemy ancestors.\" [The Navajo word is anaasází (< anaa- \"enemy\", sází \"ancestor\").] It is unfortunate that a non-Pueblo word has come to stand for a tradition that is certainly ancestral Pueblo. The term was first applied to ruins of the Mesa Verde by Richard Wetherill, a rancher and trader who, in 1888–1889, was the first Anglo-American to explore the sites in that area. Wetherill knew and worked ",
+      "relevance_score": 0.4,
+      "trading_application": "Commercial patterns and value exchange",
+      "timestamp": "2025-12-25T19:49:35.550538",
+      "content_hash": "452e3b995338715087071e784ee95e4c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mogollon",
+      "topic": "Ancestral Puebloans",
+      "content": "The Ancestral Puebloan culture is perhaps best known for the stone and earth dwellings its people built along cliff walls, particularly during the Pueblo II and Pueblo III eras, from about 900 to 1350 CE in total. The best-preserved examples of the stone dwellings are now protected within United States' national parks, such as Navajo National Monument, Chaco Culture National Historical Park, Mesa Verde National Park, Canyons of the Ancients National Monument, Aztec Ruins National Monument, Bande",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:49:35.550713",
+      "content_hash": "025dc7b7ed7694a9b2cffbc860ca39ae"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mogollon",
+      "topic": "Casas Grandes",
+      "content": "Between 1130 and 1300 AD, the area's inhabitants started gathering in small settlements within this expansive fertile valley. The most extensive identified settlement is now recognized as Paquimé or Casas Grandes. It originated as a collection of 20 or more clusters of houses, each with a plaza and enclosing wall. These single-story adobe dwellings shared a unified water system. Evidence indicates that Paquimé possessed an intricate water management system comprising underground drain networks, ",
+      "relevance_score": 0.4,
+      "trading_application": "Commercial patterns and value exchange",
+      "timestamp": "2025-12-25T19:49:40.420836",
+      "content_hash": "dc24115ee28360c42ab6322f44c8864f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mogollon",
+      "topic": "Casas Grandes",
+      "content": "Iconography can be simply defined as pictorial or material relating to or illustrating a subject, the traditional or conventional images or symbols associated with a subject and especially a religious or legendary subject, including art. In the case with the ruins found at Casas Grandes, iconography has proven to be particularly important in understanding gender differences, especially in regards to trade, daily tasks, and religious rituals. Effigies (small figurines) were found through excavati",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:49:40.421040",
+      "content_hash": "ff7322b892bea5c8b47e5f77cf5a7917"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mogollon",
+      "topic": "Southwestern archaeology",
+      "content": "The Archaic time frame is defined culturally as a transition from a hunting/gathering lifestyle to one involving agriculture and permanent, if only seasonally occupied, settlements.  In the Southwest, the Archaic is generally dated from 8000 years ago to approximately 1800 to 2000 years ago.  During this time the people of the southwest developed a variety of subsistence strategies, all using their own specific techniques.  The nutritive value of weed and grass seeds was discovered and flat rock",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:49:45.195502",
+      "content_hash": "955e5562de8030257e7151b4da5508d1"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mogollon",
+      "topic": "Southwestern archaeology",
+      "content": "The culture of Ancestral Pueblo peoples, formerly referred to as the Anasazi, was centered around the present-day Four Corners area. Their distinctive pottery and dwelling construction styles emerged in the area around 750 CE, though the origins of their hallmark material culture characteristics can be found within the Basketmaker II Period (1500 BCE–400 CE). Ancestral Pueblo peoples are renowned for the construction of and cultural achievement present at Pueblo Bonito and other sites in Chaco C",
+      "relevance_score": 0.4,
+      "trading_application": "Commercial patterns and value exchange",
+      "timestamp": "2025-12-25T19:49:45.195635",
+      "content_hash": "e80f1bc80bc67238a2951be4ec84c20d"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mogollon",
+      "topic": "Gila Cliff Dwellings",
+      "content": "== Modern history ==\nThough local Native American Indians were aware of the location of ruins, the first European contact with the Gila Cliff Dwellings was by Henry B. Ailman (an emigrant to New Mexico who was residing in Silver City at the time). In the summer of 1878, Ailman and several friends were summoned to serve for jury duty, and in an effort to avoid the summons, they organized a prospecting trip to the Gila River, where they subsequently came upon the site.\nThroughout the following yea",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:49:50.004802",
+      "content_hash": "0d61842b2e3c7672ce3f420a26a53b05"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mogollon",
+      "topic": "Gila Cliff Dwellings",
+      "content": "These federal reservations were called national monuments and were to be managed by the Interior, Agriculture, and War departments, depending on which agency had controlled a particular site before it was withdrawn for preservation. In December 1906, Gila Forest Supervisor R. C. McClure reported to the chief forester in Washington, D.C. that the Gila Cliff Dwellings warranted preservation by the national government to avoid further removal of artifacts by hunters and other prospectors.\nSeveral m",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:49:50.004889",
+      "content_hash": "58616643a7bad089791569fbe03aeec4"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mogollon",
+      "topic": "Chaco Canyon",
+      "content": "Chaco Culture National Historical Park is a United States National Historical Park in the American Southwest hosting a large concentration of pre-Columbian indigenous ruins of pueblos. The park is located in northwestern New Mexico, between Albuquerque and Farmington, in a remote canyon cut by the Chaco Wash. Containing the most sweeping collection of ancient ruins north of Mexico, the park preserves one of the most important cultural and historical areas in the United States.\nBetween AD 900 and",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:50:02.389143",
+      "content_hash": "2844241aa97c6f2419a6bfb59a674bae"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mogollon",
+      "topic": "Mesoamerican trade",
+      "content": "Mesoamerica is a historical region and cultural area comprising the present day lands of central and southern Mexico, all of Belize, Guatemala, El Salvador, western Honduras, and the Greater Nicoya region of Nicaragua and Costa Rica. As a cultural area, Mesoamerica is defined by a mosaic of cultural traits developed and shared by its indigenous cultures.\nIn the pre-Columbian era, many indigenous societies flourished in Mesoamerica for more than 3,000 years before the Spanish colonization of the ",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:50:07.447644",
+      "content_hash": "48671a7953230cd6a0920c1839f4c338"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mogollon",
+      "topic": "Mesoamerican trade",
+      "content": "Horticulture and plant use: sedentism based on maize agriculture; floating gardens; use of bark paper and agave (see also maguey) for ritual purposes, as a medium for writing, and the use of agave for cooking and clothing; cultivation of cacao; grinding of maize softened with ashes or lime; harpoon-shaped digging stick\nClothing and personal articles: lip plugs, mirrors of polished stone, turbans, sandals with heels, textiles adorned with rabbit hair\nArchitecture: construction of stepped pyramids",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:50:07.447759",
+      "content_hash": "57665ce0c455186c5419fc62647aa2b0"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mogollon",
+      "topic": "Mesoamerican trade",
+      "content": "In the Postclassic Period many of the great nations and cities of the Classic Era collapsed, although some continued, such as in Oaxaca, Cholula, and the Maya of Yucatan, such as at Chichen Itza and Uxmal. This is sometimes thought to have been a period of increased chaos and warfare.\nThe Postclassic is often viewed as a period of cultural decline. However, it was a time of technological advancement in architecture, engineering, and weaponry. Metallurgy (introduced c. 800) came into use for jewe",
+      "relevance_score": 1.0,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-30T18:32:34.219602",
+      "content_hash": "dc78060195227278a7c23b16a60fd724"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mogollon",
+      "topic": "Mesoamerican trade",
+      "content": "The Colonial Period was initiated with the Spanish conquest  (1519–1521), which ended the hegemony of the Aztec Empire. It was accomplished with Spaniards' strategic alliances with enemies of the empire, most especially Tlaxcala, but also Huexotzinco, Xochimilco, and even Texcoco, a former partner in the Aztec Triple Alliance.\nAlthough not all parts of Mesoamerica were brought under control of the Spanish Empire immediately, the defeat of the Aztecs marked the dramatic beginning of an inexorable",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-30T18:32:34.219602",
+      "content_hash": "f9318957d35a7c4db1f61ac7446fc227"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "mogollon",
+      "topic": "Mesoamerican trade",
+      "content": "== Cultural horizons of Mesoamerica ==\nMesoamerican civilisation was a complex network of different cultures. As seen in the time-line below, these did not necessarily occur at the same time. The processes that gave rise to each of the cultural systems of Mesoamerica were very complex and not determined solely by the internal dynamics of each society. External as well as endogenous factors influenced their development. Among these factors, for example, were the relations between human groups and",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-30T18:32:34.219602",
+      "content_hash": "948248ea7ca030b5b54707fc9c90f277"
+    }
+  ],
+  "scan_history": [
+    {
+      "timestamp": "2025-12-15T10:23:25.875004",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:40:00.951194",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:50:16.247198",
+      "insights_found": 13,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:14:27.943568",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:29:19.592736",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:34:13.045771",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T14:54:08.649121",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:04:31.052858",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:52:44.508026",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T12:35:11.452732",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T13:49:48.333539",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T14:43:53.931707",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T12:06:01.176459",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:24:35.048465",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:40:43.017124",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T14:07:33.965959",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:01:14.376157",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:29:26.566877",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:46:05.920234",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T16:14:51.426882",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T17:25:13.109765",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T18:32:45.573654",
+      "insights_found": 3,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    }
+  ]
+}

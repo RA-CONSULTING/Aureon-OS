@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-07-10T14:57:51+01:00",
+  "operator": "Aureon",
+  "event": "ifs_remaining_stop_go_validation",
+  "artifact": "applications/IFS_REMAINING_STOP_GO_VALIDATION_20260710_145751.json",
+  "markdown": "applications/IFS_REMAINING_STOP_GO_VALIDATION_20260710_145751.md",
+  "result": "IFS_REMAINING_STOP_GO_VALIDATION_PASSED",
+  "validation_passed": true,
+  "source_remaining_stop_go_audit": "applications/IFS_REMAINING_STOP_GO_AUDIT_20260710_145545.json",
+  "source_current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_145622.json",
+  "source_current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_145627.json",
+  "direct_submit_ready_routes": 0,
+  "new_browser_submissions_available": 0,
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false
+}

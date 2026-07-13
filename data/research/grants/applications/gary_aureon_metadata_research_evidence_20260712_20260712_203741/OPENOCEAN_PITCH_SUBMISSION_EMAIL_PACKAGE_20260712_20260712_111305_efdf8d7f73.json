@@ -1,0 +1,54 @@
+{
+  "schema_version": "aureon-openocean-pitch-submission-email-package-v1",
+  "generated_at": "2026-07-12T11:13:05+01:00",
+  "operator": "Aureon",
+  "mode": "PRIVATE_INVESTOR_PIPELINE",
+  "event": "openocean_pitch_submission_email_package",
+  "application_id": "APP-PRIVATE-INVESTOR-OPENOCEAN-FIFTH-WAVE-20260711",
+  "target": "OpenOcean",
+  "target_email": "info@openocean.vc",
+  "subject": "Aureon Evidence OS - OpenOcean pitch route submission",
+  "source_pitch_deck_package": "applications/OPENOCEAN_PITCH_DECK_PACKAGE_20260712_20260712_071906.json",
+  "email_package": "applications/OPENOCEAN_PITCH_SUBMISSION_EMAIL_PACKAGE_20260712_20260712_111305.eml",
+  "attachments": [
+    {
+      "path": "applications/investor_decks/AUREON_OPENOCEAN_PITCH_DECK_20260712_001500.pdf",
+      "filename": "AUREON_OPENOCEAN_PITCH_DECK_20260712_001500.pdf",
+      "bytes": 419432,
+      "sha256": "77a7ad08de686633d1ec33fb81c88107ba8b97e29b1fa6ae1868486a34dfb71b"
+    },
+    {
+      "path": "applications/OPENOCEAN_PITCH_KEY_DATA_SANITIZED_20260712_20260712_111305.md",
+      "filename": "OPENOCEAN_PITCH_KEY_DATA_SANITIZED_20260712_20260712_111305.md",
+      "bytes": 1085,
+      "sha256": "71dc633d5ea7fa51f7e55c20111b23cec9a8c066bfd54807f2247b59bc431e42"
+    }
+  ],
+  "sensitive_scan": {
+    "finding_count": 0,
+    "findings": []
+  },
+  "result": "OPENOCEAN_PITCH_SUBMISSION_EMAIL_PACKAGE_READY_NOT_SENT",
+  "email_sent": false,
+  "external_submission_performed": false,
+  "upload_performed": false,
+  "form_submitted": false,
+  "controls": [
+    "This creates a local email package with real attachments; it does not send email.",
+    "No browser, Gmail, upload or contact-form action was performed.",
+    "The package attaches only the OpenOcean deck PDF and key-data markdown.",
+    "The package does not include confidential account records, credential material or source transaction records."
+  ],
+  "backups": {
+    "applications_json": "backups/applications_pre_openocean_pitch_submission_email_package_20260712_111305.json",
+    "pipeline_json": "backups/pipeline_pre_openocean_pitch_submission_email_package_20260712_111305.json",
+    "autopilot_status_json": "backups/autopilot_status_pre_openocean_pitch_submission_email_package_20260712_111305.json"
+  },
+  "outputs": {
+    "json": "applications/OPENOCEAN_PITCH_SUBMISSION_EMAIL_PACKAGE_20260712_20260712_111305.json",
+    "markdown": "applications/OPENOCEAN_PITCH_SUBMISSION_EMAIL_PACKAGE_20260712_20260712_111305.md",
+    "email_package": "applications/OPENOCEAN_PITCH_SUBMISSION_EMAIL_PACKAGE_20260712_20260712_111305.eml",
+    "sanitized_key_data": "applications/OPENOCEAN_PITCH_KEY_DATA_SANITIZED_20260712_20260712_111305.md",
+    "pipeline_report": "pipelines/pipeline_report_20260712_20260712_111305_openocean_pitch_submission_email_package.json"
+  }
+}

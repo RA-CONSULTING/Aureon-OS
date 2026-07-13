@@ -1,0 +1,137 @@
+{
+  "schema_version": "aureon-continuous-funding-monitor-v1",
+  "run_id": "aureon-grant-operator-continuous-funding-monitor-20260709",
+  "generated_at": "2026-07-09T23:25:23+01:00",
+  "operator": "Aureon",
+  "applicant": "Gary Anthony Leckey / R&A Consulting and Brokerage Services Ltd",
+  "official_route_refresh": {
+    "innovate_uk_ifs": {
+      "status": "20 competitions listed as current in official IFS search",
+      "source": "https://apply-for-innovation-funding.service.gov.uk/competition/search",
+      "action": "No new duplicate submission. Four existing Aureon IFS applications remain submitted; remaining IFS routes stay partner, host, evidence, sector, or eligibility gated."
+    },
+    "intertradeireland": {
+      "status": "Business Explorer remains email-verification gated locally; Cluster-to-Cluster is cluster-partner route",
+      "sources": [
+        "https://intertradeireland.com/search/results?q=funding",
+        "https://intertradeireland.com/shared-island-cluster-to-cluster-project-development-fund"
+      ],
+      "action": "Continue after email verification or cluster partner evidence; do not bypass provider controls."
+    },
+    "invest_ni": {
+      "status": "Shared Island interest form has CAPTCHA; Sustainability Challenge Fund launches later in 2026; BIG guidance route is closed/currently not submit-ready",
+      "sources": [
+        "https://www.investni.com/support-for-business/shared-island-enterprise-scheme",
+        "https://www.investni.com/sites/default/files/2024-04/business-innovation-grant-guidance-notes.pdf"
+      ],
+      "action": "Keep as provider/advisor-gated and use enquiry route only with human form completion."
+    },
+    "eurostars": {
+      "status": "Call 11 open 2026-07-09 to 2026-09-10 14:00 CET",
+      "source": "https://www.eurekanetwork.org/programmes-and-calls/eurostars/eurostars-call-for-projects-september-2026/",
+      "action": "Partner-required; use existing partner route brief and build consortium evidence before portal work."
+    },
+    "ukri": {
+      "status": "Funding Finder includes new academic-host routes; not direct R&A Consulting standalone submissions",
+      "source": "https://www.ukri.org/opportunity/",
+      "action": "Monitor for host-partner fit only."
+    }
+  },
+  "ledger_reconciliation": {
+    "opportunities_total": 44,
+    "opportunity_status_counts": {
+      "ACADEMIC_HOST_REQUIRED": 1,
+      "ADVISOR_OR_CLIENT_ROUTE_REQUIRED": 1,
+      "CLOSED": 1,
+      "EVIDENCE_GATED": 1,
+      "OPEN": 36,
+      "PARTNER_REQUIRED": 1,
+      "PENDING": 2,
+      "RESEARCH_ORG_STFC_ROUTE_REQUIRED": 1
+    },
+    "applications_total": 27,
+    "application_status_counts": {
+      "ACADEMIC_HOST_REQUIRED": 1,
+      "ACADEMIC_LEAD_REQUIRED": 1,
+      "ACADEMIC_RTO_CATAPULT_LEAD_AND_4FTE_GATE": 1,
+      "ACCOUNT_CREATED_EMAIL_VERIFICATION_REQUIRED": 1,
+      "AUTOMOTIVE_ZEV_PARTNER_REQUIRED": 1,
+      "EVIDENCE_GATED": 1,
+      "FARMING_LEAD_REQUIRED": 1,
+      "HARDWARE_LEAD_PARTNER_REQUIRED": 1,
+      "MANUFACTURING_FACILITY_EVIDENCE_REQUIRED": 1,
+      "MARITIME_CONSORTIUM_REQUIRED": 6,
+      "NOT_ELIGIBLE_DIRECT": 1,
+      "NOT_GRANT_FINANCE_RISK_GATED": 1,
+      "PARTNER_OUTREACH_DRAFT": 1,
+      "PARTNER_REQUIRED": 2,
+      "PUBLIC_SECTOR_RESEARCH_ORG_REQUIRED": 1,
+      "SUBMITTED": 6
+    },
+    "submitted_ifs_count": 4,
+    "submitted_ifs_application_ids": [
+      "APP-IFS-NEXT-WAVE-10209601",
+      "APP-IFS-FLF-R11-2499-20260709",
+      "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+      "APP-IFS-CFI-SEN-2511-20260709"
+    ],
+    "submitted_airr_count": 2,
+    "submitted_airr_application_ids": [
+      "APP-AIRR-001",
+      "APP-AIRR-RAPID-ACCESS-20260709"
+    ],
+    "active_or_gated_application_count": 19
+  },
+  "public_profile_index": {
+    "companies_house_psc": {
+      "status": "Gary Anthony Leckey listed as active PSC for R&A Consulting and Brokerage Services Ltd, company NI696693",
+      "source": "https://find-and-update.company-information.service.gov.uk/company/NI696693/persons-with-significant-control",
+      "grant_use": "Class A legal applicant/control evidence; identity verification due date should be checked before submission."
+    },
+    "companies_house_officer": {
+      "status": "Gary Anthony Leckey listed as active director",
+      "source": "https://find-and-update.company-information.service.gov.uk/company/NI696693/officers",
+      "grant_use": "Class A director evidence."
+    },
+    "researchgate": {
+      "status": "Public profile readback: Gary Anthony Leckey, Research Director at Aureon Institute, 56 publications",
+      "source": "https://www.researchgate.net/profile/Gary-Leckey",
+      "grant_use": "Class B dissemination profile; do not treat as peer-review evidence."
+    },
+    "academia": {
+      "status": "Profile URL accessible but text extraction limited",
+      "source": "https://gleckey.academia.edu/",
+      "grant_use": "Class B pointer only; manual/browser verification needed before quoting details."
+    },
+    "orcid": {
+      "status": "Existing corpus includes ORCID pointer 0009-0004-2792-4649; not refreshed via text extraction this run",
+      "source": "https://orcid.org/0009-0004-2792-4649",
+      "grant_use": "Class B identifier; verify in browser before formal use."
+    }
+  },
+  "provider_controls": [
+    "No CAPTCHA, MFA, or account-control bypass attempted.",
+    "No plaintext passwords or secrets read or stored.",
+    "No live portal submission attempted in this monitor run.",
+    "IFS public search showed session timeout messaging but public competition listings remained accessible.",
+    "Invest NI enquiry form remains CAPTCHA/provider gated.",
+    "InterTradeIreland Business Explorer remains email-verification gated in local records."
+  ],
+  "artifacts_reviewed": [
+    "applications.json",
+    "opportunities.json",
+    "pipeline.json",
+    "autopilot_status.json",
+    "AUREON_UNIFIED_WORK_CORPUS_20260709.json",
+    "PUBLIC_WORK_SOURCE_REGISTRY_20260705.md",
+    "applications/IFS_PORTAL_READY_PDF_MANIFEST_20260709.json",
+    "output/pdf/ifs/IFS_PORTAL_READY_EVIDENCE_PACK_20260709.pdf"
+  ],
+  "next_actions": [
+    "Monitor submitted IFS applications 10209601, 10209992, 10210032, and 10210045.",
+    "Verify InterTradeIreland email before continuing Business Explorer Explore.",
+    "Prioritise partner evidence for UK-Switzerland CR&D, Eurostars Call 11, quantum hardware, ZEVI2, and clean maritime routes.",
+    "Do not start Invest NI forms until CAPTCHA/provider form can be completed by a human operator.",
+    "Use ResearchGate/Academia/ORCID only as profile evidence unless independently verified."
+  ]
+}

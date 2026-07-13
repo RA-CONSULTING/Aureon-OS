@@ -1,0 +1,2215 @@
+{
+  "blind_spots": [
+    {
+      "domain": "operator",
+      "evidence": {
+        "age_seconds": 2353,
+        "source_path": "docs/audits/aureon_saas_system_inventory.json",
+        "status": "stale"
+      },
+      "id": "saas_inventory.manifest_stale",
+      "issue": "SaaS And Frontend Inventory: manifest stale.",
+      "next_action": "Run python -m aureon.autonomous.aureon_saas_system_inventory.",
+      "severity": "medium"
+    },
+    {
+      "domain": "operator",
+      "evidence": {
+        "age_seconds": 2353,
+        "source_path": "docs/audits/aureon_saas_system_inventory.json",
+        "status": "stale"
+      },
+      "id": "saas_inventory.attention_security_blocker_count",
+      "issue": "SaaS And Frontend Inventory: attention security blocker count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_saas_system_inventory.",
+      "severity": "attention"
+    },
+    {
+      "domain": "operator",
+      "evidence": {
+        "age_seconds": 2353,
+        "source_path": "docs/audits/aureon_saas_system_inventory.json",
+        "status": "stale"
+      },
+      "id": "saas_inventory.attention_orphaned_frontend_count",
+      "issue": "SaaS And Frontend Inventory: attention orphaned frontend count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_saas_system_inventory.",
+      "severity": "attention"
+    },
+    {
+      "domain": "operator",
+      "evidence": {
+        "age_seconds": 2353,
+        "source_path": "docs/audits/aureon_saas_system_inventory.json",
+        "status": "stale"
+      },
+      "id": "saas_inventory.attention_missing_supabase_function_call_count",
+      "issue": "SaaS And Frontend Inventory: attention missing supabase function call count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_saas_system_inventory.",
+      "severity": "high"
+    },
+    {
+      "domain": "operator",
+      "evidence": {
+        "age_seconds": 303,
+        "source_path": "docs/audits/aureon_frontend_unification_plan.json",
+        "status": "attention"
+      },
+      "id": "frontend_unification.attention_security_blocker_count",
+      "issue": "Unified Frontend Plan: attention security blocker count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_frontend_unification_plan.",
+      "severity": "attention"
+    },
+    {
+      "domain": "operator",
+      "evidence": {
+        "age_seconds": 303,
+        "source_path": "docs/audits/aureon_frontend_unification_plan.json",
+        "status": "attention"
+      },
+      "id": "frontend_unification.attention_missing_screen_capability_count",
+      "issue": "Unified Frontend Plan: attention missing screen capability count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_frontend_unification_plan.",
+      "severity": "high"
+    },
+    {
+      "domain": "self_improvement",
+      "evidence": {
+        "age_seconds": 301,
+        "source_path": "docs/audits/aureon_frontend_evolution_queue.json",
+        "status": "attention"
+      },
+      "id": "frontend_evolution_queue.attention_blocked_count",
+      "issue": "Frontend Evolution Queue: attention blocked count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_frontend_evolution_queue.",
+      "severity": "attention"
+    },
+    {
+      "domain": "self_improvement",
+      "evidence": {
+        "age_seconds": 301,
+        "source_path": "docs/audits/aureon_frontend_evolution_queue.json",
+        "status": "attention"
+      },
+      "id": "frontend_evolution_queue.attention_archive_candidate_count",
+      "issue": "Frontend Evolution Queue: attention archive candidate count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_frontend_evolution_queue.",
+      "severity": "attention"
+    },
+    {
+      "domain": "self_improvement",
+      "evidence": {
+        "age_seconds": 278,
+        "source_path": "docs/audits/aureon_autonomous_capability_switchboard.json",
+        "status": "attention"
+      },
+      "id": "capability_switchboard.attention_blocker_count",
+      "issue": "Autonomous Capability Switchboard: attention blocker count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_autonomous_capability_switchboard.",
+      "severity": "attention"
+    },
+    {
+      "domain": "self_improvement",
+      "evidence": {
+        "age_seconds": 278,
+        "source_path": "docs/audits/aureon_autonomous_capability_switchboard.json",
+        "status": "attention"
+      },
+      "id": "capability_switchboard.attention_blocked_capability_count",
+      "issue": "Autonomous Capability Switchboard: attention blocked capability count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_autonomous_capability_switchboard.",
+      "severity": "attention"
+    },
+    {
+      "domain": "self_improvement",
+      "evidence": {
+        "age_seconds": 271,
+        "source_path": "docs/audits/aureon_operational_ui_builder.json",
+        "status": "attention"
+      },
+      "id": "operational_ui_builder.attention_blocked_work_order_count",
+      "issue": "Aureon Operational UI Builder: attention blocked work order count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_unified_ui_builder.",
+      "severity": "attention"
+    },
+    {
+      "domain": "self_improvement",
+      "evidence": {
+        "age_seconds": 271,
+        "source_path": "docs/audits/aureon_operational_ui_builder.json",
+        "status": "attention"
+      },
+      "id": "operational_ui_builder.attention_blind_spot_count",
+      "issue": "Aureon Operational UI Builder: attention blind spot count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_unified_ui_builder.",
+      "severity": "attention"
+    },
+    {
+      "domain": "cognition",
+      "evidence": {
+        "age_seconds": 2423,
+        "source_path": "docs/audits/aureon_system_readiness_audit.json",
+        "status": "stale"
+      },
+      "id": "system_readiness.manifest_stale",
+      "issue": "Whole Organism Readiness: manifest stale.",
+      "next_action": "Run python -m aureon.autonomous.aureon_system_readiness_audit.",
+      "severity": "medium"
+    },
+    {
+      "domain": "cognition",
+      "evidence": {
+        "age_seconds": 2423,
+        "source_path": "docs/audits/aureon_system_readiness_audit.json",
+        "status": "stale"
+      },
+      "id": "system_readiness.attention_blocked_count",
+      "issue": "Whole Organism Readiness: attention blocked count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_system_readiness_audit.",
+      "severity": "attention"
+    },
+    {
+      "domain": "cognition",
+      "evidence": {
+        "age_seconds": 2423,
+        "source_path": "docs/audits/aureon_system_readiness_audit.json",
+        "status": "stale"
+      },
+      "id": "system_readiness.attention_attention_count",
+      "issue": "Whole Organism Readiness: attention attention count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_system_readiness_audit.",
+      "severity": "attention"
+    },
+    {
+      "domain": "trading",
+      "evidence": {
+        "age_seconds": 84,
+        "source_path": "docs/audits/aureon_cognitive_trade_evidence.json",
+        "status": "attention"
+      },
+      "id": "cognitive_trade_evidence.attention_runtime_stale",
+      "issue": "Cognitive Trade Evidence: attention runtime stale.",
+      "next_action": "Run python -m aureon.autonomous.aureon_cognitive_trade_evidence.",
+      "severity": "medium"
+    },
+    {
+      "domain": "cognition",
+      "evidence": {
+        "age_seconds": 0,
+        "source_path": "docs/audits/aureon_harmonic_affect_state.json",
+        "status": "attention"
+      },
+      "id": "harmonic_affect_state.attention_runtime_stale",
+      "issue": "HNC Auris Harmonic Affect State: attention runtime stale.",
+      "next_action": "Run python -m aureon.autonomous.aureon_harmonic_affect_state.",
+      "severity": "medium"
+    },
+    {
+      "domain": "cognition",
+      "evidence": {
+        "age_seconds": 0,
+        "source_path": "docs/audits/aureon_harmonic_affect_state.json",
+        "status": "attention"
+      },
+      "id": "harmonic_affect_state.attention_safety_blocker_count",
+      "issue": "HNC Auris Harmonic Affect State: attention safety blocker count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_harmonic_affect_state.",
+      "severity": "attention"
+    },
+    {
+      "domain": "trading",
+      "evidence": {
+        "age_seconds": 0,
+        "source_path": "docs/audits/aureon_trading_intelligence_checklist.json",
+        "status": "attention"
+      },
+      "id": "trading_intelligence_checklist.not_populated_fresh_usable_count",
+      "issue": "Trading Intelligence Checklist: not populated fresh usable count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_trading_intelligence_checklist.",
+      "severity": "attention"
+    },
+    {
+      "domain": "trading",
+      "evidence": {
+        "age_seconds": 0,
+        "source_path": "docs/audits/aureon_trading_intelligence_checklist.json",
+        "status": "attention"
+      },
+      "id": "trading_intelligence_checklist.attention_runtime_stale",
+      "issue": "Trading Intelligence Checklist: attention runtime stale.",
+      "next_action": "Run python -m aureon.autonomous.aureon_trading_intelligence_checklist.",
+      "severity": "medium"
+    },
+    {
+      "domain": "trading",
+      "evidence": {
+        "age_seconds": 0,
+        "source_path": "docs/audits/aureon_trading_intelligence_checklist.json",
+        "status": "attention"
+      },
+      "id": "trading_intelligence_checklist.attention_stale_or_blocked_count",
+      "issue": "Trading Intelligence Checklist: attention stale or blocked count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_trading_intelligence_checklist.",
+      "severity": "medium"
+    },
+    {
+      "domain": "trading",
+      "evidence": {
+        "age_seconds": 3160,
+        "source_path": "docs/audits/aureon_exchange_data_capability_matrix.json",
+        "status": "stale"
+      },
+      "id": "exchange_data_capability_matrix.manifest_stale",
+      "issue": "Exchange Data Capability Matrix: manifest stale.",
+      "next_action": "Run python -m aureon.autonomous.aureon_exchange_data_capability_matrix.",
+      "severity": "medium"
+    },
+    {
+      "domain": "trading",
+      "evidence": {
+        "age_seconds": 3160,
+        "source_path": "docs/audits/aureon_exchange_data_capability_matrix.json",
+        "status": "stale"
+      },
+      "id": "exchange_data_capability_matrix.attention_runtime_stale",
+      "issue": "Exchange Data Capability Matrix: attention runtime stale.",
+      "next_action": "Run python -m aureon.autonomous.aureon_exchange_data_capability_matrix.",
+      "severity": "medium"
+    },
+    {
+      "domain": "cognition",
+      "evidence": {
+        "age_seconds": 168352,
+        "source_path": "docs/audits/mind_wiring_audit.json",
+        "status": "stale"
+      },
+      "id": "mind_wiring.manifest_stale",
+      "issue": "Whole-Mind Wiring: manifest stale.",
+      "next_action": "Run python -m aureon.autonomous.mind_wiring_audit --static --imports --local-services.",
+      "severity": "medium"
+    },
+    {
+      "domain": "self_knowledge",
+      "evidence": {
+        "age_seconds": 168393,
+        "source_path": "docs/audits/aureon_repo_self_catalog.json",
+        "status": "stale"
+      },
+      "id": "repo_self_catalog.manifest_stale",
+      "issue": "File Self-Catalog: manifest stale.",
+      "next_action": "Run python -m aureon.autonomous.aureon_repo_self_catalog.",
+      "severity": "medium"
+    },
+    {
+      "domain": "self_knowledge",
+      "evidence": {
+        "age_seconds": 168393,
+        "source_path": "docs/audits/aureon_repo_self_catalog.json",
+        "status": "stale"
+      },
+      "id": "repo_self_catalog.attention_secret_metadata_only_count",
+      "issue": "File Self-Catalog: attention secret metadata only count.",
+      "next_action": "Run python -m aureon.autonomous.aureon_repo_self_catalog.",
+      "severity": "attention"
+    },
+    {
+      "domain": "accounting",
+      "evidence": {
+        "age_seconds": 291807,
+        "source_path": "docs/audits/accounting_system_registry.json",
+        "status": "stale"
+      },
+      "id": "accounting_registry.manifest_stale",
+      "issue": "Accounting System Registry: manifest stale.",
+      "next_action": "Run the accounting registry/accounts generation workflow in safe manual-filing mode.",
+      "severity": "medium"
+    },
+    {
+      "domain": "self_improvement",
+      "evidence": {
+        "age_seconds": 343685,
+        "source_path": "docs/audits/aureon_capability_growth_loop.json",
+        "status": "stale"
+      },
+      "id": "capability_growth_loop.manifest_stale",
+      "issue": "Capability Growth Loop: manifest stale.",
+      "next_action": "Run python -m aureon.autonomous.aureon_capability_growth_loop.",
+      "severity": "medium"
+    },
+    {
+      "domain": "self_improvement",
+      "evidence": {
+        "age_seconds": 368180,
+        "source_path": "docs/audits/aureon_self_enhancement_lifecycle.json",
+        "status": "stale"
+      },
+      "id": "self_enhancement_lifecycle.manifest_stale",
+      "issue": "Self-Enhancement Lifecycle: manifest stale.",
+      "next_action": "Run python -m aureon.autonomous.aureon_self_enhancement_lifecycle.",
+      "severity": "medium"
+    },
+    {
+      "domain": "saas_security",
+      "evidence": {
+        "age_seconds": 343101,
+        "source_path": "docs/audits/hnc_saas_security_blueprint.json",
+        "status": "stale"
+      },
+      "id": "hnc_saas_security.manifest_stale",
+      "issue": "HNC SaaS Security Blueprint: manifest stale.",
+      "next_action": "Run python -m aureon.autonomous.hnc_saas_security_architect.",
+      "severity": "medium"
+    },
+    {
+      "domain": "saas_security",
+      "evidence": {
+        "age_seconds": 342644,
+        "source_path": "docs/audits/hnc_authorized_attack_lab.json",
+        "status": "stale"
+      },
+      "id": "hnc_attack_lab.manifest_stale",
+      "issue": "Authorized Attack Lab: manifest stale.",
+      "next_action": "Run the authorized attack lab against owned/local targets only.",
+      "severity": "medium"
+    },
+    {
+      "domain": "saas_security",
+      "evidence": {
+        "age_seconds": 342644,
+        "source_path": "docs/audits/hnc_authorized_attack_lab.json",
+        "status": "stale"
+      },
+      "id": "hnc_attack_lab.attention_finding_count",
+      "issue": "Authorized Attack Lab: attention finding count.",
+      "next_action": "Run the authorized attack lab against owned/local targets only.",
+      "severity": "attention"
+    },
+    {
+      "domain": "cognition",
+      "evidence": {
+        "age_seconds": 124506,
+        "source_path": "adaptive_learning_history.json",
+        "status": "stale"
+      },
+      "id": "adaptive_learning_history.state_file_stale",
+      "issue": "Adaptive Learning History: state file stale.",
+      "next_action": "Start the safe runtime/cognition loop so learning history is repopulated.",
+      "severity": "medium"
+    },
+    {
+      "domain": "cognition",
+      "evidence": {
+        "age_seconds": 124506,
+        "source_path": "brain_predictions_history.json",
+        "status": "stale"
+      },
+      "id": "brain_predictions_history.state_file_stale",
+      "issue": "Brain Prediction History: state file stale.",
+      "next_action": "Start the safe runtime/cognition loop so prediction history is repopulated.",
+      "severity": "medium"
+    },
+    {
+      "domain": "research",
+      "evidence": {
+        "age_seconds": 124506,
+        "source_path": "miner_brain_knowledge.json",
+        "status": "stale"
+      },
+      "id": "miner_brain_knowledge.state_file_stale",
+      "issue": "Miner Brain Knowledge: state file stale.",
+      "next_action": "Run the research/vault ingestion loop to refresh miner knowledge.",
+      "severity": "medium"
+    },
+    {
+      "domain": "cognition",
+      "evidence": {
+        "age_seconds": 124427,
+        "source_path": "public/consciousness_state.json",
+        "status": "stale"
+      },
+      "id": "consciousness_state.state_file_stale",
+      "issue": "Consciousness State: state file stale.",
+      "next_action": "Start the cognition runtime so consciousness state is updated.",
+      "severity": "medium"
+    },
+    {
+      "domain": "runtime",
+      "evidence": {
+        "error": "JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 350001 (char 350000)",
+        "url": "http://127.0.0.1:8791/api/terminal-state"
+      },
+      "id": "runtime_feed.offline",
+      "issue": "Local real-time runtime feed is offline or not populated.",
+      "next_action": "Start the safe Aureon runtime/ignition status service, then rerun the observer.",
+      "severity": "medium"
+    },
+    {
+      "domain": "self_improvement",
+      "evidence": {
+        "command": [
+          "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\.venv\\Scripts\\python.exe",
+          "-m",
+          "aureon.autonomous.aureon_saas_system_inventory"
+        ],
+        "returncode": 124,
+        "stderr_tail": ""
+      },
+      "id": "refresh.saas_inventory.timeout",
+      "issue": "Refresh step saas_inventory ended with timeout.",
+      "next_action": "Inspect the refresh output, fix the failing generator, and rerun the observer.",
+      "severity": "high"
+    },
+    {
+      "domain": "self_improvement",
+      "evidence": {
+        "command": [
+          "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\.venv\\Scripts\\python.exe",
+          "-m",
+          "aureon.autonomous.aureon_system_readiness_audit"
+        ],
+        "returncode": 124,
+        "stderr_tail": ""
+      },
+      "id": "refresh.system_readiness.timeout",
+      "issue": "Refresh step system_readiness ended with timeout.",
+      "next_action": "Inspect the refresh output, fix the failing generator, and rerun the observer.",
+      "severity": "high"
+    }
+  ],
+  "data_freshness": {
+    "counts": {
+      "attention": 7,
+      "fresh": 7,
+      "missing": 0,
+      "stale": 14,
+      "unknown": 0
+    },
+    "domain_count": 21,
+    "fresh_ratio": 0.333,
+    "max_age_seconds": 368180
+  },
+  "domains": [
+    {
+      "age_seconds": 2353,
+      "blind_spots": [
+        "manifest_stale",
+        "attention_security_blocker_count",
+        "attention_orphaned_frontend_count",
+        "attention_missing_supabase_function_call_count"
+      ],
+      "display_state": "mounted",
+      "domain": "operator",
+      "freshness": "stale",
+      "generated_at": "2026-05-15T17:48:45.024188+00:00",
+      "id": "saas_inventory",
+      "label": "SaaS And Frontend Inventory",
+      "metrics": {
+        "frontend_surface_count": 676,
+        "generated_accounting_html_count": 20,
+        "legacy_dashboard_count": 26,
+        "missing_supabase_function_call_count": 4,
+        "orphaned_frontend_count": 648,
+        "security_blocker_count": 2,
+        "supabase_function_count": 101,
+        "surface_count": 870,
+        "uncalled_supabase_function_count": 29
+      },
+      "next_action": "Run python -m aureon.autonomous.aureon_saas_system_inventory.",
+      "source_path": "docs/audits/aureon_saas_system_inventory.json",
+      "status": "stale",
+      "summary": {
+        "frontend_surface_count": 676,
+        "generated_accounting_html_count": 20,
+        "legacy_dashboard_count": 26,
+        "missing_supabase_function_call_count": 4,
+        "orphaned_frontend_count": 648,
+        "security_blocker_count": 2,
+        "supabase_function_count": 101,
+        "surface_count": 870,
+        "uncalled_supabase_function_count": 29
+      }
+    },
+    {
+      "age_seconds": 303,
+      "blind_spots": [
+        "attention_security_blocker_count",
+        "attention_missing_screen_capability_count"
+      ],
+      "display_state": "mounted",
+      "domain": "operator",
+      "freshness": "fresh",
+      "generated_at": "2026-05-15T18:22:55.696313+00:00",
+      "id": "frontend_unification",
+      "label": "Unified Frontend Plan",
+      "metrics": {
+        "frontend_surface_count": 676,
+        "migration_action_count": 5,
+        "missing_screen_capability_count": 2,
+        "screen_count": 7,
+        "security_blocker_count": 2,
+        "source_surface_count": 870,
+        "supabase_function_count": 101
+      },
+      "next_action": "Run python -m aureon.autonomous.aureon_frontend_unification_plan.",
+      "source_path": "docs/audits/aureon_frontend_unification_plan.json",
+      "status": "attention",
+      "summary": {
+        "frontend_surface_count": 676,
+        "migration_action_count": 5,
+        "missing_screen_capability_count": 2,
+        "screen_count": 7,
+        "security_blocker_count": 2,
+        "source_surface_count": 870,
+        "supabase_function_count": 101
+      }
+    },
+    {
+      "age_seconds": 301,
+      "blind_spots": [
+        "attention_blocked_count",
+        "attention_archive_candidate_count"
+      ],
+      "display_state": "mounted",
+      "domain": "self_improvement",
+      "freshness": "fresh",
+      "generated_at": "2026-05-15T18:22:57.110214+00:00",
+      "id": "frontend_evolution_queue",
+      "label": "Frontend Evolution Queue",
+      "metrics": {
+        "archive_candidate_count": 3,
+        "blocked_count": 40,
+        "generated_output_link_count": 6,
+        "highest_priority": 100,
+        "queue_count": 585,
+        "ready_adapter_count": 462,
+        "target_screen_count": 6
+      },
+      "next_action": "Run python -m aureon.autonomous.aureon_frontend_evolution_queue.",
+      "source_path": "docs/audits/aureon_frontend_evolution_queue.json",
+      "status": "attention",
+      "summary": {
+        "archive_candidate_count": 3,
+        "blocked_count": 40,
+        "generated_output_link_count": 6,
+        "highest_priority": 100,
+        "queue_count": 585,
+        "ready_adapter_count": 462,
+        "target_screen_count": 6
+      }
+    },
+    {
+      "age_seconds": 278,
+      "blind_spots": [
+        "attention_blocker_count",
+        "attention_blocked_capability_count"
+      ],
+      "display_state": "mounted",
+      "domain": "self_improvement",
+      "freshness": "fresh",
+      "generated_at": "2026-05-15T18:23:20.525675+00:00",
+      "id": "capability_switchboard",
+      "label": "Autonomous Capability Switchboard",
+      "metrics": {
+        "action_mode": "safe_observation",
+        "autonomous_capability_count": 9,
+        "blocked_capability_count": 1,
+        "blocker_count": 4,
+        "canonical_screen_count": 7,
+        "capability_count": 9,
+        "frontend_work_order_count": 585,
+        "presentation_intent_count": 15,
+        "ready_adapter_count": 462,
+        "runtime_feed_status": "offline",
+        "security_blocker_count": 2,
+        "trading_action_allowed": false
+      },
+      "next_action": "Run python -m aureon.autonomous.aureon_autonomous_capability_switchboard.",
+      "source_path": "docs/audits/aureon_autonomous_capability_switchboard.json",
+      "status": "attention",
+      "summary": {
+        "action_mode": "safe_observation",
+        "autonomous_capability_count": 9,
+        "blocked_capability_count": 1,
+        "blocker_count": 4,
+        "canonical_screen_count": 7,
+        "capability_count": 9,
+        "frontend_work_order_count": 585,
+        "presentation_intent_count": 15,
+        "ready_adapter_count": 462,
+        "runtime_feed_status": "offline",
+        "security_blocker_count": 2,
+        "trading_action_allowed": false
+      }
+    },
+    {
+      "age_seconds": 271,
+      "blind_spots": [
+        "attention_blocked_work_order_count",
+        "attention_blind_spot_count"
+      ],
+      "display_state": "mounted",
+      "domain": "self_improvement",
+      "freshness": "fresh",
+      "generated_at": "2026-05-15T18:23:27.273883+00:00",
+      "id": "operational_ui_builder",
+      "label": "Aureon Operational UI Builder",
+      "metrics": {
+        "autonomous_capability_count": 9,
+        "blind_spot_count": 38,
+        "blocked_work_order_count": 40,
+        "canonical_screen_count": 7,
+        "capability_count": 9,
+        "frontend_surface_count": 676,
+        "frontend_work_order_count": 585,
+        "ready_adapter_count": 462,
+        "runtime_feed_status": "offline",
+        "surface_count": 870,
+        "template_count": 64
+      },
+      "next_action": "Run python -m aureon.autonomous.aureon_unified_ui_builder.",
+      "source_path": "docs/audits/aureon_operational_ui_builder.json",
+      "status": "attention",
+      "summary": {
+        "autonomous_capability_count": 9,
+        "blind_spot_count": 38,
+        "blocked_work_order_count": 40,
+        "canonical_screen_count": 7,
+        "capability_count": 9,
+        "frontend_surface_count": 676,
+        "frontend_work_order_count": 585,
+        "ready_adapter_count": 462,
+        "runtime_feed_status": "offline",
+        "surface_count": 870,
+        "template_count": 64
+      }
+    },
+    {
+      "age_seconds": 2423,
+      "blind_spots": [
+        "manifest_stale",
+        "attention_blocked_count",
+        "attention_attention_count"
+      ],
+      "display_state": "internal",
+      "domain": "cognition",
+      "freshness": "stale",
+      "generated_at": "2026-05-15T17:47:35.591295+00:00",
+      "id": "system_readiness",
+      "label": "Whole Organism Readiness",
+      "metrics": {
+        "attention_count": 5,
+        "blocked_count": 4,
+        "capability_ids": [
+          "repo_organization",
+          "repo_self_catalog",
+          "mind_wiring",
+          "goal_routing",
+          "contract_stack",
+          "trading_brain",
+          "accounting_brain",
+          "research_vault",
+          "llm_capability",
+          "self_enhancement_lifecycle",
+          "capability_growth_loop",
+          "saas_product_inventory",
+          "hnc_saas_security",
+          "ignition",
+          "operator_surfaces"
+        ],
+        "manual_filing_required": true,
+        "proof_count": 15,
+        "real_orders_allowed": false,
+        "status_counts": {
+          "blocked_or_missing": 4,
+          "working": 5,
+          "working_safe_simulation": 1,
+          "working_with_attention": 5
+        }
+      },
+      "next_action": "Run python -m aureon.autonomous.aureon_system_readiness_audit.",
+      "source_path": "docs/audits/aureon_system_readiness_audit.json",
+      "status": "stale",
+      "summary": {
+        "attention_count": 5,
+        "blocked_count": 4,
+        "capability_ids": [
+          "repo_organization",
+          "repo_self_catalog",
+          "mind_wiring",
+          "goal_routing",
+          "contract_stack",
+          "trading_brain",
+          "accounting_brain",
+          "research_vault",
+          "llm_capability",
+          "self_enhancement_lifecycle",
+          "capability_growth_loop",
+          "saas_product_inventory",
+          "hnc_saas_security",
+          "ignition",
+          "operator_surfaces"
+        ],
+        "manual_filing_required": true,
+        "proof_count": 15,
+        "real_orders_allowed": false,
+        "status_counts": {
+          "blocked_or_missing": 4,
+          "working": 5,
+          "working_safe_simulation": 1,
+          "working_with_attention": 5
+        }
+      }
+    },
+    {
+      "age_seconds": 84,
+      "blind_spots": [
+        "attention_runtime_stale"
+      ],
+      "display_state": "mounted",
+      "domain": "trading",
+      "freshness": "fresh",
+      "generated_at": "2026-05-15T18:26:34.047677+00:00",
+      "id": "cognitive_trade_evidence",
+      "label": "Cognitive Trade Evidence",
+      "metrics": {
+        "action_mode": "learn_and_recover",
+        "average_learning_reward": 0.507285,
+        "evidence_count": 11,
+        "losses": 0,
+        "net_pnl": 4.4928,
+        "open_positions": 2,
+        "runtime_stale": true,
+        "signal_quality": 0.357285,
+        "win_rate": 1.0,
+        "wins": 11
+      },
+      "next_action": "Run python -m aureon.autonomous.aureon_cognitive_trade_evidence.",
+      "source_path": "docs/audits/aureon_cognitive_trade_evidence.json",
+      "status": "attention",
+      "summary": {
+        "action_mode": "learn_and_recover",
+        "average_learning_reward": 0.507285,
+        "evidence_count": 11,
+        "losses": 0,
+        "net_pnl": 4.4928,
+        "open_positions": 2,
+        "runtime_stale": true,
+        "signal_quality": 0.357285,
+        "win_rate": 1.0,
+        "wins": 11
+      }
+    },
+    {
+      "age_seconds": 0,
+      "blind_spots": [
+        "attention_runtime_stale",
+        "attention_safety_blocker_count"
+      ],
+      "display_state": "mounted",
+      "domain": "cognition",
+      "freshness": "fresh",
+      "generated_at": "2026-05-15T18:27:58.617970+00:00",
+      "id": "harmonic_affect_state",
+      "label": "HNC Auris Harmonic Affect State",
+      "metrics": {
+        "affect_phase": "protective_recalibration",
+        "anchor_readiness": 1.0,
+        "arousal": 0.95,
+        "auris_emotion_count": 6,
+        "blind_spot_count": 38,
+        "emotion_anchor": "Reason",
+        "goal_alignment": 0.577445,
+        "hnc_anchor_count": 10,
+        "hnc_coherence_score": 0.502371,
+        "inner_peace_candidate": false,
+        "nexus_total_trades": 10,
+        "resonance_frequency_hz": 400.0,
+        "reward_alignment": 0.557285,
+        "runtime_stale": true,
+        "safety_blocker_count": 14,
+        "stability": 0.0,
+        "trade_evidence_count": 11,
+        "valence": 0.47974
+      },
+      "next_action": "Run python -m aureon.autonomous.aureon_harmonic_affect_state.",
+      "source_path": "docs/audits/aureon_harmonic_affect_state.json",
+      "status": "attention",
+      "summary": {
+        "affect_phase": "protective_recalibration",
+        "anchor_readiness": 1.0,
+        "arousal": 0.95,
+        "auris_emotion_count": 6,
+        "blind_spot_count": 38,
+        "emotion_anchor": "Reason",
+        "goal_alignment": 0.577445,
+        "hnc_anchor_count": 10,
+        "hnc_coherence_score": 0.502371,
+        "inner_peace_candidate": false,
+        "nexus_total_trades": 10,
+        "resonance_frequency_hz": 400.0,
+        "reward_alignment": 0.557285,
+        "runtime_stale": true,
+        "safety_blocker_count": 14,
+        "stability": 0.0,
+        "trade_evidence_count": 11,
+        "valence": 0.47974
+      }
+    },
+    {
+      "age_seconds": 0,
+      "blind_spots": [
+        "not_populated_fresh_usable_count",
+        "attention_runtime_stale",
+        "attention_stale_or_blocked_count"
+      ],
+      "display_state": "mounted",
+      "domain": "trading",
+      "freshness": "fresh",
+      "generated_at": "2026-05-15T18:27:58.873510+00:00",
+      "id": "trading_intelligence_checklist",
+      "label": "Trading Intelligence Checklist",
+      "metrics": {
+        "active_count": 56,
+        "category_counts": {
+          "counter_intelligence_validation": {
+            "fed": 18,
+            "total": 18,
+            "usable": 0
+          },
+          "hnc_auris_cognition": {
+            "fed": 8,
+            "total": 8,
+            "usable": 0
+          },
+          "live_market_intelligence": {
+            "fed": 12,
+            "total": 13,
+            "usable": 0
+          },
+          "metacognitive_data_context": {
+            "fed": 3,
+            "total": 3,
+            "usable": 0
+          },
+          "profit_timing": {
+            "fed": 9,
+            "total": 11,
+            "usable": 0
+          },
+          "research_context_mesh": {
+            "fed": 6,
+            "total": 6,
+            "usable": 0
+          }
+        },
+        "counter_intelligence_passing": 0,
+        "data_ready": true,
+        "decision_fed_count": 56,
+        "decision_posture": "trust_decision_shadow_until_runtime_fresh",
+        "decision_self_trust_score": 0.323786,
+        "direct_live_systems_passing": 0,
+        "evidence_self_trust_score": 0.925104,
+        "fast_money_intelligence": {
+          "candidate_count": 0,
+          "high_volatility_count": 0,
+          "orderbook_aligned_count": 0,
+          "orderbook_probe_count": 0,
+          "top_fast_money_score": 0.0,
+          "top_momentum_tier": "",
+          "top_side": "",
+          "top_symbol": ""
+        },
+        "fresh_usable_count": 0,
+        "hnc_auris_passing": 0,
+        "hnc_operating_cycle": {
+          "action_state": "runtime_gated_order_intent_ready",
+          "cycle_order": [
+            "who",
+            "what",
+            "where",
+            "when",
+            "how",
+            "act"
+          ],
+          "fed_to_decision_logic": true,
+          "passed": true,
+          "present": true,
+          "question_count": 6,
+          "status": "passing"
+        },
+        "live_stream_cache": {
+          "fresh": true,
+          "max_age_sec": 5.0,
+          "raw_ticker_count": 1172,
+          "reason": "",
+          "symbol_count": 192,
+          "top_symbol": "SUIUSD",
+          "usable_for_decision": true
+        },
+        "metacognitive_context_passing": 0,
+        "metacognitive_data_context": {
+          "active_live_source_count": 4,
+          "cognitive_cleanliness_score": 1.0,
+          "configured_reachable_source_count": 10,
+          "coverage_percent": 100.0,
+          "decision_blocker": "tick_in_progress_stalled",
+          "decision_usable_source_count": 6,
+          "evidence_sources": [
+            "state/aureon_data_ocean_status.json",
+            "docs/audits/aureon_global_financial_coverage_map.json",
+            "docs/audits/aureon_exchange_monitoring_checklist.json"
+          ],
+          "exchange_waveform_ready": true,
+          "fresh_domain_count": 4,
+          "fresh_exchange_count": 4,
+          "history_rows": 1419689,
+          "live_ticker_count": 3026,
+          "mapping_complete": true,
+          "planetary_context_ready": true,
+          "present": true,
+          "state_phrase": "Planetary data ocean is mapped and usable for thought, but live action waits on runtime freshness.",
+          "usable_domain_count": 1,
+          "usable_for_live_decision": false,
+          "usable_for_metacognition": true,
+          "usable_source_count": 10,
+          "waveform_history_exchange_count": 4
+        },
+        "present_count": 59,
+        "profit_timing_passing": 0,
+        "research_context_passing": 0,
+        "runtime_fresh": false,
+        "runtime_stale": true,
+        "stale_or_blocked_count": 59,
+        "stale_reason": "tick_in_progress_stalled",
+        "status": "connected_guarded",
+        "system_count": 59,
+        "top_blockers": [
+          {
+            "blocker": "tick_in_progress_stalled",
+            "category": "live_market_intelligence",
+            "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.LiveExchangeFeeds",
+            "system": "LiveExchangeFeeds"
+          },
+          {
+            "blocker": "tick_in_progress_stalled",
+            "category": "live_market_intelligence",
+            "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.LiveStreamCache",
+            "system": "LiveStreamCache"
+          },
+          {
+            "blocker": "tick_in_progress_stalled",
+            "category": "live_market_intelligence",
+            "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.UnifiedSignalEngine",
+            "system": "UnifiedSignalEngine"
+          },
+          {
+            "blocker": "tick_in_progress_stalled",
+            "category": "live_market_intelligence",
+            "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.WorldFinancialEcosystemFeed",
+            "system": "WorldFinancialEcosystemFeed"
+          },
+          {
+            "blocker": "not_active_this_cycle, not_wired_to_decision_logic, tick_in_progress_stalled",
+            "category": "live_market_intelligence",
+            "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.MarketHarp",
+            "system": "MarketHarp"
+          },
+          {
+            "blocker": "tick_in_progress_stalled",
+            "category": "live_market_intelligence",
+            "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.CrossAssetCorrelator",
+            "system": "CrossAssetCorrelator"
+          },
+          {
+            "blocker": "tick_in_progress_stalled",
+            "category": "research_context_mesh",
+            "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.NewsSignalBridge",
+            "system": "NewsSignalBridge"
+          },
+          {
+            "blocker": "tick_in_progress_stalled",
+            "category": "hnc_auris_cognition",
+            "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.MultiHorizonWaveformMemory",
+            "system": "MultiHorizonWaveformMemory"
+          }
+        ],
+        "trading_ready": true,
+        "trust_to_act": false,
+        "trust_to_decide": true,
+        "trust_to_shadow": true
+      },
+      "next_action": "Run python -m aureon.autonomous.aureon_trading_intelligence_checklist.",
+      "source_path": "docs/audits/aureon_trading_intelligence_checklist.json",
+      "status": "attention",
+      "summary": {
+        "active_count": 56,
+        "category_counts": {
+          "counter_intelligence_validation": {
+            "fed": 18,
+            "total": 18,
+            "usable": 0
+          },
+          "hnc_auris_cognition": {
+            "fed": 8,
+            "total": 8,
+            "usable": 0
+          },
+          "live_market_intelligence": {
+            "fed": 12,
+            "total": 13,
+            "usable": 0
+          },
+          "metacognitive_data_context": {
+            "fed": 3,
+            "total": 3,
+            "usable": 0
+          },
+          "profit_timing": {
+            "fed": 9,
+            "total": 11,
+            "usable": 0
+          },
+          "research_context_mesh": {
+            "fed": 6,
+            "total": 6,
+            "usable": 0
+          }
+        },
+        "counter_intelligence_passing": 0,
+        "data_ready": true,
+        "decision_fed_count": 56,
+        "decision_posture": "trust_decision_shadow_until_runtime_fresh",
+        "decision_self_trust_score": 0.323786,
+        "direct_live_systems_passing": 0,
+        "evidence_self_trust_score": 0.925104,
+        "fast_money_intelligence": {
+          "candidate_count": 0,
+          "high_volatility_count": 0,
+          "orderbook_aligned_count": 0,
+          "orderbook_probe_count": 0,
+          "top_fast_money_score": 0.0,
+          "top_momentum_tier": "",
+          "top_side": "",
+          "top_symbol": ""
+        },
+        "fresh_usable_count": 0,
+        "hnc_auris_passing": 0,
+        "hnc_operating_cycle": {
+          "action_state": "runtime_gated_order_intent_ready",
+          "cycle_order": [
+            "who",
+            "what",
+            "where",
+            "when",
+            "how",
+            "act"
+          ],
+          "fed_to_decision_logic": true,
+          "passed": true,
+          "present": true,
+          "question_count": 6,
+          "status": "passing"
+        },
+        "live_stream_cache": {
+          "fresh": true,
+          "max_age_sec": 5.0,
+          "raw_ticker_count": 1172,
+          "reason": "",
+          "symbol_count": 192,
+          "top_symbol": "SUIUSD",
+          "usable_for_decision": true
+        },
+        "metacognitive_context_passing": 0,
+        "metacognitive_data_context": {
+          "active_live_source_count": 4,
+          "cognitive_cleanliness_score": 1.0,
+          "configured_reachable_source_count": 10,
+          "coverage_percent": 100.0,
+          "decision_blocker": "tick_in_progress_stalled",
+          "decision_usable_source_count": 6,
+          "evidence_sources": [
+            "state/aureon_data_ocean_status.json",
+            "docs/audits/aureon_global_financial_coverage_map.json",
+            "docs/audits/aureon_exchange_monitoring_checklist.json"
+          ],
+          "exchange_waveform_ready": true,
+          "fresh_domain_count": 4,
+          "fresh_exchange_count": 4,
+          "history_rows": 1419689,
+          "live_ticker_count": 3026,
+          "mapping_complete": true,
+          "planetary_context_ready": true,
+          "present": true,
+          "state_phrase": "Planetary data ocean is mapped and usable for thought, but live action waits on runtime freshness.",
+          "usable_domain_count": 1,
+          "usable_for_live_decision": false,
+          "usable_for_metacognition": true,
+          "usable_source_count": 10,
+          "waveform_history_exchange_count": 4
+        },
+        "present_count": 59,
+        "profit_timing_passing": 0,
+        "research_context_passing": 0,
+        "runtime_fresh": false,
+        "runtime_stale": true,
+        "stale_or_blocked_count": 59,
+        "stale_reason": "tick_in_progress_stalled",
+        "status": "connected_guarded",
+        "system_count": 59,
+        "top_blockers": [
+          {
+            "blocker": "tick_in_progress_stalled",
+            "category": "live_market_intelligence",
+            "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.LiveExchangeFeeds",
+            "system": "LiveExchangeFeeds"
+          },
+          {
+            "blocker": "tick_in_progress_stalled",
+            "category": "live_market_intelligence",
+            "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.LiveStreamCache",
+            "system": "LiveStreamCache"
+          },
+          {
+            "blocker": "tick_in_progress_stalled",
+            "category": "live_market_intelligence",
+            "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.UnifiedSignalEngine",
+            "system": "UnifiedSignalEngine"
+          },
+          {
+            "blocker": "tick_in_progress_stalled",
+            "category": "live_market_intelligence",
+            "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.WorldFinancialEcosystemFeed",
+            "system": "WorldFinancialEcosystemFeed"
+          },
+          {
+            "blocker": "not_active_this_cycle, not_wired_to_decision_logic, tick_in_progress_stalled",
+            "category": "live_market_intelligence",
+            "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.MarketHarp",
+            "system": "MarketHarp"
+          },
+          {
+            "blocker": "tick_in_progress_stalled",
+            "category": "live_market_intelligence",
+            "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.CrossAssetCorrelator",
+            "system": "CrossAssetCorrelator"
+          },
+          {
+            "blocker": "tick_in_progress_stalled",
+            "category": "research_context_mesh",
+            "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.NewsSignalBridge",
+            "system": "NewsSignalBridge"
+          },
+          {
+            "blocker": "tick_in_progress_stalled",
+            "category": "hnc_auris_cognition",
+            "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.MultiHorizonWaveformMemory",
+            "system": "MultiHorizonWaveformMemory"
+          }
+        ],
+        "trading_ready": true,
+        "trust_to_act": false,
+        "trust_to_decide": true,
+        "trust_to_shadow": true
+      }
+    },
+    {
+      "age_seconds": 3160,
+      "blind_spots": [
+        "manifest_stale",
+        "attention_runtime_stale"
+      ],
+      "display_state": "mounted",
+      "domain": "trading",
+      "freshness": "stale",
+      "generated_at": "2026-05-15T17:35:17.985618+00:00",
+      "id": "exchange_data_capability_matrix",
+      "label": "Exchange Data Capability Matrix",
+      "metrics": {
+        "cash_active_exchange_count": 2,
+        "connected_exchange_count": 4,
+        "data_boost_eligible_count": 2,
+        "data_ready": true,
+        "decision_fed_count": 0,
+        "exchange_count": 4,
+        "fast_money_usable_count": 0,
+        "fresh_feed_count": 4,
+        "official_rate_limit_profile_count": 4,
+        "preflight_overall": "yellow",
+        "runtime_booting": false,
+        "runtime_stale": true,
+        "stale_reason": "tick_in_progress_stalled",
+        "top_optimizations": [
+          {
+            "exchange": "binance",
+            "mode": "idle_cash_market_discovery_boost",
+            "next_optimization": "Use this idle/no-cash venue for wider market discovery, quote probes, and cross-exchange confirmation."
+          },
+          {
+            "exchange": "kraken",
+            "mode": "execution_positions_first",
+            "next_optimization": "Reserve private calls for balances, collateral, and execution; keep history sync capped and favor public streams."
+          },
+          {
+            "exchange": "alpaca",
+            "mode": "idle_cash_market_discovery_boost",
+            "next_optimization": "Use this idle/no-cash venue for wider market discovery, quote probes, and cross-exchange confirmation."
+          },
+          {
+            "exchange": "capital",
+            "mode": "execution_positions_first",
+            "next_optimization": "Prioritize open-position P/L, confirmations, and a 40-instrument high-volatility watchlist."
+          }
+        ],
+        "total_ticker_count": 3026,
+        "trading_ready": true,
+        "waveform_ready_count": 4
+      },
+      "next_action": "Run python -m aureon.autonomous.aureon_exchange_data_capability_matrix.",
+      "source_path": "docs/audits/aureon_exchange_data_capability_matrix.json",
+      "status": "stale",
+      "summary": {
+        "cash_active_exchange_count": 2,
+        "connected_exchange_count": 4,
+        "data_boost_eligible_count": 2,
+        "data_ready": true,
+        "decision_fed_count": 0,
+        "exchange_count": 4,
+        "fast_money_usable_count": 0,
+        "fresh_feed_count": 4,
+        "official_rate_limit_profile_count": 4,
+        "preflight_overall": "yellow",
+        "runtime_booting": false,
+        "runtime_stale": true,
+        "stale_reason": "tick_in_progress_stalled",
+        "top_optimizations": [
+          {
+            "exchange": "binance",
+            "mode": "idle_cash_market_discovery_boost",
+            "next_optimization": "Use this idle/no-cash venue for wider market discovery, quote probes, and cross-exchange confirmation."
+          },
+          {
+            "exchange": "kraken",
+            "mode": "execution_positions_first",
+            "next_optimization": "Reserve private calls for balances, collateral, and execution; keep history sync capped and favor public streams."
+          },
+          {
+            "exchange": "alpaca",
+            "mode": "idle_cash_market_discovery_boost",
+            "next_optimization": "Use this idle/no-cash venue for wider market discovery, quote probes, and cross-exchange confirmation."
+          },
+          {
+            "exchange": "capital",
+            "mode": "execution_positions_first",
+            "next_optimization": "Prioritize open-position P/L, confirmations, and a 40-instrument high-volatility watchlist."
+          }
+        ],
+        "total_ticker_count": 3026,
+        "trading_ready": true,
+        "waveform_ready_count": 4
+      }
+    },
+    {
+      "age_seconds": 168352,
+      "blind_spots": [
+        "manifest_stale"
+      ],
+      "display_state": "internal",
+      "domain": "cognition",
+      "freshness": "stale",
+      "generated_at": "2026-05-13T19:42:06.726329+00:00",
+      "id": "mind_wiring",
+      "label": "Whole-Mind Wiring",
+      "metrics": {
+        "counts": {
+          "broken": 0,
+          "partial": 0,
+          "total": 301,
+          "unknown": 0,
+          "vision_only": 0,
+          "wired": 301
+        }
+      },
+      "next_action": "Run python -m aureon.autonomous.mind_wiring_audit --static --imports --local-services.",
+      "source_path": "docs/audits/mind_wiring_audit.json",
+      "status": "stale",
+      "summary": {}
+    },
+    {
+      "age_seconds": 168393,
+      "blind_spots": [
+        "manifest_stale",
+        "attention_secret_metadata_only_count"
+      ],
+      "display_state": "internal",
+      "domain": "self_knowledge",
+      "freshness": "stale",
+      "generated_at": "2026-05-13T19:41:25.603959+00:00",
+      "id": "repo_self_catalog",
+      "label": "File Self-Catalog",
+      "metrics": {
+        "cataloged_file_count": 6890,
+        "coverage_policy": "Every project file outside dependency/cache/virtualenv/git internals is labelled; excluded infrastructure roots are recorded explicitly.",
+        "directory_summary_count": 141,
+        "domain_count": 12,
+        "excluded_infrastructure_root_count": 75,
+        "file_kind_count": 15,
+        "python_symbol_probe_count": 2103,
+        "read_status_counts": {
+          "binary_metadata": 691,
+          "metadata_only_secret": 19,
+          "read_text_sample": 5875,
+          "sampled_text": 305
+        },
+        "safety_flag_counts": {
+          "generated_output_inside_source_area": 17,
+          "legacy_misspelled_business_data_root_preserved": 57,
+          "loose_repo_root_file": 1,
+          "runtime_memory_surface": 5,
+          "runtime_state_outside_runtime_stage": 19,
+          "secret_or_credential_surface": 19,
+          "unstaged_path": 1
+        },
+        "secret_metadata_only_count": 19,
+        "subsystem_count": 22,
+        "total_project_files_discovered": 6890,
+        "truncated": false
+      },
+      "next_action": "Run python -m aureon.autonomous.aureon_repo_self_catalog.",
+      "source_path": "docs/audits/aureon_repo_self_catalog.json",
+      "status": "stale",
+      "summary": {
+        "cataloged_file_count": 6890,
+        "coverage_policy": "Every project file outside dependency/cache/virtualenv/git internals is labelled; excluded infrastructure roots are recorded explicitly.",
+        "directory_summary_count": 141,
+        "domain_count": 12,
+        "excluded_infrastructure_root_count": 75,
+        "file_kind_count": 15,
+        "python_symbol_probe_count": 2103,
+        "read_status_counts": {
+          "binary_metadata": 691,
+          "metadata_only_secret": 19,
+          "read_text_sample": 5875,
+          "sampled_text": 305
+        },
+        "safety_flag_counts": {
+          "generated_output_inside_source_area": 17,
+          "legacy_misspelled_business_data_root_preserved": 57,
+          "loose_repo_root_file": 1,
+          "runtime_memory_surface": 5,
+          "runtime_state_outside_runtime_stage": 19,
+          "secret_or_credential_surface": 19,
+          "unstaged_path": 1
+        },
+        "secret_metadata_only_count": 19,
+        "subsystem_count": 22,
+        "total_project_files_discovered": 6890,
+        "truncated": false
+      }
+    },
+    {
+      "age_seconds": 291807,
+      "blind_spots": [
+        "manifest_stale"
+      ],
+      "display_state": "internal",
+      "domain": "accounting",
+      "freshness": "stale",
+      "generated_at": "2026-05-12T09:24:31.654371+00:00",
+      "id": "accounting_registry",
+      "label": "Accounting System Registry",
+      "metrics": {
+        "artifact_count": 872,
+        "artifact_kind_counts": {
+          "accounting_vault_memory": 2,
+          "company_compliance": 6,
+          "csv": 15,
+          "exchange_archive_coverage": 1,
+          "final_pack": 4,
+          "gateway_output": 22,
+          "json": 48,
+          "king_state_data": 4,
+          "md": 651,
+          "pdf": 109,
+          "workbook": 10
+        },
+        "class_count": 320,
+        "companies_house_submission_manual_only": true,
+        "domain_counts": {
+          "accounting_registry": 3,
+          "accounting_status_tools": 6,
+          "accounting_support": 9,
+          "cash_flow": 1,
+          "cis": 6,
+          "compliance_audit": 9,
+          "compound_projection": 3,
+          "exchange_reconciliation": 14,
+          "financial_analysis": 6,
+          "gateway_orchestration": 5,
+          "invoice": 2,
+          "king_accounting": 3,
+          "ledger_double_entry": 9,
+          "reports_exports": 2,
+          "tax_computation": 11,
+          "tax_intelligence": 1,
+          "transaction_import": 7,
+          "vat": 2
+        },
+        "external_mutation_risk_count": 41,
+        "function_count": 1127,
+        "hmrc_submission_manual_only": true,
+        "mirrored_module_count": 13,
+        "module_count": 99,
+        "nonstandard_surfaces": {
+          "accounting_vault_memory": true,
+          "exchange_archive_coverage_report": true,
+          "kings_aureon_systems_mirror": true,
+          "misspelled_business_accounts_dir": true,
+          "root_aureon_compound_projection": true,
+          "root_aureon_financial_analytics": true,
+          "root_aureon_king_bots": true
+        },
+        "official_filing_manual_only": true,
+        "role_counts": {
+          "audit_or_probe": 22,
+          "bridge": 4,
+          "data_import": 38,
+          "final_ready_generation": 15,
+          "reconciliation": 17,
+          "runnable_tool": 3
+        },
+        "runnable_tool_count": 73
+      },
+      "next_action": "Run the accounting registry/accounts generation workflow in safe manual-filing mode.",
+      "source_path": "docs/audits/accounting_system_registry.json",
+      "status": "stale",
+      "summary": {
+        "artifact_count": 872,
+        "artifact_kind_counts": {
+          "accounting_vault_memory": 2,
+          "company_compliance": 6,
+          "csv": 15,
+          "exchange_archive_coverage": 1,
+          "final_pack": 4,
+          "gateway_output": 22,
+          "json": 48,
+          "king_state_data": 4,
+          "md": 651,
+          "pdf": 109,
+          "workbook": 10
+        },
+        "class_count": 320,
+        "companies_house_submission_manual_only": true,
+        "domain_counts": {
+          "accounting_registry": 3,
+          "accounting_status_tools": 6,
+          "accounting_support": 9,
+          "cash_flow": 1,
+          "cis": 6,
+          "compliance_audit": 9,
+          "compound_projection": 3,
+          "exchange_reconciliation": 14,
+          "financial_analysis": 6,
+          "gateway_orchestration": 5,
+          "invoice": 2,
+          "king_accounting": 3,
+          "ledger_double_entry": 9,
+          "reports_exports": 2,
+          "tax_computation": 11,
+          "tax_intelligence": 1,
+          "transaction_import": 7,
+          "vat": 2
+        },
+        "external_mutation_risk_count": 41,
+        "function_count": 1127,
+        "hmrc_submission_manual_only": true,
+        "mirrored_module_count": 13,
+        "module_count": 99,
+        "nonstandard_surfaces": {
+          "accounting_vault_memory": true,
+          "exchange_archive_coverage_report": true,
+          "kings_aureon_systems_mirror": true,
+          "misspelled_business_accounts_dir": true,
+          "root_aureon_compound_projection": true,
+          "root_aureon_financial_analytics": true,
+          "root_aureon_king_bots": true
+        },
+        "official_filing_manual_only": true,
+        "role_counts": {
+          "audit_or_probe": 22,
+          "bridge": 4,
+          "data_import": 38,
+          "final_ready_generation": 15,
+          "reconciliation": 17,
+          "runnable_tool": 3
+        },
+        "runnable_tool_count": 73
+      }
+    },
+    {
+      "age_seconds": 343685,
+      "blind_spots": [
+        "manifest_stale"
+      ],
+      "display_state": "internal",
+      "domain": "self_improvement",
+      "freshness": "stale",
+      "generated_at": "2026-05-11T18:59:53.822732+00:00",
+      "id": "capability_growth_loop",
+      "label": "Capability Growth Loop",
+      "metrics": {
+        "contract_queue_persisted": true,
+        "iteration_count": 1,
+        "latest_benchmark_check_count": 2,
+        "latest_failed_benchmark_count": 0,
+        "latest_gap_count": 5,
+        "latest_mean_score": 0.922,
+        "latest_registered_improvement_count": 5,
+        "latest_status": "working_with_growth_items",
+        "skill_authoring_enabled": true
+      },
+      "next_action": "Run python -m aureon.autonomous.aureon_capability_growth_loop.",
+      "source_path": "docs/audits/aureon_capability_growth_loop.json",
+      "status": "stale",
+      "summary": {
+        "contract_queue_persisted": true,
+        "iteration_count": 1,
+        "latest_benchmark_check_count": 2,
+        "latest_failed_benchmark_count": 0,
+        "latest_gap_count": 5,
+        "latest_mean_score": 0.922,
+        "latest_registered_improvement_count": 5,
+        "latest_status": "working_with_growth_items",
+        "skill_authoring_enabled": true
+      }
+    },
+    {
+      "age_seconds": 368180,
+      "blind_spots": [
+        "manifest_stale"
+      ],
+      "display_state": "internal",
+      "domain": "self_improvement",
+      "freshness": "stale",
+      "generated_at": "2026-05-11T12:11:39.098916+00:00",
+      "id": "self_enhancement_lifecycle",
+      "label": "Self-Enhancement Lifecycle",
+      "metrics": {
+        "attention_stage_count": 3,
+        "blocked_stage_count": 0,
+        "code_architect_available": true,
+        "contracts_queued_persistently": true,
+        "enhancement_intent_count": 7,
+        "restart_required": false,
+        "self_enhancement_engine_available": true,
+        "stage_count": 8
+      },
+      "next_action": "Run python -m aureon.autonomous.aureon_self_enhancement_lifecycle.",
+      "source_path": "docs/audits/aureon_self_enhancement_lifecycle.json",
+      "status": "stale",
+      "summary": {
+        "attention_stage_count": 3,
+        "blocked_stage_count": 0,
+        "code_architect_available": true,
+        "contracts_queued_persistently": true,
+        "enhancement_intent_count": 7,
+        "restart_required": false,
+        "self_enhancement_engine_available": true,
+        "stage_count": 8
+      }
+    },
+    {
+      "age_seconds": 343101,
+      "blind_spots": [
+        "manifest_stale"
+      ],
+      "display_state": "internal",
+      "domain": "saas_security",
+      "freshness": "stale",
+      "generated_at": "2026-05-11T19:09:37.488052+00:00",
+      "id": "hnc_saas_security",
+      "label": "HNC SaaS Security Blueprint",
+      "metrics": {
+        "authorized_self_attack_required": true,
+        "contract_queued": true,
+        "control_count": 12,
+        "critical_control_count": 6,
+        "hnc_surface_count": 552,
+        "hnc_surface_type_count": 7,
+        "production_deploy_blocked_until_gates_pass": true,
+        "public_unhackable_claim_allowed": false,
+        "release_blocker_count": 13,
+        "release_gate_count": 13,
+        "security_target": "unhackable_pursuit_loop",
+        "unhackable_benchmark_count": 8,
+        "unhackable_internal_goal_active": true,
+        "unhackable_phase_count": 11
+      },
+      "next_action": "Run python -m aureon.autonomous.hnc_saas_security_architect.",
+      "source_path": "docs/audits/hnc_saas_security_blueprint.json",
+      "status": "stale",
+      "summary": {
+        "authorized_self_attack_required": true,
+        "contract_queued": true,
+        "control_count": 12,
+        "critical_control_count": 6,
+        "hnc_surface_count": 552,
+        "hnc_surface_type_count": 7,
+        "production_deploy_blocked_until_gates_pass": true,
+        "public_unhackable_claim_allowed": false,
+        "release_blocker_count": 13,
+        "release_gate_count": 13,
+        "security_target": "unhackable_pursuit_loop",
+        "unhackable_benchmark_count": 8,
+        "unhackable_internal_goal_active": true,
+        "unhackable_phase_count": 11
+      }
+    },
+    {
+      "age_seconds": 342644,
+      "blind_spots": [
+        "manifest_stale",
+        "attention_finding_count"
+      ],
+      "display_state": "internal",
+      "domain": "saas_security",
+      "freshness": "stale",
+      "generated_at": "2026-05-11T19:17:14.325704+00:00",
+      "id": "hnc_attack_lab",
+      "label": "Authorized Attack Lab",
+      "metrics": {
+        "actionable_finding_count": 1,
+        "attack_case_count": 8,
+        "authorized_self_attack_required": true,
+        "blocked_scope_count": 0,
+        "executed_simulation_count": 8,
+        "external_attacks_allowed": false,
+        "finding_count": 1,
+        "fix_contracts_queued": true,
+        "historical_lesson_count": 6,
+        "scope_target_count": 1
+      },
+      "next_action": "Run the authorized attack lab against owned/local targets only.",
+      "source_path": "docs/audits/hnc_authorized_attack_lab.json",
+      "status": "stale",
+      "summary": {
+        "actionable_finding_count": 1,
+        "attack_case_count": 8,
+        "authorized_self_attack_required": true,
+        "blocked_scope_count": 0,
+        "executed_simulation_count": 8,
+        "external_attacks_allowed": false,
+        "finding_count": 1,
+        "fix_contracts_queued": true,
+        "historical_lesson_count": 6,
+        "scope_target_count": 1
+      }
+    },
+    {
+      "age_seconds": 124506,
+      "blind_spots": [
+        "state_file_stale"
+      ],
+      "display_state": "internal",
+      "domain": "cognition",
+      "freshness": "stale",
+      "generated_at": "2026-05-14T07:52:53.032549+00:00",
+      "id": "adaptive_learning_history",
+      "label": "Adaptive Learning History",
+      "metrics": {
+        "bytes": 14884
+      },
+      "next_action": "Start the safe runtime/cognition loop so learning history is repopulated.",
+      "source_path": "adaptive_learning_history.json",
+      "status": "stale",
+      "summary": {
+        "bytes": 14884
+      }
+    },
+    {
+      "age_seconds": 124506,
+      "blind_spots": [
+        "state_file_stale"
+      ],
+      "display_state": "internal",
+      "domain": "cognition",
+      "freshness": "stale",
+      "generated_at": "2026-05-14T07:52:52.997866+00:00",
+      "id": "brain_predictions_history",
+      "label": "Brain Prediction History",
+      "metrics": {
+        "bytes": 54017
+      },
+      "next_action": "Start the safe runtime/cognition loop so prediction history is repopulated.",
+      "source_path": "brain_predictions_history.json",
+      "status": "stale",
+      "summary": {
+        "bytes": 54017
+      }
+    },
+    {
+      "age_seconds": 124506,
+      "blind_spots": [
+        "state_file_stale"
+      ],
+      "display_state": "internal",
+      "domain": "research",
+      "freshness": "stale",
+      "generated_at": "2026-05-14T07:52:53.101486+00:00",
+      "id": "miner_brain_knowledge",
+      "label": "Miner Brain Knowledge",
+      "metrics": {
+        "bytes": 523201
+      },
+      "next_action": "Run the research/vault ingestion loop to refresh miner knowledge.",
+      "source_path": "miner_brain_knowledge.json",
+      "status": "stale",
+      "summary": {
+        "bytes": 523201
+      }
+    },
+    {
+      "age_seconds": 124427,
+      "blind_spots": [
+        "state_file_stale"
+      ],
+      "display_state": "internal",
+      "domain": "cognition",
+      "freshness": "stale",
+      "generated_at": "2026-05-14T07:54:11.710157+00:00",
+      "id": "consciousness_state",
+      "label": "Consciousness State",
+      "metrics": {
+        "bytes": 7364
+      },
+      "next_action": "Start the cognition runtime so consciousness state is updated.",
+      "source_path": "public/consciousness_state.json",
+      "status": "stale",
+      "summary": {
+        "bytes": 7364
+      }
+    }
+  ],
+  "generated_at": "2026-05-15T18:27:59.138330+00:00",
+  "mode": "safe_observation",
+  "next_actions": [
+    "Run python -m aureon.autonomous.aureon_saas_system_inventory.",
+    "Run python -m aureon.autonomous.aureon_frontend_unification_plan.",
+    "Run python -m aureon.autonomous.aureon_frontend_evolution_queue.",
+    "Run python -m aureon.autonomous.aureon_autonomous_capability_switchboard.",
+    "Run python -m aureon.autonomous.aureon_unified_ui_builder.",
+    "Run python -m aureon.autonomous.aureon_system_readiness_audit.",
+    "Run python -m aureon.autonomous.aureon_cognitive_trade_evidence.",
+    "Run python -m aureon.autonomous.aureon_harmonic_affect_state.",
+    "Run python -m aureon.autonomous.aureon_trading_intelligence_checklist.",
+    "Run python -m aureon.autonomous.aureon_exchange_data_capability_matrix.",
+    "Run python -m aureon.autonomous.mind_wiring_audit --static --imports --local-services.",
+    "Run python -m aureon.autonomous.aureon_repo_self_catalog.",
+    "Run the accounting registry/accounts generation workflow in safe manual-filing mode.",
+    "Run python -m aureon.autonomous.aureon_capability_growth_loop.",
+    "Run python -m aureon.autonomous.aureon_self_enhancement_lifecycle.",
+    "Run python -m aureon.autonomous.hnc_saas_security_architect.",
+    "Run the authorized attack lab against owned/local targets only.",
+    "Start the safe runtime/cognition loop so learning history is repopulated.",
+    "Start the safe runtime/cognition loop so prediction history is repopulated.",
+    "Run the research/vault ingestion loop to refresh miner knowledge.",
+    "Start the cognition runtime so consciousness state is updated.",
+    "Start the safe Aureon runtime/ignition status service, then rerun the observer.",
+    "Inspect the refresh output, fix the failing generator, and rerun the observer."
+  ],
+  "real_time_feeds": {
+    "action_capability": {
+      "clock": {
+        "source": "aureon_organism_runtime_observer",
+        "timestamp_utc": "2026-05-15T18:27:59.138330+00:00"
+      },
+      "cognition": {
+        "authority": "ThoughtBus, mind hub, prediction history, adaptive learning, and self-questioning loops",
+        "can_act": true,
+        "verify_by": [
+          "timestamped thought",
+          "manifest evidence",
+          "goal route",
+          "result check"
+        ]
+      },
+      "external_security_testing": {
+        "authority": "owned/local/staging targets only after explicit authorization",
+        "blocked_by": [
+          "authorization_required"
+        ],
+        "can_act": false
+      },
+      "generated_at": "2026-05-15T18:27:59.138330+00:00",
+      "loop": [
+        "who",
+        "what",
+        "where",
+        "when",
+        "why",
+        "how",
+        "act",
+        "verify",
+        "record",
+        "repeat"
+      ],
+      "mode": "safe_observation",
+      "official_filings": {
+        "authority": "manual filing support only",
+        "blocked_by": [
+          "official_filing_manual_boundary"
+        ],
+        "can_act": false
+      },
+      "payments": {
+        "authority": "manual only",
+        "blocked_by": [
+          "payments_manual_boundary"
+        ],
+        "can_act": false
+      },
+      "research": {
+        "authority": "read-only local/web/API knowledge gathering with source-linked outputs",
+        "can_act": true,
+        "verify_by": [
+          "source link",
+          "timestamp",
+          "manifest refresh",
+          "visible blocker if source missing"
+        ]
+      },
+      "self_improvement": {
+        "authority": "patch, test, flight-test, and defer restarts to downtime windows",
+        "can_act": true,
+        "verify_by": [
+          "tests or smoke checks",
+          "reboot advice",
+          "downtime window",
+          "change record"
+        ]
+      },
+      "trading": {
+        "api_governor": {},
+        "authority": "existing exchange adapters, risk gates, API governor, and order-intent controls only",
+        "blocked_by": [
+          "runtime_feed_offline",
+          "trading_runtime_not_ready"
+        ],
+        "can_act": false,
+        "flight_test": {},
+        "open_positions": null,
+        "reboot_advice": {},
+        "runtime_watchdog": {},
+        "runtime_writer": {},
+        "verify_by": [
+          "runtime feed fresh",
+          "runtime writer lock owned",
+          "API governor within budgets",
+          "open positions and pending orders observed before restart",
+          "trade/order records persisted after action"
+        ]
+      }
+    },
+    "local_terminal": {
+      "error": "JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 350001 (char 350000)",
+      "flight_test": {},
+      "frontend_public_manifests": {
+        "capability_switchboard": true,
+        "frontend_evolution_queue": true,
+        "frontend_unification": true,
+        "operational_ui_spec": true,
+        "organism_runtime_status": true,
+        "saas_inventory": true
+      },
+      "notes": [
+        "Start Aureon ignition/runtime status service to populate real-time trading/cognition data."
+      ],
+      "status": "offline",
+      "url": "http://127.0.0.1:8791/api/terminal-state"
+    }
+  },
+  "refresh_results": [
+    {
+      "command": [
+        "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\.venv\\Scripts\\python.exe",
+        "-m",
+        "aureon.autonomous.aureon_saas_system_inventory"
+      ],
+      "duration_seconds": 182.943,
+      "id": "saas_inventory",
+      "returncode": 124,
+      "status": "timeout",
+      "stderr_tail": "",
+      "stdout_tail": ""
+    },
+    {
+      "command": [
+        "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\.venv\\Scripts\\python.exe",
+        "-m",
+        "aureon.autonomous.aureon_frontend_unification_plan"
+      ],
+      "duration_seconds": 1.784,
+      "id": "frontend_unification",
+      "returncode": 0,
+      "status": "ok",
+      "stderr_tail": "",
+      "stdout_tail": "{\n  \"json\": \"C:\\\\Users\\\\user\\\\aureon-trading-integrated-main-20260508\\\\docs\\\\audits\\\\aureon_frontend_unification_plan.json\",\n  \"markdown\": \"C:\\\\Users\\\\user\\\\aureon-trading-integrated-main-20260508\\\\docs\\\\audits\\\\aureon_frontend_unification_plan.md\",\n  \"public_json\": \"C:\\\\Users\\\\user\\\\aureon-trading-integrated-main-20260508\\\\frontend\\\\public\\\\aureon_frontend_unification_plan.json\",\n  \"status\": \"unification_plan_ready_with_security_blockers\",\n  \"summary\": {\n    \"frontend_surface_count\": 676,\n    \"migration_action_count\": 5,\n    \"missing_screen_capability_count\": 2,\n    \"screen_count\": 7,\n    \"security_blocker_count\": 2,\n    \"source_surface_count\": 870,\n    \"supabase_function_count\": 101\n  },\n  \"vault_note\": \"C:\\\\Users\\\\user\\\\aureon-trading-integrated-main-20260508\\\\.obsidian\\\\Aureon Self Understanding\\\\aureon_frontend_unification_plan.md\"\n}\n"
+    },
+    {
+      "command": [
+        "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\.venv\\Scripts\\python.exe",
+        "-m",
+        "aureon.autonomous.aureon_frontend_evolution_queue"
+      ],
+      "duration_seconds": 3.286,
+      "id": "frontend_evolution_queue",
+      "returncode": 0,
+      "status": "ok",
+      "stderr_tail": "",
+      "stdout_tail": "{\n  \"json\": \"C:\\\\Users\\\\user\\\\aureon-trading-integrated-main-20260508\\\\docs\\\\audits\\\\aureon_frontend_evolution_queue.json\",\n  \"markdown\": \"C:\\\\Users\\\\user\\\\aureon-trading-integrated-main-20260508\\\\docs\\\\audits\\\\aureon_frontend_evolution_queue.md\",\n  \"public_json\": \"C:\\\\Users\\\\user\\\\aureon-trading-integrated-main-20260508\\\\frontend\\\\public\\\\aureon_frontend_evolution_queue.json\",\n  \"status\": \"evolution_queue_ready_with_blockers\",\n  \"summary\": {\n    \"archive_candidate_count\": 3,\n    \"blocked_count\": 40,\n    \"generated_output_link_count\": 6,\n    \"highest_priority\": 100,\n    \"queue_count\": 585,\n    \"ready_adapter_count\": 462,\n    \"target_screen_count\": 6\n  },\n  \"vault_note\": \"C:\\\\Users\\\\user\\\\aureon-trading-integrated-main-20260508\\\\.obsidian\\\\Aureon Self Understanding\\\\aureon_frontend_evolution_queue.md\"\n}\n"
+    },
+    {
+      "command": [
+        "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\.venv\\Scripts\\python.exe",
+        "-m",
+        "aureon.autonomous.aureon_autonomous_capability_switchboard"
+      ],
+      "duration_seconds": 26.332,
+      "id": "capability_switchboard",
+      "returncode": 0,
+      "status": "ok",
+      "stderr_tail": "",
+      "stdout_tail": "{\n  \"json\": \"C:\\\\Users\\\\user\\\\aureon-trading-integrated-main-20260508\\\\docs\\\\audits\\\\aureon_autonomous_capability_switchboard.json\",\n  \"markdown\": \"C:\\\\Users\\\\user\\\\aureon-trading-integrated-main-20260508\\\\docs\\\\audits\\\\aureon_autonomous_capability_switchboard.md\",\n  \"public_json\": \"C:\\\\Users\\\\user\\\\aureon-trading-integrated-main-20260508\\\\frontend\\\\public\\\\aureon_autonomous_capability_switchboard.json\",\n  \"status\": \"switchboard_ready_with_blockers\",\n  \"summary\": {\n    \"action_mode\": \"safe_observation\",\n    \"autonomous_capability_count\": 9,\n    \"blocked_capability_count\": 1,\n    \"blocker_count\": 4,\n    \"canonical_screen_count\": 7,\n    \"capability_count\": 9,\n    \"frontend_work_order_count\": 585,\n    \"presentation_intent_count\": 15,\n    \"ready_adapter_count\": 462,\n    \"runtime_feed_status\": \"offline\",\n    \"security_blocker_count\": 2,\n    \"trading_action_allowed\": false\n  },\n  \"vault_note\": \"C:\\\\Users\\\\user\\\\aureon-trading-integrated-main-20260508\\\\.obsidian\\\\Aureon Self Understanding\\\\aureon_autonomous_capability_switchboard.md\"\n}\n"
+    },
+    {
+      "command": [
+        "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\.venv\\Scripts\\python.exe",
+        "-m",
+        "aureon.autonomous.aureon_unified_ui_builder"
+      ],
+      "duration_seconds": 1.344,
+      "id": "operational_ui_builder",
+      "returncode": 0,
+      "status": "ok",
+      "stderr_tail": "",
+      "stdout_tail": "{\n  \"capability_coverage\": {\n    \"autonomous_capability_count\": 9,\n    \"blind_spot_count\": 38,\n    \"blocked_work_order_count\": 40,\n    \"canonical_screen_count\": 7,\n    \"capability_count\": 9,\n    \"frontend_surface_count\": 676,\n    \"frontend_work_order_count\": 585,\n    \"ready_adapter_count\": 462,\n    \"runtime_feed_status\": \"offline\",\n    \"surface_count\": 870,\n    \"template_count\": 64\n  },\n  \"expression_ok\": true,\n  \"generated_files\": [\n    \"frontend/src/components/generated/AureonGeneratedOperationalConsole.tsx\",\n    \"frontend/public/aureon_operational_ui_spec.json\",\n    \"docs/audits/aureon_operational_ui_builder.json\",\n    \"state/aureon_ui_builder_last_run.json\"\n  ],\n  \"status\": \"operational_ui_spec_ready\",\n  \"templates_used\": 64\n}\n"
+    },
+    {
+      "command": [
+        "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\.venv\\Scripts\\python.exe",
+        "-m",
+        "aureon.autonomous.aureon_system_readiness_audit"
+      ],
+      "duration_seconds": 186.535,
+      "id": "system_readiness",
+      "returncode": 124,
+      "status": "timeout",
+      "stderr_tail": "",
+      "stdout_tail": ""
+    },
+    {
+      "command": [
+        "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\.venv\\Scripts\\python.exe",
+        "-m",
+        "aureon.autonomous.aureon_cognitive_trade_evidence"
+      ],
+      "duration_seconds": 81.254,
+      "id": "cognitive_trade_evidence",
+      "returncode": 0,
+      "status": "ok",
+      "stderr_tail": "",
+      "stdout_tail": "{\n  \"json\": \"C:\\\\Users\\\\user\\\\aureon-trading-integrated-main-20260508\\\\docs\\\\audits\\\\aureon_cognitive_trade_evidence.json\",\n  \"public_json\": \"C:\\\\Users\\\\user\\\\aureon-trading-integrated-main-20260508\\\\frontend\\\\public\\\\aureon_cognitive_trade_evidence.json\",\n  \"summary\": {\n    \"action_mode\": \"learn_and_recover\",\n    \"average_learning_reward\": 0.507285,\n    \"evidence_count\": 11,\n    \"losses\": 0,\n    \"net_pnl\": 4.4928,\n    \"open_positions\": 2,\n    \"runtime_stale\": true,\n    \"signal_quality\": 0.357285,\n    \"win_rate\": 1.0,\n    \"wins\": 11\n  }\n}\n"
+    },
+    {
+      "command": [
+        "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\.venv\\Scripts\\python.exe",
+        "-m",
+        "aureon.autonomous.aureon_harmonic_affect_state"
+      ],
+      "duration_seconds": 3.634,
+      "id": "harmonic_affect_state",
+      "returncode": 0,
+      "status": "ok",
+      "stderr_tail": "",
+      "stdout_tail": "{\n  \"json\": \"C:\\\\Users\\\\user\\\\aureon-trading-integrated-main-20260508\\\\docs\\\\audits\\\\aureon_harmonic_affect_state.json\",\n  \"public_json\": \"C:\\\\Users\\\\user\\\\aureon-trading-integrated-main-20260508\\\\frontend\\\\public\\\\aureon_harmonic_affect_state.json\",\n  \"summary\": {\n    \"affect_phase\": \"protective_recalibration\",\n    \"anchor_readiness\": 1.0,\n    \"arousal\": 0.95,\n    \"auris_emotion_count\": 6,\n    \"blind_spot_count\": 38,\n    \"emotion_anchor\": \"Reason\",\n    \"goal_alignment\": 0.577445,\n    \"hnc_anchor_count\": 10,\n    \"hnc_coherence_score\": 0.502371,\n    \"inner_peace_candidate\": false,\n    \"nexus_total_trades\": 10,\n    \"resonance_frequency_hz\": 400.0,\n    \"reward_alignment\": 0.557285,\n    \"runtime_stale\": true,\n    \"safety_blocker_count\": 14,\n    \"stability\": 0.0,\n    \"trade_evidence_count\": 11,\n    \"valence\": 0.47974\n  }\n}\n"
+    },
+    {
+      "command": [
+        "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\.venv\\Scripts\\python.exe",
+        "-m",
+        "aureon.autonomous.aureon_trading_intelligence_checklist"
+      ],
+      "duration_seconds": 0.158,
+      "id": "trading_intelligence_checklist",
+      "returncode": 0,
+      "status": "ok",
+      "stderr_tail": "",
+      "stdout_tail": " \"blocker\": \"tick_in_progress_stalled\",\n        \"category\": \"live_market_intelligence\",\n        \"evidence_source\": \"state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.WorldFinancialEcosystemFeed\",\n        \"system\": \"WorldFinancialEcosystemFeed\"\n      },\n      {\n        \"blocker\": \"not_active_this_cycle, not_wired_to_decision_logic, tick_in_progress_stalled\",\n        \"category\": \"live_market_intelligence\",\n        \"evidence_source\": \"state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.MarketHarp\",\n        \"system\": \"MarketHarp\"\n      },\n      {\n        \"blocker\": \"tick_in_progress_stalled\",\n        \"category\": \"live_market_intelligence\",\n        \"evidence_source\": \"state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.CrossAssetCorrelator\",\n        \"system\": \"CrossAssetCorrelator\"\n      },\n      {\n        \"blocker\": \"tick_in_progress_stalled\",\n        \"category\": \"research_context_mesh\",\n        \"evidence_source\": \"state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.NewsSignalBridge\",\n        \"system\": \"NewsSignalBridge\"\n      },\n      {\n        \"blocker\": \"tick_in_progress_stalled\",\n        \"category\": \"hnc_auris_cognition\",\n        \"evidence_source\": \"state/unified_runtime_status.json#exchange_action_plan.intelligence_mesh.capabilities.MultiHorizonWaveformMemory\",\n        \"system\": \"MultiHorizonWaveformMemory\"\n      }\n    ],\n    \"trading_ready\": true,\n    \"trust_to_act\": false,\n    \"trust_to_decide\": true,\n    \"trust_to_shadow\": true\n  }\n}\n"
+    }
+  ],
+  "repo_root": "C:\\Users\\user\\aureon-trading-integrated-main-20260508",
+  "safety": {
+    "action_capability": {
+      "clock": {
+        "source": "aureon_organism_runtime_observer",
+        "timestamp_utc": "2026-05-15T18:27:59.138330+00:00"
+      },
+      "cognition": {
+        "authority": "ThoughtBus, mind hub, prediction history, adaptive learning, and self-questioning loops",
+        "can_act": true,
+        "verify_by": [
+          "timestamped thought",
+          "manifest evidence",
+          "goal route",
+          "result check"
+        ]
+      },
+      "external_security_testing": {
+        "authority": "owned/local/staging targets only after explicit authorization",
+        "blocked_by": [
+          "authorization_required"
+        ],
+        "can_act": false
+      },
+      "generated_at": "2026-05-15T18:27:59.138330+00:00",
+      "loop": [
+        "who",
+        "what",
+        "where",
+        "when",
+        "why",
+        "how",
+        "act",
+        "verify",
+        "record",
+        "repeat"
+      ],
+      "mode": "safe_observation",
+      "official_filings": {
+        "authority": "manual filing support only",
+        "blocked_by": [
+          "official_filing_manual_boundary"
+        ],
+        "can_act": false
+      },
+      "payments": {
+        "authority": "manual only",
+        "blocked_by": [
+          "payments_manual_boundary"
+        ],
+        "can_act": false
+      },
+      "research": {
+        "authority": "read-only local/web/API knowledge gathering with source-linked outputs",
+        "can_act": true,
+        "verify_by": [
+          "source link",
+          "timestamp",
+          "manifest refresh",
+          "visible blocker if source missing"
+        ]
+      },
+      "self_improvement": {
+        "authority": "patch, test, flight-test, and defer restarts to downtime windows",
+        "can_act": true,
+        "verify_by": [
+          "tests or smoke checks",
+          "reboot advice",
+          "downtime window",
+          "change record"
+        ]
+      },
+      "trading": {
+        "api_governor": {},
+        "authority": "existing exchange adapters, risk gates, API governor, and order-intent controls only",
+        "blocked_by": [
+          "runtime_feed_offline",
+          "trading_runtime_not_ready"
+        ],
+        "can_act": false,
+        "flight_test": {},
+        "open_positions": null,
+        "reboot_advice": {},
+        "runtime_watchdog": {},
+        "runtime_writer": {},
+        "verify_by": [
+          "runtime feed fresh",
+          "runtime writer lock owned",
+          "API governor within budgets",
+          "open positions and pending orders observed before restart",
+          "trade/order records persisted after action"
+        ]
+      }
+    },
+    "environment": {
+      "refresh_sandbox": {
+        "AUREON_ALLOW_SIM_FALLBACK": "1",
+        "AUREON_AUDIT_MODE": "1",
+        "AUREON_DISABLE_REAL_ORDERS": "1",
+        "AUREON_DRY_RUN": "1",
+        "AUREON_LIVE_TRADING": "0",
+        "AUREON_QUIET_STARTUP": "1",
+        "DRY_RUN": "1",
+        "LIVE": "0"
+      },
+      "runtime": {
+        "AUREON_ALLOW_SIM_FALLBACK": "0",
+        "AUREON_AUDIT_MODE": "0",
+        "AUREON_DISABLE_EXCHANGE_MUTATIONS": "0",
+        "AUREON_DISABLE_REAL_ORDERS": "0",
+        "AUREON_DRY_RUN": "0",
+        "AUREON_LIVE_TRADING": "1",
+        "AUREON_QUIET_STARTUP": "",
+        "DRY_RUN": "0",
+        "LIVE": "1"
+      },
+      "wake_up_manifest": {
+        "mode": null,
+        "runtime_feed_url": null,
+        "runtime_flight_test_url": null,
+        "runtime_reboot_advice_url": null,
+        "source_path": null
+      }
+    },
+    "exchange_mutations_allowed": false,
+    "external_mutation_scope": "none",
+    "external_mutations_allowed": false,
+    "live_orders_allowed": false,
+    "observer_only": true,
+    "official_filing_allowed": false,
+    "payments_allowed": false
+  },
+  "schema_version": "aureon-organism-runtime-status-v1",
+  "status": "organism_observing_with_blind_spots",
+  "status_lines": [
+    "Organism pulse: organism_observing_with_blind_spots",
+    "Domains fresh=0 attention=7 stale=14 missing=0",
+    "Blind spots visible: 39",
+    "Runtime feed: offline",
+    "Action mode: safe_observation",
+    "Trading action: blocked by runtime_feed_offline, trading_runtime_not_ready",
+    "Manual boundaries: official filings, payments, credential reveal, and unowned security mutations remain blocked.",
+    "MEDIUM saas_inventory.manifest_stale: SaaS And Frontend Inventory: manifest stale.",
+    "ATTENTION saas_inventory.attention_security_blocker_count: SaaS And Frontend Inventory: attention security blocker count.",
+    "ATTENTION saas_inventory.attention_orphaned_frontend_count: SaaS And Frontend Inventory: attention orphaned frontend count.",
+    "HIGH saas_inventory.attention_missing_supabase_function_call_count: SaaS And Frontend Inventory: attention missing supabase function call count.",
+    "ATTENTION frontend_unification.attention_security_blocker_count: Unified Frontend Plan: attention security blocker count.",
+    "HIGH frontend_unification.attention_missing_screen_capability_count: Unified Frontend Plan: attention missing screen capability count.",
+    "ATTENTION frontend_evolution_queue.attention_blocked_count: Frontend Evolution Queue: attention blocked count.",
+    "ATTENTION frontend_evolution_queue.attention_archive_candidate_count: Frontend Evolution Queue: attention archive candidate count."
+  ],
+  "summary": {
+    "action_mode": "safe_observation",
+    "attention_domain_count": 7,
+    "blind_spot_count": 39,
+    "domain_count": 21,
+    "failed_refresh_count": 2,
+    "fresh_domain_count": 7,
+    "frontend_public_manifest_count": 6,
+    "high_blind_spot_count": 4,
+    "missing_domain_count": 0,
+    "refresh_count": 9,
+    "runtime_feed_status": "offline",
+    "stale_domain_count": 14,
+    "trading_action_allowed": false
+  }
+}

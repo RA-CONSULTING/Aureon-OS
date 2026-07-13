@@ -1,0 +1,99 @@
+{
+  "ok": true,
+  "passed": 13,
+  "total": 13,
+  "updated_at": "2026-03-26T18:30:27.066523",
+  "checks": [
+    {
+      "name": "timeline_oracle",
+      "kind": "import",
+      "target": "aureon.intelligence.aureon_timeline_oracle:get_timeline_oracle",
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "name": "harmonic_fusion",
+      "kind": "import",
+      "target": "aureon.harmonic.aureon_harmonic_fusion:HarmonicWaveFusion",
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "name": "unified_decision_engine",
+      "kind": "import",
+      "target": "aureon.intelligence.aureon_unified_decision_engine:UnifiedDecisionEngine",
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "name": "harmonic_nexus_bridge",
+      "kind": "import",
+      "target": "aureon.harmonic.harmonic_nexus_bridge:HarmonicNexusBridge",
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "name": "global_harmonic_field",
+      "kind": "import",
+      "target": "aureon.harmonic.global_harmonic_field:GlobalHarmonicField",
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "name": "probability_intelligence_matrix",
+      "kind": "import",
+      "target": "aureon.strategies.probability_intelligence_matrix:ProbabilityIntelligenceMatrix",
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "name": "hnc_probability_integration",
+      "kind": "import",
+      "target": "aureon.strategies.hnc_probability_matrix:HNCProbabilityIntegration",
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "name": "thought_bus",
+      "kind": "import",
+      "target": "aureon.core.aureon_thought_bus:get_thought_bus",
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "name": "probability_validation_report",
+      "kind": "file",
+      "target": "/workspace/aureon-trading/state/reports/probability_validation.json",
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "name": "trained_probability_matrix",
+      "kind": "file",
+      "target": "/workspace/aureon-trading/state/trained_probability_matrix.json",
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "name": "wave_monitor_final",
+      "kind": "file",
+      "target": "/workspace/aureon-trading/state/wave_monitor_final.json",
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "name": "money_flow_timeline",
+      "kind": "file",
+      "target": "/workspace/aureon-trading/state/money_flow_timeline.json",
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "name": "harmonic_wave_data",
+      "kind": "file",
+      "target": "/workspace/aureon-trading/state/harmonic_wave_data.json",
+      "ok": true,
+      "reason": "ok"
+    }
+  ]
+}

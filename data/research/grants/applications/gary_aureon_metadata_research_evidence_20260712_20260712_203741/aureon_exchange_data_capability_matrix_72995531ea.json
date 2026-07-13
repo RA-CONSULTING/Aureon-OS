@@ -1,0 +1,585 @@
+{
+  "contract": {
+    "no_execution_change": "This matrix is visibility and optimization guidance only; it does not bypass exchange, runtime, credential, rate, stale-data, or order gates.",
+    "purpose": "Show what each exchange can see, trade, leverage for intelligence, and optimize under official provider limits.",
+    "source_of_truth": "runtime status, exchange monitoring checklist, data ocean source registry, and official exchange rate-limit registry"
+  },
+  "generated_at": "2026-05-22T07:23:21.204485+00:00",
+  "repo_root": "C:\\Users\\user\\aureon-trading",
+  "rows": [
+    {
+      "current_state": {
+        "active_feed": true,
+        "connected": true,
+        "credential_state": "configured",
+        "decision_fed": false,
+        "fast_money_usable": false,
+        "fresh_feed": true,
+        "ticker_count": 2978,
+        "usable_for_decision": false,
+        "usable_for_mapping": true,
+        "waveform_history_active": true
+      },
+      "data_channels": [
+        {
+          "name": "live_ticks",
+          "optimization_use": "fast-money candidate discovery",
+          "source": "all-market stream/cache and REST gap fill",
+          "status": "fresh"
+        },
+        {
+          "name": "order_book_pressure",
+          "optimization_use": "spread, imbalance, and momentum confirmation",
+          "source": "public order-book probes",
+          "status": "held"
+        },
+        {
+          "name": "symbol_filters",
+          "optimization_use": "min notional, quantity step, precision validation",
+          "source": "exchange info / symbol rules",
+          "status": "available"
+        },
+        {
+          "name": "balances",
+          "optimization_use": "cash-aware routing and capital allocation",
+          "source": "private account balance where configured",
+          "status": "configured"
+        },
+        {
+          "name": "orders_and_fills",
+          "optimization_use": "execution learning and cost basis",
+          "source": "private order/fill history where configured",
+          "status": "configured"
+        },
+        {
+          "name": "waveform_history",
+          "optimization_use": "1h-to-1y pattern memory",
+          "source": "global history database",
+          "status": "active"
+        }
+      ],
+      "evidence": {
+        "data_ocean": "state/aureon_data_ocean_status.json",
+        "monitoring": "docs/audits/aureon_exchange_monitoring_checklist.json",
+        "rate_limit_registry": "aureon/core/exchange_rate_limit_registry.py",
+        "runtime": "state/unified_runtime_status.json"
+      },
+      "exchange": "binance",
+      "gaps": [
+        "no_exchange_action_plan_venue",
+        "per_exchange_orderbook_depth_not_proven",
+        "runtime_booting",
+        "runtime_stale"
+      ],
+      "label": "Binance",
+      "leveraged_for": [
+        "wide crypto market scan",
+        "idle-cash market discovery",
+        "cross-exchange confirmation",
+        "symbol/filter validation before intent publication"
+      ],
+      "markets": [
+        "crypto_spot",
+        "crypto_quote_universe"
+      ],
+      "next_optimization": "Use this idle/no-cash venue for wider market discovery, quote probes, and cross-exchange confirmation.",
+      "official_rate_limit": {
+        "env_overrides": {
+          "calls_per_min": "UNIFIED_BINANCE_CALLS_PER_MIN",
+          "quote_budget_fraction": "UNIFIED_BINANCE_QUOTE_BUDGET_FRACTION"
+        },
+        "exchange": "binance",
+        "official_doc_url": "https://developers.binance.com/docs/binance-spot-api-docs/rest-api/limits",
+        "official_limit_model": "request_weight_and_order_limits_from_exchangeInfo",
+        "official_limits": {
+          "ban_status": "418",
+          "rate_limit_status": "429",
+          "rest_order_header": "X-MBX-ORDER-COUNT-(intervalNum)(intervalLetter)",
+          "rest_rate_limits_source": "/api/v3/exchangeInfo rateLimits",
+          "rest_usage_header": "X-MBX-USED-WEIGHT-(intervalNum)(intervalLetter)",
+          "websocket_connection_attempts_per_5_min_per_ip": 300,
+          "websocket_connection_weight": 2,
+          "websocket_request_weight_per_minute_example": 6000
+        },
+        "official_notes": [
+          "Binance limits are weight-based, not simple call counts; endpoints with multiple symbols can cost more.",
+          "The runtime should read exchangeInfo and response headers when available, then back off on Retry-After.",
+          "Use streams for live market data so REST weight remains available for account, order, and recovery calls."
+        ],
+        "provider_status": "official_documented",
+        "safe_governor_calls_per_min": 240.0,
+        "source_lines": [
+          "Binance REST limits docs lines 58-67",
+          "Binance WS limits docs lines 143-171"
+        ],
+        "stream_preferred": true,
+        "title": "Binance Spot REST/WebSocket"
+      },
+      "optimization_bias": "Prefer WebSocket/live cache for breadth; reserve REST request weight for account, order, and exchangeInfo checks.",
+      "optimization_policy": {
+        "cash_or_position_active": false,
+        "cash_usd_estimate": 0.0,
+        "data_boost_eligible": true,
+        "execution_reserved_per_min": 43.2,
+        "market_data_budget_per_min": 196.8,
+        "position_count": 0,
+        "recommended_mode": "idle_cash_market_discovery_boost",
+        "safe_calls_per_min": 240.0,
+        "stream_preferred": true
+      },
+      "system_role": "Crypto breadth scanner and spot execution route.",
+      "trading_modes": [
+        "crypto_spot",
+        "margin_route_planning_if_account_supported"
+      ]
+    },
+    {
+      "current_state": {
+        "active_feed": true,
+        "connected": false,
+        "credential_state": "configured",
+        "decision_fed": false,
+        "fast_money_usable": false,
+        "fresh_feed": true,
+        "ticker_count": 24,
+        "usable_for_decision": false,
+        "usable_for_mapping": true,
+        "waveform_history_active": true
+      },
+      "data_channels": [
+        {
+          "name": "live_ticks",
+          "optimization_use": "spot and margin candidate discovery",
+          "source": "public ticker/cache",
+          "status": "fresh"
+        },
+        {
+          "name": "order_book_pressure",
+          "optimization_use": "entry/exit pressure validation",
+          "source": "public order-book probes",
+          "status": "held"
+        },
+        {
+          "name": "balances",
+          "optimization_use": "collateral, available cash, and risk sizing",
+          "source": "private Balance/TradeBalance",
+          "status": "configured"
+        },
+        {
+          "name": "margin_context",
+          "optimization_use": "margin-only routing when spot capital is locked or negative",
+          "source": "margin pair/collateral state",
+          "status": "configured"
+        },
+        {
+          "name": "fees_and_costs",
+          "optimization_use": "break-even and dead-man profit-capture validation",
+          "source": "fee/cost context",
+          "status": "configured"
+        },
+        {
+          "name": "trade_history",
+          "optimization_use": "real fill learning and cost-basis memory",
+          "source": "private TradesHistory/Ledgers when budget permits",
+          "status": "configured"
+        },
+        {
+          "name": "waveform_history",
+          "optimization_use": "1h-to-1y crypto waveform memory",
+          "source": "global history database",
+          "status": "active"
+        }
+      ],
+      "evidence": {
+        "data_ocean": "state/aureon_data_ocean_status.json",
+        "monitoring": "docs/audits/aureon_exchange_monitoring_checklist.json",
+        "rate_limit_registry": "aureon/core/exchange_rate_limit_registry.py",
+        "runtime": "state/unified_runtime_status.json"
+      },
+      "exchange": "kraken",
+      "gaps": [
+        "cost_and_fee_context_not_confirmed",
+        "exchange_client_not_ready_or_credentials_missing",
+        "margin_pair_quotes_not_confirmed",
+        "no_exchange_action_plan_venue",
+        "per_exchange_orderbook_depth_not_proven",
+        "runtime_booting",
+        "runtime_stale",
+        "spot_margin_fee_and_collateral_live_probe_not_proven"
+      ],
+      "label": "Kraken",
+      "leveraged_for": [
+        "spot versus margin route comparison",
+        "collateral protection",
+        "cost-aware first-profitable-exit logic",
+        "cross-venue crypto confirmation"
+      ],
+      "markets": [
+        "crypto_spot",
+        "crypto_margin",
+        "portfolio_balance"
+      ],
+      "next_optimization": "Configure and validate this exchange client before assigning scan or execution budget.",
+      "official_rate_limit": {
+        "env_overrides": {
+          "calls_per_min": "UNIFIED_KRAKEN_CALLS_PER_MIN",
+          "quote_budget_fraction": "UNIFIED_KRAKEN_QUOTE_BUDGET_FRACTION"
+        },
+        "exchange": "kraken",
+        "official_doc_url": "https://support.kraken.com/hc/en-us/articles/206548367-what-are-the-api-rate-limits-",
+        "official_limit_model": "public_ip_frequency_private_counter_and_trading_points",
+        "official_limits": {
+          "private_counter_higher_limits_decay_per_sec": 1.0,
+          "private_counter_higher_limits_max": 20,
+          "private_counter_verified_decay_per_sec": 0.5,
+          "private_counter_verified_max": 20,
+          "private_history_counter_increment": 4,
+          "private_standard_counter_increment": 1,
+          "public_rest_safe_frequency_per_sec": 1,
+          "trading_counter_scope": "account_and_currency_pair"
+        },
+        "official_notes": [
+          "Kraken private history calls are expensive: Ledgers, TradesHistory, and ClosedOrders add +4 to the counter.",
+          "AddOrder/CancelOrder do not use the private-account counter, but they use Kraken's separate trading limit model.",
+          "Keep private account-history sync low priority; favor WebSocket/public market streams for live discovery."
+        ],
+        "provider_status": "official_documented",
+        "safe_governor_calls_per_min": 30.0,
+        "source_lines": [
+          "Kraken support rate-limit docs lines 49-77",
+          "Kraken support rate-limit docs lines 79-102"
+        ],
+        "stream_preferred": true,
+        "title": "Kraken Spot REST/WebSocket"
+      },
+      "optimization_bias": "Keep private history sync slow because Kraken history calls are counter-expensive; use public streams/probes for live market discovery.",
+      "optimization_policy": {
+        "cash_or_position_active": false,
+        "cash_usd_estimate": 0.0,
+        "data_boost_eligible": true,
+        "execution_reserved_per_min": 18.0,
+        "market_data_budget_per_min": 42.0,
+        "position_count": 0,
+        "recommended_mode": "idle_cash_market_discovery_boost",
+        "safe_calls_per_min": 60.0,
+        "stream_preferred": true
+      },
+      "system_role": "Crypto spot, margin, collateral, and cost-aware execution route.",
+      "trading_modes": [
+        "crypto_spot",
+        "crypto_margin"
+      ]
+    },
+    {
+      "current_state": {
+        "active_feed": true,
+        "connected": true,
+        "credential_state": "configured",
+        "decision_fed": false,
+        "fast_money_usable": false,
+        "fresh_feed": true,
+        "ticker_count": 6,
+        "usable_for_decision": false,
+        "usable_for_mapping": true,
+        "waveform_history_active": true
+      },
+      "data_channels": [
+        {
+          "name": "live_ticks",
+          "optimization_use": "equity and ETF candidate discovery",
+          "source": "stock/ETF/crypto snapshot or stream",
+          "status": "fresh"
+        },
+        {
+          "name": "market_hours",
+          "optimization_use": "only act when the instrument is tradable",
+          "source": "clock and calendar state",
+          "status": "available"
+        },
+        {
+          "name": "balances",
+          "optimization_use": "capital-aware routing",
+          "source": "account equity, cash, buying power",
+          "status": "configured"
+        },
+        {
+          "name": "positions",
+          "optimization_use": "quick exit and exposure control",
+          "source": "open positions and P/L",
+          "status": "configured"
+        },
+        {
+          "name": "orders_and_fills",
+          "optimization_use": "execution learning",
+          "source": "orders/activities",
+          "status": "configured"
+        },
+        {
+          "name": "historical_bars",
+          "optimization_use": "1h-to-1y stock/ETF waveform memory",
+          "source": "market-data historical API",
+          "status": "available"
+        },
+        {
+          "name": "news_context",
+          "optimization_use": "headline and sentiment confirmation",
+          "source": "market-data news when entitled",
+          "status": "available"
+        }
+      ],
+      "evidence": {
+        "data_ocean": "state/aureon_data_ocean_status.json",
+        "monitoring": "docs/audits/aureon_exchange_monitoring_checklist.json",
+        "rate_limit_registry": "aureon/core/exchange_rate_limit_registry.py",
+        "runtime": "state/unified_runtime_status.json"
+      },
+      "exchange": "alpaca",
+      "gaps": [
+        "authenticated_market_data_entitlement_not_proven",
+        "market_hours_state_not_confirmed",
+        "news_context_if_available_not_confirmed",
+        "no_exchange_action_plan_venue",
+        "portfolio_balance_not_confirmed",
+        "runtime_booting",
+        "runtime_stale"
+      ],
+      "label": "Alpaca",
+      "leveraged_for": [
+        "stock/ETF volatility scan",
+        "market-hours aware route selection",
+        "equity-to-crypto context",
+        "portfolio cash deployment when available"
+      ],
+      "markets": [
+        "stocks",
+        "etfs",
+        "crypto_if_enabled",
+        "portfolio_balance"
+      ],
+      "next_optimization": "Use this idle/no-cash venue for wider market discovery, quote probes, and cross-exchange confirmation.",
+      "official_rate_limit": {
+        "env_overrides": {
+          "calls_per_min": "UNIFIED_ALPACA_CALLS_PER_MIN",
+          "quote_budget_fraction": "UNIFIED_ALPACA_QUOTE_BUDGET_FRACTION"
+        },
+        "exchange": "alpaca",
+        "official_doc_url": "https://docs.alpaca.markets/us/v1.4.2/docs/about-market-data-api",
+        "official_limit_model": "trading_rpm_plus_market_data_plan_limits",
+        "official_limits": {
+          "equities_algo_trader_plus_websocket_symbols": "unlimited",
+          "equities_basic_websocket_symbols": 30,
+          "market_data_algo_trader_plus_historical_calls_per_min": 10000,
+          "market_data_basic_historical_calls_per_min": 200,
+          "options_algo_trader_plus_websocket_quotes": 1000,
+          "options_basic_websocket_quotes": 200,
+          "trading_api_default_requests_per_min_per_account": 200,
+          "typical_stream_connections_per_endpoint": 1
+        },
+        "official_notes": [
+          "Alpaca's official market-data docs define plan-specific historical limits and WebSocket subscription limits.",
+          "Alpaca support documents the Trading API default as 200 requests per minute per account.",
+          "Use one stream connection per endpoint in most plans; use REST history budget for backfill, not live ticks."
+        ],
+        "provider_status": "official_documented",
+        "safe_governor_calls_per_min": 120.0,
+        "source_lines": [
+          "Alpaca market-data docs lines 154-180",
+          "Alpaca WebSocket docs lines 184-191"
+        ],
+        "stream_preferred": true,
+        "title": "Alpaca Trading and Market Data"
+      },
+      "optimization_bias": "Use one stream endpoint where possible; spend historical API budget on batch backfills, not repeated single-symbol polling.",
+      "optimization_policy": {
+        "cash_or_position_active": false,
+        "cash_usd_estimate": 0.0,
+        "data_boost_eligible": true,
+        "execution_reserved_per_min": 21.6,
+        "market_data_budget_per_min": 98.4,
+        "position_count": 0,
+        "recommended_mode": "idle_cash_market_discovery_boost",
+        "safe_calls_per_min": 120.0,
+        "stream_preferred": true
+      },
+      "system_role": "US equities, ETFs, crypto snapshots, market-hours, and portfolio route.",
+      "trading_modes": [
+        "stocks",
+        "etfs",
+        "crypto_spot_if_enabled"
+      ]
+    },
+    {
+      "current_state": {
+        "active_feed": true,
+        "connected": true,
+        "credential_state": "configured",
+        "decision_fed": true,
+        "fast_money_usable": true,
+        "fresh_feed": true,
+        "ticker_count": 26,
+        "usable_for_decision": false,
+        "usable_for_mapping": true,
+        "waveform_history_active": true
+      },
+      "data_channels": [
+        {
+          "name": "live_ticks",
+          "optimization_use": "CFD/FX/index candidate discovery",
+          "source": "REST/WebSocket market snapshots",
+          "status": "fresh"
+        },
+        {
+          "name": "positions",
+          "optimization_use": "profit capture and dead-man exit decisions",
+          "source": "open position and deal confirmation state",
+          "status": "configured"
+        },
+        {
+          "name": "balances",
+          "optimization_use": "cash-aware routing and exposure control",
+          "source": "account balance/equity",
+          "status": "configured"
+        },
+        {
+          "name": "market_hours",
+          "optimization_use": "avoid closed-market intent",
+          "source": "instrument hours and session state",
+          "status": "available"
+        },
+        {
+          "name": "leverage_preferences",
+          "optimization_use": "instrument risk and size validation",
+          "source": "account preferences where available",
+          "status": "available"
+        },
+        {
+          "name": "price_history",
+          "optimization_use": "CFD/FX/index waveform memory",
+          "source": "Capital history endpoint",
+          "status": "available"
+        }
+      ],
+      "evidence": {
+        "data_ocean": "state/aureon_data_ocean_status.json",
+        "monitoring": "docs/audits/aureon_exchange_monitoring_checklist.json",
+        "rate_limit_registry": "aureon/core/exchange_rate_limit_registry.py",
+        "runtime": "state/unified_runtime_status.json"
+      },
+      "exchange": "capital",
+      "gaps": [
+        "capital_market_hours_and_position_close_speed_not_proven",
+        "market_hours_state_not_confirmed",
+        "open_position_context_not_confirmed",
+        "portfolio_balance_not_confirmed",
+        "profit_loss_context_not_confirmed",
+        "runtime_booting",
+        "runtime_stale"
+      ],
+      "label": "Capital.com",
+      "leveraged_for": [
+        "fast profitable-position closure",
+        "FX/index/equity CFD cross-asset context",
+        "40-instrument WebSocket watchlist optimization",
+        "market-hours-aware revenue capture"
+      ],
+      "markets": [
+        "cfd_indices",
+        "cfd_fx",
+        "cfd_equities",
+        "open_positions"
+      ],
+      "next_optimization": "Use this idle/no-cash venue for wider market discovery, quote probes, and cross-exchange confirmation.",
+      "official_rate_limit": {
+        "env_overrides": {
+          "calls_per_min": "UNIFIED_CAPITAL_CALLS_PER_MIN",
+          "quote_budget_fraction": "UNIFIED_CAPITAL_QUOTE_BUDGET_FRACTION"
+        },
+        "exchange": "capital",
+        "official_doc_url": "https://open-api.capital.com/",
+        "official_limit_model": "per_user_request_rate_endpoint_limits_and_ws_instrument_cap",
+        "official_limits": {
+          "demo_positions_workingorders_requests_per_hour": 1000,
+          "max_requests_per_sec_per_user": 10,
+          "position_or_order_request_spacing_sec": 0.1,
+          "rest_session_inactive_ttl_min": 10,
+          "session_endpoint_requests_per_sec_per_api_key": 1,
+          "websocket_max_instruments": 40,
+          "websocket_session_ttl_min": 10
+        },
+        "official_notes": [
+          "Capital supports REST and WebSocket real-time prices for platform instruments.",
+          "Order/position requests must respect the endpoint limits and still need confirmation checks.",
+          "Use WebSocket subscriptions for up to 40 active instruments and keep session refresh separate from market scans."
+        ],
+        "provider_status": "official_documented",
+        "safe_governor_calls_per_min": 45.0,
+        "source_lines": [
+          "Capital.com API docs lines 201-215"
+        ],
+        "stream_preferred": true,
+        "title": "Capital.com REST/WebSocket"
+      },
+      "optimization_bias": "Use the 40-instrument stream for active high-volatility targets; reserve REST for positions, confirmations, and session health.",
+      "optimization_policy": {
+        "cash_or_position_active": false,
+        "cash_usd_estimate": 0.0,
+        "data_boost_eligible": true,
+        "execution_reserved_per_min": 11.25,
+        "market_data_budget_per_min": 33.75,
+        "position_count": 0,
+        "recommended_mode": "idle_cash_market_discovery_boost",
+        "safe_calls_per_min": 45.0,
+        "stream_preferred": true
+      },
+      "system_role": "CFD, FX, indices, equities, open-position P/L, and quick-profit close route.",
+      "trading_modes": [
+        "cfds",
+        "forex",
+        "indices",
+        "equity_cfds"
+      ]
+    }
+  ],
+  "schema_version": "aureon-exchange-data-capability-matrix-v1",
+  "status": "exchange_data_capability_matrix_connected_guarded_runtime_not_ready",
+  "summary": {
+    "cash_active_exchange_count": 0,
+    "connected_exchange_count": 3,
+    "data_boost_eligible_count": 4,
+    "data_ready": true,
+    "decision_fed_count": 1,
+    "exchange_count": 4,
+    "fast_money_usable_count": 1,
+    "fresh_feed_count": 4,
+    "official_rate_limit_profile_count": 4,
+    "preflight_overall": "red",
+    "runtime_booting": true,
+    "runtime_stale": false,
+    "stale_reason": "",
+    "top_optimizations": [
+      {
+        "exchange": "binance",
+        "mode": "idle_cash_market_discovery_boost",
+        "next_optimization": "Use this idle/no-cash venue for wider market discovery, quote probes, and cross-exchange confirmation."
+      },
+      {
+        "exchange": "kraken",
+        "mode": "idle_cash_market_discovery_boost",
+        "next_optimization": "Configure and validate this exchange client before assigning scan or execution budget."
+      },
+      {
+        "exchange": "alpaca",
+        "mode": "idle_cash_market_discovery_boost",
+        "next_optimization": "Use this idle/no-cash venue for wider market discovery, quote probes, and cross-exchange confirmation."
+      },
+      {
+        "exchange": "capital",
+        "mode": "idle_cash_market_discovery_boost",
+        "next_optimization": "Use this idle/no-cash venue for wider market discovery, quote probes, and cross-exchange confirmation."
+      }
+    ],
+    "total_ticker_count": 3034,
+    "trading_ready": true,
+    "waveform_ready_count": 4
+  }
+}

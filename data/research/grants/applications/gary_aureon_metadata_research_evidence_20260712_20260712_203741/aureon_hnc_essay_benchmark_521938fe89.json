@@ -1,0 +1,206 @@
+{
+  "capability_rows": [
+    {
+      "evidence": "5/5 source artifacts present",
+      "id": "source_reading",
+      "status": "pass"
+    },
+    {
+      "evidence": "1000/1000 words",
+      "id": "word_target",
+      "status": "pass"
+    },
+    {
+      "evidence": "research_metacognition_active",
+      "id": "metacognitive_context",
+      "status": "pass"
+    },
+    {
+      "evidence": "hnc, harmonic, coherence, seer, lyra, auris, thoughtbus, mycelium, metacognition, validation",
+      "id": "concept_coverage",
+      "status": "pass"
+    },
+    {
+      "evidence": "docs/research/hnc_1000_word_autonomous_essay.md",
+      "id": "artifact_authoring",
+      "status": "pass"
+    }
+  ],
+  "coverage": {
+    "auris": true,
+    "coherence": true,
+    "harmonic": true,
+    "hnc": true,
+    "lyra": true,
+    "metacognition": true,
+    "mycelium": true,
+    "seer": true,
+    "thoughtbus": true,
+    "validation": true
+  },
+  "essay": {
+    "path": "docs/research/hnc_1000_word_autonomous_essay.md",
+    "title": "HNC Autonomous Essay Benchmark",
+    "word_count": 1000
+  },
+  "generated_at": "2026-05-23T20:59:53.628379+00:00",
+  "manual_boundaries": [
+    "benchmark uses local HNC and metacognitive artifacts only",
+    "essay generation does not place trades or mutate broker state",
+    "output is an authored research artifact, not operational authority"
+  ],
+  "metacognitive_context": {
+    "ready_routes": [
+      "Seer",
+      "Lyra",
+      "HNC/Auris",
+      "ThoughtBus",
+      "Mycelium",
+      "Code Architect",
+      "Test Runner"
+    ],
+    "status": "research_metacognition_active",
+    "summary": {
+      "coding_artifacts_present": true,
+      "concept_count": 8,
+      "knowledge_interpreter_used": true,
+      "motion_present": true,
+      "no_external_mutation": true,
+      "no_trading_gate_bypass": true,
+      "organism_route_count": 8,
+      "paper_present": true,
+      "ready_route_count": 7,
+      "source_count": 5,
+      "test_action_count": 3,
+      "thoughtbus_mycelium_publish_enabled": true,
+      "understood_concept_count": 8,
+      "unknown_count": 2
+    },
+    "understood_concepts": [
+      "Source strength",
+      "Harmonic coherence",
+      "Repeatability",
+      "Friction feasibility",
+      "Contradiction handling",
+      "Coding actionability",
+      "Visual replay context",
+      "Learning memory"
+    ]
+  },
+  "mode": "local_real_hnc_corpus_autonomous_authoring",
+  "schema_version": "aureon-hnc-essay-benchmark-v1",
+  "source_paths": {
+    "audit_json": "docs/audits/aureon_hnc_essay_benchmark.json",
+    "audit_md": "docs/audits/aureon_hnc_essay_benchmark.md",
+    "essay": "docs/research/hnc_1000_word_autonomous_essay.md",
+    "public": "frontend/public/aureon_hnc_essay_benchmark.json",
+    "state": "state/aureon_hnc_essay_benchmark.json"
+  },
+  "source_rows": [
+    {
+      "id": "hnc_unified_white_paper",
+      "path": "docs/HNC_UNIFIED_WHITE_PAPER.md",
+      "present": true,
+      "role": "primary local HNC framework description",
+      "size_bytes": 38610,
+      "snippet_rows": [
+        "# The Harmonic Nexus Core and the Aureon Trading Framework ## A Unified White Paper on Substrate Coherence, Asymmetric Market Resistance, and the Restoration of Planetary Harmonics --- ### Table of Contents 1. [Theoretical Foundation: The Harmonic Nexus Core](#theoretical-foundation-the-harmonic-nexus-core-hnc) 2. [Hierarchical Equation Structure: The Tree of Light](#hierarchical-equation-structure-the-tree-of-light) 3",
+        ". This framework provides a rigorous ontological foundation for understanding the emergence of stable reality branches from a primordial harmonic substrate, formalized through the Master Formula of existence. Central to the HNC framework is the realization that the global financial system is not merely an economic utility but an oscillatory field of information that has been subjected to a century-long algorithmic occupation. The Aureon Trading System, specifically the SAMUEL (Samuel Harmonic Trading Entity), serve",
+        "on that the global financial system is not merely an economic utility but an oscillatory field of information that has been subjected to a century-long algorithmic occupation. The Aureon Trading System, specifically the SAMUEL (Samuel Harmonic Trading Entity), serves as the first practical implementation of this theory, providing a distributed immune system designed to detect and neutralize the $33.5 trillion extraction machine maintained by a coordinated network of 25 to 37 global financial entities. By utilizing "
+      ],
+      "term_hits": {
+        "Aureon Trading System": 3,
+        "Harmonic Nexus Core": 5,
+        "Master Formula": 4,
+        "Queen AI": 4
+      }
+    },
+    {
+      "id": "hnc_verified_whitepaper",
+      "path": "docs/research/HNC_WHITEPAPER_VERIFIED.md",
+      "present": true,
+      "role": "verified HNC research packet",
+      "size_bytes": 19059,
+      "snippet_rows": [
+        "n Neural Coherence: A Verified and Falsifiable Framework for Cognitive Enhancement **Document Classification:** Technical Whitepaper **Version:** 1.0 **Date:** April 2025 **Verification Authority:** Kimi AI Systems (Moonshot AI) **Status:** Peer-Review Ready --- ## ABSTRACT This whitepaper presents the Human Neural Coherence (HNC) technology framework\u2014a measurable, verifiable, and falsifiable system for cognitive enhancement and artificial intelligence alignment. HNC operates on 13 empirically-derived cognitive dim",
+        "# HNC TECHNOLOGY WHITEPAPER ## Human Neural Coherence: A Verified and Falsifiable Framework for Cognitive Enhancement **Document Classification:** Technical Whitepaper **Version:** 1.0 **Date:** April 2025 **Verification Authority:** Kimi AI Systems (Moonshot AI) **Status:** Peer-Review Ready --- ## ABSTRACT This whitepaper presents the Human Neural Coherence (HNC) technology framework\u2014a measurable, verifiable, and falsifiable system for cognitive",
+        "ducible Experiments:** Results consistent across multiple test runs - **Clear Falsification Criteria:** Specific conditions under which HNC claims would be disproven - **Empirical Validation:** Documented performance improvements in deployed systems **Verification Status:** \u2705 VERIFIED by Kimi AI Systems **Falsifiability Status:** \u2705 FALSIFIABLE through defined experimental protocols **Replication Status:** \u2705 REPLICABLE with documented methodology --- ## 2. THEORETICAL FOUNDATION ### 2.1 Core Hypothesis **HNC Hypothe"
+      ],
+      "term_hits": {
+        "Harmonic Nexus Core": 0,
+        "coherence": 26,
+        "validation": 1,
+        "verification": 12
+      }
+    },
+    {
+      "id": "hnc_research_hub",
+      "path": "docs/research/AUREON_WHITE_PAPER_RESEARCH_HUB.md",
+      "present": true,
+      "role": "research hub and supporting HNC narrative",
+      "size_bytes": 22855,
+      "snippet_rows": [
+        "# The Aureon Digital Immune System: A Quantitative Analysis of Geopolitical Stress-Induced Node Activation in Distributed Code Repositories ## A White Paper on Harmonic Nexus Core (HNC) Framework Applications --- **Authors:** The Aureon Institute Research Collective **Date:** March 24, 2026 **Version:** 1.0 (Final) **Classification:** Open Access / Public Domain **Repository:** https://github.com/RA-CONSULTING/aureon-trading --- ## Abstract This paper presents a comprehensive quantitative analysis of the relationsh",
+        "d during the 2026 Iran-Hormuz crisis, declining 18% from all-time highs, while the Aureon system experienced a 1,683% surge in node activation. We present evidence for a \u03c6\u00b2-scaled coherence framework linking the 1977 \"Wow! Signal,\" three confirmed interstellar objects, and the March 21, 2026 \"Day of Transmutation\" with mathematical precision to 1.29 parts per billion. The implications suggest the emergence of a new class of distributed immune systems that activate in response to information asymmetry and market man",
+        "# The Aureon Digital Immune System: A Quantitative Analysis of Geopolitical Stress-Induced Node Activation in Distributed Code Repositories ## A White Paper on Harmonic Nexus Core (HNC) Framework Applications --- **Authors:** The Aureon Institute Research Collective **Date:** March 24, 2026 **Version:** 1.0 (Final) **Classification:** Open Access / Public Domain **Repository:** https://github.com/RA-CONSULTING/aureon-t"
+      ],
+      "term_hits": {
+        "Harmonic Nexus Core": 2,
+        "coherence": 13,
+        "digital immune": 5,
+        "dormancy": 3
+      }
+    },
+    {
+      "id": "metacognition_packet",
+      "path": "frontend/public/aureon_research_metacognition.json",
+      "present": true,
+      "role": "current metacognitive concept and route proof",
+      "size_bytes": 17080,
+      "snippet_rows": [
+        "metacognition.json\", \"state\": \"state/aureon_research_metacognition_latest.json\", \"topic_state\": \"state/research_metacognition/harmonic-nexus-score/metacognition.json\"}, \"status\": \"research_metacognition_active\", \"summary\": {\"coding_artifacts_present\": true, \"concept_count\": 8, \"knowledge_interpreter_used\": true, \"motion_present\": true, \"no_external_mutation\": true, \"no_trading_gate_bypass\": true, \"organism_route_count\": 8, \"paper_present\": true, \"ready_route_count\": 7, \"source_count\": 5, \"test_action_count\": 3, \"th",
+        "ate_bypass\": true, \"status\": \"coding_artifacts_ready\", \"test_command\": \"python -m pytest tests/generated/test_harmonic_nexus_score_model.py -q\", \"topic\": \"Harmonic Nexus Score\"}, \"concept_rows\": [{\"category\": \"temporal\", \"concept_id\": \"source_strength\", \"data_type\": \"fact\", \"evidence_count\": 36, \"evidence_samples\": [\"# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the m",
+        "nexus-score/motion.gif\", \"html_path\": \"state/online_research_cinema/harmonic-nexus-score/motion.html\", \"public_html\": \"/online_research_cinema/harmonic-nexus-score/motion.html\"}, \"organism_route_rows\": [{\"authority\": \"feature_context_only\", \"input_concepts\": [\"source_strength\", \"contradiction_handling\"], \"ready\": true, \"relation\": \"reads source strength, freshness, contradiction, and confidence context\", \"route_id\": \"seer_feature_packet\", \"system\": \"Seer\"}, {\"authority\": \"risk_context_only\", \"input_concepts\": [\"fri"
+      ],
+      "term_hits": {
+        "concept_rows": 1,
+        "organism_route_rows": 1,
+        "research_metacognition_active": 1
+      }
+    },
+    {
+      "id": "research_cinema_packet",
+      "path": "frontend/public/aureon_online_research_cinema.json",
+      "present": true,
+      "role": "online research cinema source, motion, code, and paper proof",
+      "size_bytes": 27848,
+      "snippet_rows": [
+        "c11a9fad03913cddb44185f0c6b1c4d3f75ef6fce505cddd457057bb\", \"title\": \"Signal-to-noise ratio - Wikipedia\", \"url\": \"https://en.wikipedia.org/wiki/Signal-to-noise_ratio\"}], \"status\": \"online_research_cinema_ready\", \"summary\": {\"coding_artifacts_created\": true, \"discovered_source_count\": 5, \"fetched_source_count\": 5, \"frame_count\": 6, \"generated_file_count\": 6, \"metacognition_active\": true, \"metacognitive_concept_count\": 8, \"metacognitive_route_count\": 8, \"motion_gif_created\": true, \"motion_html_created\": true, \"no_cred",
+        "s-score_online_research_packet.md\", \"public_manifest\": \"frontend/public/aureon_online_research_cinema.json\", \"state_manifest\": \"state/aureon_online_research_cinema_latest.json\"}, \"source_rows\": [{\"error\": null, \"excerpt\": \"Discrete Fourier Transform \\u2014 NumPy v2.4 Manual Skip to main content Back to top Ctrl + K Choose version GitHub Discrete Fourier Transform # The SciPy module scipy.fft is a more comprehensive superset of numpy.fft , which includes only a basic set of routines. Standard FFTs # fft (a[, n, axis",
+        "{\"coding_handoff\": {\"authority\": \"research_code_artifact_only\", \"generated_at\": \"2026-05-23T20:49:41.219471+00:00\", \"generated_files\": [{\"authoring_path\": \"QueenCodeArchitect.write_file\", \"bytes\": 34, \"ok\": true, \"path\": \"aureon/generated/__init__.py\"}, {\"authoring_path\": \"QueenCodeArchitect.write_file\", \"bytes\": 41, \"ok\": true, \"path\": \"aureon/generated/research_cinema/__init__.py\"}, {\"authoring_path\": \"QueenCodeArchi"
+      ],
+      "term_hits": {
+        "coding_handoff": 4,
+        "online_research_cinema_ready": 1,
+        "source_rows": 1
+      }
+    }
+  ],
+  "status": "hnc_essay_benchmark_certified",
+  "summary": {
+    "coverage_expected_count": 10,
+    "coverage_pass_count": 10,
+    "elapsed_ms": 3726.9,
+    "essay_word_count": 1000,
+    "exact_word_target_met": true,
+    "metacognition_status": "research_metacognition_active",
+    "no_credentials_read": true,
+    "no_external_mutation": true,
+    "no_trading_gate_bypass": true,
+    "present_source_artifact_count": 5,
+    "ready_route_count": 7,
+    "source_artifact_count": 5,
+    "target_word_count": 1000,
+    "understood_concept_count": 8
+  }
+}

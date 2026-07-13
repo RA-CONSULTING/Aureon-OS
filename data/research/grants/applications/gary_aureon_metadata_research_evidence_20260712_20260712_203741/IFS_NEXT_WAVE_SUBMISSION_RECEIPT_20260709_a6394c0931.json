@@ -1,0 +1,35 @@
+{
+  "schema_version": "aureon-grant-submission-receipt-v1",
+  "verified_at": "2026-07-09T04:38:13+01:00",
+  "application_id": "APP-IFS-NEXT-WAVE-10209601",
+  "application_number": "10209601",
+  "funder": "Innovate UK",
+  "programme": "Next Wave: Breakthrough Wave 1",
+  "title": "Aureon Evidence Studio for Createch AI Workflows",
+  "applicant": {
+    "legal_entity": "R&A Consulting and Brokerage Services Ltd",
+    "company_number": "NI696693",
+    "lead_email": "gaxlec@gmail.com"
+  },
+  "portal": {
+    "status": "Application submitted",
+    "submitted_at_display": "7 Jul 2026 at 1:47pm",
+    "status_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209601/track",
+    "submission_text": "Your application for the competition 'Next Wave: Breakthrough Wave 1' was submitted on 7 Jul 2026 at 1:47pm.",
+    "receipt_screenshot": "rendered/ifs_overview_20260709_latest.png",
+    "warning": "Do not reopen the submitted application unless a deliberate resubmission decision is made."
+  },
+  "financials": {
+    "currency": "GBP",
+    "total_eligible_project_cost": 250000,
+    "grant_requested": 175000,
+    "company_contribution": 75000,
+    "funding_level_percent": 70,
+    "other_public_sector_funding": 0
+  },
+  "next_watch_items": [
+    "Decision notification expected by 1 Oct 2026.",
+    "Application feedback expected by 1 Oct 2026.",
+    "Monitor IFS and gaxlec@gmail.com for assessment messages."
+  ]
+}

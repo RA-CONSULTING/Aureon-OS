@@ -1,0 +1,260 @@
+﻿{
+    "schema_version":  "aureon-ifs-portal-progress-v1",
+    "generated_at":  "2026-07-10T07:28:46+01:00",
+    "operator":  "Aureon",
+    "scope":  "IFS_ONLY",
+    "application_id":  "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+    "portal_application_number":  "10210100",
+    "portal_url":  "https://apply-for-innovation-funding.service.gov.uk/application/10210100",
+    "competition":  "UK-Switzerland CR\u0026D Round 3",
+    "status":  "IFS_DRAFT_SUBSIDY_FINANCE_PROFILE_COMPLETE_IMPACT_BASELINE_FIELDS_SAVED_PARTNER_BUDGET_EVIDENCE_REQUIRED",
+    "completed_sections":  [
+                               "Subsidy basis",
+                               "Application details",
+                               "Research category",
+                               "Project summary",
+                               "Public description",
+                               "Scope",
+                               "Q2 Applicant location",
+                               "Q3 Animal testing",
+                               "Finance profile: project location = BT12 4HX",
+                               "Finance profile: organisation = micro or small, turnover GBP100497, full-time employees 1",
+                               "Finance profile: funding request policy = Yes, 70%, other public funding = No"
+                           ],
+    "saved_draft_sections":  [
+                                 "Q5 International collaboration",
+                                 "Q7 Trusted Research and Innovation",
+                                 "Q8 Need or challenge",
+                                 "Q9 Approach and innovation",
+                                 "Q10 Team and resources",
+                                 "Q11 Market awareness",
+                                 "Q12 Outcomes and route to market",
+                                 "Q13 Wider impacts",
+                                 "Q14 Project management",
+                                 "Q15 Risks",
+                                 "Q16 Added value",
+                                 "Project Impact Q1 FTE employees = 1",
+                                 "Project Impact Q2 innovation FTE employees = 1",
+                                 "Project Impact Q4 operating profit/loss = 76000",
+                                 "Project Impact Q5 innovation expenditure = 25000",
+                                 "Project Impact Q6 turnover from innovative products/services = 100",
+                                 "Project Impact Q8 R\u0026D projects = 1",
+                                 "Project Impact Q9 Catapult engagement = No",
+                                 "Project Impact Q10 Innovate UK Business Connect engagement = No",
+                                 "Project Impact Q14 commercialisation training people = 0",
+                                 "Project Impact Q15 innovation training people = 0"
+                             ],
+    "incomplete_gates":  [
+                             "Application team: Swiss implementation partner/research institute evidence not in IFS",
+                             "Q1 Themes: selected theme must follow confirmed Swiss partner technical field",
+                             "Q4 Permits and licences: partner technical work and regulated activity position required",
+                             "Q5 International collaboration: partner names, roles, Innosuisse status and research institute/waiver evidence required before marking complete",
+                             "Q6 Export licence: export-control review required after partner technical scope is fixed",
+                             "Q7 Trusted Research and Innovation: final partner, export-control and NSI review required before marking complete",
+                             "Q8-Q16 scored/narrative questions: clean draft text exists but partner-specific technical, market, impact, work-package and risk evidence required before marking complete",
+                             "Q17 Costs and value for money: total eligible costs, grant request, partner budgets and contribution split required",
+                             "Your project finances: project costs still incomplete; no invented labour, materials, subcontracting, travel or other costs entered",
+                             "Finances overview: incomplete until project costs are completed",
+                             "Project Impact Q3/Q7/Q11/Q12/Q13: partner-dependent forecast/readiness values not entered",
+                             "Project Impact final review/submit not pressed",
+                             "Award terms and conditions not accepted while partner, finance and final scope remain incomplete",
+                             "Review and submit unavailable/not attempted"
+                         ],
+    "subsidy_basis":  {
+                          "completed_at":  "2026-07-10T07:28:46+01:00",
+                          "basis":  "Subsidy Control Act 2022",
+                          "answers":  {
+                                          "enterprise_incorporated_and_registered_in_northern_ireland":  "Yes",
+                                          "funding_directed_outside_agriculture_fisheries_and_aquaculture":  "Yes",
+                                          "enterprise_affects_trade_in_goods_or_ni_electricity_market":  "No",
+                                          "enterprise_only_trades_in_services_market_of_northern_ireland":  "Yes"
+                                      },
+                          "evidence":  [
+                                           "Prior IFS subsidy basis record for the same company",
+                                           "Companies House registration and SIC services/software evidence"
+                                       ]
+                      },
+    "finance_profile":  {
+                            "project_location_postcode":  "BT12 4HX",
+                            "organisation_size":  "Micro or small",
+                            "turnover_gbp_from_2026_ixbrl":  100497,
+                            "full_time_employees_from_2026_ixbrl":  1,
+                            "requesting_funding":  "Yes",
+                            "funding_level_percent":  70,
+                            "other_public_funding_for_same_project_costs":  "No",
+                            "costs_entered_gbp":  0,
+                            "funding_sought_gbp_current_readback":  0,
+                            "control":  "No labour, overhead, materials, capital, subcontracting, travel, other cost, or eligible-cost declaration was completed because UK-Swiss partner budget evidence is not fixed."
+                        },
+    "portal_readback":  [
+                            {
+                                "section":  "Subsidy basis",
+                                "status":  "Complete"
+                            },
+                            {
+                                "section":  "Application team",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "Application details",
+                                "status":  "Complete"
+                            },
+                            {
+                                "section":  "Research category",
+                                "status":  "Complete"
+                            },
+                            {
+                                "section":  "Project summary",
+                                "status":  "Complete"
+                            },
+                            {
+                                "section":  "Public description",
+                                "status":  "Complete"
+                            },
+                            {
+                                "section":  "Scope",
+                                "status":  "Complete"
+                            },
+                            {
+                                "section":  "1. Themes (not scored)",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "2. Applicant location (not scored)",
+                                "status":  "Complete"
+                            },
+                            {
+                                "section":  "3. Animal testing (not scored)",
+                                "status":  "Complete"
+                            },
+                            {
+                                "section":  "4. (UK applicants only) Permits and licences (not scored)",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "5. International collaboration (not scored)",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "6. Export licence (not scored)",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "7. Trusted Research and Innovation (not scored)",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "8. Need or challenge",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "9. Approach and innovation",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "10. Team and resources",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "11. Market awareness",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "12. Outcomes and route to market",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "13. Wider impacts",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "14. Project management",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "15. Risks",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "16. Added value",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "17. Costs and value for money",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "Your project finances",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "Finances overview",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "Project impact",
+                                "status":  "Incomplete"
+                            },
+                            {
+                                "section":  "Award terms and conditions",
+                                "status":  "Incomplete"
+                            }
+                        ],
+    "project_impact_observation":  {
+                                       "survey_url":  "https://innovateuk.my.site.com/IMCommunity/s/?CompanyNumber=NI696693\u0026CompetitionId=2512\u0026IFSApplicationNumber=10210100\u0026OrganisationId=116134\u0026PreApproval=true",
+                                       "saved_fields":  {
+                                                            "Number of Full Time Equivalent (FTE) employees":  "1",
+                                                            "Number of innovation Full Time Equivalent (FTE) employees":  "1",
+                                                            "Total operating profit or loss":  "76000",
+                                                            "Total innovation expenditure":  "25000",
+                                                            "Proportion of turnover from innovative products and services":  "100",
+                                                            "Number of Research and Development (R\u0026D) projects":  "1",
+                                                            "Catapult centre engagement related to this support":  "No",
+                                                            "Innovate UK Business Connect engagement related to this support":  "No",
+                                                            "Number received commercialisation training":  "0",
+                                                            "Number received innovation training":  "0"
+                                                        },
+                                       "skipped_fields":  [
+                                                              "Expected number of additional FTE employees as a result of this support",
+                                                              "Expected additional turnover as a result of this support",
+                                                              "Expected new products, services or processes as a result of this support",
+                                                              "Commercial readiness level related to this support",
+                                                              "Technology readiness level related to this support"
+                                                          ],
+                                       "action":  "No Project Impact Submit action was pressed."
+                                   },
+    "evidence_files":  [
+                           "applications/IFS_FUTURE_LEADERS_R11_10209992_DRAFT_STATUS_20260709.json",
+                           "applications/IFS_FUTURE_LEADERS_R11_10209992_FINANCE_PORTAL_ENTRY_20260709.md",
+                           "applications/IFS_CLF_10210032_SUBMISSION_RECEIPT_20260709.json",
+                           "applications/IFS_UK_SWISS_CRD_R3_10210100_COMPLETION_WORKBOOK_20260710.json",
+                           "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_TARGETING_PACK_20260710.json"
+                       ],
+    "actions_taken":  [
+                          "Completed IFS subsidy basis questionnaire and declaration; portal readback shows Complete.",
+                          "Completed finance project location as BT12 4HX.",
+                          "Completed finance organisation profile as micro or small, turnover GBP100497, full-time employees 1.",
+                          "Completed funding policy: requesting funding Yes, funding level 70%, other public funding for same project costs No.",
+                          "Audited saved Q5 and Q7-Q16 portal drafts for internal control language; no draft labels or portal-control markers found in the saved answer text."
+                      ],
+    "controls":  [
+                     "No final IFS submission attempted",
+                     "No Project Impact survey submission attempted",
+                     "No award terms acceptance attempted",
+                     "No partner invitation attempted",
+                     "No file upload attempted",
+                     "No email or Drive upload attempted",
+                     "No plaintext password, MFA, CAPTCHA, or provider control bypass attempted",
+                     "No Q1 theme selected because partner technical field is not confirmed",
+                     "No Q4 permits/licences or Q6 export-control binary answer selected because partner technical scope is not fixed",
+                     "No Q17 costs or detailed project finance values entered because eligible costs and partner contributions are not evidenced",
+                     "No partner-dependent Project Impact forecasts or readiness levels were entered"
+                 ],
+    "next_actions":  [
+                         "Secure named Swiss implementation partner and research institute or waiver evidence.",
+                         "Confirm selected theme from partner scope before completing Q1, Q4, Q6 and Q7.",
+                         "Prepare partner budgets, person months, IP/data plan, export-control and TR\u0026I review before Q17 and final finance completion.",
+                         "Complete Project Impact forecast/readiness fields only after partner, theme, market and budget evidence exists.",
+                         "Accept award terms and review/submit only after all sections are complete and evidence-backed."
+                     ]
+}

@@ -1,0 +1,37 @@
+{
+  "evidence": {
+    "encrypted_keys": [
+      "KRAKEN_API_KEY",
+      "KRAKEN_API_SECRET"
+    ],
+    "event": "env_credentials_packetized",
+    "packet_format": "hncqp1",
+    "packet_summaries": {
+      "KRAKEN_API_KEY": {
+        "blockers": [],
+        "encoded": true,
+        "format": "hncqp1",
+        "hnc_alignment_sha256": "5b29d665f4af76ee48124b1430fbfd5d0e870118636662de65d494a04ff1e874",
+        "packet_sha256": "3f560559c9d847c2037f975cc1124bc9ab856390f1a32672d54705d1a56491ac",
+        "purpose": "env:KRAKEN_API_KEY",
+        "valid_contract": true
+      },
+      "KRAKEN_API_SECRET": {
+        "blockers": [],
+        "encoded": true,
+        "format": "hncqp1",
+        "hnc_alignment_sha256": "83047e9317a245d046ae8bf41b1b296b79385de454780d76f8ec38a767320ccc",
+        "packet_sha256": "dbd520557014f251e8b97f7b56a10e5625e6de88948ad91602076c69940e790e",
+        "purpose": "env:KRAKEN_API_SECRET",
+        "valid_contract": true
+      }
+    },
+    "updated_keys": [
+      "KRAKEN_API_KEY",
+      "KRAKEN_API_SECRET"
+    ]
+  },
+  "generated_at": "2026-05-15T11:58:35.954911+00:00",
+  "schema_version": 1,
+  "secret_policy": "metadata_only_no_values_returned"
+}

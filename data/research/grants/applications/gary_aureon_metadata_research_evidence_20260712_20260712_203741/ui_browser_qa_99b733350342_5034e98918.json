@@ -1,0 +1,12 @@
+{
+  "case": "sandbox_ui_browser_qa",
+  "cockpit_path": "C:\\Users\\user\\aureon-trading\\frontend\\src\\components\\generated\\AureonCodingOrganismConsole.tsx",
+  "generated_at": "2026-05-22T18:17:49.452097+00:00",
+  "prompt": "Audit the coding cockpit UI for visible stress evidence, preview links, repair attempts, and blockers.",
+  "source_checked": true,
+  "visible_surfaces": [
+    "Capability Stress Audit",
+    "Local Capability Forge",
+    "artifact previews"
+  ]
+}

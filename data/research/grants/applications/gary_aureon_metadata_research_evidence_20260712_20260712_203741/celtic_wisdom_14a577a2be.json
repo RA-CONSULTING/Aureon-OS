@@ -1,0 +1,1606 @@
+{
+  "civilization": "Celtic",
+  "last_updated": "2025-12-30T18:26:24.226517",
+  "version": "1.0.0",
+  "sources": [
+    "hardcoded",
+    "wikipedia"
+  ],
+  "topics": [
+    {
+      "name": "Druidic Cycles",
+      "content": "Ancient druids tracked 19-year Metonic cycles aligning lunar and solar calendars",
+      "trading_insight": "Long-term cycle recognition in market patterns. The Celts knew that patterns repeat - apply this to market cycles.",
+      "source": "hardcoded",
+      "relevance_score": 0.85
+    },
+    {
+      "name": "Ogham Patterns",
+      "content": "Tree alphabet encoding natural wisdom and seasonal rhythms through symbolic representation",
+      "trading_insight": "Pattern recognition through symbolic interpretation. Each symbol tells a story - so does each candlestick.",
+      "source": "hardcoded",
+      "relevance_score": 0.8
+    },
+    {
+      "name": "Triad Wisdom",
+      "content": "Celtic triads - three interconnected truths creating balanced understanding",
+      "trading_insight": "Multi-factor analysis requiring three confirming signals. Never trade on one signal alone.",
+      "source": "hardcoded",
+      "relevance_score": 0.9
+    },
+    {
+      "name": "Otherworld Thresholds",
+      "content": "Liminal spaces between worlds where transformation occurs at sacred boundaries",
+      "trading_insight": "Support/resistance zones as transition thresholds. Price transforms at these liminal levels.",
+      "source": "hardcoded",
+      "relevance_score": 0.75
+    },
+    {
+      "name": "Samhain Wisdom",
+      "content": "October 31 - End of harvest, beginning of dark half, veil between worlds thins",
+      "trading_insight": "Year-end positioning, defensive strategies. Prepare for Q4 volatility.",
+      "source": "hardcoded",
+      "relevance_score": 0.85
+    },
+    {
+      "name": "Imbolc Renewal",
+      "content": "February 1 - First stirrings of spring, Brigid's fire lights the way forward",
+      "trading_insight": "Early trend detection, new cycle emergence. Watch for January Effect reversals.",
+      "source": "hardcoded",
+      "relevance_score": 0.8
+    },
+    {
+      "name": "Beltane Growth",
+      "content": "May 1 - Peak fertility, summer's beginning, fire festivals mark expansion",
+      "trading_insight": "Growth phase positioning, sell in May consideration. Celtic wisdom says to celebrate but also prepare.",
+      "source": "hardcoded",
+      "relevance_score": 0.85
+    },
+    {
+      "name": "Lughnasadh Harvest",
+      "content": "August 1 - First harvest, Lugh's games, reaping what was sown",
+      "trading_insight": "Taking profits, harvest gains before autumn volatility arrives.",
+      "source": "hardcoded",
+      "relevance_score": 0.85
+    }
+  ],
+  "core_principles": {
+    "druidic_cycles": {
+      "description": "Ancient druids tracked 19-year Metonic cycles aligning lunar and solar calendars",
+      "trading_application": "Long-term cycle recognition in market patterns",
+      "confidence": 0.85
+    },
+    "ogham_patterns": {
+      "description": "Tree alphabet encoding natural wisdom and seasonal rhythms",
+      "trading_application": "Pattern recognition through symbolic interpretation",
+      "confidence": 0.8
+    },
+    "triad_wisdom": {
+      "description": "Celtic triads - three interconnected truths creating balanced understanding",
+      "trading_application": "Multi-factor analysis requiring three confirming signals",
+      "confidence": 0.9
+    },
+    "otherworld_thresholds": {
+      "description": "Liminal spaces between worlds where transformation occurs",
+      "trading_application": "Support/resistance zones as transition thresholds",
+      "confidence": 0.75
+    }
+  },
+  "seasonal_wisdom": {
+    "samhain": {
+      "period": "October 31 - November 1",
+      "meaning": "End of harvest, beginning of dark half",
+      "market_insight": "Year-end positioning, defensive strategies"
+    },
+    "imbolc": {
+      "period": "February 1",
+      "meaning": "First stirrings of spring, Brigid's fire",
+      "market_insight": "Early trend detection, new cycle emergence"
+    },
+    "beltane": {
+      "period": "May 1",
+      "meaning": "Peak fertility, summer's beginning",
+      "market_insight": "Growth phase positioning, sell in May consideration"
+    },
+    "lughnasadh": {
+      "period": "August 1",
+      "meaning": "First harvest, Lugh's games",
+      "market_insight": "Taking profits, harvest gains before autumn"
+    }
+  },
+  "symbols": {
+    "triskelion": "Triple spiral representing cycles within cycles",
+    "celtic_cross": "Union of circle (cycles) and cross (cardinal directions)",
+    "tree_of_life": "Interconnection of all things, root to crown"
+  },
+  "wikipedia_topics": [
+    "Celtic mythology",
+    "Druids",
+    "Celtic calendar",
+    "Ogham",
+    "Celtic polytheism",
+    "Insular Celtic religion",
+    "Celtic sacred trees",
+    "Brehon Law",
+    "Celtic astrology",
+    "Metonic cycle"
+  ],
+  "learned_insights": [
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "Some of these books and texts are translations of Celtic legends\n and sagas; others are retellings of the material, folklore, or\n literary works based on Celtic themes.\n During the 19th and early 20th Century there was a resurgence of interest in\n the folklore of Ireland, Wales and Scotland.  This was reflected in\n a huge amount of literature based on the rich Celtic mythopoetic heritage,\n most of",
+      "relevance_score": 0.8645958957211789,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-15T10:19:25.783903",
+      "content_hash": "3ef648d4c57b0225b6feffcd67db7a54"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "A good number of these files were originally scanned by Phillip\n Brown for his (now defunct) Celtic Folklore website.\n These are indicated by [PB].",
+      "relevance_score": 0.805383523739646,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-15T10:19:25.783946",
+      "content_hash": "6f4588bcf3badbf9826f62672810431b"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "The Voyage of BranbyMeyer Kuno[1895]Old Irish saga of a voyage to the pagan Celtic otherworld, with parallel English and Gaelic.The Second Battle of Mag Tuired (Cath Maige Tuired)This Irish saga, from before the ninth Century A.D., is an account of the epic battle between the mythical Tuatha De Danann and Fomoire for Ireland.It has deep roots in Indo-European mythology, told with Homeric grace and",
+      "relevance_score": 0.8502124116984029,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-15T10:19:25.783962",
+      "content_hash": "91a6882ce187bb2efaa636d7dd41fb96"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "Lady Augusta Gregory was a close collaborator with W.B. Yeats, the Irish poet\n and mystic.  These three books are her retellings of Irish mythology and\n folklore, and are among the best of the genre.Cuchulain of Muirthemneby LadyAugusta Gregory[1902] [PB]Gods and Fighting Menby LadyAugusta Gregory[1904] [PB]A Book of Saints and Wondersby LadyAugusta Gregory[1906] [PB]Irish Christian folklore, incl",
+      "relevance_score": 0.6591092422685609,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-15T10:19:25.783981",
+      "content_hash": "089c843adb795f75a2b61df7754b2c31"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "The MabinogionLadyCharlotte Guest, tr. [1877]A group of Welsh tales from the Red Book of Hergest, a 14th Century manuscript maintained at Jesus College, Oxford.The Four Ancient Books of WalesbyWilliam F. Skene[1868]The only available translation of the complete corpus of Welsh Bardic poetry.Prolegomena to the Study of Old Welsh PoetrybyEdward Anwyl[1903]The Gododdin PoemsfromThe Four Ancient Books",
+      "relevance_score": 0.6174822142828729,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-15T10:19:25.783990",
+      "content_hash": "2cb451f28216d400feec6258810719a9"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "The Celts also worshiped a number of deities of which little more is known than their names. Classical writers preserve a few fragments of legends or myths that may possibly be Celtic.\nAccording to the Syrian rhetorician Lucian, Ogmios was supposed to lead a band of men chained by their ears to his tongue as a symbol of the strength of his eloquence.\nThe first-century Roman poet Lucan mentions the gods Taranis, Teutates and Esus, but there is little Celtic evidence that these were important deit",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:27:28.258747",
+      "content_hash": "766929f4cddca0a1608768efae3856fc"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "Some of these books and texts are translations of Celtic legends\n and sagas; others are retellings of the material, folklore, or\n literary works based on Celtic themes.\n During the 19th and early 20th Century there was a resurgence of interest in\n the folklore of Ireland, Wales and Scotland.  This was reflected in\n a huge amount of literature based on the rich Celtic mythopoetic heritage,\n most of",
+      "relevance_score": 0.8190187079170419,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-15T10:27:30.366039",
+      "content_hash": "3ef648d4c57b0225b6feffcd67db7a54"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "A good number of these files were originally scanned by Phillip\n Brown for his (now defunct) Celtic Folklore website.\n These are indicated by [PB].",
+      "relevance_score": 0.7932030472145775,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-15T10:27:30.366073",
+      "content_hash": "6f4588bcf3badbf9826f62672810431b"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "The Voyage of BranbyMeyer Kuno[1895]Old Irish saga of a voyage to the pagan Celtic otherworld, with parallel English and Gaelic.The Second Battle of Mag Tuired (Cath Maige Tuired)This Irish saga, from before the ninth Century A.D., is an account of the epic battle between the mythical Tuatha De Danann and Fomoire for Ireland.It has deep roots in Indo-European mythology, told with Homeric grace and",
+      "relevance_score": 0.6249870957135473,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-15T10:27:30.366082",
+      "content_hash": "91a6882ce187bb2efaa636d7dd41fb96"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "Lady Augusta Gregory was a close collaborator with W.B. Yeats, the Irish poet\n and mystic.  These three books are her retellings of Irish mythology and\n folklore, and are among the best of the genre.Cuchulain of Muirthemneby LadyAugusta Gregory[1902] [PB]Gods and Fighting Menby LadyAugusta Gregory[1904] [PB]A Book of Saints and Wondersby LadyAugusta Gregory[1906] [PB]Irish Christian folklore, incl",
+      "relevance_score": 0.8289373577883041,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-15T10:27:30.366101",
+      "content_hash": "089c843adb795f75a2b61df7754b2c31"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "The MabinogionLadyCharlotte Guest, tr. [1877]A group of Welsh tales from the Red Book of Hergest, a 14th Century manuscript maintained at Jesus College, Oxford.The Four Ancient Books of WalesbyWilliam F. Skene[1868]The only available translation of the complete corpus of Welsh Bardic poetry.Prolegomena to the Study of Old Welsh PoetrybyEdward Anwyl[1903]The Gododdin PoemsfromThe Four Ancient Books",
+      "relevance_score": 0.6859851162273007,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-15T10:27:30.366108",
+      "content_hash": "2cb451f28216d400feec6258810719a9"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "A druid was a member of the high-ranking priestly class in ancient Celtic cultures. The druids were religious leaders as well as legal authorities, adjudicators, lorekeepers, medical professionals and political advisors. Druids left no written accounts. While they were reported to have been literate, they are believed to have been prevented by doctrine from recording their knowledge in written form. Their beliefs and practices are attested in some detail by their contemporaries from other cultur",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:27:33.414892",
+      "content_hash": "b9e706051520862b5481abb10f10891b"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "=== Societal role and training ===\n The Greco-Roman and the vernacular Irish sources agree that the druids played an important part in pagan Celtic society. In his description, Julius Caesar wrote that they were one of the two most important social groups in the region (alongside the equites, or nobles) and were responsible for organizing worship and sacrifices, divination, and judicial procedure in Gallic, British, and Irish societies. He wrote that they were exempt from military service and fr",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:27:33.415032",
+      "content_hash": "39352855c95d09bb4636a48913fafae0"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "These men predict the future by observing the flight and calls of birds and by the sacrifice of holy animals: all orders of society are in their power ... and in very important matters they prepare a human victim, plunging a dagger into his chest; by observing the way his limbs convulse as he falls and the gushing of his blood, they are able to read the future.\nArchaeological evidence from western Europe has been widely used to support the theory that Iron Age Celts practiced human sacrifice. Ma",
+      "relevance_score": 0.4,
+      "trading_application": "Pattern-based market forecasting",
+      "timestamp": "2025-12-15T10:27:33.415108",
+      "content_hash": "50ceec18fb486457d2616b708c593c94"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "The Pythagorean doctrine prevails among the Gauls' teaching that the souls of men are immortal, and that after a fixed number of years they will enter into another body\nCaesar made similar observations:",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:27:33.415130",
+      "content_hash": "e7a7256f86c25b9e99d123fd3451e3fd"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "With regard to their actual course of studies, the main object of all education is, in their opinion, to imbue their scholars with a firm belief in the indestructibility of the human soul, which, according to their belief, merely passes at death from one tenement to another; for by such doctrine alone, they say, which robs death of all its terrors, can the highest form of human courage be developed. Subsidiary to the teachings of this main principle, they hold various lectures and discussions on",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from celtic tradition",
+      "timestamp": "2025-12-15T10:27:33.415166",
+      "content_hash": "f60c2e72fa83a512837a8969e87a09ff"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "The Celtic calendar refers to the calendar systems used by ancient Celts to define the beginning and length of the day, week, month, season, quarter-day, and festivals. The Coligny calendar, manufactured in 2nd century CE Roman Gaul (modern France), is one of the most notable representations of a Celtic calendar.",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:27:38.251131",
+      "content_hash": "2339c693588f3e44113fafe4915392b8"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "== Continental Celtic calendar ==\nThe Coligny calendar is the oldest known Celtic lunisolar ritual calendar. It was discovered in Coligny, France, and is now on display in the Palais des Arts Gallo-Roman museum, Lyon. It dates to the end of the second century CE, when the Roman Empire imposed the use of the Julian Calendar in Roman Gaul. The calendar was originally a single huge plate, but it survives only in fragments. It is inscribed in the Gaulish language using the Latin alphabet and uses Ro",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:27:38.251190",
+      "content_hash": "d8b2654ad6f6f8f53876576aa6409bcc"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "Among the Insular Celts, the year was divided into a light half and a dark half. As the day was seen as beginning at sunset, so the year was seen as beginning with the arrival of the darkness, at Calan Gaeaf / Samhain (around 1 November in the modern calendar). The light half of the year started at Calan Haf/Bealtaine (around 1 May, modern calendar). This observance of festivals beginning the evening before the festival day is still seen in the celebrations and folkloric practices among the Gael",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:27:38.251235",
+      "content_hash": "0841e55581ee33393cacaf5b33c4abfe"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "== Native calendar terms in Celtic languages ==\nMany calendrical and time-keeping terms used in the medieval and modern Celtic languages were borrowed from Latin and reflect the influence of Roman culture and Christianity on the Insular Celts. The words borrowed include the month names Januarius (Old Irish Enáir, Irish Eanáir, Welsh Ionawr), Februarius (Old Irish Febra, Irish Feabhra, Welsh Chwefror), Martius (Old Irish Mart, Welsh Mawrth), Aprilius (Old Irish Apréil, Irish Aibreán, Welsh Ebrill",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:27:38.251274",
+      "content_hash": "2c611a848d3f83519ce34702c4126bae"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "== In Neopaganism ==\nIn some Neopagan religions, a \"Celtic calendar\" loosely based on that of Medieval Ireland is observed for purposes of ritual. Adherents of Reconstructionist traditions may celebrate the four Gaelic festivals of Samhain, Imbolc, Beltane, and Lughnasadh.\nSome eclectic Neopagans, such as Wiccans, combine the Gaelic fire festivals with solstices and equinox celebrations derived from non-Celtic cultures to produce the Wiccan modern Wheel of the Year. Some eclectic Neopagans are a",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:27:38.251300",
+      "content_hash": "ec336f94e6f6c7d7bbcc8d8721358bc7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "== Further reading ==\nBrennan, Martin (1994). The Stones of Time: Calendars, Sundials, and Stone Chambers of Ancient Ireland. Rochester, VT: Inner Traditions.\nBrunaux, Jean-Louis (1986). Les Gaulois: Sanctuaires et Rites [The Gauls: Sanctuaries and ceremonies]. Paris: Editions Errance.\nDuval, Paul-Marie; Pinault, Georges (eds.). \"The calendars of Coligny (73 fragments) and Villards d'Heria (8 fragments)\". Recueil des Inscriptions Gauloises (R.I.G.). Vol. 3.\nDelamarre, Xavier (2003). Dictionnaire",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:27:38.251369",
+      "content_hash": "b4989112b864343ce10911b900de9248"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic polytheism",
+      "content": "Ancient Celtic religion, commonly known as Celtic paganism, was the religion of the ancient Celtic peoples of Europe. Because there are no extant native records of their beliefs, evidence about their religion is gleaned from archaeology, Greco-Roman accounts (some of them hostile and probably not well-informed), and literature from the early Christian period. Celtic paganism was one of a larger group of polytheistic Indo-European religions of Iron Age Europe. \nWhile the specific deities worshipp",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:27:47.964015",
+      "content_hash": "0f5c72c5523b1f35815b075f2f501562"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic polytheism",
+      "content": "The archaeological evidence does not contain the bias inherent in the literary sources. Nonetheless, the interpretation of this evidence can be coloured by the 21st century mindset. Various archaeological discoveries have aided understanding of the religion of the Celts.\nMost surviving Celtic art is not figurative; some art historians have suggested that the complex and compelling decorative motifs that characterize some periods have a religious significance, but the understanding of what that m",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:27:47.964233",
+      "content_hash": "660ae40c2eb6ff149f10995c8ae1267a"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Insular Celtic religion",
+      "content": "Remnants of pre-Celtic languages may remain in the names of some geographical features, such as the rivers Clyde, Tamar and Thames, whose etymology is unclear but possibly derive from a pre-Celtic substrate (Gelling).\nIt is thought that by about the 6th century BCE most of the inhabitants of the isles of Ireland and Britain were speaking Celtic languages. A  controversial phylogenetic linguistic analysis of 2003 puts the age of Insular Celtic a few centuries earlier, at 2,900 years before presen",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:27:52.957939",
+      "content_hash": "d8a84c61387b07a7f56470fe68331369"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic sacred trees",
+      "content": "=== Apple ===\nThe pome fruit and tree of the apple is celebrated in numerous functions in Celtic mythology, legend, and folklore; it is an emblem of fruitfulness and sometimes a means to immortality. Wands of druids were made from wood either of the yew or of the apple. The Brythonic Avalon in Arthurian tradition in certain medieval narratives, attributing Welsh origin, is translated as Insula Pomorum; 'The Isle of Apples'. One gloss of the name for the magical Irish island Emain Ablach is 'Emai",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:27:57.843434",
+      "content_hash": "686fb3d2abf3035c89965c28651c711f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic sacred trees",
+      "content": "=== Hazel ===\nBoth the wood and the edible nuts of the hazel have played important roles in Irish and Welsh traditions. Hazel leaves and nuts are found in early British burial mounds and shaft-wells, especially at Ashill, Norfolk. The place-name story for Fordruim, an early name for Tara, describes it as a pleasant hazel wood. In the ogham alphabet of early Ireland, the letter C was represented by hazel [OIr. coll]. According to Robert Graves, it also represented the ninth month on the Old Irish",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:27:57.843539",
+      "content_hash": "2c110da8d621a25dc0b9b34fd1b8d1d2"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Brehon Law",
+      "content": "== Origins ==\nEarly Irish law consisted of the accumulated decisions of the Brehons, or judges, guided entirely by an oral tradition.  Some of these laws were recorded in writing by Christian clerics. The earliest theory to be recorded is contained in the Prologue to the Senchas Már. According to that text, after a difficult case involving St. Patrick, the Saint supervised the mixing of native Irish law and the law of the church. A representative of every group came and recited the laws related ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:28:02.882371",
+      "content_hash": "9829fbd1f8896cf7722c58aaf8d381c1"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Brehon Law",
+      "content": "=== Women and marriage ===\n Indications of women's status is indicated by the honour price system. A typical woman did not carry an honour price: a position shared with children, the insane, slaves, and others. However, there were many exceptions: for example, status was gained through inheritance. At times, some rose to ranks of leadership, and women, like men, were Brehons. Brehon Laws have a reputation among modern scholars as rather progressive in their treatment of women, with some describi",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:28:02.882468",
+      "content_hash": "f0ba0d9d3b249672fd73d6180ac53530"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "The Metonic cycle or enneadecaeteris (from Ancient Greek: ἐννεακαιδεκαετηρίς, from ἐννεακαίδεκα, \"nineteen\") is a period of almost exactly 19 years after which the lunar phases recur at the same time of the year. The recurrence is not perfect, and by precise observation the Metonic cycle defined as 235 synodic months is just 2 hours, 4 minutes and 58 seconds longer than 19 tropical years. Meton of Athens, in the 5th century BC, judged the cycle to be a whole number of days, 6,940. Using these wh",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:13.103006",
+      "content_hash": "b55bb0b521981d9c46d58c8f41dbecf3"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "== Application in traditional calendars ==\nIn the Babylonian and Hebrew lunisolar calendars, the years 3, 6, 8, 11, 14, 17, and 19 are the long (13-month) years of the Metonic cycle. This cycle forms the basis of the Greek and Hebrew calendars. A 19-year cycle is used for the computation of the date of Easter each year.\nThe Babylonians applied the 19-year cycle from the late sixth century BC.\nAccording to Livy, the second king of Rome, Numa Pompilius (reigned 715–673 BC), inserted intercalary mo",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:13.103123",
+      "content_hash": "f4958d53f7fc6785a9dd16d56e50b0b7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "=== Hebrew calendar ===\nA Small Maḥzor (Hebrew מחזור, pronounced [maχˈzor], meaning \"cycle\") is a 19-year cycle in the lunisolar calendar system used by the Jewish people. It is similar to, but slightly different in usage from, the Greek Metonic cycle (being based on a month of 29+13753⁄25920 days, giving a cycle of 6939+3575⁄5184 ≈ 6939.69 days), and likely derived from or alongside the much earlier Babylonian calendar.",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:13.103156",
+      "content_hash": "8c75da29f27154f7b7efcee9d31f774e"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "The Metonic cycle is the most accurate cycle of time (in a timespan of less than 100 years) for synchronizing the tropical year and the lunar month (synodic month), when the method of synchronizing is the intercalation of a thirteenth lunar month  in a calendar year from time to time. The traditional lunar year of 12 synodic months is about 354 days, approximately eleven days short of the solar year. Thus, every 2 to 3 years there is a discrepancy of 22 to 33 days, or a full synodic month. For e",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:13.103189",
+      "content_hash": "babf4167e5fc8508be32fe0a1d10ccc2"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "A synodic month lasts 29.53059 days.\na span of 235 synodic months (29.53059 × 235) lasts 6,939.689 days\nThus the algorithm is correct to 0.087 days (2 hours, 5 minutes and 16 seconds).\nFor a lunisolar calendar to 'catch up' to this discrepancy and thus maintain seasonal consistency, seven intercalary months are added (one at a time), at intervals of every 2–3 years during the course of 19 solar years. Thus twelve of those years have 12 lunar months and seven have 13 months. Of these months, 125 ",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:13.103225",
+      "content_hash": "37e7df01543c81904be42334604d4ca7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "== See also ==\nAttic and Byzantine calendar\nCallippic cycle (76-year cycle from 330 BC)\nDate of Easter (\"the Computus\")\nHipparchic cycle (304-year cycle from 2nd century BC)\nIntercalation (timekeeping)\nJulian day\nOctaeteris (8-year cycle of antiquity)\nSaros cycle of eclipses",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:28:13.103242",
+      "content_hash": "7e1432317b5527d1828e934eb5849b10"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "The Celts also worshiped a number of deities of which little more is known than their names. Classical writers preserve a few fragments of legends or myths that may possibly be Celtic.\nAccording to the Syrian rhetorician Lucian, Ogmios was supposed to lead a band of men chained by their ears to his tongue as a symbol of the strength of his eloquence.\nThe first-century Roman poet Lucan mentions the gods Taranis, Teutates and Esus, but there is little Celtic evidence that these were important deit",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-18T18:16:06.378904",
+      "content_hash": "766929f4cddca0a1608768efae3856fc"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "Some of these books and texts are translations of Celtic legends\n and sagas; others are retellings of the material, folklore, or\n literary works based on Celtic themes.\n During the 19th and early 20th Century there was a resurgence of interest in\n the folklore of Ireland, Wales and Scotland.  This was reflected in\n a huge amount of literature based on the rich Celtic mythopoetic heritage,\n most of",
+      "relevance_score": 0.7285177451818223,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-18T18:16:08.595146",
+      "content_hash": "3ef648d4c57b0225b6feffcd67db7a54"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "A good number of these files were originally scanned by Phillip\n Brown for his (now defunct) Celtic Folklore website.\n These are indicated by [PB].",
+      "relevance_score": 0.8581223460949441,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-18T18:16:08.595186",
+      "content_hash": "6f4588bcf3badbf9826f62672810431b"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "The Voyage of BranbyMeyer Kuno[1895]Old Irish saga of a voyage to the pagan Celtic otherworld, with parallel English and Gaelic.The Second Battle of Mag Tuired (Cath Maige Tuired)This Irish saga, from before the ninth Century A.D., is an account of the epic battle between the mythical Tuatha De Danann and Fomoire for Ireland.It has deep roots in Indo-European mythology, told with Homeric grace and",
+      "relevance_score": 0.6614022058396504,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-18T18:16:08.595199",
+      "content_hash": "91a6882ce187bb2efaa636d7dd41fb96"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "Lady Augusta Gregory was a close collaborator with W.B. Yeats, the Irish poet\n and mystic.  These three books are her retellings of Irish mythology and\n folklore, and are among the best of the genre.Cuchulain of Muirthemneby LadyAugusta Gregory[1902] [PB]Gods and Fighting Menby LadyAugusta Gregory[1904] [PB]A Book of Saints and Wondersby LadyAugusta Gregory[1906] [PB]Irish Christian folklore, incl",
+      "relevance_score": 0.6479386017827752,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-18T18:16:08.595222",
+      "content_hash": "089c843adb795f75a2b61df7754b2c31"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "The MabinogionLadyCharlotte Guest, tr. [1877]A group of Welsh tales from the Red Book of Hergest, a 14th Century manuscript maintained at Jesus College, Oxford.The Four Ancient Books of WalesbyWilliam F. Skene[1868]The only available translation of the complete corpus of Welsh Bardic poetry.Prolegomena to the Study of Old Welsh PoetrybyEdward Anwyl[1903]The Gododdin PoemsfromThe Four Ancient Books",
+      "relevance_score": 0.8158845591979969,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-18T18:16:08.595233",
+      "content_hash": "2cb451f28216d400feec6258810719a9"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "A druid was a member of the high-ranking priestly class in ancient Celtic cultures. The druids were religious leaders as well as legal authorities, adjudicators, lorekeepers, medical professionals and political advisors. Druids left no written accounts. While they were reported to have been literate, they are believed to have been prevented by doctrine from recording their knowledge in written form. Their beliefs and practices are attested in some detail by their contemporaries from other cultur",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-18T18:16:11.564692",
+      "content_hash": "b9e706051520862b5481abb10f10891b"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "=== Societal role and training ===\n The Greco-Roman and the vernacular Irish sources agree that the druids played an important part in pagan Celtic society. In his description, Julius Caesar wrote that they were one of the two most important social groups in the region (alongside the equites, or nobles) and were responsible for organizing worship and sacrifices, divination, and judicial procedure in Gallic, British, and Irish societies. He wrote that they were exempt from military service and fr",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-18T18:16:11.564862",
+      "content_hash": "39352855c95d09bb4636a48913fafae0"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "These men predict the future by observing the flight and calls of birds and by the sacrifice of holy animals: all orders of society are in their power ... and in very important matters they prepare a human victim, plunging a dagger into his chest; by observing the way his limbs convulse as he falls and the gushing of his blood, they are able to read the future.\nArchaeological evidence from western Europe has been widely used to support the theory that Iron Age Celts practiced human sacrifice. Ma",
+      "relevance_score": 0.4,
+      "trading_application": "Pattern-based market forecasting",
+      "timestamp": "2025-12-18T18:16:11.564976",
+      "content_hash": "50ceec18fb486457d2616b708c593c94"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "The Pythagorean doctrine prevails among the Gauls' teaching that the souls of men are immortal, and that after a fixed number of years they will enter into another body\nCaesar made similar observations:",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-18T18:16:11.565014",
+      "content_hash": "e7a7256f86c25b9e99d123fd3451e3fd"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "With regard to their actual course of studies, the main object of all education is, in their opinion, to imbue their scholars with a firm belief in the indestructibility of the human soul, which, according to their belief, merely passes at death from one tenement to another; for by such doctrine alone, they say, which robs death of all its terrors, can the highest form of human courage be developed. Subsidiary to the teachings of this main principle, they hold various lectures and discussions on",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from celtic tradition",
+      "timestamp": "2025-12-18T18:16:11.565063",
+      "content_hash": "f60c2e72fa83a512837a8969e87a09ff"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "The Celtic calendar refers to the calendar systems used by ancient Celts to define the beginning and length of the day, week, month, season, quarter-day, and festivals. The Coligny calendar, manufactured in 2nd century CE Roman Gaul (modern France), is one of the most notable representations of a Celtic calendar.",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:16:16.428619",
+      "content_hash": "2339c693588f3e44113fafe4915392b8"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "== Continental Celtic calendar ==\nThe Coligny calendar is the oldest known Celtic lunisolar ritual calendar. It was discovered in Coligny, France, and is now on display in the Palais des Arts Gallo-Roman museum, Lyon. It dates to the end of the second century CE, when the Roman Empire imposed the use of the Julian Calendar in Roman Gaul. The calendar was originally a single huge plate, but it survives only in fragments. It is inscribed in the Gaulish language using the Latin alphabet and uses Ro",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:16:16.428692",
+      "content_hash": "d8b2654ad6f6f8f53876576aa6409bcc"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "Among the Insular Celts, the year was divided into a light half and a dark half. As the day was seen as beginning at sunset, so the year was seen as beginning with the arrival of the darkness, at Calan Gaeaf / Samhain (around 1 November in the modern calendar). The light half of the year started at Calan Haf/Bealtaine (around 1 May, modern calendar). This observance of festivals beginning the evening before the festival day is still seen in the celebrations and folkloric practices among the Gael",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:16:16.428753",
+      "content_hash": "0841e55581ee33393cacaf5b33c4abfe"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "== Native calendar terms in Celtic languages ==\nMany calendrical and time-keeping terms used in the medieval and modern Celtic languages were borrowed from Latin and reflect the influence of Roman culture and Christianity on the Insular Celts. The words borrowed include the month names Januarius (Old Irish Enáir, Irish Eanáir, Welsh Ionawr), Februarius (Old Irish Febra, Irish Feabhra, Welsh Chwefror), Martius (Old Irish Mart, Welsh Mawrth), Aprilius (Old Irish Apréil, Irish Aibreán, Welsh Ebrill",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:16:16.428810",
+      "content_hash": "2c611a848d3f83519ce34702c4126bae"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "== In Neopaganism ==\nIn some Neopagan religions, a \"Celtic calendar\" loosely based on that of Medieval Ireland is observed for purposes of ritual. Adherents of Reconstructionist traditions may celebrate the four Gaelic festivals of Samhain, Imbolc, Beltane, and Lughnasadh.\nSome eclectic Neopagans, such as Wiccans, combine the Gaelic fire festivals with solstices and equinox celebrations derived from non-Celtic cultures to produce the Wiccan modern Wheel of the Year. Some eclectic Neopagans are a",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:16:16.428845",
+      "content_hash": "ec336f94e6f6c7d7bbcc8d8721358bc7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "== Further reading ==\nBrennan, Martin (1994). The Stones of Time: Calendars, Sundials, and Stone Chambers of Ancient Ireland. Rochester, VT: Inner Traditions.\nBrunaux, Jean-Louis (1986). Les Gaulois: Sanctuaires et Rites [The Gauls: Sanctuaries and ceremonies]. Paris: Editions Errance.\nDuval, Paul-Marie; Pinault, Georges (eds.). \"The calendars of Coligny (73 fragments) and Villards d'Heria (8 fragments)\". Recueil des Inscriptions Gauloises (R.I.G.). Vol. 3.\nDelamarre, Xavier (2003). Dictionnaire",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:16:16.428936",
+      "content_hash": "b4989112b864343ce10911b900de9248"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic polytheism",
+      "content": "Ancient Celtic religion, commonly known as Celtic paganism, was the religion of the ancient Celtic peoples of Europe. Because there are no extant native records of their beliefs, evidence about their religion is gleaned from archaeology, Greco-Roman accounts (some of them hostile and probably not well-informed), and literature from the early Christian period. Celtic paganism was one of a larger group of polytheistic Indo-European religions of Iron Age Europe. \nWhile the specific deities worshipp",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-18T18:16:26.070646",
+      "content_hash": "0f5c72c5523b1f35815b075f2f501562"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic polytheism",
+      "content": "The archaeological evidence does not contain the bias inherent in the literary sources. Nonetheless, the interpretation of this evidence can be coloured by the 21st century mindset. Various archaeological discoveries have aided understanding of the religion of the Celts.\nMost surviving Celtic art is not figurative; some art historians have suggested that the complex and compelling decorative motifs that characterize some periods have a religious significance, but the understanding of what that m",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-18T18:16:26.070891",
+      "content_hash": "660ae40c2eb6ff149f10995c8ae1267a"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Insular Celtic religion",
+      "content": "Remnants of pre-Celtic languages may remain in the names of some geographical features, such as the rivers Clyde, Tamar and Thames, whose etymology is unclear but possibly derive from a pre-Celtic substrate (Gelling).\nIt is thought that by about the 6th century BCE most of the inhabitants of the isles of Ireland and Britain were speaking Celtic languages. A  controversial phylogenetic linguistic analysis of 2003 puts the age of Insular Celtic a few centuries earlier, at 2,900 years before presen",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-18T18:16:31.036286",
+      "content_hash": "d8a84c61387b07a7f56470fe68331369"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic sacred trees",
+      "content": "=== Apple ===\nThe pome fruit and tree of the apple is celebrated in numerous functions in Celtic mythology, legend, and folklore; it is an emblem of fruitfulness and sometimes a means to immortality. Wands of druids were made from wood either of the yew or of the apple. The Brythonic Avalon in Arthurian tradition in certain medieval narratives, attributing Welsh origin, is translated as Insula Pomorum; 'The Isle of Apples'. One gloss of the name for the magical Irish island Emain Ablach is 'Emai",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:16:36.035834",
+      "content_hash": "686fb3d2abf3035c89965c28651c711f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic sacred trees",
+      "content": "=== Hazel ===\nBoth the wood and the edible nuts of the hazel have played important roles in Irish and Welsh traditions. Hazel leaves and nuts are found in early British burial mounds and shaft-wells, especially at Ashill, Norfolk. The place-name story for Fordruim, an early name for Tara, describes it as a pleasant hazel wood. In the ogham alphabet of early Ireland, the letter C was represented by hazel [OIr. coll]. According to Robert Graves, it also represented the ninth month on the Old Irish",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:16:36.035954",
+      "content_hash": "2c110da8d621a25dc0b9b34fd1b8d1d2"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Brehon Law",
+      "content": "== Origins ==\nEarly Irish law consisted of the accumulated decisions of the Brehons, or judges, guided entirely by an oral tradition.  Some of these laws were recorded in writing by Christian clerics. The earliest theory to be recorded is contained in the Prologue to the Senchas Már. According to that text, after a difficult case involving St. Patrick, the Saint supervised the mixing of native Irish law and the law of the church. A representative of every group came and recited the laws related ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-18T18:16:41.243280",
+      "content_hash": "9829fbd1f8896cf7722c58aaf8d381c1"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Brehon Law",
+      "content": "=== Women and marriage ===\n Indications of women's status is indicated by the honour price system. A typical woman did not carry an honour price: a position shared with children, the insane, slaves, and others. However, there were many exceptions: for example, status was gained through inheritance. At times, some rose to ranks of leadership, and women, like men, were Brehons. Brehon Laws have a reputation among modern scholars as rather progressive in their treatment of women, with some describi",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-18T18:16:41.243415",
+      "content_hash": "f0ba0d9d3b249672fd73d6180ac53530"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "The Metonic cycle or enneadecaeteris (from Ancient Greek: ἐννεακαιδεκαετηρίς, from ἐννεακαίδεκα, \"nineteen\") is a period of almost exactly 19 years after which the lunar phases recur at the same time of the year. The recurrence is not perfect, and by precise observation the Metonic cycle defined as 235 synodic months is just 2 hours, 4 minutes and 58 seconds longer than 19 tropical years. Meton of Athens, in the 5th century BC, judged the cycle to be a whole number of days, 6,940. Using these wh",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:16:51.724573",
+      "content_hash": "b55bb0b521981d9c46d58c8f41dbecf3"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "== Application in traditional calendars ==\nIn the Babylonian and Hebrew lunisolar calendars, the years 3, 6, 8, 11, 14, 17, and 19 are the long (13-month) years of the Metonic cycle. This cycle forms the basis of the Greek and Hebrew calendars. A 19-year cycle is used for the computation of the date of Easter each year.\nThe Babylonians applied the 19-year cycle from the late sixth century BC.\nAccording to Livy, the second king of Rome, Numa Pompilius (reigned 715–673 BC), inserted intercalary mo",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:16:51.724713",
+      "content_hash": "f4958d53f7fc6785a9dd16d56e50b0b7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "=== Hebrew calendar ===\nA Small Maḥzor (Hebrew מחזור, pronounced [maχˈzor], meaning \"cycle\") is a 19-year cycle in the lunisolar calendar system used by the Jewish people. It is similar to, but slightly different in usage from, the Greek Metonic cycle (being based on a month of 29+13753⁄25920 days, giving a cycle of 6939+3575⁄5184 ≈ 6939.69 days), and likely derived from or alongside the much earlier Babylonian calendar.",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:16:51.724756",
+      "content_hash": "8c75da29f27154f7b7efcee9d31f774e"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "The Metonic cycle is the most accurate cycle of time (in a timespan of less than 100 years) for synchronizing the tropical year and the lunar month (synodic month), when the method of synchronizing is the intercalation of a thirteenth lunar month  in a calendar year from time to time. The traditional lunar year of 12 synodic months is about 354 days, approximately eleven days short of the solar year. Thus, every 2 to 3 years there is a discrepancy of 22 to 33 days, or a full synodic month. For e",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:16:51.724794",
+      "content_hash": "babf4167e5fc8508be32fe0a1d10ccc2"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "A synodic month lasts 29.53059 days.\na span of 235 synodic months (29.53059 × 235) lasts 6,939.689 days\nThus the algorithm is correct to 0.087 days (2 hours, 5 minutes and 16 seconds).\nFor a lunisolar calendar to 'catch up' to this discrepancy and thus maintain seasonal consistency, seven intercalary months are added (one at a time), at intervals of every 2–3 years during the course of 19 solar years. Thus twelve of those years have 12 lunar months and seven have 13 months. Of these months, 125 ",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:16:51.724838",
+      "content_hash": "37e7df01543c81904be42334604d4ca7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "== See also ==\nAttic and Byzantine calendar\nCallippic cycle (76-year cycle from 330 BC)\nDate of Easter (\"the Computus\")\nHipparchic cycle (304-year cycle from 2nd century BC)\nIntercalation (timekeeping)\nJulian day\nOctaeteris (8-year cycle of antiquity)\nSaros cycle of eclipses",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:16:51.724860",
+      "content_hash": "7e1432317b5527d1828e934eb5849b10"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "The Celts also worshiped a number of deities of which little more is known than their names. Classical writers preserve a few fragments of legends or myths that may possibly be Celtic.\nAccording to the Syrian rhetorician Lucian, Ogmios was supposed to lead a band of men chained by their ears to his tongue as a symbol of the strength of his eloquence.\nThe first-century Roman poet Lucan mentions the gods Taranis, Teutates and Esus, but there is little Celtic evidence that these were important deit",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-18T18:17:58.751795",
+      "content_hash": "766929f4cddca0a1608768efae3856fc"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "Some of these books and texts are translations of Celtic legends\n and sagas; others are retellings of the material, folklore, or\n literary works based on Celtic themes.\n During the 19th and early 20th Century there was a resurgence of interest in\n the folklore of Ireland, Wales and Scotland.  This was reflected in\n a huge amount of literature based on the rich Celtic mythopoetic heritage,\n most of",
+      "relevance_score": 0.7479547297684415,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-18T18:18:00.900159",
+      "content_hash": "3ef648d4c57b0225b6feffcd67db7a54"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "A good number of these files were originally scanned by Phillip\n Brown for his (now defunct) Celtic Folklore website.\n These are indicated by [PB].",
+      "relevance_score": 0.8081875352031409,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-18T18:18:00.900188",
+      "content_hash": "6f4588bcf3badbf9826f62672810431b"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "The Voyage of BranbyMeyer Kuno[1895]Old Irish saga of a voyage to the pagan Celtic otherworld, with parallel English and Gaelic.The Second Battle of Mag Tuired (Cath Maige Tuired)This Irish saga, from before the ninth Century A.D., is an account of the epic battle between the mythical Tuatha De Danann and Fomoire for Ireland.It has deep roots in Indo-European mythology, told with Homeric grace and",
+      "relevance_score": 0.6246874283022321,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-18T18:18:00.900197",
+      "content_hash": "91a6882ce187bb2efaa636d7dd41fb96"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "Lady Augusta Gregory was a close collaborator with W.B. Yeats, the Irish poet\n and mystic.  These three books are her retellings of Irish mythology and\n folklore, and are among the best of the genre.Cuchulain of Muirthemneby LadyAugusta Gregory[1902] [PB]Gods and Fighting Menby LadyAugusta Gregory[1904] [PB]A Book of Saints and Wondersby LadyAugusta Gregory[1906] [PB]Irish Christian folklore, incl",
+      "relevance_score": 0.8542640035998199,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-18T18:18:00.900215",
+      "content_hash": "089c843adb795f75a2b61df7754b2c31"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "The MabinogionLadyCharlotte Guest, tr. [1877]A group of Welsh tales from the Red Book of Hergest, a 14th Century manuscript maintained at Jesus College, Oxford.The Four Ancient Books of WalesbyWilliam F. Skene[1868]The only available translation of the complete corpus of Welsh Bardic poetry.Prolegomena to the Study of Old Welsh PoetrybyEdward Anwyl[1903]The Gododdin PoemsfromThe Four Ancient Books",
+      "relevance_score": 0.8618881165554265,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-18T18:18:00.900221",
+      "content_hash": "2cb451f28216d400feec6258810719a9"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "A druid was a member of the high-ranking priestly class in ancient Celtic cultures. The druids were religious leaders as well as legal authorities, adjudicators, lorekeepers, medical professionals and political advisors. Druids left no written accounts. While they were reported to have been literate, they are believed to have been prevented by doctrine from recording their knowledge in written form. Their beliefs and practices are attested in some detail by their contemporaries from other cultur",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-18T18:18:03.690803",
+      "content_hash": "b9e706051520862b5481abb10f10891b"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "=== Societal role and training ===\n The Greco-Roman and the vernacular Irish sources agree that the druids played an important part in pagan Celtic society. In his description, Julius Caesar wrote that they were one of the two most important social groups in the region (alongside the equites, or nobles) and were responsible for organizing worship and sacrifices, divination, and judicial procedure in Gallic, British, and Irish societies. He wrote that they were exempt from military service and fr",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-18T18:18:03.690937",
+      "content_hash": "39352855c95d09bb4636a48913fafae0"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "These men predict the future by observing the flight and calls of birds and by the sacrifice of holy animals: all orders of society are in their power ... and in very important matters they prepare a human victim, plunging a dagger into his chest; by observing the way his limbs convulse as he falls and the gushing of his blood, they are able to read the future.\nArchaeological evidence from western Europe has been widely used to support the theory that Iron Age Celts practiced human sacrifice. Ma",
+      "relevance_score": 0.4,
+      "trading_application": "Pattern-based market forecasting",
+      "timestamp": "2025-12-18T18:18:03.691029",
+      "content_hash": "50ceec18fb486457d2616b708c593c94"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "The Pythagorean doctrine prevails among the Gauls' teaching that the souls of men are immortal, and that after a fixed number of years they will enter into another body\nCaesar made similar observations:",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-18T18:18:03.691053",
+      "content_hash": "e7a7256f86c25b9e99d123fd3451e3fd"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "With regard to their actual course of studies, the main object of all education is, in their opinion, to imbue their scholars with a firm belief in the indestructibility of the human soul, which, according to their belief, merely passes at death from one tenement to another; for by such doctrine alone, they say, which robs death of all its terrors, can the highest form of human courage be developed. Subsidiary to the teachings of this main principle, they hold various lectures and discussions on",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from celtic tradition",
+      "timestamp": "2025-12-18T18:18:03.691090",
+      "content_hash": "f60c2e72fa83a512837a8969e87a09ff"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "The Celtic calendar refers to the calendar systems used by ancient Celts to define the beginning and length of the day, week, month, season, quarter-day, and festivals. The Coligny calendar, manufactured in 2nd century CE Roman Gaul (modern France), is one of the most notable representations of a Celtic calendar.",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:18:08.388676",
+      "content_hash": "2339c693588f3e44113fafe4915392b8"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "== Continental Celtic calendar ==\nThe Coligny calendar is the oldest known Celtic lunisolar ritual calendar. It was discovered in Coligny, France, and is now on display in the Palais des Arts Gallo-Roman museum, Lyon. It dates to the end of the second century CE, when the Roman Empire imposed the use of the Julian Calendar in Roman Gaul. The calendar was originally a single huge plate, but it survives only in fragments. It is inscribed in the Gaulish language using the Latin alphabet and uses Ro",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:18:08.388735",
+      "content_hash": "d8b2654ad6f6f8f53876576aa6409bcc"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "Among the Insular Celts, the year was divided into a light half and a dark half. As the day was seen as beginning at sunset, so the year was seen as beginning with the arrival of the darkness, at Calan Gaeaf / Samhain (around 1 November in the modern calendar). The light half of the year started at Calan Haf/Bealtaine (around 1 May, modern calendar). This observance of festivals beginning the evening before the festival day is still seen in the celebrations and folkloric practices among the Gael",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:18:08.388780",
+      "content_hash": "0841e55581ee33393cacaf5b33c4abfe"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "== Native calendar terms in Celtic languages ==\nMany calendrical and time-keeping terms used in the medieval and modern Celtic languages were borrowed from Latin and reflect the influence of Roman culture and Christianity on the Insular Celts. The words borrowed include the month names Januarius (Old Irish Enáir, Irish Eanáir, Welsh Ionawr), Februarius (Old Irish Febra, Irish Feabhra, Welsh Chwefror), Martius (Old Irish Mart, Welsh Mawrth), Aprilius (Old Irish Apréil, Irish Aibreán, Welsh Ebrill",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:18:08.388821",
+      "content_hash": "2c611a848d3f83519ce34702c4126bae"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "== In Neopaganism ==\nIn some Neopagan religions, a \"Celtic calendar\" loosely based on that of Medieval Ireland is observed for purposes of ritual. Adherents of Reconstructionist traditions may celebrate the four Gaelic festivals of Samhain, Imbolc, Beltane, and Lughnasadh.\nSome eclectic Neopagans, such as Wiccans, combine the Gaelic fire festivals with solstices and equinox celebrations derived from non-Celtic cultures to produce the Wiccan modern Wheel of the Year. Some eclectic Neopagans are a",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:18:08.388849",
+      "content_hash": "ec336f94e6f6c7d7bbcc8d8721358bc7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "== Further reading ==\nBrennan, Martin (1994). The Stones of Time: Calendars, Sundials, and Stone Chambers of Ancient Ireland. Rochester, VT: Inner Traditions.\nBrunaux, Jean-Louis (1986). Les Gaulois: Sanctuaires et Rites [The Gauls: Sanctuaries and ceremonies]. Paris: Editions Errance.\nDuval, Paul-Marie; Pinault, Georges (eds.). \"The calendars of Coligny (73 fragments) and Villards d'Heria (8 fragments)\". Recueil des Inscriptions Gauloises (R.I.G.). Vol. 3.\nDelamarre, Xavier (2003). Dictionnaire",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:18:08.388919",
+      "content_hash": "b4989112b864343ce10911b900de9248"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic polytheism",
+      "content": "Ancient Celtic religion, commonly known as Celtic paganism, was the religion of the ancient Celtic peoples of Europe. Because there are no extant native records of their beliefs, evidence about their religion is gleaned from archaeology, Greco-Roman accounts (some of them hostile and probably not well-informed), and literature from the early Christian period. Celtic paganism was one of a larger group of polytheistic Indo-European religions of Iron Age Europe. \nWhile the specific deities worshipp",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-18T18:18:17.768508",
+      "content_hash": "0f5c72c5523b1f35815b075f2f501562"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic polytheism",
+      "content": "The archaeological evidence does not contain the bias inherent in the literary sources. Nonetheless, the interpretation of this evidence can be coloured by the 21st century mindset. Various archaeological discoveries have aided understanding of the religion of the Celts.\nMost surviving Celtic art is not figurative; some art historians have suggested that the complex and compelling decorative motifs that characterize some periods have a religious significance, but the understanding of what that m",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-18T18:18:17.768692",
+      "content_hash": "660ae40c2eb6ff149f10995c8ae1267a"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Insular Celtic religion",
+      "content": "Remnants of pre-Celtic languages may remain in the names of some geographical features, such as the rivers Clyde, Tamar and Thames, whose etymology is unclear but possibly derive from a pre-Celtic substrate (Gelling).\nIt is thought that by about the 6th century BCE most of the inhabitants of the isles of Ireland and Britain were speaking Celtic languages. A  controversial phylogenetic linguistic analysis of 2003 puts the age of Insular Celtic a few centuries earlier, at 2,900 years before presen",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-18T18:18:22.669837",
+      "content_hash": "d8a84c61387b07a7f56470fe68331369"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic sacred trees",
+      "content": "=== Apple ===\nThe pome fruit and tree of the apple is celebrated in numerous functions in Celtic mythology, legend, and folklore; it is an emblem of fruitfulness and sometimes a means to immortality. Wands of druids were made from wood either of the yew or of the apple. The Brythonic Avalon in Arthurian tradition in certain medieval narratives, attributing Welsh origin, is translated as Insula Pomorum; 'The Isle of Apples'. One gloss of the name for the magical Irish island Emain Ablach is 'Emai",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:18:27.735943",
+      "content_hash": "686fb3d2abf3035c89965c28651c711f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic sacred trees",
+      "content": "=== Hazel ===\nBoth the wood and the edible nuts of the hazel have played important roles in Irish and Welsh traditions. Hazel leaves and nuts are found in early British burial mounds and shaft-wells, especially at Ashill, Norfolk. The place-name story for Fordruim, an early name for Tara, describes it as a pleasant hazel wood. In the ogham alphabet of early Ireland, the letter C was represented by hazel [OIr. coll]. According to Robert Graves, it also represented the ninth month on the Old Irish",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:18:27.736046",
+      "content_hash": "2c110da8d621a25dc0b9b34fd1b8d1d2"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Brehon Law",
+      "content": "== Origins ==\nEarly Irish law consisted of the accumulated decisions of the Brehons, or judges, guided entirely by an oral tradition.  Some of these laws were recorded in writing by Christian clerics. The earliest theory to be recorded is contained in the Prologue to the Senchas Már. According to that text, after a difficult case involving St. Patrick, the Saint supervised the mixing of native Irish law and the law of the church. A representative of every group came and recited the laws related ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-18T18:18:32.870426",
+      "content_hash": "9829fbd1f8896cf7722c58aaf8d381c1"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Brehon Law",
+      "content": "=== Women and marriage ===\n Indications of women's status is indicated by the honour price system. A typical woman did not carry an honour price: a position shared with children, the insane, slaves, and others. However, there were many exceptions: for example, status was gained through inheritance. At times, some rose to ranks of leadership, and women, like men, were Brehons. Brehon Laws have a reputation among modern scholars as rather progressive in their treatment of women, with some describi",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-18T18:18:32.870528",
+      "content_hash": "f0ba0d9d3b249672fd73d6180ac53530"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "The Metonic cycle or enneadecaeteris (from Ancient Greek: ἐννεακαιδεκαετηρίς, from ἐννεακαίδεκα, \"nineteen\") is a period of almost exactly 19 years after which the lunar phases recur at the same time of the year. The recurrence is not perfect, and by precise observation the Metonic cycle defined as 235 synodic months is just 2 hours, 4 minutes and 58 seconds longer than 19 tropical years. Meton of Athens, in the 5th century BC, judged the cycle to be a whole number of days, 6,940. Using these wh",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:18:43.078546",
+      "content_hash": "b55bb0b521981d9c46d58c8f41dbecf3"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "== Application in traditional calendars ==\nIn the Babylonian and Hebrew lunisolar calendars, the years 3, 6, 8, 11, 14, 17, and 19 are the long (13-month) years of the Metonic cycle. This cycle forms the basis of the Greek and Hebrew calendars. A 19-year cycle is used for the computation of the date of Easter each year.\nThe Babylonians applied the 19-year cycle from the late sixth century BC.\nAccording to Livy, the second king of Rome, Numa Pompilius (reigned 715–673 BC), inserted intercalary mo",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:18:43.078678",
+      "content_hash": "f4958d53f7fc6785a9dd16d56e50b0b7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "=== Hebrew calendar ===\nA Small Maḥzor (Hebrew מחזור, pronounced [maχˈzor], meaning \"cycle\") is a 19-year cycle in the lunisolar calendar system used by the Jewish people. It is similar to, but slightly different in usage from, the Greek Metonic cycle (being based on a month of 29+13753⁄25920 days, giving a cycle of 6939+3575⁄5184 ≈ 6939.69 days), and likely derived from or alongside the much earlier Babylonian calendar.",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:18:43.078716",
+      "content_hash": "8c75da29f27154f7b7efcee9d31f774e"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "The Metonic cycle is the most accurate cycle of time (in a timespan of less than 100 years) for synchronizing the tropical year and the lunar month (synodic month), when the method of synchronizing is the intercalation of a thirteenth lunar month  in a calendar year from time to time. The traditional lunar year of 12 synodic months is about 354 days, approximately eleven days short of the solar year. Thus, every 2 to 3 years there is a discrepancy of 22 to 33 days, or a full synodic month. For e",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:18:43.078755",
+      "content_hash": "babf4167e5fc8508be32fe0a1d10ccc2"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "A synodic month lasts 29.53059 days.\na span of 235 synodic months (29.53059 × 235) lasts 6,939.689 days\nThus the algorithm is correct to 0.087 days (2 hours, 5 minutes and 16 seconds).\nFor a lunisolar calendar to 'catch up' to this discrepancy and thus maintain seasonal consistency, seven intercalary months are added (one at a time), at intervals of every 2–3 years during the course of 19 solar years. Thus twelve of those years have 12 lunar months and seven have 13 months. Of these months, 125 ",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:18:43.078795",
+      "content_hash": "37e7df01543c81904be42334604d4ca7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "== See also ==\nAttic and Byzantine calendar\nCallippic cycle (76-year cycle from 330 BC)\nDate of Easter (\"the Computus\")\nHipparchic cycle (304-year cycle from 2nd century BC)\nIntercalation (timekeeping)\nJulian day\nOctaeteris (8-year cycle of antiquity)\nSaros cycle of eclipses",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-18T18:18:43.078812",
+      "content_hash": "7e1432317b5527d1828e934eb5849b10"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "Some of these books and texts are translations of Celtic legends\n and sagas; others are retellings of the material, folklore, or\n literary works based on Celtic themes.\n During the 19th and early 20th Century there was a resurgence of interest in\n the folklore of Ireland, Wales and Scotland.  This was reflected in\n a huge amount of literature based on the rich Celtic mythopoetic heritage,\n most of",
+      "relevance_score": 0.6499821376772449,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-25T19:36:00.766498",
+      "content_hash": "3ef648d4c57b0225b6feffcd67db7a54"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "A good number of these files were originally scanned by Phillip\n Brown for his (now defunct) Celtic Folklore website.\n These are indicated by [PB].",
+      "relevance_score": 0.7711703317601148,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-25T19:36:00.766530",
+      "content_hash": "6f4588bcf3badbf9826f62672810431b"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "The Voyage of BranbyMeyer Kuno[1895]Old Irish saga of a voyage to the pagan Celtic otherworld, with parallel English and Gaelic.The Second Battle of Mag Tuired (Cath Maige Tuired)This Irish saga, from before the ninth Century A.D., is an account of the epic battle between the mythical Tuatha De Danann and Fomoire for Ireland.It has deep roots in Indo-European mythology, told with Homeric grace and",
+      "relevance_score": 0.7291476304342995,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-25T19:36:00.766538",
+      "content_hash": "91a6882ce187bb2efaa636d7dd41fb96"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "Lady Augusta Gregory was a close collaborator with W.B. Yeats, the Irish poet\n and mystic.  These three books are her retellings of Irish mythology and\n folklore, and are among the best of the genre.Cuchulain of Muirthemneby LadyAugusta Gregory[1902] [PB]Gods and Fighting Menby LadyAugusta Gregory[1904] [PB]A Book of Saints and Wondersby LadyAugusta Gregory[1906] [PB]Irish Christian folklore, incl",
+      "relevance_score": 0.8597839826811595,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-25T19:36:00.766553",
+      "content_hash": "089c843adb795f75a2b61df7754b2c31"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "The MabinogionLadyCharlotte Guest, tr. [1877]A group of Welsh tales from the Red Book of Hergest, a 14th Century manuscript maintained at Jesus College, Oxford.The Four Ancient Books of WalesbyWilliam F. Skene[1868]The only available translation of the complete corpus of Welsh Bardic poetry.Prolegomena to the Study of Old Welsh PoetrybyEdward Anwyl[1903]The Gododdin PoemsfromThe Four Ancient Books",
+      "relevance_score": 0.8436779334801275,
+      "trading_application": "Ancient celtic wisdom for market understanding",
+      "timestamp": "2025-12-25T19:36:00.766559",
+      "content_hash": "2cb451f28216d400feec6258810719a9"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic mythology",
+      "content": "The Celts also worshiped a number of deities of which little more is known than their names. Classical writers preserve a few fragments of legends or myths that may possibly be Celtic.\nAccording to the Syrian rhetorician Lucian, Ogmios was supposed to lead a band of men chained by their ears to his tongue as a symbol of the strength of his eloquence.\nThe first-century Roman poet Lucan mentions the gods Taranis, Teutates and Esus, but there is little Celtic evidence that these were important deit",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:45:12.759317",
+      "content_hash": "766929f4cddca0a1608768efae3856fc"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "A druid was a member of the high-ranking priestly class in ancient Celtic cultures. The druids were religious leaders as well as legal authorities, adjudicators, lorekeepers, medical professionals and political advisors. Druids left no written accounts. While they were reported to have been literate, they are believed to have been prevented by doctrine from recording their knowledge in written form. Their beliefs and practices are attested in some detail by their contemporaries from other cultur",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:45:19.743700",
+      "content_hash": "b9e706051520862b5481abb10f10891b"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "=== Societal role and training ===\n The Greco-Roman and the vernacular Irish sources agree that the druids played an important part in pagan Celtic society. In his description, Julius Caesar wrote that they were one of the two most important social groups in the region (alongside the equites, or nobles) and were responsible for organizing worship and sacrifices, divination, and judicial procedure in Gallic, British, and Irish societies. He wrote that they were exempt from military service and fr",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:45:19.743839",
+      "content_hash": "39352855c95d09bb4636a48913fafae0"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "These men predict the future by observing the flight and calls of birds and by the sacrifice of holy animals: all orders of society are in their power ... and in very important matters they prepare a human victim, plunging a dagger into his chest; by observing the way his limbs convulse as he falls and the gushing of his blood, they are able to read the future.\nArchaeological evidence from western Europe has been widely used to support the theory that Iron Age Celts practiced human sacrifice. Ma",
+      "relevance_score": 0.4,
+      "trading_application": "Pattern-based market forecasting",
+      "timestamp": "2025-12-25T19:45:19.743933",
+      "content_hash": "50ceec18fb486457d2616b708c593c94"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "The Pythagorean doctrine prevails among the Gauls' teaching that the souls of men are immortal, and that after a fixed number of years they will enter into another body\nCaesar made similar observations:",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:45:19.743959",
+      "content_hash": "e7a7256f86c25b9e99d123fd3451e3fd"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Druids",
+      "content": "With regard to their actual course of studies, the main object of all education is, in their opinion, to imbue their scholars with a firm belief in the indestructibility of the human soul, which, according to their belief, merely passes at death from one tenement to another; for by such doctrine alone, they say, which robs death of all its terrors, can the highest form of human courage be developed. Subsidiary to the teachings of this main principle, they hold various lectures and discussions on",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from celtic tradition",
+      "timestamp": "2025-12-25T19:45:19.743997",
+      "content_hash": "f60c2e72fa83a512837a8969e87a09ff"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "The Celtic calendar refers to the calendar systems used by ancient Celts to define the beginning and length of the day, week, month, season, quarter-day, and festivals. The Coligny calendar, manufactured in 2nd century CE Roman Gaul (modern France), is one of the most notable representations of a Celtic calendar.",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:45:24.699713",
+      "content_hash": "2339c693588f3e44113fafe4915392b8"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "== Continental Celtic calendar ==\nThe Coligny calendar is the oldest known Celtic lunisolar ritual calendar. It was discovered in Coligny, France, and is now on display in the Palais des Arts Gallo-Roman museum, Lyon. It dates to the end of the second century CE, when the Roman Empire imposed the use of the Julian Calendar in Roman Gaul. The calendar was originally a single huge plate, but it survives only in fragments. It is inscribed in the Gaulish language using the Latin alphabet and uses Ro",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:45:24.699774",
+      "content_hash": "d8b2654ad6f6f8f53876576aa6409bcc"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "Among the Insular Celts, the year was divided into a light half and a dark half. As the day was seen as beginning at sunset, so the year was seen as beginning with the arrival of the darkness, at Calan Gaeaf / Samhain (around 1 November in the modern calendar). The light half of the year started at Calan Haf/Bealtaine (around 1 May, modern calendar). This observance of festivals beginning the evening before the festival day is still seen in the celebrations and folkloric practices among the Gael",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:45:24.699821",
+      "content_hash": "0841e55581ee33393cacaf5b33c4abfe"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "== Native calendar terms in Celtic languages ==\nMany calendrical and time-keeping terms used in the medieval and modern Celtic languages were borrowed from Latin and reflect the influence of Roman culture and Christianity on the Insular Celts. The words borrowed include the month names Januarius (Old Irish Enáir, Irish Eanáir, Welsh Ionawr), Februarius (Old Irish Febra, Irish Feabhra, Welsh Chwefror), Martius (Old Irish Mart, Welsh Mawrth), Aprilius (Old Irish Apréil, Irish Aibreán, Welsh Ebrill",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:45:24.699883",
+      "content_hash": "2c611a848d3f83519ce34702c4126bae"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "== In Neopaganism ==\nIn some Neopagan religions, a \"Celtic calendar\" loosely based on that of Medieval Ireland is observed for purposes of ritual. Adherents of Reconstructionist traditions may celebrate the four Gaelic festivals of Samhain, Imbolc, Beltane, and Lughnasadh.\nSome eclectic Neopagans, such as Wiccans, combine the Gaelic fire festivals with solstices and equinox celebrations derived from non-Celtic cultures to produce the Wiccan modern Wheel of the Year. Some eclectic Neopagans are a",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:45:24.699913",
+      "content_hash": "ec336f94e6f6c7d7bbcc8d8721358bc7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic calendar",
+      "content": "== Further reading ==\nBrennan, Martin (1994). The Stones of Time: Calendars, Sundials, and Stone Chambers of Ancient Ireland. Rochester, VT: Inner Traditions.\nBrunaux, Jean-Louis (1986). Les Gaulois: Sanctuaires et Rites [The Gauls: Sanctuaries and ceremonies]. Paris: Editions Errance.\nDuval, Paul-Marie; Pinault, Georges (eds.). \"The calendars of Coligny (73 fragments) and Villards d'Heria (8 fragments)\". Recueil des Inscriptions Gauloises (R.I.G.). Vol. 3.\nDelamarre, Xavier (2003). Dictionnaire",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:45:24.699985",
+      "content_hash": "b4989112b864343ce10911b900de9248"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic polytheism",
+      "content": "Ancient Celtic religion, commonly known as Celtic paganism, was the religion of the ancient Celtic peoples of Europe. Because there are no extant native records of their beliefs, evidence about their religion is gleaned from archaeology, Greco-Roman accounts (some of them hostile and probably not well-informed), and literature from the early Christian period. Celtic paganism was one of a larger group of polytheistic Indo-European religions of Iron Age Europe. \nWhile the specific deities worshipp",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:45:34.107486",
+      "content_hash": "0f5c72c5523b1f35815b075f2f501562"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic polytheism",
+      "content": "The archaeological evidence does not contain the bias inherent in the literary sources. Nonetheless, the interpretation of this evidence can be coloured by the 21st century mindset. Various archaeological discoveries have aided understanding of the religion of the Celts.\nMost surviving Celtic art is not figurative; some art historians have suggested that the complex and compelling decorative motifs that characterize some periods have a religious significance, but the understanding of what that m",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:45:34.107677",
+      "content_hash": "660ae40c2eb6ff149f10995c8ae1267a"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Insular Celtic religion",
+      "content": "Remnants of pre-Celtic languages may remain in the names of some geographical features, such as the rivers Clyde, Tamar and Thames, whose etymology is unclear but possibly derive from a pre-Celtic substrate (Gelling).\nIt is thought that by about the 6th century BCE most of the inhabitants of the isles of Ireland and Britain were speaking Celtic languages. A  controversial phylogenetic linguistic analysis of 2003 puts the age of Insular Celtic a few centuries earlier, at 2,900 years before presen",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:45:38.959375",
+      "content_hash": "d8a84c61387b07a7f56470fe68331369"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic sacred trees",
+      "content": "=== Apple ===\nThe pome fruit and tree of the apple is celebrated in numerous functions in Celtic mythology, legend, and folklore; it is an emblem of fruitfulness and sometimes a means to immortality. Wands of druids were made from wood either of the yew or of the apple. The Brythonic Avalon in Arthurian tradition in certain medieval narratives, attributing Welsh origin, is translated as Insula Pomorum; 'The Isle of Apples'. One gloss of the name for the magical Irish island Emain Ablach is 'Emai",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:45:43.874094",
+      "content_hash": "442febfb80d04037f8d602a262d6733d"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Celtic sacred trees",
+      "content": "=== Hazel ===\nBoth the wood and the edible nuts of the hazel have played important roles in Irish and Welsh traditions. Hazel leaves and nuts are found in early British burial mounds and shaft-wells, especially at Ashill, Norfolk. The place-name story for Fordruim, an early name for Tara, describes it as a pleasant hazel wood. In the ogham alphabet of early Ireland, the letter C was represented by hazel [OIr. coll]. According to Robert Graves, it also represented the ninth month on the Old Irish",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:45:43.874189",
+      "content_hash": "add14f2ca6e521ec8b0f70641c156663"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Brehon Law",
+      "content": "== Origins ==\nEarly Irish law consisted of the accumulated decisions of the Brehons, or judges, guided entirely by an oral tradition.  Some of these laws were recorded in writing by Christian clerics. The earliest theory to be recorded is contained in the Prologue to the Senchas Már. According to that text, after a difficult case involving St. Patrick, the Saint supervised the mixing of native Irish law and the law of the church. A representative of every group came and recited the laws related ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:45:49.372601",
+      "content_hash": "9829fbd1f8896cf7722c58aaf8d381c1"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Brehon Law",
+      "content": "=== Women and marriage ===\n Indications of women's status is indicated by the honour price system. A typical woman did not carry an honour price: a position shared with children, the insane, slaves, and others. However, there were many exceptions: for example, status was gained through inheritance. At times, some rose to ranks of leadership, and women, like men, were Brehons. Brehon Laws have a reputation among modern scholars as rather progressive in their treatment of women, with some describi",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:45:49.372740",
+      "content_hash": "f0ba0d9d3b249672fd73d6180ac53530"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "The Metonic cycle or enneadecaeteris (from Ancient Greek: ἐννεακαιδεκαετηρίς, from ἐννεακαίδεκα, \"nineteen\") is a period of almost exactly 19 years after which the lunar phases recur at the same time of the year. The recurrence is not perfect, and by precise observation the Metonic cycle defined as 235 synodic months is just 2 hours, 4 minutes and 58 seconds longer than 19 tropical years. Meton of Athens, in the 5th century BC, judged the cycle to be a whole number of days, 6,940. Using these wh",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:45:59.683021",
+      "content_hash": "b55bb0b521981d9c46d58c8f41dbecf3"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "== Application in traditional calendars ==\nIn the Babylonian and Hebrew lunisolar calendars, the years 3, 6, 8, 11, 14, 17, and 19 are the long (13-month) years of the Metonic cycle. This cycle forms the basis of the Greek and Hebrew calendars. A 19-year cycle is used for the computation of the date of Easter each year.\nThe Babylonians applied the 19-year cycle from the late sixth century BC.\nAccording to Livy, the second king of Rome, Numa Pompilius (reigned 715–673 BC), inserted intercalary mo",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:45:59.683124",
+      "content_hash": "f4958d53f7fc6785a9dd16d56e50b0b7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "=== Hebrew calendar ===\nA Small Maḥzor (Hebrew מחזור, pronounced [maχˈzor], meaning \"cycle\") is a 19-year cycle in the lunisolar calendar system used by the Jewish people. It is similar to, but slightly different in usage from, the Greek Metonic cycle (being based on a month of 29+13753⁄25920 days, giving a cycle of 6939+3575⁄5184 ≈ 6939.69 days), and likely derived from or alongside the much earlier Babylonian calendar.",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:45:59.683154",
+      "content_hash": "8c75da29f27154f7b7efcee9d31f774e"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "The Metonic cycle is the most accurate cycle of time (in a timespan of less than 100 years) for synchronizing the tropical year and the lunar month (synodic month), when the method of synchronizing is the intercalation of a thirteenth lunar month  in a calendar year from time to time. The traditional lunar year of 12 synodic months is about 354 days, approximately eleven days short of the solar year. Thus, every 2 to 3 years there is a discrepancy of 22 to 33 days, or a full synodic month. For e",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:45:59.683183",
+      "content_hash": "babf4167e5fc8508be32fe0a1d10ccc2"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "A synodic month lasts 29.53059 days.\na span of 235 synodic months (29.53059 × 235) lasts 6,939.689 days\nThus the algorithm is correct to 0.087 days (2 hours, 5 minutes and 16 seconds).\nFor a lunisolar calendar to 'catch up' to this discrepancy and thus maintain seasonal consistency, seven intercalary months are added (one at a time), at intervals of every 2–3 years during the course of 19 solar years. Thus twelve of those years have 12 lunar months and seven have 13 months. Of these months, 125 ",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:45:59.683215",
+      "content_hash": "37e7df01543c81904be42334604d4ca7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "celtic",
+      "topic": "Metonic cycle",
+      "content": "== See also ==\nAttic and Byzantine calendar\nCallippic cycle (76-year cycle from 330 BC)\nDate of Easter (\"the Computus\")\nHipparchic cycle (304-year cycle from 2nd century BC)\nIntercalation (timekeeping)\nJulian day\nOctaeteris (8-year cycle of antiquity)\nSaros cycle of eclipses",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:45:59.683230",
+      "content_hash": "7e1432317b5527d1828e934eb5849b10"
+    }
+  ],
+  "scan_history": [
+    {
+      "timestamp": "2025-12-15T10:20:04.308666",
+      "insights_found": 5,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-15T10:28:17.107919",
+      "insights_found": 30,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-18T18:16:55.730162",
+      "insights_found": 30,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-18T18:18:47.083129",
+      "insights_found": 30,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:36:39.748107",
+      "insights_found": 5,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:46:03.687666",
+      "insights_found": 25,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:11:07.704499",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:25:59.355411",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:30:52.809525",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T14:50:47.043285",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:00:12.762127",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:48:35.018909",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T12:29:31.585636",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T13:44:08.759341",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T14:38:13.249201",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T11:25:07.385884",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T12:00:24.233745",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:14:26.022365",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:18:33.367342",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:34:45.839506",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T14:01:31.750294",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T14:55:23.893116",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:23:35.832730",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:40:19.812864",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T16:09:11.417431",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T17:15:21.301444",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T17:19:32.140831",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T18:26:24.226517",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    }
+  ]
+}

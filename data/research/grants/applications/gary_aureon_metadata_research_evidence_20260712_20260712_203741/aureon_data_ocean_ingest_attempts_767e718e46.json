@@ -1,0 +1,67 @@
+{
+  "yfinance_history": {
+    "empty_batches": 6,
+    "errors": 0,
+    "inserted": 0,
+    "reason": "provider_returned_no_usable_rows",
+    "results": [
+      {
+        "category": "stocks",
+        "empty_batches": 1,
+        "errors": 0,
+        "inserted": 0,
+        "skipped": 0,
+        "symbol_count": 15,
+        "work_count": 15
+      },
+      {
+        "category": "indices",
+        "empty_batches": 1,
+        "errors": 0,
+        "inserted": 0,
+        "skipped": 0,
+        "symbol_count": 14,
+        "work_count": 14
+      },
+      {
+        "category": "forex",
+        "empty_batches": 1,
+        "errors": 0,
+        "inserted": 0,
+        "skipped": 0,
+        "symbol_count": 15,
+        "work_count": 15
+      },
+      {
+        "category": "commodities",
+        "empty_batches": 1,
+        "errors": 0,
+        "inserted": 0,
+        "skipped": 0,
+        "symbol_count": 14,
+        "work_count": 14
+      },
+      {
+        "category": "crypto",
+        "empty_batches": 1,
+        "errors": 0,
+        "inserted": 0,
+        "skipped": 0,
+        "symbol_count": 10,
+        "work_count": 10
+      },
+      {
+        "category": "etfs",
+        "empty_batches": 1,
+        "errors": 0,
+        "inserted": 0,
+        "skipped": 0,
+        "symbol_count": 13,
+        "work_count": 13
+      }
+    ],
+    "source_id": "yfinance_history",
+    "status": "provider_unavailable_or_no_data",
+    "updated_at": "2026-05-15T17:25:42.661635+00:00"
+  }
+}

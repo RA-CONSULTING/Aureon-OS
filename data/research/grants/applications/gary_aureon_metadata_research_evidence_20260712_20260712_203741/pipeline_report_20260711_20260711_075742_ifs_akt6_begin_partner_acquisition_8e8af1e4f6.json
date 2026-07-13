@@ -1,0 +1,23 @@
+{
+  "schema_version": "aureon-pipeline-report-v1",
+  "generated_at": "2026-07-11T07:57:42.042300+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_akt6_begin_partner_acquisition",
+  "artifact": "applications/IFS_AKT6_BEGIN_PARTNER_ACQUISITION_CONTROL_20260711_20260711_075742.json",
+  "markdown": "applications/IFS_AKT6_BEGIN_PARTNER_ACQUISITION_CONTROL_20260711_20260711_075742.md",
+  "report": "pipelines/pipeline_report_20260711_20260711_075742_ifs_akt6_begin_partner_acquisition.json",
+  "result": "AKT6_PARTNER_ACQUISITION_BEGUN_SEND_BLOCKED_NO_MAIL_TRANSPORT",
+  "application_id": "APP-IFS-AKT6-2473-20260709",
+  "source_route_pack": "applications/IFS_AKT6_COMPANY_RESEARCH_PARTNER_ROUTE_PACK_20260711_20260711_075305.json",
+  "direct_submit_ready": false,
+  "safe_portal_action_now": false,
+  "external_send_ready_now": false,
+  "new_browser_submission_available": false,
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false,
+  "contact_route_submitted": false,
+  "partner_invite_sent": false,
+  "upload_performed": false
+}

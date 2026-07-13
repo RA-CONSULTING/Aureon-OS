@@ -1,0 +1,224 @@
+{
+  "name": "Aureon Repo-Wide Sitemap",
+  "snapshot_date": "2026-07-13",
+  "source": "git ls-files",
+  "tracked_file_count": 11962,
+  "primary_documents": [
+    "README.md",
+    "docs/REPO_SITEMAP.md",
+    "docs/END_USER_ACCESS_MAP.md",
+    "docs/SAAS_INTEGRATION_READINESS.md",
+    "docs/CAPABILITY_REGISTRY.md",
+    "docs/capability_access_matrix.json",
+    "docs/capability_registry.json",
+    "docs/SYSTEM_INTEGRATION_MAP.md",
+    "docs/system_integration_map.json",
+    "docs/repo_navigation_readiness.json",
+    "docs/repo_navigation_completion_audit.json",
+    "docs/saas_integration_handoff.json",
+    "docs/saas_integration_manifest.json",
+    "docs/SUPABASE_HARDENING_REVIEW.md",
+    "docs/supabase_hardening_manifest.json",
+    "docs/INDEX.md",
+    "docs/repo_navigation_index.json",
+    "docs/repo_organization_tree.json",
+    "RUNNING.md",
+    "CAPABILITIES.md",
+    "SYSTEM_OVERVIEW.md",
+    "DATA_FLOW.md",
+    "docs/investor/README.md",
+    "docs/investor/TERMINOLOGY.md"
+  ],
+  "top_level_systems": [
+    {"path": ".github/", "files": 4, "category": "repo automation", "role": "GitHub workflow and repository metadata"},
+    {"path": "api/", "files": 1, "category": "integration", "role": "API route surface"},
+    {"path": "archive/", "files": 24, "category": "archive", "role": "Historical bundles and backups"},
+    {"path": "aureon/", "files": 994, "category": "runtime", "role": "Main Python runtime and subsystem package"},
+    {"path": "aureon_launcher/", "files": 7, "category": "runtime", "role": "Launcher support"},
+    {"path": "cli/", "files": 6, "category": "operator tooling", "role": "Command-line helpers"},
+    {"path": "daemon_codes/", "files": 36, "category": "runtime", "role": "Background automation code"},
+    {"path": "data/", "files": 3526, "category": "evidence", "role": "Research, grants, datasets, and copied evidence"},
+    {"path": "deploy/", "files": 14, "category": "deployment", "role": "Deployment scripts and service configs"},
+    {"path": "docs/", "files": 395, "category": "documentation", "role": "Documentation, runbooks, research, architecture, and sitemap"},
+    {"path": "flameborn/", "files": 59, "category": "product surface", "role": "Companion UI/runtime material"},
+    {"path": "frontend/", "files": 4304, "category": "product surface", "role": "React/Vite console and public artifacts"},
+    {"path": "functions/", "files": 1, "category": "integration", "role": "Serverless function surface"},
+    {"path": "imports/", "files": 1242, "category": "provenance", "role": "Imported historical/source bundles"},
+    {"path": "integrations/", "files": 21, "category": "integration", "role": "External integration support"},
+    {"path": "Kings_Accounting_Suite/", "files": 227, "category": "back office", "role": "Accounting, filing-support, and statutory-pack tooling"},
+    {"path": "netlify/", "files": 1, "category": "deployment", "role": "Netlify deploy/function surface"},
+    {"path": "packaging/", "files": 2, "category": "release", "role": "Package and build helpers"},
+    {"path": "production/", "files": 15, "category": "deployment", "role": "Production install and runtime assets"},
+    {"path": "public/", "files": 58, "category": "product surface", "role": "Public static assets"},
+    {"path": "scripts/", "files": 313, "category": "operator tooling", "role": "Diagnostics, runners, reports, validation scripts"},
+    {"path": "server/", "files": 7, "category": "integration", "role": "Node/server bridge surface"},
+    {"path": "skills/", "files": 12, "category": "extensions", "role": "Local skill registries and interactions"},
+    {"path": "supabase/", "files": 160, "category": "saas backend", "role": "Supabase config, migrations, and functions"},
+    {"path": "templates/", "files": 6, "category": "product surface", "role": "UI and report templates"},
+    {"path": "tests/", "files": 330, "category": "validation", "role": "Regression and validation tests"},
+    {"path": "tools/", "files": 5, "category": "maintenance", "role": "Focused utility scripts"},
+    {"path": "VERIFICATION AND VALIDATION/", "files": 14, "category": "validation", "role": "Formal validation documents"},
+    {"path": "wisdom_data/", "files": 12, "category": "research", "role": "Specialist research/context data"}
+  ],
+  "capability_groups": [
+    {
+      "id": "evidence_automation",
+      "label": "Evidence automation",
+      "systems": ["docs/", "data/", "frontend/public/", "generated state/"],
+      "documents": ["LIVE_PROOF.md", "docs/CLAIMS_AND_EVIDENCE.md"],
+      "integration_surfaces": ["audit files", "JSON mirrors", "evidence ledgers"]
+    },
+    {
+      "id": "operator_runtime",
+      "label": "Operator runtime",
+      "systems": ["aureon/autonomous/", "aureon/exchanges/", "AUREON_PRODUCTION_LIVE.cmd"],
+      "documents": ["RUNNING.md", "SYSTEM_OVERVIEW.md"],
+      "integration_surfaces": ["local HTTP endpoints", "runtime manifests", "status JSON"]
+    },
+    {
+      "id": "product_surface",
+      "label": "Product and SaaS surface",
+      "systems": ["frontend/", "public/", "api/", "server/", "functions/", "netlify/", "supabase/"],
+      "documents": ["docs/REPO_SITEMAP.md", "docs/deployment/"],
+      "integration_surfaces": ["React/Vite app", "serverless functions", "Supabase migrations/functions"]
+    },
+    {
+      "id": "controlled_domain_workflows",
+      "label": "Controlled domain workflows",
+      "systems": ["aureon/", "Kings_Accounting_Suite/", "data/research/grants/"],
+      "documents": ["CAPABILITIES.md", "SYSTEM_OVERVIEW.md", "docs/investor/README.md"],
+      "integration_surfaces": ["operator runbooks", "evidence packs", "manual review gates"]
+    },
+    {
+      "id": "validation",
+      "label": "Testing and validation",
+      "systems": ["tests/", "scripts/validation/", "VERIFICATION AND VALIDATION/"],
+      "documents": ["docs/INTEGRATION_TEST_STATUS.md", "docs/STATE_FILES.md"],
+      "integration_surfaces": ["pytest suites", "validation scripts", "formal evidence artifacts"]
+    }
+  ],
+  "runtime_endpoints": [
+    {"name": "Unified autonomous console", "url": "http://127.0.0.1:8081/"},
+    {"name": "Runtime terminal state", "url": "http://127.0.0.1:8791/api/terminal-state"},
+    {"name": "Flight test", "url": "http://127.0.0.1:8791/api/flight-test"},
+    {"name": "Reboot advice", "url": "http://127.0.0.1:8791/api/reboot-advice"},
+    {"name": "Mind thoughts", "url": "http://127.0.0.1:13002/api/thoughts"},
+    {"name": "Coding status", "url": "http://127.0.0.1:13002/api/coding/status"}
+  ],
+  "saas_readiness": {
+    "document": "docs/SAAS_INTEGRATION_READINESS.md",
+    "machine_readable": "docs/saas_integration_manifest.json",
+    "frontend_public_mirror": "frontend/public/aureon_saas_integration_manifest.json",
+    "handoff_manifest": "docs/saas_integration_handoff.json",
+    "frontend_public_handoff_manifest": "frontend/public/aureon_saas_integration_handoff.json",
+    "supabase_hardening_document": "docs/SUPABASE_HARDENING_REVIEW.md",
+    "supabase_hardening_manifest": "docs/supabase_hardening_manifest.json",
+    "frontend_public_supabase_hardening_manifest": "frontend/public/aureon_supabase_hardening_manifest.json",
+    "autonomous_frontend_manifests": [
+      {"name": "SaaS system inventory", "audit": "docs/audits/aureon_saas_system_inventory.json", "frontend_public": "frontend/public/aureon_saas_system_inventory.json"},
+      {"name": "Frontend unification plan", "audit": "docs/audits/aureon_frontend_unification_plan.json", "frontend_public": "frontend/public/aureon_frontend_unification_plan.json"},
+      {"name": "Frontend evolution queue", "audit": "docs/audits/aureon_frontend_evolution_queue.json", "frontend_public": "frontend/public/aureon_frontend_evolution_queue.json"},
+      {"name": "Organism runtime status", "audit": "docs/audits/aureon_organism_runtime_status.json", "frontend_public": "frontend/public/aureon_organism_runtime_status.json"},
+      {"name": "Autonomous capability switchboard", "audit": "docs/audits/aureon_autonomous_capability_switchboard.json", "frontend_public": "frontend/public/aureon_autonomous_capability_switchboard.json"}
+    ],
+    "canonical_shape": "local-first SaaS integration with hosted browser/Supabase surfaces and operator-controlled sensitive mutation routes",
+    "deployment_surfaces": [
+      "frontend/",
+      "supabase/",
+      "api/",
+      "server/",
+      "functions/",
+      "netlify/",
+      "deploy/",
+      "production/",
+      "app.yaml"
+    ],
+    "environment_groups": [
+      "Supabase frontend",
+      "Supabase runtime",
+      "Exchange credentials",
+      "Exchange mode flags",
+      "Runtime/platform",
+      "Safety and product switches",
+      "Feature enablement",
+      "Optional data providers"
+    ],
+    "supabase_auth_counts": {
+      "verify_jwt_true": 73,
+      "verify_jwt_false": 14
+    },
+    "public_endpoint_review_required": [
+      "ingest-telescope-state",
+      "verify-exchange-connectivity",
+      "ingest-10-9-1-packet",
+      "ingest-auris-state",
+      "ingest-kelly-computation"
+    ],
+    "production_gates": [
+      "choose one canonical hosted target",
+      "store secrets in target secret store",
+      "review public Supabase functions",
+      "define CORS, rate limits, payload limits, logging, and redaction",
+      "decide generated artifact persistence policy",
+      "keep sensitive mutation routes operator-controlled",
+      "run local and deployment smoke checks"
+    ]
+  },
+  "end_user_access": {
+    "document": "docs/END_USER_ACCESS_MAP.md",
+    "machine_readable": "docs/end_user_access_map.json",
+    "frontend_public_mirror": "frontend/public/aureon_end_user_access_map.json",
+    "frontend_public_sitemap": "frontend/public/aureon_repo_sitemap.json",
+    "capability_access_matrix": "docs/capability_access_matrix.json",
+    "frontend_public_capability_access_matrix": "frontend/public/aureon_capability_access_matrix.json",
+    "capability_registry": "docs/capability_registry.json",
+    "frontend_public_capability_registry": "frontend/public/aureon_capability_registry.json",
+    "repo_navigation_index": "docs/repo_navigation_index.json",
+    "frontend_public_navigation_index": "frontend/public/aureon_repo_navigation_index.json",
+    "repo_organization_tree": "docs/repo_organization_tree.json",
+    "frontend_public_organization_tree": "frontend/public/aureon_repo_organization_tree.json",
+    "repo_navigation_readiness": "docs/repo_navigation_readiness.json",
+    "frontend_public_repo_navigation_readiness": "frontend/public/aureon_repo_navigation_readiness.json",
+    "repo_navigation_completion_audit": "docs/repo_navigation_completion_audit.json",
+    "frontend_public_repo_navigation_completion_audit": "frontend/public/aureon_repo_navigation_completion_audit.json",
+    "system_integration_map": "docs/system_integration_map.json",
+    "frontend_public_system_integration_map": "frontend/public/aureon_system_integration_map.json",
+    "frontend_navigation_tab": "#repo-map",
+    "capability_count": 13,
+    "purpose": "Task-based access contract that connects each end-user capability to docs, related systems, runtime or API surfaces, and safety gates.",
+    "public_contract": {
+      "contains_secrets": false,
+      "contains_private_runtime_state": false,
+      "contains_customer_data": false
+    }
+  },
+  "validation": {
+    "script": "scripts/validation/validate_repo_navigation_contract.py",
+    "command": "python scripts/validation/validate_repo_navigation_contract.py",
+    "checks": [
+      "required front-door docs and public manifests exist",
+      "tracked file counts match git ls-files",
+      "top-level sitemap counts match git ls-files",
+      "end-user capability counts match across docs and frontend manifests",
+      "Supabase auth counts match supabase/config.toml",
+      "frontend public manifests contain no credential-like values",
+      "key Markdown navigation links resolve",
+      "repo navigation index mirrors match git ls-files",
+      "repo navigation readiness mirrors summarize the current navigation contract",
+      "repo navigation completion audit mirrors prove the objective requirements",
+      "capability registry mirrors match CAPABILITIES.md",
+      "system integration map mirrors cover top-level systems and capability routes",
+      "SaaS integration manifest mirrors match repo config",
+      "Supabase hardening manifest mirrors match Supabase config"
+    ]
+  },
+  "organizational_rules": [
+    "Keep README.md concise and investor-readable.",
+    "Keep whole-repo navigation in docs/REPO_SITEMAP.md and docs/INDEX.md.",
+    "Keep run commands in RUNNING.md.",
+    "Keep capability claims in CAPABILITIES.md or link them to evidence.",
+    "Keep formal terminology in docs/investor/TERMINOLOGY.md.",
+    "Treat state/, docs/audits/, and named runtime JSON files as generated outputs unless present in git ls-files.",
+    "Do not publish secrets, live credentials, customer identifiers, or private transaction evidence in public docs."
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "captured_at": "2026-07-09T11:09:28+01:00",
+  "operator": "Aureon",
+  "application_id": "10209992",
+  "application_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209992/track",
+  "title": "Application Status - Aureon Evidence OS for AI-Driven Scientific Discovery and Auditable SME Automation - Innovation Funding Service",
+  "h1": "Aureon Evidence OS for AI-Driven Scientific Discovery and Auditable SME Automation Application status",
+  "status_text_detected": true,
+  "competition_detected": true,
+  "key_context": [
+    {
+      "line": 40,
+      "context": [
+        "will help us to improve it.",
+        "Back to applications",
+        "Aureon Evidence OS for AI-Driven Scientific Discovery and Auditable SME Automation",
+        "Application status",
+        "Application submitted",
+        "Application number:",
+        "10209992",
+        "Your",
+        "application",
+        "for the",
+        "competition 'Future Leaders Fellowships: Round 11, business and non-academic'",
+        "was submitted"
+      ]
+    },
+    {
+      "line": 41,
+      "context": [
+        "Back to applications",
+        "Aureon Evidence OS for AI-Driven Scientific Discovery and Auditable SME Automation",
+        "Application status",
+        "Application submitted",
+        "Application number:",
+        "10209992",
+        "Your",
+        "application",
+        "for the",
+        "competition 'Future Leaders Fellowships: Round 11, business and non-academic'",
+        "was submitted",
+        "            "
+      ]
+    },
+    {
+      "line": 46,
+      "context": [
+        "10209992",
+        "Your",
+        "application",
+        "for the",
+        "competition 'Future Leaders Fellowships: Round 11, business and non-academic'",
+        "was submitted",
+        "            ",
+        "                on",
+        "                9 Jul 2026",
+        "                at",
+        "                11:07am.",
+        "View application"
+      ]
+    },
+    {
+      "line": 47,
+      "context": [
+        "Your",
+        "application",
+        "for the",
+        "competition 'Future Leaders Fellowships: Round 11, business and non-academic'",
+        "was submitted",
+        "            ",
+        "                on",
+        "                9 Jul 2026",
+        "                at",
+        "                11:07am.",
+        "View application",
+        "Reopen application"
+      ]
+    },
+    {
+      "line": 54,
+      "context": [
+        "                9 Jul 2026",
+        "                at",
+        "                11:07am.",
+        "View application",
+        "Reopen application",
+        "Print",
+        "application",
+        "What happens next?",
+        "Assessment process",
+        "Once the",
+        "competition",
+        "submission deadline is reached your application will be sent for assessment. This is subject to eligibility. The assessment process follows these steps:"
+      ]
+    },
+    {
+      "line": 58,
+      "context": [
+        "Reopen application",
+        "Print",
+        "application",
+        "What happens next?",
+        "Assessment process",
+        "Once the",
+        "competition",
+        "submission deadline is reached your application will be sent for assessment. This is subject to eligibility. The assessment process follows these steps:",
+        "eligible applications will be assessed independently by expert assessors",
+        "each application is assessed by up to 5 assessors and against the same set criteria",
+        "the assessor will score each question and provide feedback to justify those scores",
+        "a panel process is held to moderate and ratify the outcome of the decision"
+      ]
+    },
+    {
+      "line": 61,
+      "context": [
+        "What happens next?",
+        "Assessment process",
+        "Once the",
+        "competition",
+        "submission deadline is reached your application will be sent for assessment. This is subject to eligibility. The assessment process follows these steps:",
+        "eligible applications will be assessed independently by expert assessors",
+        "each application is assessed by up to 5 assessors and against the same set criteria",
+        "the assessor will score each question and provide feedback to justify those scores",
+        "a panel process is held to moderate and ratify the outcome of the decision",
+        "If you reopen it, you must resubmit your application before we can assess it.",
+        "Decision notification",
+        "You and your project partners"
+      ]
+    }
+  ],
+  "finance": {
+    "total_eligible_costs_gbp": 250000,
+    "funding_level_percent": 70,
+    "funding_sought_gbp": 175000,
+    "company_contribution_gbp": 75000,
+    "other_public_funding_gbp": 0
+  },
+  "submitted_at_recorded": "2026-07-09T11:07:00+01:00",
+  "submitted_at_source": "IFS portal status page",
+  "final_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209992/track",
+  "submitted_at_display": "9 Jul 2026 at 11:07am",
+  "status": "SUBMITTED",
+  "final_submission_made": true
+}

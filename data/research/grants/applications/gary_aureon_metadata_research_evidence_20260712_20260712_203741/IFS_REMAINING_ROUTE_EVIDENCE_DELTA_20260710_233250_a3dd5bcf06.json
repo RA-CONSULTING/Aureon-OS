@@ -1,0 +1,252 @@
+{
+  "schema_version": "aureon-ifs-remaining-route-evidence-delta-v1",
+  "generated_at": "2026-07-10T23:32:50+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_remaining_route_evidence_delta",
+  "application_ids": [
+    "APP-IFS-CKAF-AUTUMN-2478-20260709",
+    "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+    "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+    "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+    "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+    "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+    "APP-IFS-DRIVE35-SCALE-UP-2445-20260709"
+  ],
+  "status_after_delta": "REMAINING_ROUTE_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+  "evidence_checked": {
+    "official_ifs_sources": [
+      "https://apply-for-innovation-funding.service.gov.uk/competition/search",
+      "https://apply-for-innovation-funding.service.gov.uk/competition/search?page=1"
+    ],
+    "official_routes": [
+      {
+        "application_id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+        "competition": "Commercialising Knowledge Assets Fund (CKAF) Autumn",
+        "deadline": "2026-09-01T11:00:00+01:00",
+        "route_requirement": "Eligible public-sector research organisation lead and knowledge asset ownership evidence."
+      },
+      {
+        "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+        "competition": "DRIVE35 Innovation Fund: Collaborate 3",
+        "deadline": "2026-09-16T11:00:00+01:00",
+        "route_requirement": "UK business-led collaboration with ZEV partner, work package, budget and match-funding evidence."
+      },
+      {
+        "application_id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+        "competition": "Zero Emission Vessels and Infrastructure 2: Alternative Fuels",
+        "deadline": "2026-09-16T11:00:00+01:00",
+        "route_requirement": "UK business-led maritime collaboration with vessel or infrastructure asset and three-year demonstration evidence."
+      },
+      {
+        "application_id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+        "competition": "Zero Emission Vessels and Infrastructure 2: Electric Power",
+        "deadline": "2026-09-16T11:00:00+01:00",
+        "route_requirement": "UK business-led maritime collaboration with vessel or infrastructure asset and three-year demonstration evidence."
+      },
+      {
+        "application_id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+        "competition": "Zero Emission Vessels and Infrastructure 2: Energy Efficiency",
+        "deadline": "2026-09-16T11:00:00+01:00",
+        "route_requirement": "UK business-led maritime collaboration with vessel or infrastructure asset and three-year demonstration evidence."
+      },
+      {
+        "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+        "competition": "Scaling performance of quantum computing hardware: CR&D",
+        "deadline": "2026-09-18T11:00:00+01:00",
+        "route_requirement": "Eligible quantum hardware lead or facility access, consortium commitment and budget evidence."
+      },
+      {
+        "application_id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+        "competition": "DRIVE35: Scale Up Fund",
+        "deadline": "open-no-submission-deadline",
+        "route_requirement": "ZEV manufacturing facility, co-investment, large-project cost basis and scale-up plan."
+      }
+    ],
+    "local_paths_checked": [
+      "C:/Users/user/aureon-trading/data/research/grants/applications",
+      "C:/Users/user/aureon-trading/data/research/grants/contacts",
+      "C:/Users/user/Documents",
+      "C:/Users/user/Downloads",
+      "C:/Users/user/Desktop"
+    ],
+    "local_search_terms": [
+      "CKAF",
+      "GOTT",
+      "DRIVE35",
+      "Wrightbus",
+      "APC",
+      "AMIC",
+      "ZEVI2",
+      "UK SHORE",
+      "clean maritime",
+      "quantum hardware",
+      "QCi3",
+      "NQCC",
+      "OQC",
+      "partner commitment",
+      "budget owner",
+      "facility access",
+      "co-investment"
+    ],
+    "google_drive_queries": [
+      "CKAF Aureon",
+      "GOTT Aureon",
+      "DRIVE35 Aureon",
+      "Wrightbus Aureon",
+      "ZEVI2 Aureon",
+      "clean maritime Aureon",
+      "quantum hardware Aureon",
+      "QCi3 Aureon"
+    ],
+    "google_drive_rows_checked": [
+      "Aureon Grant War Room - 2026-07-04 / Funding Pipeline / DRIVE35 query",
+      "Aureon Grant War Room - 2026-07-04 / Funding Pipeline / quantum query",
+      "Aureon Grant War Room - 2026-07-04 / Funding Pipeline / Knowledge query"
+    ]
+  },
+  "findings": [
+    {
+      "source": "applications/IFS_REMAINING_STOP_GO_AUDIT_20260710_145545.md",
+      "finding": "The existing stop/go audit records no direct submit-ready remaining routes, no browser submissions available and no safe portal actions.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "applications/IFS_NON_P1_EVIDENCE_ACQUISITION_REGISTER_20260710_141505.md",
+      "finding": "The register lists CKAF, DRIVE35, ZEVI2 and quantum partner targets as evidence-acquisition candidates only. It states that a target reply must supply route-specific lead, asset, permission, budget or work-package evidence before portal action.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "applications/IFS_REMAINING_ROUTE_OUTREACH_PDF_PACK_20260710_120126.md",
+      "finding": "The remaining-route PDF pack covers CKAF, DRIVE35, ZEVI2, quantum hardware and DRIVE35 Scale Up, but it is an outreach/support pack rather than a set of commitments.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "CKAF/GOTT Drive searches",
+      "finding": "No Drive result was found for CKAF or GOTT plus Aureon.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "DRIVE35/Wrightbus Drive searches",
+      "finding": "No Drive result was found for DRIVE35 or Wrightbus plus Aureon.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "ZEVI2/clean maritime Drive searches",
+      "finding": "No Drive result was found for ZEVI2 or clean maritime plus Aureon.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Quantum hardware/QCi3 Drive searches",
+      "finding": "The quantum hardware search returned old war-room and master-index material. No quantum hardware lead, facility access, consortium commitment or budget evidence was found.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Aureon Grant War Room row searches",
+      "finding": "The spreadsheet contains older quantum watch items and academic/knowledge-provider planning. It does not contain current CKAF, DRIVE35, ZEVI2, quantum hardware lead or budget commitments.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Documents/Downloads/Desktop targeted search",
+      "finding": "Local search found audits, conversion packs, clean text, outreach drafts and partner-request packs. No public-sector research organisation lead, automotive partner, ZEV facility, maritime asset, quantum hardware access, co-investment, budget owner or signed commitment was found.",
+      "unlock_evidence": false
+    }
+  ],
+  "missing_evidence_by_application": {
+    "APP-IFS-CKAF-AUTUMN-2478-20260709": [
+      "eligible public-sector research organisation lead",
+      "knowledge-asset ownership evidence",
+      "senior support or authorised lead evidence",
+      "Aureon support or procurement role"
+    ],
+    "APP-IFS-DRIVE35-COLLAB3-2522-20260709": [
+      "vehicle manufacturer or Tier 1 partner",
+      "ZEV work package",
+      "match-funding evidence",
+      "eligible budget and consortium role"
+    ],
+    "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709": [
+      "UK maritime lead",
+      "alternative-fuel vessel or infrastructure asset",
+      "three-year demonstration commitment",
+      "eligible budget and permissions"
+    ],
+    "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709": [
+      "UK maritime lead",
+      "electric-power vessel or infrastructure asset",
+      "three-year demonstration commitment",
+      "eligible budget and permissions"
+    ],
+    "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709": [
+      "UK maritime lead",
+      "vessel or infrastructure asset",
+      "three-year demonstration commitment",
+      "eligible budget and permissions"
+    ],
+    "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709": [
+      "eligible quantum hardware lead",
+      "facility or hardware access",
+      "consortium commitment",
+      "budget and validation plan"
+    ],
+    "APP-IFS-DRIVE35-SCALE-UP-2445-20260709": [
+      "ZEV manufacturing facility or site",
+      "co-investment evidence",
+      "eligible GBP5m plus project cost basis",
+      "manufacturing scale-up plan"
+    ]
+  },
+  "outreach_ready_refs": [
+    "applications/outreach_payloads/R-CKAF-GOTT-GRANT-FUND_20260710_141505.md",
+    "applications/outreach_payloads/R-CKAF-UKI2S_20260710_141505.md",
+    "applications/outreach_payloads/R-DRIVE35-APC_20260710_141505.md",
+    "applications/outreach_payloads/R-DRIVE35-WRIGHTBUS_20260710_141505.md",
+    "applications/outreach_payloads/R-DRIVE35-AMIC_20260710_141505.md",
+    "applications/outreach_payloads/R-ZEVI2-IUKBC-TRANSPORT_20260710_141505.md",
+    "applications/outreach_payloads/R-ZEVI2-UKSHORE-B2MATCH_20260710_141505.md",
+    "applications/outreach_payloads/R-ZEVI2-CLEAN-MARITIME-HUB_20260710_141505.md",
+    "applications/outreach_payloads/R-QUANTUM-NQCC_20260710_141505.md",
+    "applications/outreach_payloads/R-QUANTUM-QCI3_20260710_141505.md",
+    "applications/outreach_payloads/R-QUANTUM-QCA-CLUSTER_20260710_141505.md",
+    "applications/outreach_payloads/R-QUANTUM-OQC_20260710_141505.md",
+    "applications/IFS_CKAF_GOTT_CKAF_TEAM_OUTREACH_DRAFT_20260710_104541.eml",
+    "applications/IFS_DRIVE35_ADVANCED_PROPULSION_CENTRE_GENERAL_ENQUIRIES_OUTREACH_DRAFT_20260710_104541.eml",
+    "applications/IFS_DRIVE35_WRIGHTBUS_INNOVATION_CONTACT_ROUTE_OUTREACH_DRAFT_20260710_104541.eml",
+    "applications/IFS_ZEVI2_NATIONAL_SHIPBUILDING_OFFICE_SECRETARIAT_OUTREACH_DRAFT_20260710_104541.eml",
+    "applications/IFS_QUANTUM_QCI3_HUB_CONTACT_OUTREACH_DRAFT_20260710_104541.eml"
+  ],
+  "source_refs": {
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_232954.json",
+    "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_232951.json",
+    "official_current_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_232050.json",
+    "remaining_stop_go_audit": "applications/IFS_REMAINING_STOP_GO_AUDIT_20260710_145545.json",
+    "non_p1_evidence_acquisition_register": "applications/IFS_NON_P1_EVIDENCE_ACQUISITION_REGISTER_20260710_141505.json",
+    "remaining_route_outreach_pdf_pack": "applications/IFS_REMAINING_ROUTE_OUTREACH_PDF_PACK_20260710_120126.json",
+    "drive_remaining_targeted_evidence_readback": "applications/IFS_DRIVE_REMAINING_TARGETED_EVIDENCE_READBACK_20260710_131430.json",
+    "formal_language_qa": "applications/IFS_FORMAL_LANGUAGE_QA_20260710_134902.json",
+    "route_gate_evidence_search": "applications/IFS_ROUTE_GATE_EVIDENCE_SEARCH_20260710_135633.json",
+    "live_drive_route_unlock_readback": "applications/IFS_LIVE_DRIVE_ROUTE_UNLOCK_READBACK_20260710_142308.json"
+  },
+  "decision": {
+    "direct_submit_ready": false,
+    "safe_portal_action_now": false,
+    "new_browser_submission_available": false,
+    "external_send_ready_now": false,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "why_not_now": "The current local, Drive and Aureon evidence set contains formal route text and outreach packs, but no route-specific lead, partner, asset, facility, access, budget, co-investment or authorised commitment evidence for the remaining CKAF, DRIVE35, ZEVI2 or quantum routes.",
+    "next_operator_action": "Use the existing remaining-route outreach payloads to obtain route-specific lead, partner, asset, facility, budget, co-investment or access evidence. Re-run this delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+  },
+  "controls": [
+    "Local, Drive and official IFS evidence references were classified for grant-side use only.",
+    "Route-specific application statuses were preserved; this delta adds current evidence-readback state.",
+    "No IFS portal field was changed.",
+    "No IFS remaining-route draft was opened.",
+    "No application was submitted.",
+    "No external email, contact form, partner invite or upload action was performed.",
+    "No password, runtime secret, bank detail, tax reference or private finance payload was written to this artifact.",
+    "No internal draft language was introduced into funder-facing text.",
+    "No public target was treated as a partner commitment."
+  ],
+  "result": "REMAINING_ROUTE_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY"
+}

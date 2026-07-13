@@ -1,0 +1,20 @@
+﻿{
+    "schema_version":  "aureon-pipeline-report-v1",
+    "generated_at":  "2026-07-10T09:29:13+01:00",
+    "operator":  "Aureon",
+    "event":  "ifs_actasap_academic_lead_evidence_audit",
+    "result":  "NO_ACTASAP_SUBMIT_READY_ROUTE_CURRENT_EVIDENCE_ACADEMIC_LEAD_TTO_REQUIRED",
+    "application_id":  "APP-IFS-ACTASAP-PILOT-2502-20260709",
+    "opportunity_id":  "IFS-CURRENT-2502",
+    "competition":  "ACTASAP Pilot Phase 1",
+    "deadline":  "2026-07-28T11:00:00+01:00",
+    "official_url":  "https://apply-for-innovation-funding.service.gov.uk/competition/2502/overview/35ca10fb-d4f5-4510-9ddd-e7e3133d2b6d",
+    "artifact":  "applications/IFS_ACTASAP_2502_ACADEMIC_LEAD_EVIDENCE_AUDIT_20260710_092913.json",
+    "markdown":  "applications/IFS_ACTASAP_2502_ACADEMIC_LEAD_EVIDENCE_AUDIT_20260710_092913.md",
+    "direct_ifs_submissions_unlocked":  0,
+    "new_browser_submissions_available":  0,
+    "portal_changed":  false,
+    "external_submission_performed":  false,
+    "email_sent":  false,
+    "reason":  "ACTASAP requires UK academic institution lead and TTO/equivalent support; current Aureon local and Drive evidence does not confirm those gates."
+}

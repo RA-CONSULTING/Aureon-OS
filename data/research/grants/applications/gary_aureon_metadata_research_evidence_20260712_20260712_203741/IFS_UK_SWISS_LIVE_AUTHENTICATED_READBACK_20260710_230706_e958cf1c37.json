@@ -1,0 +1,85 @@
+{
+  "schema_version": "aureon-ifs-live-authenticated-readback-v1",
+  "generated_at": "2026-07-10T23:07:06+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_uk_swiss_live_authenticated_readback",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "portal_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210100",
+  "competition": "UK-Switzerland CR&D Round 3",
+  "application_deadline": "2026-09-03T11:00:00+01:00",
+  "days_left_reported_by_portal": 54,
+  "application_progress": "80%",
+  "complete_sections": [
+    "Subsidy basis",
+    "Application team",
+    "Application details",
+    "Research category",
+    "Project summary",
+    "Public description",
+    "Scope",
+    "Q1 Themes",
+    "Q2 Applicant location",
+    "Q3 Animal testing",
+    "Q5 International collaboration",
+    "Q7 Trusted Research and Innovation",
+    "Q8 Need or challenge",
+    "Q9 Approach and innovation",
+    "Q10 Team and resources",
+    "Q11 Market awareness",
+    "Q12 Outcomes and route to market",
+    "Q13 Wider impacts",
+    "Q14 Project management",
+    "Q15 Risks",
+    "Q16 Added value"
+  ],
+  "incomplete_sections": [
+    "Q4 Permits and licences",
+    "Q6 Export licence",
+    "Q17 Costs and value for money",
+    "Finances summary",
+    "Project impact",
+    "Award terms and conditions"
+  ],
+  "review_page_readback": {
+    "submit_button_disabled": true,
+    "funding_breakdown": {
+      "R&A CONSULTING AND BROKERAGE SERVICES LTD": "GBP0",
+      "Totals": "GBP0"
+    },
+    "portal_blockers": [
+      "Q4 permits/licences is incomplete",
+      "Q6 export licence is incomplete",
+      "Q17 costs and value for money is incomplete",
+      "Project finances are incomplete and show GBP0 totals",
+      "Project Impact is incomplete",
+      "Award terms and conditions are incomplete"
+    ]
+  },
+  "decision": {
+    "direct_submit_ready": false,
+    "safe_portal_action_now": false,
+    "new_browser_submission_available": false,
+    "why_not_now": "Authenticated IFS readback confirms the live draft is 80% complete but still blocked by legal, export-control, cost, finance, Project Impact and award-terms sections. Funding totals are GBP0 and submit is disabled.",
+    "next_operator_action": "Do not mark Q4, Q6, Q17, finances, Project Impact or award terms complete until partner scope, export/permit position, eligible costs, finance basis and final review evidence exist."
+  },
+  "source_refs": {
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_230659.json",
+    "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_230652.json",
+    "uk_swiss_stop_go_audit": "applications/IFS_UK_SWISS_STOP_GO_AUDIT_20260710_145126.json",
+    "full_board_coverage_validation": "applications/IFS_FULL_BOARD_COVERAGE_VALIDATION_20260710_230154.json",
+    "completion_workbook": "applications/IFS_UK_SWISS_CRD_R3_10210100_COMPLETION_WORKBOOK_20260710.json"
+  },
+  "controls": [
+    "Chrome and IFS were used for authenticated readback only after sign-in.",
+    "No IFS portal field was changed by this readback.",
+    "No Q4 permit/licence declaration was made.",
+    "No Q6 export-control declaration was made.",
+    "No cost, finance, Project Impact or award-terms field was completed.",
+    "No final IFS submission was attempted.",
+    "No email, contact form, partner invite or upload action was performed.",
+    "No password or runtime secret was written to this artifact."
+  ],
+  "result": "LIVE_AUTHENTICATED_IFS_READBACK_80_PERCENT_NO_NEW_SUBMIT_READY_ROUTE"
+}

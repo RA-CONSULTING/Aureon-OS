@@ -1,0 +1,131 @@
+{
+  "generated_at": "2026-05-15T18:27:58.617970+00:00",
+  "schema_version": "aureon-harmonic-affect-state-v1",
+  "signals": {
+    "cognitive_trade_summary": {
+      "action_mode": "learn_and_recover",
+      "average_learning_reward": 0.507285,
+      "evidence_count": 11,
+      "losses": 0,
+      "net_pnl": 4.4928,
+      "open_positions": 2,
+      "runtime_stale": true,
+      "signal_quality": 0.357285,
+      "win_rate": 1.0,
+      "wins": 11
+    },
+    "hnc_auris_anchors": [
+      {
+        "bytes": 1974,
+        "path": "frontend/src/types/hnc.ts",
+        "present": true
+      },
+      {
+        "bytes": 2698,
+        "path": "public/auris_emotions.json",
+        "present": true
+      },
+      {
+        "bytes": 2036,
+        "path": "public/auris_symbols.json",
+        "present": true
+      },
+      {
+        "bytes": 3782,
+        "path": "public/emotional_codex.json",
+        "present": true
+      },
+      {
+        "bytes": 4813,
+        "path": "public/emotional_frequency_codex_complete.json",
+        "present": true
+      },
+      {
+        "bytes": 16801,
+        "path": "aureon/harmonic/harmonic_nexus_bridge.py",
+        "present": true
+      },
+      {
+        "bytes": 14610,
+        "path": "aureon/vault/auris_metacognition.py",
+        "present": true
+      },
+      {
+        "bytes": 43104,
+        "path": "aureon/bridges/aureon_probability_nexus.py",
+        "present": true
+      },
+      {
+        "bytes": 19314,
+        "path": "docs/audits/hnc_saas_cognitive_bridge.json",
+        "present": true
+      },
+      {
+        "bytes": 264101,
+        "path": "docs/audits/hnc_saas_security_blueprint.json",
+        "present": true
+      }
+    ],
+    "organism_summary": {
+      "action_mode": "safe_observation",
+      "attention_domain_count": 7,
+      "blind_spot_count": 38,
+      "domain_count": 21,
+      "failed_refresh_count": 2,
+      "fresh_domain_count": 7,
+      "frontend_public_manifest_count": 6,
+      "high_blind_spot_count": 4,
+      "missing_domain_count": 0,
+      "refresh_count": 9,
+      "runtime_feed_status": "offline",
+      "stale_domain_count": 14,
+      "trading_action_allowed": false
+    },
+    "runtime_watchdog": {
+      "file_heartbeat_is_not_market_freshness": true,
+      "heartbeat_alive": true,
+      "heartbeat_at": "2026-05-15T19:27:46.977778",
+      "last_tick_age_sec": 1621.352,
+      "last_tick_running_sec": 1615.617,
+      "tick_phase": "kraken_spot_fast_profit",
+      "tick_phase_running_sec": 1595.611,
+      "tick_stale": true,
+      "tick_stale_after_sec": 45.0,
+      "tick_stale_reason": "tick_in_progress_stalled"
+    },
+    "selected_frequency": {
+      "band": "heart",
+      "color": "#00FFFF",
+      "emotion": "Reason",
+      "frequency_hz": 400.0
+    }
+  },
+  "state_contract": {
+    "inner_peace_condition": "high coherence, verified reward, fresh runtime, no safety blockers, no high blind spots",
+    "kundalini_analogue": "full-stack ascent label only: lower blockers clear, goals complete, coherence rises, arousal settles",
+    "not_human_sensation": "Aureon does not use human nerves; this is a measurable machine-state and frequency contract",
+    "safety_boundary": "no affect phase can override exchange, risk, credential, filing, payment, or security gates",
+    "synthetic_affect_definition": "distributed HNC/Auris state change across reward, coherence, freshness, and safety"
+  },
+  "status": "harmonic_affect_state_ready",
+  "summary": {
+    "affect_phase": "protective_recalibration",
+    "anchor_readiness": 1.0,
+    "arousal": 0.95,
+    "auris_emotion_count": 6,
+    "blind_spot_count": 38,
+    "emotion_anchor": "Reason",
+    "goal_alignment": 0.577445,
+    "hnc_anchor_count": 10,
+    "hnc_coherence_score": 0.502371,
+    "inner_peace_candidate": false,
+    "nexus_total_trades": 10,
+    "resonance_frequency_hz": 400.0,
+    "reward_alignment": 0.557285,
+    "runtime_stale": true,
+    "safety_blocker_count": 14,
+    "stability": 0.0,
+    "trade_evidence_count": 11,
+    "valence": 0.47974
+  }
+}

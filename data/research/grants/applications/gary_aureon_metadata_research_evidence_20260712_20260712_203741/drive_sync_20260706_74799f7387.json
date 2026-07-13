@@ -1,0 +1,43 @@
+{
+    "synced_at":  "2026-07-06T06:23:42.9899526+01:00",
+    "drive_folder_name":  "Aureon Grant War Room - 2026-07-04",
+    "drive_folder_url":  "https://drive.google.com/drive/folders/1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr",
+    "upload_method":  "Chrome Google Drive UI fallback after connector DriveFiles.Create scope was insufficient",
+    "files":  [
+                  {
+                      "name":  "AUREON_GRANT_OPERATOR_REPO_STATE_20260706_062033.tar.gz",
+                      "local_path":  "C:\\Users\\user\\Aureon_Work_Hub_20260705\\07_DRIVE_EXPORTS\\AUREON_GRANT_OPERATOR_REPO_STATE_20260706_062033.tar.gz",
+                      "bytes":  678359
+                  },
+                  {
+                      "name":  "AUREON_GRANT_WORKING_PACK_20260706_062033.tar.gz",
+                      "local_path":  "C:\\Users\\user\\Aureon_Work_Hub_20260705\\07_DRIVE_EXPORTS\\AUREON_GRANT_WORKING_PACK_20260706_062033.tar.gz",
+                      "bytes":  3850260
+                  },
+                  {
+                      "name":  "AUREON_DRIVE_EXPORT_MANIFEST_20260706_062033.json",
+                      "local_path":  "C:\\Users\\user\\Aureon_Work_Hub_20260705\\07_DRIVE_EXPORTS\\AUREON_DRIVE_EXPORT_MANIFEST_20260706_062033.json",
+                      "bytes":  1801
+                  }
+              ],
+    "verification_text":  "Google Drive folder view showed all three filenames and 3 uploads complete.",
+    "exclusions":  [
+                       "No .git directory",
+                       "No .env or .env1.txt secrets",
+                       "No full thoughts.jsonl runtime log",
+                       "No bank/tax/private credential material"
+                   ],
+    "eic_upload":  {
+                       "synced_at":  "2026-07-06T06:35:22.2528126+01:00",
+                       "files":  [
+                                     "EIC_ACCELERATOR_STEP1_SHORT_PROPOSAL_DRAFT_20260706.pdf",
+                                     "AUREON_EIC_STEP1_DRAFT_PACK_20260706_063435.tar.gz"
+                                 ],
+                       "verification_text":  "Google Drive folder view showed both EIC filenames and 2 uploads complete."
+                   },
+    "latest_status_refresh_upload":  {
+                                         "synced_at":  "2026-07-06T06:37:02.7885487+01:00",
+                                         "file":  "AUREON_GRANT_STATUS_REFRESH_20260706_063559.tar.gz",
+                                         "verification_text":  "Google Drive folder view showed the filename and 1 upload complete."
+                                     }
+}

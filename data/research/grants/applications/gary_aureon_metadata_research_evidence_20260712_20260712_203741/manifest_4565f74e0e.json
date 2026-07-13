@@ -1,0 +1,36 @@
+[
+  {
+    "key": "ifs_project_impact",
+    "package": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\IFS_UK_SWISS_PROJECT_IMPACT_SUPPORT_AFTER_FINANCE_UPDATE_20260712_122456.eml",
+    "to": "support@iuk.ukri.org",
+    "subject": "IFS application 10210100: Project Impact numeric answers not persisting after finance update",
+    "body": "Hello Innovate UK support,\n\nPlease advise on IFS application 10210100, UK-Switzerland CR&D Round 3. The application finances have now been corrected and read back as complete in IFS, but the Project Impact survey still does not persist numeric answers.\n\nCurrent IFS finance read-back:\n- Total costs: GBP 216,194\n- Funding level: 70%\n- Funding sought: GBP 151,336\n- Company contribution: GBP 64,858\n- Other public sector funding: GBP 0\n\nCurrent Project Impact issue:\n- The survey field Number of Full Time Equivalent (FTE) employees accepts the value 1 on the question page.\n- After selecting Continue, the review page still shows that numeric answer as blank.\n- The same blank-review behaviour affects the numeric Project Impact fields.\n- We have not pressed the Project Impact Submit button while the review page shows blank numeric values.\n\nPlease either reset the Project Impact survey state for application 10210100, confirm whether there is a known issue with numeric answers in this survey, or advise the correct route for completing the Project Impact section.\n\nRegards,\nGary Leckey\nR&A Consulting and Brokerage Services Ltd\nCompany number NI696693\n",
+    "attachments": [
+      "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\external_action_send_staging_20260712\\ifs_project_impact\\ifs_uk_swiss_10210100_project_impact_review_blank_after_finance_update_20260712_1219.png",
+      "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\external_action_send_staging_20260712\\ifs_project_impact\\IFS_UK_SWISS_PUBLIC_DATA_FINANCE_LIVE_UPDATE_20260712_122339.md",
+      "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\external_action_send_staging_20260712\\ifs_project_impact\\ifs_uk_swiss_10210100_project_impact_numeric_blank_after_cua_retry_20260712_1148.png",
+      "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\external_action_send_staging_20260712\\ifs_project_impact\\ifs_uk_swiss_10210100_review_project_impact_block_20260712_1128.png"
+    ]
+  },
+  {
+    "key": "openocean",
+    "package": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\OPENOCEAN_PITCH_SUBMISSION_EMAIL_PACKAGE_20260712_20260712_111305.eml",
+    "to": "info@openocean.vc",
+    "subject": "Aureon Evidence OS - OpenOcean pitch route submission",
+    "body": "Hi OpenOcean team,\n\nThank you again for the steer on the right pitch route.\n\nI have prepared the concise Aureon Evidence OS deck and key data points for review. The deck frames the company as local-first AI workflow software for evidence-heavy business operations, with the first wedge in grant, diligence, compliance and accounting evidence workflows.\n\nAttached for review:\n- AUREON_OPENOCEAN_PITCH_DECK_20260712_001500.pdf\n- OPENOCEAN_PITCH_KEY_DATA_20260712_20260712_071906.md\n\nThe package deliberately excludes confidential account records, credential material and source transaction records. It also avoids unsupported traction or partner-commitment claims.\n\nBest regards,\nGary Leckey\nR&A Consulting and Brokerage Services Ltd\n",
+    "attachments": [
+      "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\external_action_send_staging_20260712\\openocean\\AUREON_OPENOCEAN_PITCH_DECK_20260712_001500.pdf",
+      "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\external_action_send_staging_20260712\\openocean\\OPENOCEAN_PITCH_KEY_DATA_SANITIZED_20260712_20260712_111305.md"
+    ]
+  },
+  {
+    "key": "intertradeireland_cluster",
+    "package": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\INTERTRADEIRELAND_CLUSTER_TO_CLUSTER_PARTNER_CLARIFICATION_DRAFT_20260712_120845.eml",
+    "to": "SIClusters@intertradeireland.com",
+    "subject": "Shared Island Cluster-to-Cluster: Aureon Evidence OS partner eligibility clarification",
+    "body": "Dear Shared Island Clusters team,\n\nI am writing on behalf of R&A Consulting and Brokerage Services Ltd, a Northern Ireland company developing Aureon Evidence OS, to ask for clarification on the Shared Island Cluster-to-Cluster Project Development Fund before the 17 July 2026 deadline.\n\nWe are assessing whether Aureon can support a cross-border cluster project as a Northern Ireland digital evidence and open-source AI workflow partner. The attached brief summarises the proposed role and the eligibility questions we need to resolve before any formal application.\n\nCould you advise whether this type of SME technology partner role can fit the fund, what qualifies as an eligible cluster on each side of the border, and whether you can signpost potential Republic of Ireland cluster partners for an evidence, digital assurance or innovation-readiness project?\n\nRegards,\nGary Leckey\nR&A Consulting and Brokerage Services Ltd\ngaxlec@gmail.com\n\nPrepared by Aureon: 2026-07-12T12:08:45+01:00\n",
+    "attachments": [
+      "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\external_action_send_staging_20260712\\intertradeireland_cluster\\AUREON_CLUSTER_TO_CLUSTER_PARTNER_CLARIFICATION_BRIEF_20260712.md"
+    ]
+  }
+]

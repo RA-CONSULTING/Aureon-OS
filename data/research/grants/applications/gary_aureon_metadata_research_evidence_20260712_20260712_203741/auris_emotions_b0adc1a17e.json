@@ -1,0 +1,57 @@
+{
+  "emotions": {
+    "peace": {
+      "comment": "stable, coherent, minimal beating",
+      "recipe": [
+        { "from": "base", "mode_idx": 0, "interval": "unison", "weight": 0.7, "band_hint": "alpha" },
+        { "from": "base", "mode_idx": 1, "interval": "octave", "weight": 0.3, "band_hint": "alpha" }
+      ],
+      "color_hex": "#8FD3F4"
+    },
+    "love": {
+      "comment": "harmonic bonding; fifth + third triad bias into alpha",
+      "recipe": [
+        { "from": "base", "mode_idx": 0, "interval": "fifth", "weight": 0.5, "band_hint": "alpha" },
+        { "from": "base", "mode_idx": 0, "interval": "maj_third", "weight": 0.3, "band_hint": "alpha" },
+        { "from": "base", "mode_idx": 1, "interval": "unison", "weight": 0.2, "band_hint": "alpha" }
+      ],
+      "color_hex": "#F7A6B2"
+    },
+    "joy": {
+      "comment": "uplift; major intervals toward high alpha / low beta",
+      "recipe": [
+        { "from": "base", "mode_idx": 1, "interval": "maj_third", "weight": 0.45, "band_hint": "alpha" },
+        { "from": "base", "mode_idx": 2, "interval": "fifth", "weight": 0.35, "band_hint": "beta" },
+        { "from": "base", "mode_idx": 0, "interval": "octave", "weight": 0.20, "band_hint": "alpha" }
+      ],
+      "color_hex": "#FFD166"
+    },
+    "gratitude": {
+      "comment": "heart-centered stability; fourth + third blend",
+      "recipe": [
+        { "from": "base", "mode_idx": 0, "interval": "fourth", "weight": 0.4, "band_hint": "alpha" },
+        { "from": "base", "mode_idx": 0, "interval": "maj_third", "weight": 0.4, "band_hint": "alpha" },
+        { "from": "base", "mode_idx": 1, "interval": "unison", "weight": 0.2, "band_hint": "alpha" }
+      ],
+      "color_hex": "#A0E8AF"
+    },
+    "hope": {
+      "comment": "awakening / clarity; visionary lift",
+      "recipe": [
+        { "from": "base", "mode_idx": 1, "interval": "maj_second", "weight": 0.45, "band_hint": "alpha" },
+        { "from": "base", "mode_idx": 2, "interval": "unison", "weight": 0.35, "band_hint": "beta" },
+        { "from": "base", "mode_idx": 0, "interval": "maj_third", "weight": 0.20, "band_hint": "alpha" }
+      ],
+      "color_hex": "#7EB6FF"
+    },
+    "compassion": {
+      "comment": "minor→major third morph; theta–alpha bridge",
+      "recipe": [
+        { "from": "base", "mode_idx": 0, "interval": "min_third", "weight": 0.35, "band_hint": "theta" },
+        { "from": "base", "mode_idx": 0, "interval": "maj_third", "weight": 0.35, "band_hint": "alpha" },
+        { "from": "base", "mode_idx": 1, "interval": "unison", "weight": 0.30, "band_hint": "alpha" }
+      ],
+      "color_hex": "#E8B4CB"
+    }
+  }
+}

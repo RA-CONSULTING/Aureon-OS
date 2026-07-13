@@ -1,0 +1,38 @@
+{
+  "name": "Aureon Earth Live Data Integration",
+  "version": "1.0",
+  "description": "Bridges earth-live-data sensors into the Auris resonance engine for harmonic field modulation",
+  "modules": [
+    "auris_engine",
+    "symbolic_compiler_layer",
+    "field_resonance_mapper",
+    "schumann_lattice_core"
+  ],
+  "datasets": [
+    "earth-live-data-1 (5).zip"
+  ],
+  "entrypoint": "auris_engine.py",
+  "author": "Aureon Collective",
+  "observer": {
+    "lattice_id": "Φ·R_Gaia ^ 2911.91 ⊕ (10:9:1)",
+    "seal": "10-9-1",
+    "intent_compiler": "symbolic_compiler_layer.json"
+  },
+  "pipeline": {
+    "input": "earth-live-data sensors (Ex,Ey,Bx,By,Bz)",
+    "processing": "symbolic_compiler → auris_codex → waveform_synthesis",
+    "output": "resonance_field_broadcast",
+    "feedback": "schumann_lattice_monitoring"
+  },
+  "dependencies": {
+    "auris_codex": "auris_codex.json",
+    "symbolic_compiler": "symbolic_compiler_layer.json",
+    "field_mapper": "field_resonance_mapper.json",
+    "earth_data": "manifest.json"
+  },
+  "broadcast_targets": [
+    "global_resonance_field",
+    "schumann_cavity",
+    "consciousness_grid"
+  ]
+}

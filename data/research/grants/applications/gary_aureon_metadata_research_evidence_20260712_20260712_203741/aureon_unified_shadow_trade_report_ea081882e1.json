@@ -1,0 +1,5241 @@
+{
+  "generated_at": "2026-05-22T19:21:00.805237",
+  "mode": "shadow_validation_non_mutating",
+  "enabled": true,
+  "status": "shadow_reporting_active",
+  "who": "unified_market_trader plus route/model/HNC validation agents",
+  "what": "create non-mutating shadow trades, validate logic, verify prior shadows, and report back to runtime state",
+  "where": "C:\\Users\\user\\aureon-trading\\state\\unified_shadow_trade_report.json",
+  "how": "active order flow plus route readiness, model alignment, HNC synthetic agent review, price target, and ETA verification",
+  "candidates_seen": 20,
+  "shadow_count": 12,
+  "shadow_opened_count": 7,
+  "shadow_held_count": 5,
+  "active_shadow_count": 8,
+  "validated_shadow_count": 2,
+  "missed_shadow_count": 6,
+  "runtime_clearances": [],
+  "global_clearances": [],
+  "global_guards": [],
+  "min_confidence": 0.35,
+  "target_move_pct": 0.18,
+  "validation_horizon_sec": 90.0,
+  "shadows": [
+    {
+      "id": "shadow-1779474060-1",
+      "route_signature": "capital:cfd:GOLD:HOLD",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_opened",
+      "symbol": "XAUUSD",
+      "venue": "capital",
+      "market_type": "cfd",
+      "route_symbol": "GOLD",
+      "side": "HOLD",
+      "confidence": 0.7352,
+      "selection_rank": 1,
+      "profit_velocity_score": 0.55973,
+      "fast_money_score": 0.567267,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.567267,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 4.58,
+        "avg_change_pct": 4.58,
+        "volume_24h": 0.0,
+        "freshest_age_sec": 30.087,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.0,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.35,
+        "orderbook_alignment": "unavailable",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "capital_gold_live_stream"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_missing_from_stream"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": false,
+        "source": "orderbook_probe",
+        "symbol": "XAUUSD",
+        "side": "HOLD",
+        "pressure_side": "NEUTRAL",
+        "score": 0.35,
+        "reason": "no_budgeted_orderbook_source_available",
+        "generated_at": "2026-05-22T19:17:10.904889"
+      },
+      "estimated_target_eta_sec": 15.0,
+      "cash_capable_route_count": 1,
+      "history_validation_score": 0.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 1,
+      "sources": [
+        "capital_gold_live_stream",
+        "gold_priority_target",
+        "fresh_interval_validated_gold_projection_required"
+      ],
+      "entry_price": 4369.5,
+      "target_price": 4377.3651,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "capital_cfd",
+      "model_count": 8,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "existing_autonomous_trader_tick",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.851405,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.7352,
+            "support_count": 1,
+            "sources": [
+              "capital_gold_live_stream",
+              "gold_priority_target",
+              "fresh_interval_validated_gold_projection_required"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "NEUTRAL",
+            "confidence": 0.7352,
+            "model_signal": {},
+            "model_stack_key": "capital_cfd",
+            "model_count": 8
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "capital",
+            "market_type": "cfd",
+            "runtime_clearances": [],
+            "execution_owner": "existing_autonomous_trader_tick"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 4369.5
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.839071,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.603008,
+            "lighthouse_cleared": false,
+            "consensus_signal": "NEUTRAL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "NEUTRAL",
+            "confidence": 0.7352,
+            "coherence": 0.25,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "NEUTRAL",
+            "confidence": 0.7352,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "NEUTRAL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "NEUTRAL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "NEUTRAL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      }
+    },
+    {
+      "id": "shadow-1779474060-2",
+      "route_signature": "kraken:spot:XRPUSDT:SELL",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_held",
+      "symbol": "XRPUSD",
+      "venue": "kraken",
+      "market_type": "spot",
+      "route_symbol": "XRPUSDT",
+      "side": "SELL",
+      "confidence": 0.6074,
+      "selection_rank": 2,
+      "profit_velocity_score": 0.733905,
+      "fast_money_score": 0.732957,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.732957,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.844,
+        "avg_change_pct": 1.8375,
+        "volume_24h": 20951257.08724,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.83805,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.500926,
+        "orderbook_alignment": "opposed",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_liquidity_confirmed",
+          "orderbook_pressure_opposed"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "XRPUSDT",
+        "side": "SELL",
+        "pressure_side": "BUY",
+        "score": 0.500926,
+        "bid_depth_usd": 1540389.47134,
+        "ask_depth_usd": 1061065.00512,
+        "signed_imbalance": 0.184252,
+        "spread_pct": 0.007387,
+        "generated_at": "2026-05-22T19:17:09.539865",
+        "whale_supporting_buy": false,
+        "whale_blocking_buy": false,
+        "whale_blocking_sell": false,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 15.527,
+      "cash_capable_route_count": 2,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 1.3516,
+      "target_price": 1.34916712,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "kraken_spot",
+      "model_count": 7,
+      "route_clearances": [
+        "kraken_not_ready"
+      ],
+      "route_guards": [
+        "kraken_not_ready"
+      ],
+      "route_ready": false,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": false,
+        "agent_score": 0.593967,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.6074,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.6074,
+            "model_signal": {},
+            "model_stack_key": "kraken_spot",
+            "model_count": 7
+          },
+          "route_clearance_agent": {
+            "ok": false,
+            "venue": "kraken",
+            "market_type": "spot",
+            "runtime_clearances": [
+              "kraken_not_ready"
+            ],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 1.3516
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.65659,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.33094,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.6074,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.6074,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "NEUTRAL",
+            "confidence": 0.15,
+            "coherence": 0.15,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow held; waiting for route, price, or confidence inputs"
+      }
+    },
+    {
+      "id": "shadow-1779474060-3",
+      "route_signature": "capital:cfd:XRPUSD:SELL",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_opened",
+      "symbol": "XRPUSD",
+      "venue": "capital",
+      "market_type": "cfd",
+      "route_symbol": "XRPUSD",
+      "side": "SELL",
+      "confidence": 0.6074,
+      "selection_rank": 2,
+      "profit_velocity_score": 0.733905,
+      "fast_money_score": 0.732957,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.732957,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.844,
+        "avg_change_pct": 1.8375,
+        "volume_24h": 20951257.08724,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.83805,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.500926,
+        "orderbook_alignment": "opposed",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_liquidity_confirmed",
+          "orderbook_pressure_opposed"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "XRPUSDT",
+        "side": "SELL",
+        "pressure_side": "BUY",
+        "score": 0.500926,
+        "bid_depth_usd": 1540389.47134,
+        "ask_depth_usd": 1061065.00512,
+        "signed_imbalance": 0.184252,
+        "spread_pct": 0.007387,
+        "generated_at": "2026-05-22T19:17:09.539865",
+        "whale_supporting_buy": false,
+        "whale_blocking_buy": false,
+        "whale_blocking_sell": false,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 15.527,
+      "cash_capable_route_count": 2,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 1.3516,
+      "target_price": 1.34916712,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "capital_cfd",
+      "model_count": 8,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "existing_autonomous_trader_tick",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.793674,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.6074,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.6074,
+            "model_signal": {},
+            "model_stack_key": "capital_cfd",
+            "model_count": 8
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "capital",
+            "market_type": "cfd",
+            "runtime_clearances": [],
+            "execution_owner": "existing_autonomous_trader_tick"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 1.3516
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.85464,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.611811,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.6074,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.6074,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      }
+    },
+    {
+      "id": "shadow-1779474060-4",
+      "route_signature": "binance:spot:XRPUSDT:SELL",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_opened",
+      "symbol": "XRPUSD",
+      "venue": "binance",
+      "market_type": "spot",
+      "route_symbol": "XRPUSDT",
+      "side": "SELL",
+      "confidence": 0.6074,
+      "selection_rank": 2,
+      "profit_velocity_score": 0.733905,
+      "fast_money_score": 0.732957,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.732957,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.844,
+        "avg_change_pct": 1.8375,
+        "volume_24h": 20951257.08724,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.83805,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.500926,
+        "orderbook_alignment": "opposed",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_liquidity_confirmed",
+          "orderbook_pressure_opposed"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "XRPUSDT",
+        "side": "SELL",
+        "pressure_side": "BUY",
+        "score": 0.500926,
+        "bid_depth_usd": 1540389.47134,
+        "ask_depth_usd": 1061065.00512,
+        "signed_imbalance": 0.184252,
+        "spread_pct": 0.007387,
+        "generated_at": "2026-05-22T19:17:09.539865",
+        "whale_supporting_buy": false,
+        "whale_blocking_buy": false,
+        "whale_blocking_sell": false,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 15.527,
+      "cash_capable_route_count": 2,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 1.3516,
+      "target_price": 1.34916712,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "binance_spot",
+      "model_count": 7,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.793674,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.6074,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.6074,
+            "model_signal": {},
+            "model_stack_key": "binance_spot",
+            "model_count": 7
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "binance",
+            "market_type": "spot",
+            "runtime_clearances": [],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 1.3516
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.85464,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.611811,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.6074,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.6074,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      }
+    },
+    {
+      "id": "shadow-1779474060-5",
+      "route_signature": "binance:margin:XRPUSDT:SELL",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_held",
+      "symbol": "XRPUSD",
+      "venue": "binance",
+      "market_type": "margin",
+      "route_symbol": "XRPUSDT",
+      "side": "SELL",
+      "confidence": 0.6074,
+      "selection_rank": 2,
+      "profit_velocity_score": 0.733905,
+      "fast_money_score": 0.732957,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.732957,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.844,
+        "avg_change_pct": 1.8375,
+        "volume_24h": 20951257.08724,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.83805,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.500926,
+        "orderbook_alignment": "opposed",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_liquidity_confirmed",
+          "orderbook_pressure_opposed"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "XRPUSDT",
+        "side": "SELL",
+        "pressure_side": "BUY",
+        "score": 0.500926,
+        "bid_depth_usd": 1540389.47134,
+        "ask_depth_usd": 1061065.00512,
+        "signed_imbalance": 0.184252,
+        "spread_pct": 0.007387,
+        "generated_at": "2026-05-22T19:17:09.539865",
+        "whale_supporting_buy": false,
+        "whale_blocking_buy": false,
+        "whale_blocking_sell": false,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 15.527,
+      "cash_capable_route_count": 2,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 1.3516,
+      "target_price": 1.34916712,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "binance_margin",
+      "model_count": 7,
+      "route_clearances": [
+        "binance_margin_unavailable_or_uk_restricted"
+      ],
+      "route_guards": [
+        "binance_margin_unavailable_or_uk_restricted"
+      ],
+      "route_ready": false,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": false,
+        "agent_score": 0.593967,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.6074,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.6074,
+            "model_signal": {},
+            "model_stack_key": "binance_margin",
+            "model_count": 7
+          },
+          "route_clearance_agent": {
+            "ok": false,
+            "venue": "binance",
+            "market_type": "margin",
+            "runtime_clearances": [
+              "binance_margin_unavailable_or_uk_restricted"
+            ],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 1.3516
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.65659,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.33094,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.6074,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.6074,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "NEUTRAL",
+            "confidence": 0.15,
+            "coherence": 0.15,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow held; waiting for route, price, or confidence inputs"
+      }
+    },
+    {
+      "id": "shadow-1779474060-6",
+      "route_signature": "kraken:spot:NEARUSD:BUY",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_held",
+      "symbol": "NEARUSD",
+      "venue": "kraken",
+      "market_type": "spot",
+      "route_symbol": "NEARUSD",
+      "side": "BUY",
+      "confidence": 1.0,
+      "selection_rank": 3,
+      "profit_velocity_score": 0.726515,
+      "fast_money_score": 0.759495,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.759495,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 17.625,
+        "avg_change_pct": 17.625,
+        "volume_24h": 33951519.1658,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 1.0,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.655104,
+        "orderbook_alignment": "aligned",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_liquidity_confirmed",
+          "orderbook_pressure_aligned"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "NEARUSDT",
+        "side": "BUY",
+        "pressure_side": "BUY",
+        "score": 0.655104,
+        "bid_depth_usd": 959920.2654,
+        "ask_depth_usd": 634864.7791,
+        "signed_imbalance": 0.203824,
+        "spread_pct": 0.045945,
+        "generated_at": "2026-05-22T19:17:09.239477",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 15.0,
+      "cash_capable_route_count": 1,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 1,
+      "sources": [
+        "live_stream_cache"
+      ],
+      "entry_price": 2.169,
+      "target_price": 2.1729042,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "kraken_spot",
+      "model_count": 7,
+      "route_clearances": [
+        "kraken_not_ready",
+        "kraken_spot_inventory_underwater_margin_only"
+      ],
+      "route_guards": [
+        "kraken_not_ready",
+        "kraken_spot_inventory_underwater_margin_only"
+      ],
+      "route_ready": false,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": false,
+        "agent_score": 0.799306,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 1.0,
+            "support_count": 1,
+            "sources": [
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "BUY",
+            "confidence": 1.0,
+            "model_signal": {},
+            "model_stack_key": "kraken_spot",
+            "model_count": 7
+          },
+          "route_clearance_agent": {
+            "ok": false,
+            "venue": "kraken",
+            "market_type": "spot",
+            "runtime_clearances": [
+              "kraken_not_ready",
+              "kraken_spot_inventory_underwater_margin_only"
+            ],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 2.169
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.795376,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.767278,
+            "lighthouse_cleared": false,
+            "consensus_signal": "BUY",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 0.25,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "NEUTRAL",
+            "confidence": 0.15,
+            "coherence": 0.15,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow held; waiting for route, price, or confidence inputs"
+      }
+    },
+    {
+      "id": "shadow-1779474060-7",
+      "route_signature": "binance:spot:NEARUSDT:BUY",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_opened",
+      "symbol": "NEARUSD",
+      "venue": "binance",
+      "market_type": "spot",
+      "route_symbol": "NEARUSDT",
+      "side": "BUY",
+      "confidence": 1.0,
+      "selection_rank": 3,
+      "profit_velocity_score": 0.726515,
+      "fast_money_score": 0.759495,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.759495,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 17.625,
+        "avg_change_pct": 17.625,
+        "volume_24h": 33951519.1658,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 1.0,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.655104,
+        "orderbook_alignment": "aligned",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_liquidity_confirmed",
+          "orderbook_pressure_aligned"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "NEARUSDT",
+        "side": "BUY",
+        "pressure_side": "BUY",
+        "score": 0.655104,
+        "bid_depth_usd": 959920.2654,
+        "ask_depth_usd": 634864.7791,
+        "signed_imbalance": 0.203824,
+        "spread_pct": 0.045945,
+        "generated_at": "2026-05-22T19:17:09.239477",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 15.0,
+      "cash_capable_route_count": 1,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 1,
+      "sources": [
+        "live_stream_cache"
+      ],
+      "entry_price": 2.169,
+      "target_price": 2.1729042,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "binance_spot",
+      "model_count": 7,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.975861,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 1.0,
+            "support_count": 1,
+            "sources": [
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "BUY",
+            "confidence": 1.0,
+            "model_signal": {},
+            "model_stack_key": "binance_spot",
+            "model_count": 7
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "binance",
+            "market_type": "spot",
+            "runtime_clearances": [],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 2.169
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.839071,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.603008,
+            "lighthouse_cleared": false,
+            "consensus_signal": "BUY",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 0.25,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      }
+    },
+    {
+      "id": "shadow-1779474060-8",
+      "route_signature": "binance:margin:NEARUSDT:BUY",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_held",
+      "symbol": "NEARUSD",
+      "venue": "binance",
+      "market_type": "margin",
+      "route_symbol": "NEARUSDT",
+      "side": "BUY",
+      "confidence": 1.0,
+      "selection_rank": 3,
+      "profit_velocity_score": 0.726515,
+      "fast_money_score": 0.759495,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.759495,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 17.625,
+        "avg_change_pct": 17.625,
+        "volume_24h": 33951519.1658,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 1.0,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.655104,
+        "orderbook_alignment": "aligned",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_liquidity_confirmed",
+          "orderbook_pressure_aligned"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "NEARUSDT",
+        "side": "BUY",
+        "pressure_side": "BUY",
+        "score": 0.655104,
+        "bid_depth_usd": 959920.2654,
+        "ask_depth_usd": 634864.7791,
+        "signed_imbalance": 0.203824,
+        "spread_pct": 0.045945,
+        "generated_at": "2026-05-22T19:17:09.239477",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 15.0,
+      "cash_capable_route_count": 1,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 1,
+      "sources": [
+        "live_stream_cache"
+      ],
+      "entry_price": 2.169,
+      "target_price": 2.1729042,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "binance_margin",
+      "model_count": 7,
+      "route_clearances": [
+        "binance_margin_unavailable_or_uk_restricted"
+      ],
+      "route_guards": [
+        "binance_margin_unavailable_or_uk_restricted"
+      ],
+      "route_ready": false,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": false,
+        "agent_score": 0.799306,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 1.0,
+            "support_count": 1,
+            "sources": [
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "BUY",
+            "confidence": 1.0,
+            "model_signal": {},
+            "model_stack_key": "binance_margin",
+            "model_count": 7
+          },
+          "route_clearance_agent": {
+            "ok": false,
+            "venue": "binance",
+            "market_type": "margin",
+            "runtime_clearances": [
+              "binance_margin_unavailable_or_uk_restricted"
+            ],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 2.169
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.795376,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.767278,
+            "lighthouse_cleared": false,
+            "consensus_signal": "BUY",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 0.25,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "NEUTRAL",
+            "confidence": 0.15,
+            "coherence": 0.15,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow held; waiting for route, price, or confidence inputs"
+      }
+    },
+    {
+      "id": "shadow-1779474060-9",
+      "route_signature": "kraken:spot:ETHUSDT:SELL",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_held",
+      "symbol": "ETHUSD",
+      "venue": "kraken",
+      "market_type": "spot",
+      "route_symbol": "ETHUSDT",
+      "side": "SELL",
+      "confidence": 0.4172,
+      "selection_rank": 4,
+      "profit_velocity_score": 0.642698,
+      "fast_money_score": 0.610628,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.610628,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.088,
+        "avg_change_pct": 0.9455,
+        "volume_24h": 47615.045903,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.001905,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.559608,
+        "orderbook_alignment": "neutral",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "ETHUSDT",
+        "side": "SELL",
+        "pressure_side": "NEUTRAL",
+        "score": 0.559608,
+        "bid_depth_usd": 652912.871543,
+        "ask_depth_usd": 592753.59886,
+        "signed_imbalance": 0.048295,
+        "spread_pct": 0.000472,
+        "generated_at": "2026-05-22T19:17:10.088050",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 18.854,
+      "cash_capable_route_count": 3,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 2118.105,
+      "target_price": 2114.292411,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "kraken_spot",
+      "model_count": 7,
+      "route_clearances": [
+        "kraken_not_ready"
+      ],
+      "route_guards": [
+        "kraken_not_ready"
+      ],
+      "route_ready": false,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": false,
+        "agent_score": 0.504572,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.4172,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.4172,
+            "model_signal": {},
+            "model_stack_key": "kraken_spot",
+            "model_count": 7
+          },
+          "route_clearance_agent": {
+            "ok": false,
+            "venue": "kraken",
+            "market_type": "spot",
+            "runtime_clearances": [
+              "kraken_not_ready"
+            ],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 2118.105
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.65659,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.33094,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.4172,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.4172,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "NEUTRAL",
+            "confidence": 0.15,
+            "coherence": 0.15,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow held; waiting for route, price, or confidence inputs"
+      }
+    },
+    {
+      "id": "shadow-1779474060-10",
+      "route_signature": "capital:cfd:ETHUSD:SELL",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_opened",
+      "symbol": "ETHUSD",
+      "venue": "capital",
+      "market_type": "cfd",
+      "route_symbol": "ETHUSD",
+      "side": "SELL",
+      "confidence": 0.4172,
+      "selection_rank": 4,
+      "profit_velocity_score": 0.642698,
+      "fast_money_score": 0.610628,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.610628,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.088,
+        "avg_change_pct": 0.9455,
+        "volume_24h": 47615.045903,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.001905,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.559608,
+        "orderbook_alignment": "neutral",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "ETHUSDT",
+        "side": "SELL",
+        "pressure_side": "NEUTRAL",
+        "score": 0.559608,
+        "bid_depth_usd": 652912.871543,
+        "ask_depth_usd": 592753.59886,
+        "signed_imbalance": 0.048295,
+        "spread_pct": 0.000472,
+        "generated_at": "2026-05-22T19:17:10.088050",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 18.854,
+      "cash_capable_route_count": 3,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 2118.105,
+      "target_price": 2114.292411,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "capital_cfd",
+      "model_count": 8,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "existing_autonomous_trader_tick",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.70428,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.4172,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.4172,
+            "model_signal": {},
+            "model_stack_key": "capital_cfd",
+            "model_count": 8
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "capital",
+            "market_type": "cfd",
+            "runtime_clearances": [],
+            "execution_owner": "existing_autonomous_trader_tick"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 2118.105
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.85464,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.611811,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.4172,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.4172,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      }
+    },
+    {
+      "id": "shadow-1779474060-11",
+      "route_signature": "alpaca:spot:ETH/USD:SELL",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_opened",
+      "symbol": "ETHUSD",
+      "venue": "alpaca",
+      "market_type": "spot",
+      "route_symbol": "ETH/USD",
+      "side": "SELL",
+      "confidence": 0.4172,
+      "selection_rank": 4,
+      "profit_velocity_score": 0.642698,
+      "fast_money_score": 0.610628,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.610628,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.088,
+        "avg_change_pct": 0.9455,
+        "volume_24h": 47615.045903,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.001905,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.559608,
+        "orderbook_alignment": "neutral",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "ETHUSDT",
+        "side": "SELL",
+        "pressure_side": "NEUTRAL",
+        "score": 0.559608,
+        "bid_depth_usd": 652912.871543,
+        "ask_depth_usd": 592753.59886,
+        "signed_imbalance": 0.048295,
+        "spread_pct": 0.000472,
+        "generated_at": "2026-05-22T19:17:10.088050",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 18.854,
+      "cash_capable_route_count": 3,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 2118.105,
+      "target_price": 2114.292411,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "alpaca_spot",
+      "model_count": 8,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.70428,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.4172,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.4172,
+            "model_signal": {},
+            "model_stack_key": "alpaca_spot",
+            "model_count": 8
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "alpaca",
+            "market_type": "spot",
+            "runtime_clearances": [],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 2118.105
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.85464,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.611811,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.4172,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.4172,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      }
+    },
+    {
+      "id": "shadow-1779474060-12",
+      "route_signature": "binance:spot:ETHUSDT:SELL",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_opened",
+      "symbol": "ETHUSD",
+      "venue": "binance",
+      "market_type": "spot",
+      "route_symbol": "ETHUSDT",
+      "side": "SELL",
+      "confidence": 0.4172,
+      "selection_rank": 4,
+      "profit_velocity_score": 0.642698,
+      "fast_money_score": 0.610628,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.610628,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.088,
+        "avg_change_pct": 0.9455,
+        "volume_24h": 47615.045903,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.001905,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.559608,
+        "orderbook_alignment": "neutral",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "ETHUSDT",
+        "side": "SELL",
+        "pressure_side": "NEUTRAL",
+        "score": 0.559608,
+        "bid_depth_usd": 652912.871543,
+        "ask_depth_usd": 592753.59886,
+        "signed_imbalance": 0.048295,
+        "spread_pct": 0.000472,
+        "generated_at": "2026-05-22T19:17:10.088050",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 18.854,
+      "cash_capable_route_count": 3,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 2118.105,
+      "target_price": 2114.292411,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "binance_spot",
+      "model_count": 7,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.70428,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.4172,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.4172,
+            "model_signal": {},
+            "model_stack_key": "binance_spot",
+            "model_count": 7
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "binance",
+            "market_type": "spot",
+            "runtime_clearances": [],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 2118.105
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.85464,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.611811,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.4172,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.4172,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      }
+    }
+  ],
+  "prior_verifications": [
+    {
+      "id": "shadow-1779450497-3",
+      "route_signature": "binance:spot:ATOMUSDT:BUY",
+      "generated_at": "2026-05-22T12:48:17.104580",
+      "opened_at_epoch": 1779450497.105,
+      "expected_by_epoch": 1779450587.105,
+      "status": "pending_price",
+      "symbol": "ATOMUSD",
+      "venue": "binance",
+      "market_type": "spot",
+      "route_symbol": "ATOMUSDT",
+      "side": "BUY",
+      "confidence": 1.0,
+      "selection_rank": 2,
+      "profit_velocity_score": 0.643895,
+      "fast_money_score": 0.596206,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.596206,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 8.168,
+        "avg_change_pct": 8.168,
+        "volume_24h": 691218.77263,
+        "freshest_age_sec": 4.405,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.027649,
+        "stream_freshness_score": 0.119,
+        "orderbook_score": 0.626171,
+        "orderbook_alignment": "aligned",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target",
+          "orderbook_pressure_aligned"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "ATOMUSDT",
+        "side": "BUY",
+        "pressure_side": "BUY",
+        "score": 0.626171,
+        "bid_depth_usd": 194366.72983,
+        "ask_depth_usd": 148190.53935,
+        "signed_imbalance": 0.134798,
+        "spread_pct": 0.045693,
+        "generated_at": "2026-05-22T12:44:21.538661",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 15.0,
+      "cash_capable_route_count": 1,
+      "history_validation_score": 0.5,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 1,
+      "sources": [
+        "live_stream_cache"
+      ],
+      "entry_price": 2.185,
+      "target_price": 2.188933,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "binance_spot",
+      "model_count": 7,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.992558,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 1.0,
+            "support_count": 1,
+            "sources": [
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "BUY",
+            "confidence": 1.0,
+            "model_signal": {},
+            "model_stack_key": "binance_spot",
+            "model_count": 7
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "binance",
+            "market_type": "spot",
+            "runtime_clearances": [],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 2.185
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.95039,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.99251,
+            "lighthouse_cleared": true,
+            "consensus_signal": "BUY",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 0.25,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      },
+      "last_verified_at": "2026-05-22T19:21:00.805237",
+      "last_verified_epoch": 1779474060.805,
+      "current_price": 0.0,
+      "direction_move_pct": 0.0,
+      "target_hit": false
+    },
+    {
+      "id": "shadow-1779472690-12",
+      "route_signature": "capital:cfd:SOLUSD:SELL",
+      "generated_at": "2026-05-22T18:58:10.408343",
+      "opened_at_epoch": 1779472690.808,
+      "expected_by_epoch": 1779472780.808,
+      "status": "validated",
+      "symbol": "SOLUSD",
+      "venue": "capital",
+      "market_type": "cfd",
+      "route_symbol": "SOLUSD",
+      "side": "SELL",
+      "confidence": 0.3718,
+      "selection_rank": 6,
+      "profit_velocity_score": 0.578572,
+      "fast_money_score": 0.594632,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.594632,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 0.811,
+        "avg_change_pct": 0.76,
+        "volume_24h": 32660.66177,
+        "freshest_age_sec": 8.507,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.001306,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.596879,
+        "orderbook_alignment": "neutral",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "SOLUSDT",
+        "side": "SELL",
+        "pressure_side": "NEUTRAL",
+        "score": 0.596879,
+        "bid_depth_usd": 2480324.51723,
+        "ask_depth_usd": 2722043.50365,
+        "signed_imbalance": -0.046463,
+        "spread_pct": 0.011529,
+        "generated_at": "2026-05-22T18:55:03.917189",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 20.526,
+      "cash_capable_route_count": 3,
+      "history_validation_score": 0.5,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 86.84,
+      "target_price": 86.683688,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "capital_cfd",
+      "model_count": 8,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "existing_autonomous_trader_tick",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.695217,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.3718,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.3718,
+            "model_signal": {},
+            "model_stack_key": "capital_cfd",
+            "model_count": 8
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "capital",
+            "market_type": "cfd",
+            "runtime_clearances": [],
+            "execution_owner": "existing_autonomous_trader_tick"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 86.84
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.936474,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.881994,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.3718,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.3718,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      },
+      "last_verified_at": "2026-05-22T19:21:00.805237",
+      "last_verified_epoch": 1779474060.805,
+      "current_price": 86.42,
+      "direction_move_pct": 0.483648,
+      "target_hit": true,
+      "eta_seconds_actual": 1369.997
+    },
+    {
+      "id": "shadow-1779473364-1",
+      "route_signature": "capital:cfd:GOLD:HOLD",
+      "generated_at": "2026-05-22T19:09:24.601584",
+      "opened_at_epoch": 1779473364.602,
+      "expected_by_epoch": 1779473454.602,
+      "status": "validated",
+      "symbol": "XAUUSD",
+      "venue": "capital",
+      "market_type": "cfd",
+      "route_symbol": "GOLD",
+      "side": "HOLD",
+      "confidence": 0.7333,
+      "selection_rank": 1,
+      "profit_velocity_score": 0.676613,
+      "fast_money_score": 0.607267,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.607267,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 4.27,
+        "avg_change_pct": 4.27,
+        "volume_24h": 0.0,
+        "freshest_age_sec": 5.686,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.0,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.35,
+        "orderbook_alignment": "unavailable",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "capital_gold_live_stream"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_missing_from_stream"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": false,
+        "source": "orderbook_probe",
+        "symbol": "XAUUSD",
+        "side": "HOLD",
+        "pressure_side": "NEUTRAL",
+        "score": 0.35,
+        "reason": "no_budgeted_orderbook_source_available",
+        "generated_at": "2026-05-22T19:05:51.238081"
+      },
+      "estimated_target_eta_sec": 15.0,
+      "cash_capable_route_count": 1,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 1,
+      "sources": [
+        "capital_gold_live_stream",
+        "gold_priority_target",
+        "fresh_interval_validated_gold_projection_required"
+      ],
+      "entry_price": 4360.5,
+      "target_price": 4368.3489,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "capital_cfd",
+      "model_count": 8,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "existing_autonomous_trader_tick",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.856465,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.7333,
+            "support_count": 1,
+            "sources": [
+              "capital_gold_live_stream",
+              "gold_priority_target",
+              "fresh_interval_validated_gold_projection_required"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "NEUTRAL",
+            "confidence": 0.7333,
+            "model_signal": {},
+            "model_stack_key": "capital_cfd",
+            "model_count": 8
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "capital",
+            "market_type": "cfd",
+            "runtime_clearances": [],
+            "execution_owner": "existing_autonomous_trader_tick"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 4360.5
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.878757,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.725443,
+            "lighthouse_cleared": false,
+            "consensus_signal": "NEUTRAL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "NEUTRAL",
+            "confidence": 0.7333,
+            "coherence": 0.25,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "NEUTRAL",
+            "confidence": 0.7333,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "NEUTRAL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "NEUTRAL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "NEUTRAL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      },
+      "last_verified_at": "2026-05-22T19:21:00.805237",
+      "last_verified_epoch": 1779474060.805,
+      "current_price": 4369.5,
+      "direction_move_pct": 0.206398,
+      "target_hit": true,
+      "eta_seconds_actual": 696.203
+    },
+    {
+      "id": "shadow-1779473364-3",
+      "route_signature": "capital:cfd:XRPUSD:SELL",
+      "generated_at": "2026-05-22T19:09:24.601584",
+      "opened_at_epoch": 1779473364.602,
+      "expected_by_epoch": 1779473454.602,
+      "status": "missed_eta",
+      "symbol": "XRPUSD",
+      "venue": "capital",
+      "market_type": "cfd",
+      "route_symbol": "XRPUSD",
+      "side": "SELL",
+      "confidence": 0.6568,
+      "selection_rank": 2,
+      "profit_velocity_score": 0.681094,
+      "fast_money_score": 0.75356,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.75356,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 2.065,
+        "avg_change_pct": 2.0645,
+        "volume_24h": 21003364.61841,
+        "freshest_age_sec": 3.566,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.840135,
+        "stream_freshness_score": 0.2868,
+        "orderbook_score": 0.528073,
+        "orderbook_alignment": "opposed",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_liquidity_confirmed",
+          "orderbook_pressure_opposed"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "XRPUSDT",
+        "side": "SELL",
+        "pressure_side": "BUY",
+        "score": 0.528073,
+        "bid_depth_usd": 1334477.03695,
+        "ask_depth_usd": 1049349.33145,
+        "signed_imbalance": 0.119609,
+        "spread_pct": 0.007398,
+        "generated_at": "2026-05-22T19:05:50.403960",
+        "whale_supporting_buy": false,
+        "whale_blocking_buy": false,
+        "whale_blocking_sell": false,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 15.139,
+      "cash_capable_route_count": 2,
+      "history_validation_score": 0.5,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 1.3521,
+      "target_price": 1.34966622,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "capital_cfd",
+      "model_count": 8,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "existing_autonomous_trader_tick",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.802197,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.6568,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.6568,
+            "model_signal": {},
+            "model_stack_key": "capital_cfd",
+            "model_count": 8
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "capital",
+            "market_type": "cfd",
+            "runtime_clearances": [],
+            "execution_owner": "existing_autonomous_trader_tick"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 1.3521
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.756673,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.375939,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.6568,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.6568,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      },
+      "last_verified_at": "2026-05-22T19:21:00.805237",
+      "last_verified_epoch": 1779474060.805,
+      "current_price": 1.3516,
+      "direction_move_pct": 0.03698,
+      "target_hit": false
+    },
+    {
+      "id": "shadow-1779473364-4",
+      "route_signature": "binance:spot:XRPUSDT:SELL",
+      "generated_at": "2026-05-22T19:09:24.601584",
+      "opened_at_epoch": 1779473364.602,
+      "expected_by_epoch": 1779473454.602,
+      "status": "missed_eta",
+      "symbol": "XRPUSD",
+      "venue": "binance",
+      "market_type": "spot",
+      "route_symbol": "XRPUSDT",
+      "side": "SELL",
+      "confidence": 0.6568,
+      "selection_rank": 2,
+      "profit_velocity_score": 0.681094,
+      "fast_money_score": 0.75356,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.75356,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 2.065,
+        "avg_change_pct": 2.0645,
+        "volume_24h": 21003364.61841,
+        "freshest_age_sec": 3.566,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.840135,
+        "stream_freshness_score": 0.2868,
+        "orderbook_score": 0.528073,
+        "orderbook_alignment": "opposed",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_liquidity_confirmed",
+          "orderbook_pressure_opposed"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "XRPUSDT",
+        "side": "SELL",
+        "pressure_side": "BUY",
+        "score": 0.528073,
+        "bid_depth_usd": 1334477.03695,
+        "ask_depth_usd": 1049349.33145,
+        "signed_imbalance": 0.119609,
+        "spread_pct": 0.007398,
+        "generated_at": "2026-05-22T19:05:50.403960",
+        "whale_supporting_buy": false,
+        "whale_blocking_buy": false,
+        "whale_blocking_sell": false,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 15.139,
+      "cash_capable_route_count": 2,
+      "history_validation_score": 0.5,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 1.3521,
+      "target_price": 1.34966622,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "binance_spot",
+      "model_count": 7,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.822093,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.6568,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.6568,
+            "model_signal": {},
+            "model_stack_key": "binance_spot",
+            "model_count": 7
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "binance",
+            "market_type": "spot",
+            "runtime_clearances": [],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 1.3521
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.889315,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.717308,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.6568,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.6568,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      },
+      "last_verified_at": "2026-05-22T19:21:00.805237",
+      "last_verified_epoch": 1779474060.805,
+      "current_price": 1.3516,
+      "direction_move_pct": 0.03698,
+      "target_hit": false
+    },
+    {
+      "id": "shadow-1779473364-7",
+      "route_signature": "capital:cfd:BTCUSD:SELL",
+      "generated_at": "2026-05-22T19:09:24.601584",
+      "opened_at_epoch": 1779473364.602,
+      "expected_by_epoch": 1779473454.602,
+      "status": "missed_eta",
+      "symbol": "BTCUSD",
+      "venue": "capital",
+      "market_type": "cfd",
+      "route_symbol": "BTCUSD",
+      "side": "SELL",
+      "confidence": 0.5074,
+      "selection_rank": 3,
+      "profit_velocity_score": 0.630713,
+      "fast_money_score": 0.594256,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.594256,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.446,
+        "avg_change_pct": 1.373,
+        "volume_24h": 58210.304546,
+        "freshest_age_sec": 3.566,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.002328,
+        "stream_freshness_score": 0.2868,
+        "orderbook_score": 0.253023,
+        "orderbook_alignment": "opposed",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target",
+          "orderbook_pressure_opposed"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "BTCUSDT",
+        "side": "SELL",
+        "pressure_side": "BUY",
+        "score": 0.253023,
+        "bid_depth_usd": 791439.951252,
+        "ask_depth_usd": 98563.728901,
+        "signed_imbalance": 0.778509,
+        "spread_pct": 1.3e-05,
+        "generated_at": "2026-05-22T19:05:51.521873",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": false,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 16.72,
+      "cash_capable_route_count": 3,
+      "history_validation_score": 0.5,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 76751.04,
+      "target_price": 76612.888128,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "capital_cfd",
+      "model_count": 8,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "existing_autonomous_trader_tick",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.746703,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.5074,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.5074,
+            "model_signal": {},
+            "model_stack_key": "capital_cfd",
+            "model_count": 8
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "capital",
+            "market_type": "cfd",
+            "runtime_clearances": [],
+            "execution_owner": "existing_autonomous_trader_tick"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 76751.04
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.854831,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.612355,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.5074,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.5074,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      },
+      "last_verified_at": "2026-05-22T19:21:00.805237",
+      "last_verified_epoch": 1779474060.805,
+      "current_price": 76748.445,
+      "direction_move_pct": 0.003381,
+      "target_hit": false
+    },
+    {
+      "id": "shadow-1779473364-8",
+      "route_signature": "alpaca:spot:BTC/USD:SELL",
+      "generated_at": "2026-05-22T19:09:24.601584",
+      "opened_at_epoch": 1779473364.602,
+      "expected_by_epoch": 1779473454.602,
+      "status": "missed_eta",
+      "symbol": "BTCUSD",
+      "venue": "alpaca",
+      "market_type": "spot",
+      "route_symbol": "BTC/USD",
+      "side": "SELL",
+      "confidence": 0.5074,
+      "selection_rank": 3,
+      "profit_velocity_score": 0.630713,
+      "fast_money_score": 0.594256,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.594256,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.446,
+        "avg_change_pct": 1.373,
+        "volume_24h": 58210.304546,
+        "freshest_age_sec": 3.566,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.002328,
+        "stream_freshness_score": 0.2868,
+        "orderbook_score": 0.253023,
+        "orderbook_alignment": "opposed",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target",
+          "orderbook_pressure_opposed"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "BTCUSDT",
+        "side": "SELL",
+        "pressure_side": "BUY",
+        "score": 0.253023,
+        "bid_depth_usd": 791439.951252,
+        "ask_depth_usd": 98563.728901,
+        "signed_imbalance": 0.778509,
+        "spread_pct": 1.3e-05,
+        "generated_at": "2026-05-22T19:05:51.521873",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": false,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 16.72,
+      "cash_capable_route_count": 3,
+      "history_validation_score": 0.5,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 76751.04,
+      "target_price": 76612.888128,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "alpaca_spot",
+      "model_count": 8,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.746703,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.5074,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.5074,
+            "model_signal": {},
+            "model_stack_key": "alpaca_spot",
+            "model_count": 8
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "alpaca",
+            "market_type": "spot",
+            "runtime_clearances": [],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 76751.04
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.854831,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.612355,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.5074,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.5074,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      },
+      "last_verified_at": "2026-05-22T19:21:00.805237",
+      "last_verified_epoch": 1779474060.805,
+      "current_price": 76748.445,
+      "direction_move_pct": 0.003381,
+      "target_hit": false
+    },
+    {
+      "id": "shadow-1779473364-9",
+      "route_signature": "binance:spot:BTCUSDT:SELL",
+      "generated_at": "2026-05-22T19:09:24.601584",
+      "opened_at_epoch": 1779473364.602,
+      "expected_by_epoch": 1779473454.602,
+      "status": "missed_eta",
+      "symbol": "BTCUSD",
+      "venue": "binance",
+      "market_type": "spot",
+      "route_symbol": "BTCUSDT",
+      "side": "SELL",
+      "confidence": 0.5074,
+      "selection_rank": 3,
+      "profit_velocity_score": 0.630713,
+      "fast_money_score": 0.594256,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.594256,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.446,
+        "avg_change_pct": 1.373,
+        "volume_24h": 58210.304546,
+        "freshest_age_sec": 3.566,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.002328,
+        "stream_freshness_score": 0.2868,
+        "orderbook_score": 0.253023,
+        "orderbook_alignment": "opposed",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target",
+          "orderbook_pressure_opposed"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "BTCUSDT",
+        "side": "SELL",
+        "pressure_side": "BUY",
+        "score": 0.253023,
+        "bid_depth_usd": 791439.951252,
+        "ask_depth_usd": 98563.728901,
+        "signed_imbalance": 0.778509,
+        "spread_pct": 1.3e-05,
+        "generated_at": "2026-05-22T19:05:51.521873",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": false,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 16.72,
+      "cash_capable_route_count": 3,
+      "history_validation_score": 0.5,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 76751.04,
+      "target_price": 76612.888128,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "binance_spot",
+      "model_count": 7,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.731057,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.5074,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.5074,
+            "model_signal": {},
+            "model_stack_key": "binance_spot",
+            "model_count": 7
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "binance",
+            "market_type": "spot",
+            "runtime_clearances": [],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 76751.04
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.750526,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.363871,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.5074,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.5074,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      },
+      "last_verified_at": "2026-05-22T19:21:00.805237",
+      "last_verified_epoch": 1779474060.805,
+      "current_price": 76748.445,
+      "direction_move_pct": 0.003381,
+      "target_hit": false
+    },
+    {
+      "id": "shadow-1779473364-12",
+      "route_signature": "capital:cfd:ETHUSD:SELL",
+      "generated_at": "2026-05-22T19:09:24.601584",
+      "opened_at_epoch": 1779473364.602,
+      "expected_by_epoch": 1779473454.602,
+      "status": "missed_eta",
+      "symbol": "ETHUSD",
+      "venue": "capital",
+      "market_type": "cfd",
+      "route_symbol": "ETHUSD",
+      "side": "SELL",
+      "confidence": 0.4585,
+      "selection_rank": 4,
+      "profit_velocity_score": 0.623911,
+      "fast_money_score": 0.606759,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.606759,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.374,
+        "avg_change_pct": 1.105,
+        "volume_24h": 47701.807284,
+        "freshest_age_sec": 3.566,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.001908,
+        "stream_freshness_score": 0.2868,
+        "orderbook_score": 0.367304,
+        "orderbook_alignment": "opposed",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target",
+          "orderbook_pressure_opposed"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "ETHUSDT",
+        "side": "SELL",
+        "pressure_side": "BUY",
+        "score": 0.367304,
+        "bid_depth_usd": 831031.142139,
+        "ask_depth_usd": 272477.396621,
+        "signed_imbalance": 0.506162,
+        "spread_pct": 0.000472,
+        "generated_at": "2026-05-22T19:05:52.005335",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": false,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 17.864,
+      "cash_capable_route_count": 3,
+      "history_validation_score": 0.5,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 2121.425,
+      "target_price": 2117.606435,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "capital_cfd",
+      "model_count": 8,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "existing_autonomous_trader_tick",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.708074,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.4585,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.4585,
+            "model_signal": {},
+            "model_stack_key": "capital_cfd",
+            "model_count": 8
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "capital",
+            "market_type": "cfd",
+            "runtime_clearances": [],
+            "execution_owner": "existing_autonomous_trader_tick"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 2121.425
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.750526,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.363871,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.4585,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.4585,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      },
+      "last_verified_at": "2026-05-22T19:21:00.805237",
+      "last_verified_epoch": 1779474060.805,
+      "current_price": 2118.105,
+      "direction_move_pct": 0.156499,
+      "target_hit": false
+    }
+  ],
+  "active_shadows": [
+    {
+      "id": "shadow-1779450497-3",
+      "route_signature": "binance:spot:ATOMUSDT:BUY",
+      "generated_at": "2026-05-22T12:48:17.104580",
+      "opened_at_epoch": 1779450497.105,
+      "expected_by_epoch": 1779450587.105,
+      "status": "pending_price",
+      "symbol": "ATOMUSD",
+      "venue": "binance",
+      "market_type": "spot",
+      "route_symbol": "ATOMUSDT",
+      "side": "BUY",
+      "confidence": 1.0,
+      "selection_rank": 2,
+      "profit_velocity_score": 0.643895,
+      "fast_money_score": 0.596206,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.596206,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 8.168,
+        "avg_change_pct": 8.168,
+        "volume_24h": 691218.77263,
+        "freshest_age_sec": 4.405,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.027649,
+        "stream_freshness_score": 0.119,
+        "orderbook_score": 0.626171,
+        "orderbook_alignment": "aligned",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target",
+          "orderbook_pressure_aligned"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "ATOMUSDT",
+        "side": "BUY",
+        "pressure_side": "BUY",
+        "score": 0.626171,
+        "bid_depth_usd": 194366.72983,
+        "ask_depth_usd": 148190.53935,
+        "signed_imbalance": 0.134798,
+        "spread_pct": 0.045693,
+        "generated_at": "2026-05-22T12:44:21.538661",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 15.0,
+      "cash_capable_route_count": 1,
+      "history_validation_score": 0.5,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 1,
+      "sources": [
+        "live_stream_cache"
+      ],
+      "entry_price": 2.185,
+      "target_price": 2.188933,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "binance_spot",
+      "model_count": 7,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.992558,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 1.0,
+            "support_count": 1,
+            "sources": [
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "BUY",
+            "confidence": 1.0,
+            "model_signal": {},
+            "model_stack_key": "binance_spot",
+            "model_count": 7
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "binance",
+            "market_type": "spot",
+            "runtime_clearances": [],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 2.185
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.95039,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.99251,
+            "lighthouse_cleared": true,
+            "consensus_signal": "BUY",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 0.25,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      },
+      "last_verified_at": "2026-05-22T19:21:00.805237",
+      "last_verified_epoch": 1779474060.805,
+      "current_price": 0.0,
+      "direction_move_pct": 0.0,
+      "target_hit": false
+    },
+    {
+      "id": "shadow-1779474060-1",
+      "route_signature": "capital:cfd:GOLD:HOLD",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_opened",
+      "symbol": "XAUUSD",
+      "venue": "capital",
+      "market_type": "cfd",
+      "route_symbol": "GOLD",
+      "side": "HOLD",
+      "confidence": 0.7352,
+      "selection_rank": 1,
+      "profit_velocity_score": 0.55973,
+      "fast_money_score": 0.567267,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.567267,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 4.58,
+        "avg_change_pct": 4.58,
+        "volume_24h": 0.0,
+        "freshest_age_sec": 30.087,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.0,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.35,
+        "orderbook_alignment": "unavailable",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "capital_gold_live_stream"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_missing_from_stream"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": false,
+        "source": "orderbook_probe",
+        "symbol": "XAUUSD",
+        "side": "HOLD",
+        "pressure_side": "NEUTRAL",
+        "score": 0.35,
+        "reason": "no_budgeted_orderbook_source_available",
+        "generated_at": "2026-05-22T19:17:10.904889"
+      },
+      "estimated_target_eta_sec": 15.0,
+      "cash_capable_route_count": 1,
+      "history_validation_score": 0.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 1,
+      "sources": [
+        "capital_gold_live_stream",
+        "gold_priority_target",
+        "fresh_interval_validated_gold_projection_required"
+      ],
+      "entry_price": 4369.5,
+      "target_price": 4377.3651,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "capital_cfd",
+      "model_count": 8,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "existing_autonomous_trader_tick",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.851405,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.7352,
+            "support_count": 1,
+            "sources": [
+              "capital_gold_live_stream",
+              "gold_priority_target",
+              "fresh_interval_validated_gold_projection_required"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "NEUTRAL",
+            "confidence": 0.7352,
+            "model_signal": {},
+            "model_stack_key": "capital_cfd",
+            "model_count": 8
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "capital",
+            "market_type": "cfd",
+            "runtime_clearances": [],
+            "execution_owner": "existing_autonomous_trader_tick"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 4369.5
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.839071,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.603008,
+            "lighthouse_cleared": false,
+            "consensus_signal": "NEUTRAL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "NEUTRAL",
+            "confidence": 0.7352,
+            "coherence": 0.25,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "NEUTRAL",
+            "confidence": 0.7352,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "NEUTRAL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "NEUTRAL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "NEUTRAL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      }
+    },
+    {
+      "id": "shadow-1779474060-3",
+      "route_signature": "capital:cfd:XRPUSD:SELL",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_opened",
+      "symbol": "XRPUSD",
+      "venue": "capital",
+      "market_type": "cfd",
+      "route_symbol": "XRPUSD",
+      "side": "SELL",
+      "confidence": 0.6074,
+      "selection_rank": 2,
+      "profit_velocity_score": 0.733905,
+      "fast_money_score": 0.732957,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.732957,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.844,
+        "avg_change_pct": 1.8375,
+        "volume_24h": 20951257.08724,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.83805,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.500926,
+        "orderbook_alignment": "opposed",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_liquidity_confirmed",
+          "orderbook_pressure_opposed"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "XRPUSDT",
+        "side": "SELL",
+        "pressure_side": "BUY",
+        "score": 0.500926,
+        "bid_depth_usd": 1540389.47134,
+        "ask_depth_usd": 1061065.00512,
+        "signed_imbalance": 0.184252,
+        "spread_pct": 0.007387,
+        "generated_at": "2026-05-22T19:17:09.539865",
+        "whale_supporting_buy": false,
+        "whale_blocking_buy": false,
+        "whale_blocking_sell": false,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 15.527,
+      "cash_capable_route_count": 2,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 1.3516,
+      "target_price": 1.34916712,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "capital_cfd",
+      "model_count": 8,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "existing_autonomous_trader_tick",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.793674,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.6074,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.6074,
+            "model_signal": {},
+            "model_stack_key": "capital_cfd",
+            "model_count": 8
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "capital",
+            "market_type": "cfd",
+            "runtime_clearances": [],
+            "execution_owner": "existing_autonomous_trader_tick"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 1.3516
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.85464,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.611811,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.6074,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.6074,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      }
+    },
+    {
+      "id": "shadow-1779474060-4",
+      "route_signature": "binance:spot:XRPUSDT:SELL",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_opened",
+      "symbol": "XRPUSD",
+      "venue": "binance",
+      "market_type": "spot",
+      "route_symbol": "XRPUSDT",
+      "side": "SELL",
+      "confidence": 0.6074,
+      "selection_rank": 2,
+      "profit_velocity_score": 0.733905,
+      "fast_money_score": 0.732957,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.732957,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.844,
+        "avg_change_pct": 1.8375,
+        "volume_24h": 20951257.08724,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.83805,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.500926,
+        "orderbook_alignment": "opposed",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_liquidity_confirmed",
+          "orderbook_pressure_opposed"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "XRPUSDT",
+        "side": "SELL",
+        "pressure_side": "BUY",
+        "score": 0.500926,
+        "bid_depth_usd": 1540389.47134,
+        "ask_depth_usd": 1061065.00512,
+        "signed_imbalance": 0.184252,
+        "spread_pct": 0.007387,
+        "generated_at": "2026-05-22T19:17:09.539865",
+        "whale_supporting_buy": false,
+        "whale_blocking_buy": false,
+        "whale_blocking_sell": false,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 15.527,
+      "cash_capable_route_count": 2,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 1.3516,
+      "target_price": 1.34916712,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "binance_spot",
+      "model_count": 7,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.793674,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.6074,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.6074,
+            "model_signal": {},
+            "model_stack_key": "binance_spot",
+            "model_count": 7
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "binance",
+            "market_type": "spot",
+            "runtime_clearances": [],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 1.3516
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.85464,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.611811,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.6074,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.6074,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      }
+    },
+    {
+      "id": "shadow-1779474060-7",
+      "route_signature": "binance:spot:NEARUSDT:BUY",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_opened",
+      "symbol": "NEARUSD",
+      "venue": "binance",
+      "market_type": "spot",
+      "route_symbol": "NEARUSDT",
+      "side": "BUY",
+      "confidence": 1.0,
+      "selection_rank": 3,
+      "profit_velocity_score": 0.726515,
+      "fast_money_score": 0.759495,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.759495,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 17.625,
+        "avg_change_pct": 17.625,
+        "volume_24h": 33951519.1658,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 1.0,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.655104,
+        "orderbook_alignment": "aligned",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_liquidity_confirmed",
+          "orderbook_pressure_aligned"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "NEARUSDT",
+        "side": "BUY",
+        "pressure_side": "BUY",
+        "score": 0.655104,
+        "bid_depth_usd": 959920.2654,
+        "ask_depth_usd": 634864.7791,
+        "signed_imbalance": 0.203824,
+        "spread_pct": 0.045945,
+        "generated_at": "2026-05-22T19:17:09.239477",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 15.0,
+      "cash_capable_route_count": 1,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 1,
+      "sources": [
+        "live_stream_cache"
+      ],
+      "entry_price": 2.169,
+      "target_price": 2.1729042,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "binance_spot",
+      "model_count": 7,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.975861,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 1.0,
+            "support_count": 1,
+            "sources": [
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "BUY",
+            "confidence": 1.0,
+            "model_signal": {},
+            "model_stack_key": "binance_spot",
+            "model_count": 7
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "binance",
+            "market_type": "spot",
+            "runtime_clearances": [],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 2.169
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.839071,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.603008,
+            "lighthouse_cleared": false,
+            "consensus_signal": "BUY",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 0.25,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "BUY",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      }
+    },
+    {
+      "id": "shadow-1779474060-10",
+      "route_signature": "capital:cfd:ETHUSD:SELL",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_opened",
+      "symbol": "ETHUSD",
+      "venue": "capital",
+      "market_type": "cfd",
+      "route_symbol": "ETHUSD",
+      "side": "SELL",
+      "confidence": 0.4172,
+      "selection_rank": 4,
+      "profit_velocity_score": 0.642698,
+      "fast_money_score": 0.610628,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.610628,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.088,
+        "avg_change_pct": 0.9455,
+        "volume_24h": 47615.045903,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.001905,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.559608,
+        "orderbook_alignment": "neutral",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "ETHUSDT",
+        "side": "SELL",
+        "pressure_side": "NEUTRAL",
+        "score": 0.559608,
+        "bid_depth_usd": 652912.871543,
+        "ask_depth_usd": 592753.59886,
+        "signed_imbalance": 0.048295,
+        "spread_pct": 0.000472,
+        "generated_at": "2026-05-22T19:17:10.088050",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 18.854,
+      "cash_capable_route_count": 3,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 2118.105,
+      "target_price": 2114.292411,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "capital_cfd",
+      "model_count": 8,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "existing_autonomous_trader_tick",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.70428,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.4172,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.4172,
+            "model_signal": {},
+            "model_stack_key": "capital_cfd",
+            "model_count": 8
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "capital",
+            "market_type": "cfd",
+            "runtime_clearances": [],
+            "execution_owner": "existing_autonomous_trader_tick"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 2118.105
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.85464,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.611811,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.4172,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.4172,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      }
+    },
+    {
+      "id": "shadow-1779474060-11",
+      "route_signature": "alpaca:spot:ETH/USD:SELL",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_opened",
+      "symbol": "ETHUSD",
+      "venue": "alpaca",
+      "market_type": "spot",
+      "route_symbol": "ETH/USD",
+      "side": "SELL",
+      "confidence": 0.4172,
+      "selection_rank": 4,
+      "profit_velocity_score": 0.642698,
+      "fast_money_score": 0.610628,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.610628,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.088,
+        "avg_change_pct": 0.9455,
+        "volume_24h": 47615.045903,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.001905,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.559608,
+        "orderbook_alignment": "neutral",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "ETHUSDT",
+        "side": "SELL",
+        "pressure_side": "NEUTRAL",
+        "score": 0.559608,
+        "bid_depth_usd": 652912.871543,
+        "ask_depth_usd": 592753.59886,
+        "signed_imbalance": 0.048295,
+        "spread_pct": 0.000472,
+        "generated_at": "2026-05-22T19:17:10.088050",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 18.854,
+      "cash_capable_route_count": 3,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 2118.105,
+      "target_price": 2114.292411,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "alpaca_spot",
+      "model_count": 8,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.70428,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.4172,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.4172,
+            "model_signal": {},
+            "model_stack_key": "alpaca_spot",
+            "model_count": 8
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "alpaca",
+            "market_type": "spot",
+            "runtime_clearances": [],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 2118.105
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.85464,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.611811,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.4172,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.4172,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      }
+    },
+    {
+      "id": "shadow-1779474060-12",
+      "route_signature": "binance:spot:ETHUSDT:SELL",
+      "generated_at": "2026-05-22T19:21:00.805237",
+      "opened_at_epoch": 1779474060.805,
+      "expected_by_epoch": 1779474150.805,
+      "status": "shadow_opened",
+      "symbol": "ETHUSD",
+      "venue": "binance",
+      "market_type": "spot",
+      "route_symbol": "ETHUSDT",
+      "side": "SELL",
+      "confidence": 0.4172,
+      "selection_rank": 4,
+      "profit_velocity_score": 0.642698,
+      "fast_money_score": 0.610628,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.610628,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.088,
+        "avg_change_pct": 0.9455,
+        "volume_24h": 47615.045903,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.001905,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.559608,
+        "orderbook_alignment": "neutral",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "ETHUSDT",
+        "side": "SELL",
+        "pressure_side": "NEUTRAL",
+        "score": 0.559608,
+        "bid_depth_usd": 652912.871543,
+        "ask_depth_usd": 592753.59886,
+        "signed_imbalance": 0.048295,
+        "spread_pct": 0.000472,
+        "generated_at": "2026-05-22T19:17:10.088050",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 18.854,
+      "cash_capable_route_count": 3,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "entry_price": 2118.105,
+      "target_price": 2114.292411,
+      "target_move_pct": 0.18,
+      "validation_horizon_sec": 90.0,
+      "model_signal": {},
+      "model_alignment": false,
+      "model_stack_key": "binance_spot",
+      "model_count": 7,
+      "route_clearances": [],
+      "route_guards": [],
+      "route_ready": true,
+      "execution_owner": "unified_executor",
+      "real_order_submitted": false,
+      "promotion_gate": "runtime_executor_required_after_shadow_validation",
+      "agent_review": {
+        "logic_validated": true,
+        "agent_score": 0.70428,
+        "agents": {
+          "market_data_agent": {
+            "ok": true,
+            "confidence": 0.4172,
+            "support_count": 2,
+            "sources": [
+              "binance",
+              "live_stream_cache"
+            ]
+          },
+          "model_alignment_agent": {
+            "ok": true,
+            "direction": "SELL",
+            "confidence": 0.4172,
+            "model_signal": {},
+            "model_stack_key": "binance_spot",
+            "model_count": 7
+          },
+          "route_clearance_agent": {
+            "ok": true,
+            "venue": "binance",
+            "market_type": "spot",
+            "runtime_clearances": [],
+            "execution_owner": "unified_executor"
+          },
+          "price_validation_agent": {
+            "ok": true,
+            "entry_price": 2118.105
+          },
+          "runtime_clearance_agent": {
+            "ok_for_shadow": true,
+            "ok_for_live_promotion": true,
+            "runtime_clearances": [],
+            "note": "Queen/HNC can reason and shadow freely; live exchange mutation waits for runtime truth checks"
+          },
+          "hnc_alignment_agent": {
+            "available": true,
+            "alignment_score": 0.85464,
+            "harmonic_lock": 1.0,
+            "phase_coherence": 0.611811,
+            "lighthouse_cleared": false,
+            "consensus_signal": "SELL",
+            "responding_agents": 5
+          }
+        },
+        "synthetic_agent_signals": [
+          {
+            "pillar": "MarketDataAgent",
+            "signal": "SELL",
+            "confidence": 0.4172,
+            "coherence": 0.5,
+            "frequency_hz": 396.0
+          },
+          {
+            "pillar": "ModelAlignmentAgent",
+            "signal": "SELL",
+            "confidence": 0.4172,
+            "coherence": 0.86,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RouteClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          },
+          {
+            "pillar": "PriceValidationAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 528.0
+          },
+          {
+            "pillar": "RuntimeClearanceAgent",
+            "signal": "SELL",
+            "confidence": 1.0,
+            "coherence": 1.0,
+            "frequency_hz": 432.0
+          }
+        ],
+        "self_report": "shadow logic validated; watch price path before promotion"
+      }
+    }
+  ],
+  "self_measurement": {
+    "agent_validated_count": 7,
+    "agent_average_score": 0.734881,
+    "all_four_exchange_routes_seen": false,
+    "real_exchange_mutation": false
+  }
+}

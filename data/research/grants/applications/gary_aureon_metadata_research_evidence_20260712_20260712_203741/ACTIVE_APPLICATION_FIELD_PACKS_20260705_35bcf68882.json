@@ -1,0 +1,144 @@
+{
+  "created_at": "2026-07-05",
+  "status": "draft_not_submitted",
+  "submission_boundary": "No grant application, external email, portal submission, or funder upload has been completed by this pass.",
+  "applicant": {
+    "legal_entity": "R&A Consulting and Brokerage Services Ltd",
+    "company_number": "NI696693",
+    "research_identity": "Aureon Institute",
+    "lead_contact": "Gary Anthony Leckey",
+    "email": "gaxlec@gmail.com",
+    "registered_office": "1 Quadrant Place, Belfast, Northern Ireland, BT12 4HX",
+    "sic_codes": [
+      "62020 Information technology consultancy activities",
+      "62090 Other information technology service activities",
+      "66220 Activities of insurance agents and brokers"
+    ],
+    "compliance_caveats": [
+      "Companies House confirmation statement overdue as of 2026-07-05 readback.",
+      "Director identity verification due 2026-05-09 as of 2026-07-05 readback."
+    ]
+  },
+  "recommended_first_package": {
+    "title": "Aureon Evidence Automation for SME Compliance and Operations",
+    "short_title": "Aureon Evidence Automation",
+    "grant_safe_summary": "A local-first AI operations platform for evidence capture, compliance support, operational proof, source-grounded workflow control, sensitive-data exclusion, and human-reviewed reporting packs.",
+    "strongest_routes": [
+      "Invest NI Innovation Funding Advisory Service",
+      "Invest NI Grant for R&D after advisor/client route",
+      "InterTradeIreland Innovation Boost",
+      "Next Wave only if Createch fit is confirmed"
+    ],
+    "avoid_claims": [
+      "independent proof of HNC physics or consciousness claims",
+      "guaranteed trading performance",
+      "deployed defence capability",
+      "unrestricted autonomous form submission",
+      "attachment of sensitive financial or credential material"
+    ]
+  },
+  "opportunities": [
+    {
+      "id": "INVEST_NI_IFAS",
+      "name": "Invest NI Innovation Funding Advisory Service",
+      "priority": "P0",
+      "status": "ready_for_enquiry_after_confirmation",
+      "official_url": "https://www.investni.com/support-for-business/research-and-development-support/innovation-funding-advisory-service",
+      "official_fit_points": [
+        "Supports Northern Ireland businesses accessing Innovate UK, Horizon Europe, EIC Accelerator, and Eureka routes.",
+        "Helps assess project stage, identify calls, find partners, guide applications, critique drafts, and connect specialist advisors.",
+        "Available to NI businesses seeking technical innovation and R&D projects for new-to-market products/services, normally above GBP 50000 grant need with match funding."
+      ],
+      "draft_subject": "R&D funding advisory request: Aureon evidence automation and AI operations platform",
+      "draft_payload_file": "ACTIVE_APPLICATION_FIELD_PACKS_20260705.md#pack-1-invest-ni-innovation-funding-advisory-service",
+      "next_action": "Gary confirms contact details and compliance plan; then submit enquiry or send advisor email with reviewed concept note."
+    },
+    {
+      "id": "INVEST_NI_RD",
+      "name": "Invest NI Grant for R&D",
+      "priority": "P1",
+      "status": "concept_ready_client_route_required",
+      "official_url": "https://www.investni.com/support-for-business/research-and-development-support/grant-for-research-and-development",
+      "official_fit_points": [
+        "Supports development of an idea into a product, process, or service ready for commercialisation.",
+        "Requires clear costs, financial and technical challenges, and commercial benefit.",
+        "Only available to Invest NI clients; application accepted only after discussion with Invest NI and issue of a reference number."
+      ],
+      "draft_project_title": "Aureon Evidence Automation for SME Compliance and Operational Proof",
+      "draft_payload_file": "ACTIVE_APPLICATION_FIELD_PACKS_20260705.md#pack-2-invest-ni-grant-for-rd-concept",
+      "next_action": "Use IFAS/advisor route first; build budget and eligible cost schedule."
+    },
+    {
+      "id": "INTERTRADEIRELAND_INNOVATION_BOOST",
+      "name": "InterTradeIreland Innovation Boost",
+      "priority": "P1",
+      "status": "initial_assessment_draft_ready",
+      "official_url": "https://intertradeireland.com/innovation/innovation-boost",
+      "official_fit_points": [
+        "Offers expert support and funding up to GBP 56000 or EUR 67900.",
+        "Supports product development, digitisation, process improvement, and third-level institution expertise.",
+        "Initial route is an assessment/enquiry before full application."
+      ],
+      "draft_payload_file": "ACTIVE_APPLICATION_FIELD_PACKS_20260705.md#pack-3-intertradeireland-innovation-boost",
+      "next_action": "Confirm project manager/academic expertise need and submit initial assessment after final payload confirmation."
+    },
+    {
+      "id": "NEXT_WAVE_BREAKTHROUGH_WAVE_1",
+      "name": "Next Wave: Breakthrough Wave 1",
+      "priority": "P1",
+      "status": "conditional_go_needs_createch_fit_check",
+      "official_url": "https://www.ukri.org/opportunity/next-wave-breakthrough-wave-1/",
+      "close_date": "2026-08-11 11:00 UK time",
+      "official_fit_points": [
+        "Open to UK registered SMEs applying alone or leading collaboration.",
+        "Share of up to GBP 10000000 for industrial research aligned to Createch innovation."
+      ],
+      "draft_payload_file": "ACTIVE_APPLICATION_FIELD_PACKS_20260705.md#pack-4-next-wave-breakthrough-wave-1",
+      "next_action": "Read the IFS questions, confirm Createch fit, and select creative-technology demonstrator examples."
+    },
+    {
+      "id": "EIC_ACCELERATOR",
+      "name": "EIC Accelerator",
+      "priority": "P1",
+      "status": "prepare_only_high_bar",
+      "official_url": "https://eic.ec.europa.eu/eic-funding-opportunities/eic-accelerator_en",
+      "official_fit_points": [
+        "For startups and SMEs with game-changing innovation, TRL 6 to 8.",
+        "Grant component below EUR 2500000.",
+        "UK applicants can only apply for grant-only scheme.",
+        "Step 1 short proposal requires 12-page form, up to ten-slide pitch deck, and up to three-minute video pitch."
+      ],
+      "draft_payload_file": "ACTIVE_APPLICATION_FIELD_PACKS_20260705.md#pack-5-eic-accelerator-short-proposal-scaffold",
+      "next_action": "Do not submit first. Build TRL evidence, market map, competitor map, letters of intent, financials, and independent validation."
+    }
+  ],
+  "safe_attachment_candidates": [
+    "C:/Users/user/Aureon_Work_Hub_20260705/04_GRANT_WORKING_PACKS/AUREON_GRANT_READY_MASTER_MAP_20260705.md",
+    "C:/Users/user/Aureon_Work_Hub_20260705/00_INDEXES/PUBLIC_IDENTITY_SOURCE_REGISTER_20260705.md",
+    "C:/Users/user/Aureon_Work_Hub_20260705/03_REPO_ARCHIVE_INDEX/REPO_ARCHIVE_INDEX_20260705.md",
+    "C:/Users/user/Aureon_Work_Hub_20260705/00_INDEXES/LOCAL_AND_DRIVE_CONSOLIDATION_STATUS_20260705.md",
+    "C:/Users/user/Aureon_Work_Hub_20260705/04_GRANT_WORKING_PACKS/ACTIVE_APPLICATION_FIELD_PACKS_20260705.md"
+  ],
+  "never_attach_without_explicit_approval": [
+    "bank statements",
+    "tax filings or HMRC files",
+    "personal or legal documents",
+    "raw local Git history bundles",
+    "runtime state containing secret_policy, credentials, tokens, private keys, exchange accounts, trading balances, or accounting labels",
+    "customer or third-party records"
+  ],
+  "blocked_write_actions": [
+    {
+      "target": "Google Sheet update",
+      "spreadsheet_id": "1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+      "error": "ACCESS_TOKEN_SCOPE_INSUFFICIENT",
+      "resolution": "Reauthorize Google Drive/Sheets connector with write/create/upload scope."
+    },
+    {
+      "target": "Updated hub archive upload",
+      "file": "C:/Users/user/outputs/Aureon_Work_Hub_20260705_WITH_DELTA.tar",
+      "error": "ACCESS_TOKEN_SCOPE_INSUFFICIENT",
+      "resolution": "Upload after DriveFiles.Create scope is available."
+    }
+  ]
+}

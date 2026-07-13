@@ -1,0 +1,30 @@
+{
+  "epas_test": {
+    "pct_start": 71,
+    "pct_end": 71,
+    "delta": 0,
+    "elapsed_s": 30.830435900003067,
+    "cpu_avg": 86.76279069767442,
+    "bt_pulses": 0,
+    "readings_count": 43,
+    "flag_changes": 0,
+    "pct_transitions": [],
+    "freqs": [
+      7.83,
+      14.3,
+      20.8,
+      33.8,
+      174,
+      285,
+      396,
+      417,
+      432,
+      528,
+      639,
+      741,
+      852,
+      963
+    ]
+  },
+  "timestamp": 1775174553.1765645
+}

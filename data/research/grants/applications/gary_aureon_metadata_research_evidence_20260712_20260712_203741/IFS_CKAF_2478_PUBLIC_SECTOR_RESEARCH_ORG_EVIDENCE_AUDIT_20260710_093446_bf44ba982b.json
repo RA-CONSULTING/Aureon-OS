@@ -1,0 +1,102 @@
+﻿{
+    "schema_version":  "aureon-ifs-ckaf-public-sector-research-org-evidence-audit-v1",
+    "generated_at":  "2026-07-10T09:34:46+01:00",
+    "operator":  "Aureon",
+    "scope":  "IFS_ONLY",
+    "event":  "ifs_ckaf_public_sector_research_org_evidence_audit",
+    "application_id":  "APP-IFS-CKAF-AUTUMN-2478-20260709",
+    "opportunity_id":  "IFS-CURRENT-2478",
+    "competition":  "Commercialising Knowledge Assets Fund (CKAF) Autumn",
+    "official_url":  "https://apply-for-innovation-funding.service.gov.uk/competition/2478/overview/77f0cc95-dd1b-450f-a02d-e83046b464c1",
+    "deadline":  "2026-09-01T11:00:00+01:00",
+    "result":  "NO_CKAF_SUBMIT_READY_ROUTE_CURRENT_EVIDENCE_PUBLIC_SECTOR_RESEARCH_ORG_REQUIRED",
+    "official_ifs_requirements":  [
+                                      {
+                                          "requirement":  "UK registered government research organisations can apply for GBP50,000 to GBP250,000 to move viable public sector knowledge assets towards commercial readiness.",
+                                          "source":  "Official IFS page lines 45-50"
+                                      },
+                                      {
+                                          "requirement":  "Competition is open to single applicants; grant is awarded to and administered by the applicant organisation.",
+                                          "source":  "Official IFS page lines 70-74"
+                                      },
+                                      {
+                                          "requirement":  "Lead must be a UK registered Public Sector Research Establishment, UKRI wholly owned institute, or other eligible public sector body such as an ALB that undertakes research as a primary function.",
+                                          "source":  "Official IFS page lines 73-82"
+                                      },
+                                      {
+                                          "requirement":  "Applicant must own or co-own the Knowledge Asset, have senior support to commit the organisation, and be able to complete the project and claim grant funding.",
+                                          "source":  "Official IFS page lines 73-82 and 254-255"
+                                      },
+                                      {
+                                          "requirement":  "Subcontractors are allowed, but only with justification; they cannot be used to bypass lead eligibility.",
+                                          "source":  "Official IFS page lines 120-126"
+                                      }
+                                  ],
+    "confirmed_findings":  {
+                               "confirmed_public_sector_research_org_lead":  false,
+                               "confirmed_public_sector_body_eligibility":  false,
+                               "confirmed_knowledge_asset_owned_by_eligible_body":  false,
+                               "confirmed_senior_support_letter":  false,
+                               "confirmed_ra_subcontract_or_partner_role":  false,
+                               "direct_ifs_submission_unlocked":  false
+                           },
+    "local_evidence_readback":  [
+                                    {
+                                        "path":  "applications.json",
+                                        "finding":  "CKAF is recorded as PUBLIC_SECTOR_RESEARCH_ORG_REQUIRED, not R\u0026A direct-submit ready."
+                                    },
+                                    {
+                                        "path":  "opportunities.json",
+                                        "finding":  "Eligibility text requires PSRE, UKRI wholly owned institute or eligible public sector body undertaking research as a primary function."
+                                    },
+                                    {
+                                        "path":  "IFS_CURRENT_FIT_MATRIX_20260709.md",
+                                        "finding":  "Matrix states CKAF must not be submitted as R\u0026A and should only be monitored for partner-led knowledge-asset commercialisation."
+                                    },
+                                    {
+                                        "path":  "Downloads/Documents/Desktop filename search",
+                                        "finding":  "No CKAF, GOTT, PSRE, public-sector research body, Rose Book, ALB or knowledge-asset lead evidence found."
+                                    }
+                                ],
+    "drive_searches":  [
+                           {
+                               "query":  "CKAF",
+                               "result_summary":  "No Google Drive results."
+                           },
+                           {
+                               "query":  "Commercialising Knowledge Assets",
+                               "result_summary":  "Returned unrelated SKILL.md file only; no CKAF lead, public sector research body, or Knowledge Asset evidence found."
+                           },
+                           {
+                               "query":  "GOTT",
+                               "result_summary":  "No Google Drive results."
+                           },
+                           {
+                               "query":  "public sector research",
+                               "result_summary":  "Returned War Room/planning and unrelated technical/service files. No confirmed public-sector research organisation lead or senior support found."
+                           },
+                           {
+                               "query":  "PSRE",
+                               "result_summary":  "No Google Drive results."
+                           }
+                       ],
+    "route_action":  {
+                         "portal_draft_opened":  false,
+                         "final_submission_attempted":  false,
+                         "partner_invite_sent":  false,
+                         "email_sent":  false,
+                         "upload_performed":  false,
+                         "reason":  "Official CKAF rules require an eligible public-sector research organisation/body lead and public-sector Knowledge Asset evidence. Current Aureon evidence does not confirm those gates."
+                     },
+    "next_actions":  [
+                         "Do not submit CKAF directly as R\u0026A.",
+                         "Only change CKAF to draft-ready if an eligible public-sector research establishment, UKRI institute, ALB or public-sector body confirms lead status, Knowledge Asset ownership, senior support, and R\u0026A role evidence.",
+                         "If R\u0026A is involved, treat it only as a subcontractor/partner role after lead eligibility and procurement/funding basis are documented."
+                     ],
+    "controls":  [
+                     "No unsupported public-sector lead claim made",
+                     "No unsupported Knowledge Asset ownership claim made",
+                     "No unsupported senior-support or subcontractor claim made",
+                     "No IFS portal mutation, external email, upload, partner invite, or final submission performed"
+                 ]
+}

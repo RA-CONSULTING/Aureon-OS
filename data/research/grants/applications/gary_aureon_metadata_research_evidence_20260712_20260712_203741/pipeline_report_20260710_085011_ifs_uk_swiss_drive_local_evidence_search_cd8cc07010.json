@@ -1,0 +1,30 @@
+{
+  "generated_at": "2026-07-10T08:50:11+01:00",
+  "operator": "Aureon",
+  "scope": "IFS_ONLY",
+  "event": "ifs_uk_swiss_drive_local_evidence_search",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "status_after_action": "IFS_DRAFT_80_PERCENT_APPLICATION_TEAM_COMPLETE_PARTNER_BUDGET_EVIDENCE_REQUIRED",
+  "progress_percent_after_action": 80,
+  "new_ifs_submissions": 0,
+  "portal_changed": false,
+  "result": "NO_CONFIRMED_DRIVE_OR_LOCAL_PARTNER_BUDGET_UNLOCK_EVIDENCE_FOUND",
+  "artifacts": [
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_DRIVE_LOCAL_EVIDENCE_SEARCH_20260710_085011.json",
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_DRIVE_LOCAL_EVIDENCE_SEARCH_20260710_085011.md"
+  ],
+  "remaining_gates": [
+    "Swiss implementation partner",
+    "Research institute or waiver",
+    "Partner confirmation or letter",
+    "Partner budget or cost split",
+    "Q4 permits/licences position",
+    "Q6 export-control position",
+    "Q17 costs and value for money",
+    "Project finances",
+    "Project Impact persistence and submission",
+    "Award terms and conditions",
+    "Review and submit"
+  ]
+}

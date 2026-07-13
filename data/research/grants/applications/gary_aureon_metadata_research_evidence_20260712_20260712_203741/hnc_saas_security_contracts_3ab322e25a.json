@@ -1,0 +1,3510 @@
+{
+  "contracts": {
+    "goal_039be066986d": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "goal_039be066986d",
+      "contract_type": "goal",
+      "created_at": "2026-05-11T18:58:26.844171+00:00",
+      "parent_id": "",
+      "payload": {
+        "loop": [
+          "understand",
+          "recall_memory",
+          "choose_route",
+          "create_tasks",
+          "queue_work_orders",
+          "observe_result",
+          "write_memory"
+        ],
+        "objective": "Build Aureon's security-hardened HNC SaaS through zero-trust controls, ASVS checks, and contract-governed implementation.",
+        "route_surfaces": [
+          "saas_security",
+          "contracts",
+          "capability_growth",
+          "self_enhancement",
+          "validation"
+        ],
+        "success_criteria": [
+          "work orders queued",
+          "result observed",
+          "memory written"
+        ]
+      },
+      "priority": 5,
+      "queue": "default",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "created",
+      "tags": [],
+      "title": "Build Aureon's security-hardened HNC SaaS through zero-trust controls, ASVS checks, and contract-governed implementation",
+      "trace_id": "trace_86cae1e36d70",
+      "updated_at": "2026-05-11T18:58:26.844171+00:00"
+    },
+    "goal_91f315a3230f": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "goal_91f315a3230f",
+      "contract_type": "goal",
+      "created_at": "2026-05-11T19:09:37.388320+00:00",
+      "parent_id": "",
+      "payload": {
+        "loop": [
+          "understand",
+          "recall_memory",
+          "choose_route",
+          "create_tasks",
+          "queue_work_orders",
+          "observe_result",
+          "write_memory"
+        ],
+        "objective": "Pursue Aureon's unhackable HNC SaaS north-star through zero-trust controls, authorized self-attack, stress tests, repair, retest, and release gates.",
+        "route_surfaces": [
+          "saas_security",
+          "contracts",
+          "capability_growth",
+          "self_enhancement",
+          "validation"
+        ],
+        "success_criteria": [
+          "work orders queued",
+          "result observed",
+          "memory written"
+        ]
+      },
+      "priority": 5,
+      "queue": "default",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "created",
+      "tags": [],
+      "title": "Pursue Aureon's unhackable HNC SaaS north-star through zero-trust controls, authorized self-attack, stress tests, repair",
+      "trace_id": "trace_790448ea8e7d",
+      "updated_at": "2026-05-11T19:09:37.388320+00:00"
+    },
+    "job_063443c650a8": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "job_063443c650a8",
+      "contract_type": "job",
+      "created_at": "2026-05-11T18:58:26.848752+00:00",
+      "parent_id": "goal_039be066986d",
+      "payload": {
+        "goal_id": "goal_039be066986d",
+        "queue": "organism.default",
+        "retry_policy": {
+          "max_attempts": 1,
+          "mode": "manual_retry"
+        },
+        "task_ids": [
+          "task_b3f9422a2bdf"
+        ]
+      },
+      "priority": 5,
+      "queue": "organism.default",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "created",
+      "tags": [],
+      "title": "Execute routed goal plan",
+      "trace_id": "trace_16b8cc95be2b",
+      "updated_at": "2026-05-11T18:58:26.848752+00:00"
+    },
+    "job_083f9ae98d95": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "job_083f9ae98d95",
+      "contract_type": "job",
+      "created_at": "2026-05-11T19:09:37.388320+00:00",
+      "parent_id": "goal_91f315a3230f",
+      "payload": {
+        "goal_id": "goal_91f315a3230f",
+        "queue": "organism.default",
+        "retry_policy": {
+          "max_attempts": 1,
+          "mode": "manual_retry"
+        },
+        "task_ids": [
+          "task_207a68c7beec"
+        ]
+      },
+      "priority": 5,
+      "queue": "organism.default",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "created",
+      "tags": [],
+      "title": "Execute routed goal plan",
+      "trace_id": "trace_9ee6801c3771",
+      "updated_at": "2026-05-11T19:09:37.388320+00:00"
+    },
+    "skill_91fde5bd2c99": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "skill_91fde5bd2c99",
+      "contract_type": "skill",
+      "created_at": "2026-05-11T18:58:26.835652+00:00",
+      "parent_id": "",
+      "payload": {
+        "capability": "Inventories HNC systems and turns SaaS security requirements into auditable work orders.",
+        "input_schema": {},
+        "name": "hnc_saas_security_architect",
+        "output_schema": {},
+        "safe_modes": [
+          "read_only",
+          "local_blueprint",
+          "queue_work_orders"
+        ]
+      },
+      "priority": 5,
+      "queue": "default",
+      "requires_human": false,
+      "risk": "medium",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "created",
+      "tags": [],
+      "title": "hnc_saas_security_architect",
+      "trace_id": "trace_8827b5c06430",
+      "updated_at": "2026-05-11T18:58:26.835652+00:00"
+    },
+    "skill_c28a43c5fa02": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "skill_c28a43c5fa02",
+      "contract_type": "skill",
+      "created_at": "2026-05-11T19:09:37.388320+00:00",
+      "parent_id": "",
+      "payload": {
+        "capability": "Inventories HNC systems and turns the unhackable SaaS north-star into controls, self-attack benchmarks, and auditable work orders.",
+        "input_schema": {},
+        "name": "hnc_saas_security_architect",
+        "output_schema": {},
+        "safe_modes": [
+          "read_only",
+          "local_blueprint",
+          "authorized_self_test_plan",
+          "queue_work_orders"
+        ]
+      },
+      "priority": 5,
+      "queue": "default",
+      "requires_human": false,
+      "risk": "medium",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "created",
+      "tags": [],
+      "title": "hnc_saas_security_architect",
+      "trace_id": "trace_b2008186a0f2",
+      "updated_at": "2026-05-11T19:09:37.388320+00:00"
+    },
+    "task_207a68c7beec": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "task_207a68c7beec",
+      "contract_type": "task",
+      "created_at": "2026-05-11T19:09:37.388320+00:00",
+      "parent_id": "goal_91f315a3230f",
+      "payload": {
+        "acceptance_checks": [
+          "route selected",
+          "safe boundary checked",
+          "next work order queued"
+        ],
+        "goal_id": "goal_91f315a3230f",
+        "instructions": "Use the goal-capability map, relevant skills, ThoughtBus, vault memory, and safe local tools to plan the next step.",
+        "required_skills": [
+          "hnc_saas_security_architect",
+          "capability_growth_loop",
+          "organism_contract_stack"
+        ]
+      },
+      "priority": 5,
+      "queue": "default",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "created",
+      "tags": [],
+      "title": "Plan and route goal",
+      "trace_id": "trace_96d46800c988",
+      "updated_at": "2026-05-11T19:09:37.388320+00:00"
+    },
+    "task_b3f9422a2bdf": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "task_b3f9422a2bdf",
+      "contract_type": "task",
+      "created_at": "2026-05-11T18:58:26.844171+00:00",
+      "parent_id": "goal_039be066986d",
+      "payload": {
+        "acceptance_checks": [
+          "route selected",
+          "safe boundary checked",
+          "next work order queued"
+        ],
+        "goal_id": "goal_039be066986d",
+        "instructions": "Use the goal-capability map, relevant skills, ThoughtBus, vault memory, and safe local tools to plan the next step.",
+        "required_skills": [
+          "hnc_saas_security_architect",
+          "capability_growth_loop",
+          "organism_contract_stack"
+        ]
+      },
+      "priority": 5,
+      "queue": "default",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "created",
+      "tags": [],
+      "title": "Plan and route goal",
+      "trace_id": "trace_6e37f5ed527a",
+      "updated_at": "2026-05-11T18:58:26.844171+00:00"
+    },
+    "wo_00ee83485102": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_00ee83485102",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.488052+00:00",
+      "parent_id": "",
+      "payload": {
+        "action_type": "execute_internal_task",
+        "allowed_scope": "Staging/canary environment only until all release gates are satisfied.",
+        "benchmark": {
+          "attack_simulations": [
+            "failed deployment rollback",
+            "rotated secret recovery",
+            "service outage fail-closed test",
+            "abuse burst throttling test"
+          ],
+          "blocks_deployment": true,
+          "evidence_outputs": [
+            "deploy_canary_review.json",
+            "deploy_canary_review.md"
+          ],
+          "guardrails": [
+            "no production deployment until every blocker is closed",
+            "operator approval required for production promotion"
+          ],
+          "id": "bench_deploy_canary_review",
+          "objective": "Prove deployment canary, rollback, backup restore, and incident response work before production release.",
+          "phase": "deployment_gate_review",
+          "repair_route": "organism.hnc_saas_security",
+          "safe_scope": "Staging/canary environment only until all release gates are satisfied.",
+          "status": "planned_gate_only",
+          "stress_tests": [
+            "backup restore drill",
+            "traffic spike within safe load budget"
+          ],
+          "success_metrics": [
+            "rollback completes within target window",
+            "restore drill passes",
+            "kill switch disables risky actions"
+          ]
+        },
+        "cycle": [
+          "define_authorized_scope",
+          "threat_model",
+          "implement_control",
+          "try_to_break_own_system",
+          "stress_test",
+          "record_vulnerability_or_proof",
+          "queue_fix",
+          "retest",
+          "update_benchmark",
+          "deployment_gate_review",
+          "write_vault_memory"
+        ],
+        "goal_id": "",
+        "guardrails": [
+          "no production deployment until every blocker is closed",
+          "operator approval required for production promotion"
+        ],
+        "job_id": "",
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "gate_unhackable_evidence"
+      },
+      "priority": 7,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Run unhackable pursuit benchmark: Prove deployment canary, rollback, backup restore, and incident response work befo",
+      "trace_id": "trace_9755609f1649",
+      "updated_at": "2026-05-11T19:09:37.488052+00:00"
+    },
+    "wo_02aabc27686f": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_02aabc27686f",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.429663+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "restore drill",
+          "rate-limit tests",
+          "kill-switch tests",
+          "incident tabletop checklist"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "resilience_and_recovery",
+          "evidence": [
+            "aureon/observer/benchmark.py",
+            "tests/benchmark/bench_hnc_stack.py",
+            "tests/benchmark/queen_sentience_benchmark.py",
+            "tests/benchmarks/benchmark_aureon_scope.py",
+            "tests/benchmarks/report.json",
+            "tests/benchmarks/report.md",
+            "tests/observer/test_daemon_attach.py",
+            "tests/observer/test_fitter_io.py",
+            "tests/observer/test_predictor_contract.py",
+            "tests/smoke_test_json_integration.py"
+          ],
+          "hnc_systems": [
+            "ignition preflight",
+            "system readiness audit",
+            "operator surfaces"
+          ],
+          "id": "control_resilience",
+          "implementation_pattern": "Define RPO/RTO, encrypted backups, restore drills, circuit breakers, quotas, abuse throttles, incident runbooks, and kill switches.",
+          "next_action": "Create the SaaS incident and recovery runbook as a release gate.",
+          "requirement": "Aureon SaaS must survive failed deploys, data corruption, service outages, abuse bursts, and credential compromise.",
+          "risk": "high",
+          "standards": [
+            "OWASP ASVS",
+            "NIST SP 800-207"
+          ],
+          "status": "needs_implementation",
+          "title": "Backups, recovery, limits, and incident response",
+          "verification": [
+            "restore drill",
+            "rate-limit tests",
+            "kill-switch tests",
+            "incident tabletop checklist"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 4,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Backups, recovery, limits, and incident response",
+      "trace_id": "trace_208928ba0109",
+      "updated_at": "2026-05-11T19:09:37.429663+00:00"
+    },
+    "wo_05c4ed552e3d": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_05c4ed552e3d",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.438578+00:00",
+      "parent_id": "",
+      "payload": {
+        "action_type": "execute_internal_task",
+        "allowed_scope": "Aureon-owned local/staging SaaS only, with test tenants and throwaway accounts.",
+        "benchmark": {
+          "attack_simulations": [
+            "expired token replay",
+            "role escalation attempt",
+            "missing authorization header",
+            "cross-role endpoint access"
+          ],
+          "blocks_deployment": true,
+          "evidence_outputs": [
+            "auth_breakout_report.json",
+            "auth_breakout_report.md"
+          ],
+          "guardrails": [
+            "no password spraying against real third-party systems",
+            "test accounts only"
+          ],
+          "id": "bench_auth_breakout",
+          "objective": "Prove no user, worker, model, or stale session can bypass authentication, MFA, session expiry, or RBAC.",
+          "phase": "try_to_break_own_system",
+          "repair_route": "organism.hnc_saas_security",
+          "safe_scope": "Aureon-owned local/staging SaaS only, with test tenants and throwaway accounts.",
+          "status": "planned_authorized_self_test",
+          "stress_tests": [
+            "high-frequency login attempts under rate limits"
+          ],
+          "success_metrics": [
+            "all unauthorized requests denied",
+            "audit event emitted for every denial",
+            "no privileged action reachable without policy approval"
+          ]
+        },
+        "cycle": [
+          "define_authorized_scope",
+          "threat_model",
+          "implement_control",
+          "try_to_break_own_system",
+          "stress_test",
+          "record_vulnerability_or_proof",
+          "queue_fix",
+          "retest",
+          "update_benchmark",
+          "deployment_gate_review",
+          "write_vault_memory"
+        ],
+        "goal_id": "",
+        "guardrails": [
+          "no password spraying against real third-party systems",
+          "test accounts only"
+        ],
+        "job_id": "",
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "gate_unhackable_evidence"
+      },
+      "priority": 7,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Run unhackable pursuit benchmark: Prove no user, worker, model, or stale session can bypass authentication, MFA, ses",
+      "trace_id": "trace_18703ff76583",
+      "updated_at": "2026-05-11T19:09:37.438578+00:00"
+    },
+    "wo_146ca8ff2c60": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_146ca8ff2c60",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.456181+00:00",
+      "parent_id": "",
+      "payload": {
+        "action_type": "execute_internal_task",
+        "allowed_scope": "Local LLM/vault fixtures, mocked tools, and blocked unsafe action contracts.",
+        "benchmark": {
+          "attack_simulations": [
+            "prompt injection requests to ignore policy",
+            "vault note instruction poisoning",
+            "fake tool result requesting live order",
+            "secret exfiltration request through generated report"
+          ],
+          "blocks_deployment": true,
+          "evidence_outputs": [
+            "llm_tool_breakout_report.json",
+            "llm_tool_breakout_report.md"
+          ],
+          "guardrails": [
+            "mock tools for live orders, filings, payments, and secrets",
+            "no secret values in fixtures"
+          ],
+          "id": "bench_prompt_tool_breakout",
+          "objective": "Prove poisoned prompts, vault notes, uploads, or user text cannot make LLM systems call unsafe tools or reveal secrets.",
+          "phase": "try_to_break_own_system",
+          "repair_route": "organism.hnc_saas_security",
+          "safe_scope": "Local LLM/vault fixtures, mocked tools, and blocked unsafe action contracts.",
+          "status": "planned_authorized_self_test",
+          "stress_tests": [
+            "prompt-injection corpus replay",
+            "tool-denial fuzz cases"
+          ],
+          "success_metrics": [
+            "unsafe tool action blocked",
+            "secret values never printed",
+            "blocked contract contains reason and trace_id"
+          ]
+        },
+        "cycle": [
+          "define_authorized_scope",
+          "threat_model",
+          "implement_control",
+          "try_to_break_own_system",
+          "stress_test",
+          "record_vulnerability_or_proof",
+          "queue_fix",
+          "retest",
+          "update_benchmark",
+          "deployment_gate_review",
+          "write_vault_memory"
+        ],
+        "goal_id": "",
+        "guardrails": [
+          "mock tools for live orders, filings, payments, and secrets",
+          "no secret values in fixtures"
+        ],
+        "job_id": "",
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "gate_unhackable_evidence"
+      },
+      "priority": 7,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Run unhackable pursuit benchmark: Prove poisoned prompts, vault notes, uploads, or user text cannot make LLM systems",
+      "trace_id": "trace_09cfcf7ef045",
+      "updated_at": "2026-05-11T19:09:37.456181+00:00"
+    },
+    "wo_179211eafd79": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_179211eafd79",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.419383+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "real_orders_allowed=false tests",
+          "Kraken order call mock tests",
+          "risk limit tests",
+          "live-profile preflight tests"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "trading_authority_boundary",
+          "evidence": [
+            ".github/copilot-instructions.md",
+            ".obsidian/Aureon Self Understanding/capability_growth_loop.md",
+            ".obsidian/Aureon Self Understanding/hnc_saas_security_blueprint.md",
+            "AUDIT_SUMMARY.md",
+            "aureon/autonomous/aureon_capability_growth_loop.py",
+            "aureon/bots/gaia_aggressive_reclaimerfix.py",
+            "aureon/bots/orca_billion_blackbox.py",
+            "aureon/bridges/aureon_bridge.py",
+            "aureon/bridges/aureon_hnc_live_connector.py",
+            "aureon/bridges/aureon_hnc_surge_detector.py"
+          ],
+          "hnc_systems": [
+            "dynamic margin sizer",
+            "temporal trade cognition",
+            "HNC probability matrix"
+          ],
+          "id": "control_trading_authority",
+          "implementation_pattern": "Keep live orders behind existing runtime gates, dry-run defaults, human-approved live profile, per-tenant risk limits, and immutable audit logs.",
+          "next_action": "Add SaaS trading command contracts that can observe/simulate by default and require explicit live-gate ownership.",
+          "requirement": "The SaaS must never let SaaS UI, tenants, or LLM planning directly place live trades or mutate exchange state.",
+          "risk": "critical",
+          "standards": [
+            "OWASP ASVS",
+            "NIST SP 800-207"
+          ],
+          "status": "needs_implementation",
+          "title": "Trading authority boundary for SaaS users and agents",
+          "verification": [
+            "real_orders_allowed=false tests",
+            "Kraken order call mock tests",
+            "risk limit tests",
+            "live-profile preflight tests"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 6,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Trading authority boundary for SaaS users and agents",
+      "trace_id": "trace_142483ca8ea0",
+      "updated_at": "2026-05-11T19:09:37.420143+00:00"
+    },
+    "wo_2363a76ce67a": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_2363a76ce67a",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T18:58:26.867726+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "real_orders_allowed=false tests",
+          "Kraken order call mock tests",
+          "risk limit tests",
+          "live-profile preflight tests"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "trading_authority_boundary",
+          "evidence": [
+            ".github/copilot-instructions.md",
+            "AUDIT_SUMMARY.md",
+            "aureon/autonomous/aureon_capability_growth_loop.py",
+            "aureon/bots/gaia_aggressive_reclaimerfix.py",
+            "aureon/bots/orca_billion_blackbox.py",
+            "aureon/bridges/aureon_bridge.py",
+            "aureon/bridges/aureon_hnc_live_connector.py",
+            "aureon/bridges/aureon_hnc_surge_detector.py",
+            "aureon/bridges/aureon_ui_bridge.py",
+            "aureon/conversion/pure_conversion_engine.py"
+          ],
+          "hnc_systems": [
+            "dynamic margin sizer",
+            "temporal trade cognition",
+            "HNC probability matrix"
+          ],
+          "id": "control_trading_authority",
+          "implementation_pattern": "Keep live orders behind existing runtime gates, dry-run defaults, human-approved live profile, per-tenant risk limits, and immutable audit logs.",
+          "next_action": "Add SaaS trading command contracts that can observe/simulate by default and require explicit live-gate ownership.",
+          "requirement": "The SaaS must never let SaaS UI, tenants, or LLM planning directly place live trades or mutate exchange state.",
+          "risk": "critical",
+          "standards": [
+            "OWASP ASVS",
+            "NIST SP 800-207"
+          ],
+          "status": "needs_implementation",
+          "title": "Trading authority boundary for SaaS users and agents",
+          "verification": [
+            "real_orders_allowed=false tests",
+            "Kraken order call mock tests",
+            "risk limit tests",
+            "live-profile preflight tests"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 6,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Trading authority boundary for SaaS users and agents",
+      "trace_id": "trace_046b86a14a4a",
+      "updated_at": "2026-05-11T18:58:26.868154+00:00"
+    },
+    "wo_297ee9008fdc": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_297ee9008fdc",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.406209+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "prompt injection tests",
+          "unsafe tool denial tests",
+          "contract safety tests",
+          "self-written code static validation"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "ai_llm_tool_governance",
+          "evidence": [
+            "aureon/bots/orca_complete_kill_cycle.py",
+            "aureon/bridges/rainbow_bridge.py",
+            "aureon/conversion/mycelium_conversion_hub.py",
+            "aureon/core/aureon_lambda_engine.py",
+            "aureon/core/aureon_phi_calendar.py",
+            "aureon/core/aureon_zpe_extraction.py",
+            "aureon/core/cognitive_dashboard.py",
+            "aureon/core/hnc_params.py",
+            "aureon/decoders/aztec_decoder.py",
+            "aureon/decoders/book_of_ur.py"
+          ],
+          "hnc_systems": [
+            "AureonCapabilityGrowthLoop",
+            "SelfEnhancementEngine",
+            "SkillValidator",
+            "CodeArchitect"
+          ],
+          "id": "control_llm_tool_governance",
+          "implementation_pattern": "Route all agent actions through allowlisted tools, policy checks, signed work orders, static tests, and vault memory with source provenance.",
+          "next_action": "Use this blueprint as the policy source for self-enhancement work orders touching SaaS code.",
+          "requirement": "Model output may propose, classify, and queue work, but cannot bypass typed contracts, tests, operator approvals, or unsafe-action blockers.",
+          "risk": "critical",
+          "standards": [
+            "OWASP ASVS",
+            "NIST SP 800-207"
+          ],
+          "status": "needs_implementation",
+          "title": "LLM, tool, and self-writing code governance",
+          "verification": [
+            "prompt injection tests",
+            "unsafe tool denial tests",
+            "contract safety tests",
+            "self-written code static validation"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 6,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: LLM, tool, and self-writing code governance",
+      "trace_id": "trace_687dd7df8946",
+      "updated_at": "2026-05-11T19:09:37.406209+00:00"
+    },
+    "wo_2b6fdf13ccaf": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_2b6fdf13ccaf",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.422146+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "HMRC/Companies House submit call denial tests",
+          "payment denial tests",
+          "evidence-not-fake tests"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "accounting_filing_boundary",
+          "evidence": [
+            ".claude/agents/dr-auris-throne.md",
+            "aureon/autonomous/aureon_autonomy_hub.py",
+            "aureon/autonomous/aureon_goal_capability_map.py",
+            "aureon/autonomous/aureon_system_readiness_audit.py",
+            "aureon/autonomous/hnc_saas_security_architect.py",
+            "aureon/autonomous/mind_wiring_audit.py",
+            "aureon/autonomous/repo_wide_organization_audit.py",
+            "aureon/command_centers/aureon_strategic_war_planner.py",
+            "aureon/core/aureon_consciousness_module.py",
+            "aureon/core/aureon_geometric_live_chain.py"
+          ],
+          "hnc_systems": [
+            "Kings_Accounting_Suite",
+            "HNCSoupKitchen",
+            "HNC VAT/CIS/tax engines",
+            "AccountingContextBridge"
+          ],
+          "id": "control_accounting_filing",
+          "implementation_pattern": "Expose accounting build/status endpoints that produce human-readable packs, manual filing checklists, and evidence gaps only.",
+          "next_action": "Create SaaS accounting APIs that return packs and workpapers, while filing/payment action types remain blocked.",
+          "requirement": "The SaaS can prepare accounts packs and evidence, but cannot submit HMRC/Companies House filings or make payments automatically.",
+          "risk": "high",
+          "standards": [
+            "OWASP ASVS",
+            "NIST SP 800-207"
+          ],
+          "status": "needs_implementation",
+          "title": "Accounting generation with manual filing/payment boundary",
+          "verification": [
+            "HMRC/Companies House submit call denial tests",
+            "payment denial tests",
+            "evidence-not-fake tests"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 4,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Accounting generation with manual filing/payment boundary",
+      "trace_id": "trace_e567c04457f1",
+      "updated_at": "2026-05-11T19:09:37.422146+00:00"
+    },
+    "wo_2e202742071a": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_2e202742071a",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.406209+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "secret scanning",
+          "prompt redaction tests",
+          "encryption-at-rest checks",
+          "backup restore drill"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "data_protection",
+          "evidence": [
+            "aureon/integrations/obsidian/obsidian_sink.py",
+            "aureon/vault/self_feedback_loop.py",
+            "aureon/vault/voice/bus_flight_check.py",
+            "aureon/vault/voice/skill_executor_bridge.py",
+            "aureon/vault/voice/temporal_causality.py",
+            "aureon/vault/voice/vault_feed_audit.py",
+            "aureon/vault/white_cell.py",
+            "tests/vault/test_goal_dispatch_bridge.py",
+            "tests/vault/test_harmonic_text_alignment.py",
+            "tests/vault/test_hnc_human_loop.py"
+          ],
+          "hnc_systems": [
+            "AureonRepoSelfCatalog",
+            "ObsidianBridge",
+            "AccountingContextBridge"
+          ],
+          "id": "control_data_protection",
+          "implementation_pattern": "Use a secrets manager, envelope encryption for sensitive records, prompt redaction, key rotation, and metadata-only cataloging for secret files.",
+          "next_action": "Define the SaaS secret/data classification map and enforce it in upload, vault, LLM, and report paths.",
+          "requirement": "Secrets and user financial data must be encrypted, minimized, redacted from prompts, and excluded from public logs/artifacts.",
+          "risk": "critical",
+          "standards": [
+            "OWASP ASVS",
+            "OWASP Top 10 Cryptographic Failures",
+            "NIST SP 800-207"
+          ],
+          "status": "needs_implementation",
+          "title": "Secrets, vault, accounting, and trading data protection",
+          "verification": [
+            "secret scanning",
+            "prompt redaction tests",
+            "encryption-at-rest checks",
+            "backup restore drill"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 6,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Secrets, vault, accounting, and trading data protection",
+      "trace_id": "trace_606899f8f3ff",
+      "updated_at": "2026-05-11T19:09:37.406209+00:00"
+    },
+    "wo_2eaedb7a07cc": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_2eaedb7a07cc",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T18:58:26.872569+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "HMRC/Companies House submit call denial tests",
+          "payment denial tests",
+          "evidence-not-fake tests"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "accounting_filing_boundary",
+          "evidence": [
+            ".claude/agents/dr-auris-throne.md",
+            "aureon/autonomous/aureon_autonomy_hub.py",
+            "aureon/autonomous/aureon_goal_capability_map.py",
+            "aureon/autonomous/aureon_system_readiness_audit.py",
+            "aureon/autonomous/hnc_saas_security_architect.py",
+            "aureon/autonomous/mind_wiring_audit.py",
+            "aureon/autonomous/repo_wide_organization_audit.py",
+            "aureon/command_centers/aureon_strategic_war_planner.py",
+            "aureon/core/aureon_consciousness_module.py",
+            "aureon/core/aureon_geometric_live_chain.py"
+          ],
+          "hnc_systems": [
+            "Kings_Accounting_Suite",
+            "HNCSoupKitchen",
+            "HNC VAT/CIS/tax engines",
+            "AccountingContextBridge"
+          ],
+          "id": "control_accounting_filing",
+          "implementation_pattern": "Expose accounting build/status endpoints that produce human-readable packs, manual filing checklists, and evidence gaps only.",
+          "next_action": "Create SaaS accounting APIs that return packs and workpapers, while filing/payment action types remain blocked.",
+          "requirement": "The SaaS can prepare accounts packs and evidence, but cannot submit HMRC/Companies House filings or make payments automatically.",
+          "risk": "high",
+          "standards": [
+            "OWASP ASVS",
+            "NIST SP 800-207"
+          ],
+          "status": "needs_implementation",
+          "title": "Accounting generation with manual filing/payment boundary",
+          "verification": [
+            "HMRC/Companies House submit call denial tests",
+            "payment denial tests",
+            "evidence-not-fake tests"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 4,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Accounting generation with manual filing/payment boundary",
+      "trace_id": "trace_8bd5630839e8",
+      "updated_at": "2026-05-11T18:58:26.872833+00:00"
+    },
+    "wo_2fda28f9ebf1": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_2fda28f9ebf1",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T18:58:26.852879+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "secret scanning",
+          "prompt redaction tests",
+          "encryption-at-rest checks",
+          "backup restore drill"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "data_protection",
+          "evidence": [
+            "aureon/integrations/obsidian/obsidian_sink.py",
+            "aureon/vault/self_feedback_loop.py",
+            "aureon/vault/voice/bus_flight_check.py",
+            "aureon/vault/voice/skill_executor_bridge.py",
+            "aureon/vault/voice/temporal_causality.py",
+            "aureon/vault/voice/vault_feed_audit.py",
+            "aureon/vault/white_cell.py",
+            "tests/vault/test_goal_dispatch_bridge.py",
+            "tests/vault/test_harmonic_text_alignment.py",
+            "tests/vault/test_hnc_human_loop.py"
+          ],
+          "hnc_systems": [
+            "AureonRepoSelfCatalog",
+            "ObsidianBridge",
+            "AccountingContextBridge"
+          ],
+          "id": "control_data_protection",
+          "implementation_pattern": "Use a secrets manager, envelope encryption for sensitive records, prompt redaction, key rotation, and metadata-only cataloging for secret files.",
+          "next_action": "Define the SaaS secret/data classification map and enforce it in upload, vault, LLM, and report paths.",
+          "requirement": "Secrets and user financial data must be encrypted, minimized, redacted from prompts, and excluded from public logs/artifacts.",
+          "risk": "critical",
+          "standards": [
+            "OWASP ASVS",
+            "OWASP Top 10 Cryptographic Failures",
+            "NIST SP 800-207"
+          ],
+          "status": "needs_implementation",
+          "title": "Secrets, vault, accounting, and trading data protection",
+          "verification": [
+            "secret scanning",
+            "prompt redaction tests",
+            "encryption-at-rest checks",
+            "backup restore drill"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 6,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Secrets, vault, accounting, and trading data protection",
+      "trace_id": "trace_f54deedc26ba",
+      "updated_at": "2026-05-11T18:58:26.852879+00:00"
+    },
+    "wo_38a1b61c19d6": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_38a1b61c19d6",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T18:58:26.894202+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "service auth tests",
+          "deny-by-default tests",
+          "network segmentation review",
+          "trace continuity tests"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "zero_trust_runtime",
+          "evidence": [
+            "aureon/bots/orca_complete_kill_cycle.py",
+            "aureon/bridges/rainbow_bridge.py",
+            "aureon/conversion/mycelium_conversion_hub.py",
+            "aureon/core/aureon_lambda_engine.py",
+            "aureon/core/aureon_phi_calendar.py",
+            "aureon/core/aureon_zpe_extraction.py",
+            "aureon/core/cognitive_dashboard.py",
+            "aureon/core/hnc_params.py",
+            "aureon/decoders/aztec_decoder.py",
+            "aureon/decoders/book_of_ur.py"
+          ],
+          "hnc_systems": [
+            "HNCGateway",
+            "ThoughtBus",
+            "OrganismContractStack"
+          ],
+          "id": "control_zero_trust_service_mesh",
+          "implementation_pattern": "Use service identity, mTLS or signed requests, policy enforcement points, network segmentation, and continuous risk signals.",
+          "next_action": "Define service identities and policies before exposing multi-tenant jobs or agent queues.",
+          "requirement": "Every internal service call must be authenticated, authorized, least-privileged, logged, and continuously evaluated.",
+          "risk": "critical",
+          "standards": [
+            "NIST SP 800-207",
+            "OWASP ASVS"
+          ],
+          "status": "needs_implementation",
+          "title": "Zero-trust service-to-service runtime",
+          "verification": [
+            "service auth tests",
+            "deny-by-default tests",
+            "network segmentation review",
+            "trace continuity tests"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 6,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Zero-trust service-to-service runtime",
+      "trace_id": "trace_d50e2c33d0e0",
+      "updated_at": "2026-05-11T18:58:26.894202+00:00"
+    },
+    "wo_3cf6bbbb818f": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_3cf6bbbb818f",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.471679+00:00",
+      "parent_id": "",
+      "payload": {
+        "action_type": "execute_internal_task",
+        "allowed_scope": "Local repo dependency graph, lockfiles, CI/build manifests, and generated artifacts.",
+        "benchmark": {
+          "attack_simulations": [
+            "secret scan of generated artifacts",
+            "dependency vulnerability scan",
+            "lockfile drift check",
+            "unsigned artifact rejection"
+          ],
+          "blocks_deployment": true,
+          "evidence_outputs": [
+            "supply_chain_assurance.json",
+            "supply_chain_assurance.md"
+          ],
+          "guardrails": [
+            "no publishing packages",
+            "no token upload to scanners"
+          ],
+          "id": "bench_supply_chain_breakout",
+          "objective": "Prove dependencies, lockfiles, builds, and generated artifacts do not carry known vulnerable packages or secrets.",
+          "phase": "stress_test",
+          "repair_route": "organism.hnc_saas_security",
+          "safe_scope": "Local repo dependency graph, lockfiles, CI/build manifests, and generated artifacts.",
+          "status": "planned_authorized_self_test",
+          "stress_tests": [
+            "fresh install/build repeatability",
+            "artifact provenance review"
+          ],
+          "success_metrics": [
+            "no high/critical untriaged dependency issue",
+            "no secret-like value in generated artifacts",
+            "build artifact trace links back to commit and checks"
+          ]
+        },
+        "cycle": [
+          "define_authorized_scope",
+          "threat_model",
+          "implement_control",
+          "try_to_break_own_system",
+          "stress_test",
+          "record_vulnerability_or_proof",
+          "queue_fix",
+          "retest",
+          "update_benchmark",
+          "deployment_gate_review",
+          "write_vault_memory"
+        ],
+        "goal_id": "",
+        "guardrails": [
+          "no publishing packages",
+          "no token upload to scanners"
+        ],
+        "job_id": "",
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "gate_unhackable_evidence"
+      },
+      "priority": 7,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Run unhackable pursuit benchmark: Prove dependencies, lockfiles, builds, and generated artifacts do not carry known ",
+      "trace_id": "trace_62d7dfb17b48",
+      "updated_at": "2026-05-11T19:09:37.471679+00:00"
+    },
+    "wo_3dae3979455a": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_3dae3979455a",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.388320+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "unit RBAC matrix",
+          "E2E forbidden cross-role tests",
+          "session expiry and token rotation tests"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "identity_and_access",
+          "evidence": [
+            "aureon/harmonic/phi_swarm_router.py",
+            "aureon/queen/queen_sentient_loop.py",
+            "frontend/src/components/BrainStatePanel.tsx",
+            "frontend/src/components/cinema/CinematicScene.tsx",
+            "frontend/src/components/cinema/HUDMetricsPanel.tsx",
+            "frontend/src/components/cinema/MarketNebula.tsx",
+            "frontend/src/components/EarthLiveUILayout.tsx",
+            "frontend/src/components/EckoushicCascadeVisualization.tsx",
+            "frontend/src/components/HarmonicNexusAnalytics.tsx",
+            "frontend/src/components/HarmonicNexusMonitor.tsx"
+          ],
+          "hnc_systems": [
+            "HarmonicNexusAuth",
+            "OrganismContractStack",
+            "ThoughtBus"
+          ],
+          "id": "control_identity_rbac",
+          "implementation_pattern": "Use a trusted IdP with MFA/WebAuthn, short-lived sessions, rotating refresh tokens, role/attribute policies, and tenant-scoped permissions.",
+          "next_action": "Replace any auto-login style SaaS path with explicit authenticated sessions and policy checks.",
+          "requirement": "Every user, device, service, worker, and organism agent must authenticate and authorize before SaaS access.",
+          "risk": "critical",
+          "standards": [
+            "OWASP ASVS",
+            "OWASP Top 10 Broken Access Control",
+            "NIST SP 800-207"
+          ],
+          "status": "needs_implementation",
+          "title": "Phishing-resistant identity, RBAC, and session control",
+          "verification": [
+            "unit RBAC matrix",
+            "E2E forbidden cross-role tests",
+            "session expiry and token rotation tests"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 6,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Phishing-resistant identity, RBAC, and session control",
+      "trace_id": "trace_595c1b65564b",
+      "updated_at": "2026-05-11T19:09:37.388320+00:00"
+    },
+    "wo_48b72bebba2d": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_48b72bebba2d",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.438578+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "capability growth report",
+          "focused SaaS security tests",
+          "DAST smoke",
+          "vault memory proof"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "secure_sdlc",
+          "evidence": [
+            "aureon/observer/benchmark.py",
+            "tests/benchmark/bench_hnc_stack.py",
+            "tests/benchmark/queen_sentience_benchmark.py",
+            "tests/benchmarks/benchmark_aureon_scope.py",
+            "tests/benchmarks/report.json",
+            "tests/benchmarks/report.md",
+            "tests/observer/test_daemon_attach.py",
+            "tests/observer/test_fitter_io.py",
+            "tests/observer/test_predictor_contract.py",
+            "tests/smoke_test_json_integration.py"
+          ],
+          "hnc_systems": [
+            "AureonCapabilityGrowthLoop",
+            "MindWiringAudit",
+            "AureonSystemReadinessAudit"
+          ],
+          "id": "control_secure_sdlc",
+          "implementation_pattern": "Attach the capability growth loop to SaaS controls and require compile, unit, integration, DAST, and policy tests before release.",
+          "next_action": "Add SaaS security to the capability growth domain matrix and work-order queue.",
+          "requirement": "No SaaS change is release-ready until Aureon audits, benchmarks, queues fixes, retests, and records memory.",
+          "risk": "high",
+          "standards": [
+            "OWASP ASVS",
+            "OWASP Top 10"
+          ],
+          "status": "needs_implementation",
+          "title": "Self-audit, benchmark, fix, and retest loop for SaaS",
+          "verification": [
+            "capability growth report",
+            "focused SaaS security tests",
+            "DAST smoke",
+            "vault memory proof"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 4,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Self-audit, benchmark, fix, and retest loop for SaaS",
+      "trace_id": "trace_8077ada74f00",
+      "updated_at": "2026-05-11T19:09:37.438578+00:00"
+    },
+    "wo_4e2d88a5f3f6": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_4e2d88a5f3f6",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.422146+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "event schema tests",
+          "trace propagation tests",
+          "tamper-evidence hash-chain tests",
+          "audit export test"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "audit_observability",
+          "evidence": [
+            "aureon/bots/orca_complete_kill_cycle.py",
+            "aureon/bridges/rainbow_bridge.py",
+            "aureon/conversion/mycelium_conversion_hub.py",
+            "aureon/core/aureon_lambda_engine.py",
+            "aureon/core/aureon_phi_calendar.py",
+            "aureon/core/aureon_zpe_extraction.py",
+            "aureon/core/cognitive_dashboard.py",
+            "aureon/core/hnc_params.py",
+            "aureon/decoders/aztec_decoder.py",
+            "aureon/decoders/book_of_ur.py"
+          ],
+          "hnc_systems": [
+            "ThoughtBus",
+            "OrganismContractStack",
+            "capability growth loop"
+          ],
+          "id": "control_audit_trace",
+          "implementation_pattern": "Use append-only event logs with trace_id, tenant_id, actor_id, decision input hash, result hash, retention policy, and exportable audit packs.",
+          "next_action": "Promote ThoughtBus/contract events into the SaaS audit event schema.",
+          "requirement": "Every login, data import, model decision, work order, accounting build, trading decision, and admin action must be traceable.",
+          "risk": "high",
+          "standards": [
+            "OWASP ASVS",
+            "NIST SP 800-207"
+          ],
+          "status": "needs_implementation",
+          "title": "Tamper-evident audit trace for users, agents, and money workflows",
+          "verification": [
+            "event schema tests",
+            "trace propagation tests",
+            "tamper-evidence hash-chain tests",
+            "audit export test"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 4,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Tamper-evident audit trace for users, agents, and money workflows",
+      "trace_id": "trace_9c567d577f08",
+      "updated_at": "2026-05-11T19:09:37.422146+00:00"
+    },
+    "wo_5054c10464f9": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_5054c10464f9",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T18:58:26.852879+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "unit RBAC matrix",
+          "E2E forbidden cross-role tests",
+          "session expiry and token rotation tests"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "identity_and_access",
+          "evidence": [
+            "aureon/harmonic/phi_swarm_router.py",
+            "aureon/queen/queen_sentient_loop.py",
+            "frontend/src/components/BrainStatePanel.tsx",
+            "frontend/src/components/cinema/CinematicScene.tsx",
+            "frontend/src/components/cinema/HUDMetricsPanel.tsx",
+            "frontend/src/components/cinema/MarketNebula.tsx",
+            "frontend/src/components/EarthLiveUILayout.tsx",
+            "frontend/src/components/EckoushicCascadeVisualization.tsx",
+            "frontend/src/components/HarmonicNexusAnalytics.tsx",
+            "frontend/src/components/HarmonicNexusMonitor.tsx"
+          ],
+          "hnc_systems": [
+            "HarmonicNexusAuth",
+            "OrganismContractStack",
+            "ThoughtBus"
+          ],
+          "id": "control_identity_rbac",
+          "implementation_pattern": "Use a trusted IdP with MFA/WebAuthn, short-lived sessions, rotating refresh tokens, role/attribute policies, and tenant-scoped permissions.",
+          "next_action": "Replace any auto-login style SaaS path with explicit authenticated sessions and policy checks.",
+          "requirement": "Every user, device, service, worker, and organism agent must authenticate and authorize before SaaS access.",
+          "risk": "critical",
+          "standards": [
+            "OWASP ASVS",
+            "OWASP Top 10 Broken Access Control",
+            "NIST SP 800-207"
+          ],
+          "status": "needs_implementation",
+          "title": "Phishing-resistant identity, RBAC, and session control",
+          "verification": [
+            "unit RBAC matrix",
+            "E2E forbidden cross-role tests",
+            "session expiry and token rotation tests"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 6,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Phishing-resistant identity, RBAC, and session control",
+      "trace_id": "trace_b3de52cfb701",
+      "updated_at": "2026-05-11T18:58:26.852879+00:00"
+    },
+    "wo_56525d1f4371": {
+      "blocked": true,
+      "blocked_reason": "unsafe or externally mutating action requires an explicit human-owned path",
+      "contract_id": "wo_56525d1f4371",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.456181+00:00",
+      "parent_id": "",
+      "payload": {
+        "action_type": "execute_internal_task",
+        "allowed_scope": "Contract safety layer, ignition preflight, mocked exchange/filing/payment clients.",
+        "benchmark": {
+          "attack_simulations": [
+            "attempt live order work order",
+            "attempt HMRC submission action",
+            "attempt Companies House filing action",
+            "attempt payment or withdrawal action"
+          ],
+          "blocks_deployment": true,
+          "evidence_outputs": [
+            "money_authority_breakout_report.json",
+            "money_authority_breakout_report.md"
+          ],
+          "guardrails": [
+            "mocked external clients only",
+            "no real Kraken, HMRC, Companies House, banking, or payment mutation"
+          ],
+          "id": "bench_money_authority_breakout",
+          "objective": "Prove SaaS users and model output cannot place live trades, submit filings, make payments, or mutate official/exchange state.",
+          "phase": "try_to_break_own_system",
+          "repair_route": "organism.hnc_saas_security",
+          "safe_scope": "Contract safety layer, ignition preflight, mocked exchange/filing/payment clients.",
+          "status": "planned_authorized_self_test",
+          "stress_tests": [
+            "repeated unsafe action queue attempts"
+          ],
+          "success_metrics": [
+            "all unsafe contracts blocked",
+            "real_orders_allowed remains false unless explicit live gate is owned by trading runtime",
+            "manual filing/payment boundary preserved"
+          ]
+        },
+        "cycle": [
+          "define_authorized_scope",
+          "threat_model",
+          "implement_control",
+          "try_to_break_own_system",
+          "stress_test",
+          "record_vulnerability_or_proof",
+          "queue_fix",
+          "retest",
+          "update_benchmark",
+          "deployment_gate_review",
+          "write_vault_memory"
+        ],
+        "goal_id": "",
+        "guardrails": [
+          "mocked external clients only",
+          "no real Kraken, HMRC, Companies House, banking, or payment mutation"
+        ],
+        "job_id": "",
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "gate_unhackable_evidence"
+      },
+      "priority": 7,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": true,
+      "risk": "high",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "blocked",
+      "tags": [],
+      "title": "Run unhackable pursuit benchmark: Prove SaaS users and model output cannot place live trades, submit filings, make p",
+      "trace_id": "trace_06604c5f31fa",
+      "updated_at": "2026-05-11T19:09:37.456181+00:00"
+    },
+    "wo_57f7059c68f0": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_57f7059c68f0",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T18:58:26.851934+00:00",
+      "parent_id": "job_063443c650a8",
+      "payload": {
+        "action_type": "execute_internal_task",
+        "goal_id": "goal_039be066986d",
+        "job_id": "job_063443c650a8",
+        "objective": "Build Aureon's security-hardened HNC SaaS through zero-trust controls, ASVS checks, and contract-governed implementation.",
+        "queue": "organism.default",
+        "recommended_skills": [
+          "hnc_saas_security_architect",
+          "capability_growth_loop",
+          "organism_contract_stack"
+        ],
+        "route_surfaces": [
+          "saas_security",
+          "contracts",
+          "capability_growth",
+          "self_enhancement",
+          "validation"
+        ],
+        "task_id": "task_b3f9422a2bdf"
+      },
+      "priority": 5,
+      "queue": "organism.default",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Run internal goal step",
+      "trace_id": "trace_c73a8a9b2dd0",
+      "updated_at": "2026-05-11T18:58:26.851934+00:00"
+    },
+    "wo_5f37831aa65a": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_5f37831aa65a",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T18:58:26.886176+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "restore drill",
+          "rate-limit tests",
+          "kill-switch tests",
+          "incident tabletop checklist"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "resilience_and_recovery",
+          "evidence": [
+            "aureon/observer/benchmark.py",
+            "tests/benchmark/bench_hnc_stack.py",
+            "tests/benchmark/queen_sentience_benchmark.py",
+            "tests/benchmarks/benchmark_aureon_scope.py",
+            "tests/benchmarks/report.json",
+            "tests/benchmarks/report.md",
+            "tests/observer/test_daemon_attach.py",
+            "tests/observer/test_fitter_io.py",
+            "tests/observer/test_predictor_contract.py",
+            "tests/smoke_test_json_integration.py"
+          ],
+          "hnc_systems": [
+            "ignition preflight",
+            "system readiness audit",
+            "operator surfaces"
+          ],
+          "id": "control_resilience",
+          "implementation_pattern": "Define RPO/RTO, encrypted backups, restore drills, circuit breakers, quotas, abuse throttles, incident runbooks, and kill switches.",
+          "next_action": "Create the SaaS incident and recovery runbook as a release gate.",
+          "requirement": "Aureon SaaS must survive failed deploys, data corruption, service outages, abuse bursts, and credential compromise.",
+          "risk": "high",
+          "standards": [
+            "OWASP ASVS",
+            "NIST SP 800-207"
+          ],
+          "status": "needs_implementation",
+          "title": "Backups, recovery, limits, and incident response",
+          "verification": [
+            "restore drill",
+            "rate-limit tests",
+            "kill-switch tests",
+            "incident tabletop checklist"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 4,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Backups, recovery, limits, and incident response",
+      "trace_id": "trace_1f213da08c67",
+      "updated_at": "2026-05-11T18:58:26.886176+00:00"
+    },
+    "wo_61154a9a5576": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_61154a9a5576",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T18:58:26.861897+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "ASVS checklist",
+          "OWASP Top 10 regression suite",
+          "file upload malware/path tests",
+          "rate limit tests"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "api_application_security",
+          "evidence": [
+            "aureon/harmonic/phi_swarm_router.py",
+            "aureon/queen/queen_sentient_loop.py",
+            "frontend/src/components/BrainStatePanel.tsx",
+            "frontend/src/components/cinema/CinematicScene.tsx",
+            "frontend/src/components/cinema/HUDMetricsPanel.tsx",
+            "frontend/src/components/cinema/MarketNebula.tsx",
+            "frontend/src/components/EarthLiveUILayout.tsx",
+            "frontend/src/components/EckoushicCascadeVisualization.tsx",
+            "frontend/src/components/HarmonicNexusAnalytics.tsx",
+            "frontend/src/components/HarmonicNexusMonitor.tsx"
+          ],
+          "hnc_systems": [
+            "frontend",
+            "supabase functions",
+            "self-check scanner"
+          ],
+          "id": "control_api_asvs",
+          "implementation_pattern": "Create middleware for validation/auth/policy/rate-limit, use safe parsers, isolate file scanning, and map controls to ASVS IDs.",
+          "next_action": "Add a SaaS route security middleware contract and tests before building public endpoints.",
+          "requirement": "All SaaS routes must meet a defined ASVS level for authentication, access control, validation, encoding, upload safety, SSRF, CSRF, and rate limits.",
+          "risk": "high",
+          "standards": [
+            "OWASP ASVS",
+            "OWASP Top 10"
+          ],
+          "status": "needs_implementation",
+          "title": "ASVS-backed API and frontend hardening",
+          "verification": [
+            "ASVS checklist",
+            "OWASP Top 10 regression suite",
+            "file upload malware/path tests",
+            "rate limit tests"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 4,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: ASVS-backed API and frontend hardening",
+      "trace_id": "trace_35cf62f87378",
+      "updated_at": "2026-05-11T18:58:26.861897+00:00"
+    },
+    "wo_64b88433ade9": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_64b88433ade9",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T18:58:26.852879+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "cross-tenant negative tests",
+          "DB RLS policy tests",
+          "object storage path traversal tests"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "tenant_isolation",
+          "evidence": [
+            "aureon/bots/orca_complete_kill_cycle.py",
+            "aureon/bridges/rainbow_bridge.py",
+            "aureon/conversion/mycelium_conversion_hub.py",
+            "aureon/core/aureon_lambda_engine.py",
+            "aureon/core/aureon_phi_calendar.py",
+            "aureon/core/aureon_zpe_extraction.py",
+            "aureon/core/cognitive_dashboard.py",
+            "aureon/core/hnc_params.py",
+            "aureon/decoders/aztec_decoder.py",
+            "aureon/decoders/book_of_ur.py"
+          ],
+          "hnc_systems": [
+            "HNCGateway",
+            "OrganismContractStack",
+            "ObsidianBridge"
+          ],
+          "id": "control_tenant_rls",
+          "implementation_pattern": "Add tenant_id, DB row-level security, per-tenant storage prefixes, tenant-aware queues, and denial-by-default service policies.",
+          "next_action": "Create the tenant contract schema before any SaaS endpoint becomes public.",
+          "requirement": "Every database row, object-store key, cache entry, event, vault note, work order, and log line must carry tenant context.",
+          "risk": "critical",
+          "standards": [
+            "OWASP ASVS",
+            "NIST SP 800-207"
+          ],
+          "status": "needs_implementation",
+          "title": "Tenant isolation on every data boundary",
+          "verification": [
+            "cross-tenant negative tests",
+            "DB RLS policy tests",
+            "object storage path traversal tests"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 6,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Tenant isolation on every data boundary",
+      "trace_id": "trace_3e2956a108d5",
+      "updated_at": "2026-05-11T18:58:26.852879+00:00"
+    },
+    "wo_6a9ab86adbac": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_6a9ab86adbac",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T18:58:26.886176+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "capability growth report",
+          "focused SaaS security tests",
+          "DAST smoke",
+          "vault memory proof"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "secure_sdlc",
+          "evidence": [
+            "aureon/observer/benchmark.py",
+            "tests/benchmark/bench_hnc_stack.py",
+            "tests/benchmark/queen_sentience_benchmark.py",
+            "tests/benchmarks/benchmark_aureon_scope.py",
+            "tests/benchmarks/report.json",
+            "tests/benchmarks/report.md",
+            "tests/observer/test_daemon_attach.py",
+            "tests/observer/test_fitter_io.py",
+            "tests/observer/test_predictor_contract.py",
+            "tests/smoke_test_json_integration.py"
+          ],
+          "hnc_systems": [
+            "AureonCapabilityGrowthLoop",
+            "MindWiringAudit",
+            "AureonSystemReadinessAudit"
+          ],
+          "id": "control_secure_sdlc",
+          "implementation_pattern": "Attach the capability growth loop to SaaS controls and require compile, unit, integration, DAST, and policy tests before release.",
+          "next_action": "Add SaaS security to the capability growth domain matrix and work-order queue.",
+          "requirement": "No SaaS change is release-ready until Aureon audits, benchmarks, queues fixes, retests, and records memory.",
+          "risk": "high",
+          "standards": [
+            "OWASP ASVS",
+            "OWASP Top 10"
+          ],
+          "status": "needs_implementation",
+          "title": "Self-audit, benchmark, fix, and retest loop for SaaS",
+          "verification": [
+            "capability growth report",
+            "focused SaaS security tests",
+            "DAST smoke",
+            "vault memory proof"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 4,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Self-audit, benchmark, fix, and retest loop for SaaS",
+      "trace_id": "trace_550601353637",
+      "updated_at": "2026-05-11T18:58:26.886176+00:00"
+    },
+    "wo_6f015c80e739": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_6f015c80e739",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T18:58:26.876658+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "event schema tests",
+          "trace propagation tests",
+          "tamper-evidence hash-chain tests",
+          "audit export test"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "audit_observability",
+          "evidence": [
+            "aureon/bots/orca_complete_kill_cycle.py",
+            "aureon/bridges/rainbow_bridge.py",
+            "aureon/conversion/mycelium_conversion_hub.py",
+            "aureon/core/aureon_lambda_engine.py",
+            "aureon/core/aureon_phi_calendar.py",
+            "aureon/core/aureon_zpe_extraction.py",
+            "aureon/core/cognitive_dashboard.py",
+            "aureon/core/hnc_params.py",
+            "aureon/decoders/aztec_decoder.py",
+            "aureon/decoders/book_of_ur.py"
+          ],
+          "hnc_systems": [
+            "ThoughtBus",
+            "OrganismContractStack",
+            "capability growth loop"
+          ],
+          "id": "control_audit_trace",
+          "implementation_pattern": "Use append-only event logs with trace_id, tenant_id, actor_id, decision input hash, result hash, retention policy, and exportable audit packs.",
+          "next_action": "Promote ThoughtBus/contract events into the SaaS audit event schema.",
+          "requirement": "Every login, data import, model decision, work order, accounting build, trading decision, and admin action must be traceable.",
+          "risk": "high",
+          "standards": [
+            "OWASP ASVS",
+            "NIST SP 800-207"
+          ],
+          "status": "needs_implementation",
+          "title": "Tamper-evident audit trace for users, agents, and money workflows",
+          "verification": [
+            "event schema tests",
+            "trace propagation tests",
+            "tamper-evidence hash-chain tests",
+            "audit export test"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 4,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Tamper-evident audit trace for users, agents, and money workflows",
+      "trace_id": "trace_ab4eb81b5152",
+      "updated_at": "2026-05-11T18:58:26.876898+00:00"
+    },
+    "wo_76f7ea4d5c87": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_76f7ea4d5c87",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.456181+00:00",
+      "parent_id": "",
+      "payload": {
+        "action_type": "execute_internal_task",
+        "allowed_scope": "Local/staging endpoint allowlist only; no third-party targets.",
+        "benchmark": {
+          "attack_simulations": [
+            "SQL/NoSQL injection payloads against test endpoints",
+            "SSRF canary URL denial",
+            "path traversal upload names",
+            "CSRF missing token requests"
+          ],
+          "blocks_deployment": true,
+          "evidence_outputs": [
+            "api_dast_fuzz_report.json",
+            "api_dast_fuzz_report.md"
+          ],
+          "guardrails": [
+            "authorized local/staging allowlist required",
+            "no destructive payloads",
+            "no third-party scanning"
+          ],
+          "id": "bench_api_fuzz_dast",
+          "objective": "Probe Aureon-owned API/UI routes for injection, SSRF, CSRF, unsafe upload, broken access control, and validation failures.",
+          "phase": "try_to_break_own_system",
+          "repair_route": "organism.hnc_saas_security",
+          "safe_scope": "Local/staging endpoint allowlist only; no third-party targets.",
+          "status": "planned_authorized_self_test",
+          "stress_tests": [
+            "rate-limit and concurrency stress",
+            "large upload rejection tests"
+          ],
+          "success_metrics": [
+            "all malformed inputs rejected safely",
+            "no server-side fetch to unapproved egress",
+            "no route exposes stack trace or secret metadata"
+          ]
+        },
+        "cycle": [
+          "define_authorized_scope",
+          "threat_model",
+          "implement_control",
+          "try_to_break_own_system",
+          "stress_test",
+          "record_vulnerability_or_proof",
+          "queue_fix",
+          "retest",
+          "update_benchmark",
+          "deployment_gate_review",
+          "write_vault_memory"
+        ],
+        "goal_id": "",
+        "guardrails": [
+          "authorized local/staging allowlist required",
+          "no destructive payloads",
+          "no third-party scanning"
+        ],
+        "job_id": "",
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "gate_unhackable_evidence"
+      },
+      "priority": 7,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Run unhackable pursuit benchmark: Probe Aureon-owned API/UI routes for injection, SSRF, CSRF, unsafe upload, broken ",
+      "trace_id": "trace_0db9ab21bc81",
+      "updated_at": "2026-05-11T19:09:37.456181+00:00"
+    },
+    "wo_837398475dcd": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_837398475dcd",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.406209+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "cross-tenant negative tests",
+          "DB RLS policy tests",
+          "object storage path traversal tests"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "tenant_isolation",
+          "evidence": [
+            "aureon/bots/orca_complete_kill_cycle.py",
+            "aureon/bridges/rainbow_bridge.py",
+            "aureon/conversion/mycelium_conversion_hub.py",
+            "aureon/core/aureon_lambda_engine.py",
+            "aureon/core/aureon_phi_calendar.py",
+            "aureon/core/aureon_zpe_extraction.py",
+            "aureon/core/cognitive_dashboard.py",
+            "aureon/core/hnc_params.py",
+            "aureon/decoders/aztec_decoder.py",
+            "aureon/decoders/book_of_ur.py"
+          ],
+          "hnc_systems": [
+            "HNCGateway",
+            "OrganismContractStack",
+            "ObsidianBridge"
+          ],
+          "id": "control_tenant_rls",
+          "implementation_pattern": "Add tenant_id, DB row-level security, per-tenant storage prefixes, tenant-aware queues, and denial-by-default service policies.",
+          "next_action": "Create the tenant contract schema before any SaaS endpoint becomes public.",
+          "requirement": "Every database row, object-store key, cache entry, event, vault note, work order, and log line must carry tenant context.",
+          "risk": "critical",
+          "standards": [
+            "OWASP ASVS",
+            "NIST SP 800-207"
+          ],
+          "status": "needs_implementation",
+          "title": "Tenant isolation on every data boundary",
+          "verification": [
+            "cross-tenant negative tests",
+            "DB RLS policy tests",
+            "object storage path traversal tests"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 6,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Tenant isolation on every data boundary",
+      "trace_id": "trace_88b3716fff69",
+      "updated_at": "2026-05-11T19:09:37.406209+00:00"
+    },
+    "wo_89f406e00c7f": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_89f406e00c7f",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T18:58:26.861897+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "prompt injection tests",
+          "unsafe tool denial tests",
+          "contract safety tests",
+          "self-written code static validation"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "ai_llm_tool_governance",
+          "evidence": [
+            "aureon/bots/orca_complete_kill_cycle.py",
+            "aureon/bridges/rainbow_bridge.py",
+            "aureon/conversion/mycelium_conversion_hub.py",
+            "aureon/core/aureon_lambda_engine.py",
+            "aureon/core/aureon_phi_calendar.py",
+            "aureon/core/aureon_zpe_extraction.py",
+            "aureon/core/cognitive_dashboard.py",
+            "aureon/core/hnc_params.py",
+            "aureon/decoders/aztec_decoder.py",
+            "aureon/decoders/book_of_ur.py"
+          ],
+          "hnc_systems": [
+            "AureonCapabilityGrowthLoop",
+            "SelfEnhancementEngine",
+            "SkillValidator",
+            "CodeArchitect"
+          ],
+          "id": "control_llm_tool_governance",
+          "implementation_pattern": "Route all agent actions through allowlisted tools, policy checks, signed work orders, static tests, and vault memory with source provenance.",
+          "next_action": "Use this blueprint as the policy source for self-enhancement work orders touching SaaS code.",
+          "requirement": "Model output may propose, classify, and queue work, but cannot bypass typed contracts, tests, operator approvals, or unsafe-action blockers.",
+          "risk": "critical",
+          "standards": [
+            "OWASP ASVS",
+            "NIST SP 800-207"
+          ],
+          "status": "needs_implementation",
+          "title": "LLM, tool, and self-writing code governance",
+          "verification": [
+            "prompt injection tests",
+            "unsafe tool denial tests",
+            "contract safety tests",
+            "self-written code static validation"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 6,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: LLM, tool, and self-writing code governance",
+      "trace_id": "trace_7be0b082825c",
+      "updated_at": "2026-05-11T18:58:26.861897+00:00"
+    },
+    "wo_b3e5e56fc064": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_b3e5e56fc064",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.388320+00:00",
+      "parent_id": "job_083f9ae98d95",
+      "payload": {
+        "action_type": "execute_internal_task",
+        "goal_id": "goal_91f315a3230f",
+        "job_id": "job_083f9ae98d95",
+        "objective": "Pursue Aureon's unhackable HNC SaaS north-star through zero-trust controls, authorized self-attack, stress tests, repair, retest, and release gates.",
+        "queue": "organism.default",
+        "recommended_skills": [
+          "hnc_saas_security_architect",
+          "capability_growth_loop",
+          "organism_contract_stack"
+        ],
+        "route_surfaces": [
+          "saas_security",
+          "contracts",
+          "capability_growth",
+          "self_enhancement",
+          "validation"
+        ],
+        "task_id": "task_207a68c7beec"
+      },
+      "priority": 5,
+      "queue": "organism.default",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Run internal goal step",
+      "trace_id": "trace_09c6149c937e",
+      "updated_at": "2026-05-11T19:09:37.388320+00:00"
+    },
+    "wo_c84351983147": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_c84351983147",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.406209+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "ASVS checklist",
+          "OWASP Top 10 regression suite",
+          "file upload malware/path tests",
+          "rate limit tests"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "api_application_security",
+          "evidence": [
+            "aureon/harmonic/phi_swarm_router.py",
+            "aureon/queen/queen_sentient_loop.py",
+            "frontend/src/components/BrainStatePanel.tsx",
+            "frontend/src/components/cinema/CinematicScene.tsx",
+            "frontend/src/components/cinema/HUDMetricsPanel.tsx",
+            "frontend/src/components/cinema/MarketNebula.tsx",
+            "frontend/src/components/EarthLiveUILayout.tsx",
+            "frontend/src/components/EckoushicCascadeVisualization.tsx",
+            "frontend/src/components/HarmonicNexusAnalytics.tsx",
+            "frontend/src/components/HarmonicNexusMonitor.tsx"
+          ],
+          "hnc_systems": [
+            "frontend",
+            "supabase functions",
+            "self-check scanner"
+          ],
+          "id": "control_api_asvs",
+          "implementation_pattern": "Create middleware for validation/auth/policy/rate-limit, use safe parsers, isolate file scanning, and map controls to ASVS IDs.",
+          "next_action": "Add a SaaS route security middleware contract and tests before building public endpoints.",
+          "requirement": "All SaaS routes must meet a defined ASVS level for authentication, access control, validation, encoding, upload safety, SSRF, CSRF, and rate limits.",
+          "risk": "high",
+          "standards": [
+            "OWASP ASVS",
+            "OWASP Top 10"
+          ],
+          "status": "needs_implementation",
+          "title": "ASVS-backed API and frontend hardening",
+          "verification": [
+            "ASVS checklist",
+            "OWASP Top 10 regression suite",
+            "file upload malware/path tests",
+            "rate limit tests"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 4,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: ASVS-backed API and frontend hardening",
+      "trace_id": "trace_d1254706cd10",
+      "updated_at": "2026-05-11T19:09:37.406209+00:00"
+    },
+    "wo_c9a718129499": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_c9a718129499",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.438578+00:00",
+      "parent_id": "",
+      "payload": {
+        "action_type": "execute_internal_task",
+        "allowed_scope": "Two or more synthetic tenants in local/staging data stores and queues.",
+        "benchmark": {
+          "attack_simulations": [
+            "tamper tenant_id in API request",
+            "cross-tenant object-store path guessing",
+            "queue claim from wrong tenant",
+            "vault note retrieval across tenant boundary"
+          ],
+          "blocks_deployment": true,
+          "evidence_outputs": [
+            "tenant_escape_matrix.json",
+            "tenant_escape_matrix.md"
+          ],
+          "guardrails": [
+            "synthetic tenant data only",
+            "no real customer data in adversarial fixtures"
+          ],
+          "id": "bench_tenant_escape",
+          "objective": "Prove one tenant cannot read, write, infer, queue, or export another tenant's data.",
+          "phase": "try_to_break_own_system",
+          "repair_route": "organism.hnc_saas_security",
+          "safe_scope": "Two or more synthetic tenants in local/staging data stores and queues.",
+          "status": "planned_authorized_self_test",
+          "stress_tests": [
+            "parallel cross-tenant negative access attempts"
+          ],
+          "success_metrics": [
+            "zero cross-tenant reads",
+            "zero cross-tenant writes",
+            "tenant_id present in every audit event"
+          ]
+        },
+        "cycle": [
+          "define_authorized_scope",
+          "threat_model",
+          "implement_control",
+          "try_to_break_own_system",
+          "stress_test",
+          "record_vulnerability_or_proof",
+          "queue_fix",
+          "retest",
+          "update_benchmark",
+          "deployment_gate_review",
+          "write_vault_memory"
+        ],
+        "goal_id": "",
+        "guardrails": [
+          "synthetic tenant data only",
+          "no real customer data in adversarial fixtures"
+        ],
+        "job_id": "",
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "gate_unhackable_evidence"
+      },
+      "priority": 7,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Run unhackable pursuit benchmark: Prove one tenant cannot read, write, infer, queue, or export another tenant's data",
+      "trace_id": "trace_be71936ae12e",
+      "updated_at": "2026-05-11T19:09:37.438578+00:00"
+    },
+    "wo_d892e2e88525": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_d892e2e88525",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.480517+00:00",
+      "parent_id": "",
+      "payload": {
+        "action_type": "execute_internal_task",
+        "allowed_scope": "Local/staging audit log fixtures and append-only event stores.",
+        "benchmark": {
+          "attack_simulations": [
+            "delete audit event attempt",
+            "modify prior event hash",
+            "drop trace_id mid-workflow",
+            "replay stale work-order result"
+          ],
+          "blocks_deployment": true,
+          "evidence_outputs": [
+            "audit_tamper_report.json",
+            "audit_tamper_report.md"
+          ],
+          "guardrails": [
+            "test audit stores only",
+            "no deletion of production logs"
+          ],
+          "id": "bench_audit_tamper_resilience",
+          "objective": "Prove audit trails survive tampering attempts and preserve traceability across agents, users, decisions, and money workflows.",
+          "phase": "try_to_break_own_system",
+          "repair_route": "organism.hnc_saas_security",
+          "safe_scope": "Local/staging audit log fixtures and append-only event stores.",
+          "status": "planned_authorized_self_test",
+          "stress_tests": [
+            "high-volume audit event write/read verification"
+          ],
+          "success_metrics": [
+            "tampering detected",
+            "hash chain or immutable event proof remains valid",
+            "trace_id continuity preserved"
+          ]
+        },
+        "cycle": [
+          "define_authorized_scope",
+          "threat_model",
+          "implement_control",
+          "try_to_break_own_system",
+          "stress_test",
+          "record_vulnerability_or_proof",
+          "queue_fix",
+          "retest",
+          "update_benchmark",
+          "deployment_gate_review",
+          "write_vault_memory"
+        ],
+        "goal_id": "",
+        "guardrails": [
+          "test audit stores only",
+          "no deletion of production logs"
+        ],
+        "job_id": "",
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "gate_unhackable_evidence"
+      },
+      "priority": 7,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Run unhackable pursuit benchmark: Prove audit trails survive tampering attempts and preserve traceability across age",
+      "trace_id": "trace_312b511d7534",
+      "updated_at": "2026-05-11T19:09:37.480517+00:00"
+    },
+    "wo_e10bcf4c65b4": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_e10bcf4c65b4",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.438578+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "service auth tests",
+          "deny-by-default tests",
+          "network segmentation review",
+          "trace continuity tests"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "zero_trust_runtime",
+          "evidence": [
+            "aureon/bots/orca_complete_kill_cycle.py",
+            "aureon/bridges/rainbow_bridge.py",
+            "aureon/conversion/mycelium_conversion_hub.py",
+            "aureon/core/aureon_lambda_engine.py",
+            "aureon/core/aureon_phi_calendar.py",
+            "aureon/core/aureon_zpe_extraction.py",
+            "aureon/core/cognitive_dashboard.py",
+            "aureon/core/hnc_params.py",
+            "aureon/decoders/aztec_decoder.py",
+            "aureon/decoders/book_of_ur.py"
+          ],
+          "hnc_systems": [
+            "HNCGateway",
+            "ThoughtBus",
+            "OrganismContractStack"
+          ],
+          "id": "control_zero_trust_service_mesh",
+          "implementation_pattern": "Use service identity, mTLS or signed requests, policy enforcement points, network segmentation, and continuous risk signals.",
+          "next_action": "Define service identities and policies before exposing multi-tenant jobs or agent queues.",
+          "requirement": "Every internal service call must be authenticated, authorized, least-privileged, logged, and continuously evaluated.",
+          "risk": "critical",
+          "standards": [
+            "NIST SP 800-207",
+            "OWASP ASVS"
+          ],
+          "status": "needs_implementation",
+          "title": "Zero-trust service-to-service runtime",
+          "verification": [
+            "service auth tests",
+            "deny-by-default tests",
+            "network segmentation review",
+            "trace continuity tests"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 6,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Zero-trust service-to-service runtime",
+      "trace_id": "trace_93e74c7f56fa",
+      "updated_at": "2026-05-11T19:09:37.438578+00:00"
+    },
+    "wo_f1e94be85db5": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_f1e94be85db5",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T18:58:26.880808+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "pip/npm audit",
+          "SBOM generation",
+          "secret scanning",
+          "signed build verification"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "supply_chain",
+          "evidence": [
+            "aureon/observer/benchmark.py",
+            "tests/benchmark/bench_hnc_stack.py",
+            "tests/benchmark/queen_sentience_benchmark.py",
+            "tests/benchmarks/benchmark_aureon_scope.py",
+            "tests/benchmarks/report.json",
+            "tests/benchmarks/report.md",
+            "tests/observer/test_daemon_attach.py",
+            "tests/observer/test_fitter_io.py",
+            "tests/observer/test_predictor_contract.py",
+            "tests/smoke_test_json_integration.py"
+          ],
+          "hnc_systems": [
+            "AureonCapabilityGrowthLoop",
+            "RepoWideOrganizationAudit",
+            "CodeArchitect"
+          ],
+          "id": "control_supply_chain",
+          "implementation_pattern": "Use lockfiles, SBOM, dependency review, SAST, secret scanning, signed artifacts, protected branches, and environment promotion gates.",
+          "next_action": "Add supply-chain checks to the SaaS build benchmark before deployment work begins.",
+          "requirement": "Every Python, Node, container, CI, and deployment artifact must be reproducible, scanned, and traceable.",
+          "risk": "high",
+          "standards": [
+            "OWASP ASVS",
+            "OWASP Top 10 Vulnerable and Outdated Components"
+          ],
+          "status": "needs_implementation",
+          "title": "Dependency, build, and deployment supply-chain control",
+          "verification": [
+            "pip/npm audit",
+            "SBOM generation",
+            "secret scanning",
+            "signed build verification"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 4,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Dependency, build, and deployment supply-chain control",
+      "trace_id": "trace_f98b2ab7ab0b",
+      "updated_at": "2026-05-11T18:58:26.881364+00:00"
+    },
+    "wo_fbf40882cda8": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_fbf40882cda8",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:09:37.429663+00:00",
+      "parent_id": "",
+      "payload": {
+        "acceptance_checks": [
+          "pip/npm audit",
+          "SBOM generation",
+          "secret scanning",
+          "signed build verification"
+        ],
+        "action_type": "execute_internal_task",
+        "control": {
+          "blocks_release": true,
+          "domain": "supply_chain",
+          "evidence": [
+            "aureon/observer/benchmark.py",
+            "tests/benchmark/bench_hnc_stack.py",
+            "tests/benchmark/queen_sentience_benchmark.py",
+            "tests/benchmarks/benchmark_aureon_scope.py",
+            "tests/benchmarks/report.json",
+            "tests/benchmarks/report.md",
+            "tests/observer/test_daemon_attach.py",
+            "tests/observer/test_fitter_io.py",
+            "tests/observer/test_predictor_contract.py",
+            "tests/smoke_test_json_integration.py"
+          ],
+          "hnc_systems": [
+            "AureonCapabilityGrowthLoop",
+            "RepoWideOrganizationAudit",
+            "CodeArchitect"
+          ],
+          "id": "control_supply_chain",
+          "implementation_pattern": "Use lockfiles, SBOM, dependency review, SAST, secret scanning, signed artifacts, protected branches, and environment promotion gates.",
+          "next_action": "Add supply-chain checks to the SaaS build benchmark before deployment work begins.",
+          "requirement": "Every Python, Node, container, CI, and deployment artifact must be reproducible, scanned, and traceable.",
+          "risk": "high",
+          "standards": [
+            "OWASP ASVS",
+            "OWASP Top 10 Vulnerable and Outdated Components"
+          ],
+          "status": "needs_implementation",
+          "title": "Dependency, build, and deployment supply-chain control",
+          "verification": [
+            "pip/npm audit",
+            "SBOM generation",
+            "secret scanning",
+            "signed build verification"
+          ]
+        },
+        "goal_id": "",
+        "job_id": "",
+        "official_anchors": {
+          "nist_zero_trust": "https://csrc.nist.gov/pubs/sp/800/207/final",
+          "owasp_asvs": "https://owasp.org/www-project-application-security-verification-standard/",
+          "owasp_top_10": "https://owasp.org/www-project-top-ten/"
+        },
+        "queue": "organism.hnc_saas_security",
+        "release_gate": "blocked_until_control_verified"
+      },
+      "priority": 4,
+      "queue": "organism.hnc_saas_security",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_saas_security_architect",
+      "status": "queued",
+      "tags": [],
+      "title": "Implement SaaS security control: Dependency, build, and deployment supply-chain control",
+      "trace_id": "trace_5cd327935db7",
+      "updated_at": "2026-05-11T19:09:37.429663+00:00"
+    }
+  },
+  "history": [
+    {
+      "contract_id": "skill_91fde5bd2c99",
+      "contract_type": "skill",
+      "event": "organism.contract.skill.registered",
+      "status": "created",
+      "ts": "2026-05-11T18:58:26.835652+00:00"
+    },
+    {
+      "contract_id": "goal_039be066986d",
+      "contract_type": "goal",
+      "event": "organism.contract.goal.created",
+      "status": "created",
+      "ts": "2026-05-11T18:58:26.844171+00:00"
+    },
+    {
+      "contract_id": "task_b3f9422a2bdf",
+      "contract_type": "task",
+      "event": "organism.contract.task.created",
+      "status": "created",
+      "ts": "2026-05-11T18:58:26.844171+00:00"
+    },
+    {
+      "contract_id": "job_063443c650a8",
+      "contract_type": "job",
+      "event": "organism.contract.job.created",
+      "status": "created",
+      "ts": "2026-05-11T18:58:26.848752+00:00"
+    },
+    {
+      "contract_id": "wo_57f7059c68f0",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T18:58:26.851934+00:00"
+    },
+    {
+      "contract_id": "wo_5054c10464f9",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T18:58:26.852879+00:00"
+    },
+    {
+      "contract_id": "wo_64b88433ade9",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T18:58:26.852879+00:00"
+    },
+    {
+      "contract_id": "wo_2fda28f9ebf1",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T18:58:26.852879+00:00"
+    },
+    {
+      "contract_id": "wo_61154a9a5576",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T18:58:26.861897+00:00"
+    },
+    {
+      "contract_id": "wo_89f406e00c7f",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T18:58:26.861897+00:00"
+    },
+    {
+      "contract_id": "wo_2363a76ce67a",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T18:58:26.868154+00:00"
+    },
+    {
+      "contract_id": "wo_2eaedb7a07cc",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T18:58:26.872833+00:00"
+    },
+    {
+      "contract_id": "wo_6f015c80e739",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T18:58:26.876898+00:00"
+    },
+    {
+      "contract_id": "wo_f1e94be85db5",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T18:58:26.881364+00:00"
+    },
+    {
+      "contract_id": "wo_5f37831aa65a",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T18:58:26.886176+00:00"
+    },
+    {
+      "contract_id": "wo_6a9ab86adbac",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T18:58:26.886176+00:00"
+    },
+    {
+      "contract_id": "wo_38a1b61c19d6",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T18:58:26.894202+00:00"
+    },
+    {
+      "contract_id": "skill_c28a43c5fa02",
+      "contract_type": "skill",
+      "event": "organism.contract.skill.registered",
+      "status": "created",
+      "ts": "2026-05-11T19:09:37.388320+00:00"
+    },
+    {
+      "contract_id": "goal_91f315a3230f",
+      "contract_type": "goal",
+      "event": "organism.contract.goal.created",
+      "status": "created",
+      "ts": "2026-05-11T19:09:37.388320+00:00"
+    },
+    {
+      "contract_id": "task_207a68c7beec",
+      "contract_type": "task",
+      "event": "organism.contract.task.created",
+      "status": "created",
+      "ts": "2026-05-11T19:09:37.388320+00:00"
+    },
+    {
+      "contract_id": "job_083f9ae98d95",
+      "contract_type": "job",
+      "event": "organism.contract.job.created",
+      "status": "created",
+      "ts": "2026-05-11T19:09:37.388320+00:00"
+    },
+    {
+      "contract_id": "wo_b3e5e56fc064",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.388320+00:00"
+    },
+    {
+      "contract_id": "wo_3dae3979455a",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.388320+00:00"
+    },
+    {
+      "contract_id": "wo_837398475dcd",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.406209+00:00"
+    },
+    {
+      "contract_id": "wo_2e202742071a",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.406209+00:00"
+    },
+    {
+      "contract_id": "wo_c84351983147",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.406209+00:00"
+    },
+    {
+      "contract_id": "wo_297ee9008fdc",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.406209+00:00"
+    },
+    {
+      "contract_id": "wo_179211eafd79",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.420224+00:00"
+    },
+    {
+      "contract_id": "wo_2b6fdf13ccaf",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.422146+00:00"
+    },
+    {
+      "contract_id": "wo_4e2d88a5f3f6",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.422146+00:00"
+    },
+    {
+      "contract_id": "wo_fbf40882cda8",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.429663+00:00"
+    },
+    {
+      "contract_id": "wo_02aabc27686f",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.429663+00:00"
+    },
+    {
+      "contract_id": "wo_48b72bebba2d",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.438578+00:00"
+    },
+    {
+      "contract_id": "wo_e10bcf4c65b4",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.438578+00:00"
+    },
+    {
+      "contract_id": "wo_05c4ed552e3d",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.438578+00:00"
+    },
+    {
+      "contract_id": "wo_c9a718129499",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.438578+00:00"
+    },
+    {
+      "contract_id": "wo_146ca8ff2c60",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.456181+00:00"
+    },
+    {
+      "contract_id": "wo_56525d1f4371",
+      "contract_type": "work_order",
+      "event": "organism.contract.blocked",
+      "status": "blocked",
+      "ts": "2026-05-11T19:09:37.456181+00:00"
+    },
+    {
+      "contract_id": "wo_76f7ea4d5c87",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.456181+00:00"
+    },
+    {
+      "contract_id": "wo_3cf6bbbb818f",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.471679+00:00"
+    },
+    {
+      "contract_id": "wo_d892e2e88525",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.480517+00:00"
+    },
+    {
+      "contract_id": "wo_00ee83485102",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:09:37.488052+00:00"
+    }
+  ],
+  "queue": [
+    "wo_57f7059c68f0",
+    "wo_5054c10464f9",
+    "wo_64b88433ade9",
+    "wo_2fda28f9ebf1",
+    "wo_61154a9a5576",
+    "wo_89f406e00c7f",
+    "wo_2363a76ce67a",
+    "wo_2eaedb7a07cc",
+    "wo_6f015c80e739",
+    "wo_f1e94be85db5",
+    "wo_5f37831aa65a",
+    "wo_6a9ab86adbac",
+    "wo_38a1b61c19d6",
+    "wo_b3e5e56fc064",
+    "wo_3dae3979455a",
+    "wo_837398475dcd",
+    "wo_2e202742071a",
+    "wo_c84351983147",
+    "wo_297ee9008fdc",
+    "wo_179211eafd79",
+    "wo_2b6fdf13ccaf",
+    "wo_4e2d88a5f3f6",
+    "wo_fbf40882cda8",
+    "wo_02aabc27686f",
+    "wo_48b72bebba2d",
+    "wo_e10bcf4c65b4",
+    "wo_05c4ed552e3d",
+    "wo_c9a718129499",
+    "wo_146ca8ff2c60",
+    "wo_76f7ea4d5c87",
+    "wo_3cf6bbbb818f",
+    "wo_d892e2e88525",
+    "wo_00ee83485102"
+  ],
+  "schema_version": "aureon-contract-stack-state-v1",
+  "updated_at": "2026-05-11T19:09:37.488052+00:00"
+}

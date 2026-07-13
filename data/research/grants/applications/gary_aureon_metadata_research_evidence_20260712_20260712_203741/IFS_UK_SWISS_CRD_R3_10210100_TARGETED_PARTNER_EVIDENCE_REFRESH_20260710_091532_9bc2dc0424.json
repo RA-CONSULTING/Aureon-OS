@@ -1,0 +1,107 @@
+﻿{
+    "schema_version":  "aureon-ifs-targeted-partner-evidence-refresh-v1",
+    "generated_at":  "2026-07-10T09:15:32+01:00",
+    "operator":  "Aureon",
+    "mode":  "IFS_ONLY",
+    "application_id":  "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+    "portal_application_number":  "10210100",
+    "competition":  "UK-Switzerland CR\u0026D Round 3",
+    "live_ifs_progress_readback":  "80% Complete from latest portal artifact",
+    "result":  "NO_CONFIRMED_SWISS_PARTNER_RESEARCH_WAIVER_OR_BUDGET_EVIDENCE_FOUND",
+    "confirmed_findings":  {
+                               "confirmed_swiss_implementation_partner":  false,
+                               "confirmed_research_institute_or_waiver":  false,
+                               "confirmed_partner_commitment_or_letter":  false,
+                               "confirmed_partner_budget_or_cost_split":  false,
+                               "confirmed_total_eligible_cost_basis":  false,
+                               "confirmed_permits_and_licences_position":  false,
+                               "confirmed_export_control_position":  false
+                           },
+    "local_searches":  [
+                           {
+                               "scope":  "data/research/grants",
+                               "query":  "Kandou|Sensirion|Corintis|SwissChips|ETH Zurich|Innosuisse|Swiss implementation|research institute|waiver|Swiss partner|UK-Switzerland",
+                               "result_summary":  "Matches were Aureon planning, route matrices, blocker ledgers, and prior no-unlock audits only; no confirmed partner commitment, research institute/waiver, or budget evidence found."
+                           },
+                           {
+                               "scope":  "Downloads/Documents/Desktop content",
+                               "query":  "same targeted Swiss partner and waiver terms",
+                               "result_summary":  "No content matches in usable files after suppressing Windows library-junction access errors."
+                           },
+                           {
+                               "scope":  "Downloads/Documents/Desktop filenames",
+                               "query":  "swiss|switzerland|innosuisse|kandou|sensirion|corintis|eth|partner|waiver|research",
+                               "result_summary":  "Only generic research files and unrelated script/workspace names appeared; no file name indicated a confirmed UK-Swiss partner, waiver, or budget record."
+                           }
+                       ],
+    "drive_searches":  [
+                           {
+                               "query":  "Kandou",
+                               "result_summary":  "No Google Drive results."
+                           },
+                           {
+                               "query":  "Sensirion",
+                               "result_summary":  "No Google Drive results."
+                           },
+                           {
+                               "query":  "Corintis",
+                               "result_summary":  "No Google Drive results."
+                           },
+                           {
+                               "query":  "SwissChips",
+                               "result_summary":  "No Google Drive results."
+                           },
+                           {
+                               "query":  "ETH Zurich",
+                               "result_summary":  "No Google Drive results."
+                           },
+                           {
+                               "query":  "Innosuisse",
+                               "result_summary":  "Matched Aureon Grant War Room only; it records the UK-Switzerland route requirement and next action to build a target list, not a confirmed partner or budget."
+                           },
+                           {
+                               "query":  "Swiss partner",
+                               "result_summary":  "Matched Aureon Grant War Room and AUREON_GRANT_OPERATING_LOG planning records only; both identify the Swiss partner requirement and blocker."
+                           },
+                           {
+                               "query":  "research institute",
+                               "result_summary":  "Matched planning records including War Room and operating log; no named research institute commitment or waiver evidence found."
+                           },
+                           {
+                               "query":  "waiver",
+                               "result_summary":  "Matched unrelated validation/technical files and broad planning records; no UK-Swiss research institute waiver evidence found."
+                           },
+                           {
+                               "query":  "UK Switzerland",
+                               "result_summary":  "Matched Aureon Grant War Room and operating log; both list UK-Switzerland CR\u0026D as partner-gated, with no commitment evidence."
+                           }
+                       ],
+    "ifs_portal_action":  {
+                              "portal_opened_or_changed_in_this_refresh":  false,
+                              "reason":  "No new evidence unlocked any truthful remaining IFS section after targeted local and Drive searches.",
+                              "no_submit_pressed":  true,
+                              "no_project_impact_submit_pressed":  true,
+                              "no_award_terms_accepted":  true,
+                              "no_partner_invite_sent":  true,
+                              "no_email_sent":  true,
+                              "no_upload_performed":  true
+                          },
+    "remaining_gates":  [
+                            "Named Swiss implementation partner",
+                            "Named research institute or waiver evidence",
+                            "Partner commitment or letter",
+                            "Work package split and partner roles",
+                            "Partner budget, cost split, person-month basis, total eligible-cost basis",
+                            "Permits/licences position after technical scope is fixed",
+                            "Export-control/TR\u0026I position after partner scope is fixed",
+                            "Project finances and Project Impact completion",
+                            "Award terms acceptance and final review/submit"
+                        ],
+    "next_action":  "Continue partner acquisition outside the IFS form; do not complete Q4, Q6, Q17, project finances, Project Impact final submit, award terms, or review/submit until the missing evidence exists.",
+    "controls":  [
+                     "No unsupported partner, research institute, waiver, budget, permit, export, cost, or finance claim entered",
+                     "No portal mutation performed in this refresh",
+                     "No external email, partner invite, upload, award terms acceptance, Project Impact submit, or final IFS submit performed",
+                     "Live UK-Switzerland draft remains evidence-gated and not submit-ready"
+                 ]
+}

@@ -1,0 +1,127 @@
+﻿{
+    "schema_version":  "aureon-ifs-actasap-academic-lead-evidence-audit-v1",
+    "generated_at":  "2026-07-10T09:29:13+01:00",
+    "operator":  "Aureon",
+    "scope":  "IFS_ONLY",
+    "event":  "ifs_actasap_academic_lead_evidence_audit",
+    "application_id":  "APP-IFS-ACTASAP-PILOT-2502-20260709",
+    "opportunity_id":  "IFS-CURRENT-2502",
+    "competition":  "ACTASAP Pilot Phase 1",
+    "official_url":  "https://apply-for-innovation-funding.service.gov.uk/competition/2502/overview/35ca10fb-d4f5-4510-9ddd-e7e3133d2b6d",
+    "deadline":  "2026-07-28T11:00:00+01:00",
+    "result":  "NO_ACTASAP_SUBMIT_READY_ROUTE_CURRENT_EVIDENCE_ACADEMIC_LEAD_TTO_REQUIRED",
+    "official_ifs_requirements":  [
+                                      {
+                                          "requirement":  "Competition closes Tuesday 28 July 2026 at 11:00am; UK registered academic institutions can apply for a share of up to GBP800,000.",
+                                          "source":  "Official IFS page lines 45-50"
+                                      },
+                                      {
+                                          "requirement":  "Project total eligible costs across Phase 1a and Phase 1b must be between GBP5,000 and GBP32,000.",
+                                          "source":  "Official IFS page lines 104-106 and 124-127"
+                                      },
+                                      {
+                                          "requirement":  "Eligible project costs are salaries of academics participating in the programme plus travel and subsistence to ACTASAP Phase 1 events only.",
+                                          "source":  "Official IFS page lines 132-143 and 269-279"
+                                      },
+                                      {
+                                          "requirement":  "To work alone or lead, the organisation must be based in a UK registered academic institution, have an ACT-related idea, and have support from the institution technology transfer office or equivalent.",
+                                          "source":  "Official IFS page lines 146-156"
+                                      },
+                                      {
+                                          "requirement":  "Funded collaborators must be UK registered academic institutions; non-funded partners can participate from their own resources but do not receive funding.",
+                                          "source":  "Official IFS page lines 159-177"
+                                      },
+                                      {
+                                          "requirement":  "Subcontractors are not allowed in this competition.",
+                                          "source":  "Official IFS page lines 179-180"
+                                      },
+                                      {
+                                          "requirement":  "Lead applicant must make sure the proposal meets eligibility/scope, all sections are complete, and collaborators accept terms before submission.",
+                                          "source":  "Official IFS page lines 341-347"
+                                      }
+                                  ],
+    "confirmed_findings":  {
+                               "confirmed_uk_academic_institution_lead":  false,
+                               "confirmed_technology_transfer_office_support":  false,
+                               "confirmed_act_related_academic_project_owner":  false,
+                               "confirmed_funded_academic_collaboration":  false,
+                               "confirmed_non_funded_partner_invite_for_ra":  false,
+                               "confirmed_eligible_academic_salary_costs":  false,
+                               "direct_ifs_submission_unlocked":  false
+                           },
+    "local_evidence_readback":  [
+                                    {
+                                        "path":  "applications.json",
+                                        "finding":  "ACTASAP is recorded as ACADEMIC_LEAD_REQUIRED, not R\u0026A direct-submit ready."
+                                    },
+                                    {
+                                        "path":  "IFS_CURRENT_FIT_MATRIX_20260709.md",
+                                        "finding":  "Matrix states ACTASAP requires a UK registered academic institution lead and should not be submitted by R\u0026A."
+                                    },
+                                    {
+                                        "path":  "AUREON_GRANT_OPERATOR_24_7_PLAN_20260709.md",
+                                        "finding":  "Plan records ACTASAP as academic institution lead only."
+                                    },
+                                    {
+                                        "path":  "contacts.json and contacts/QUB_OUTREACH_EMAIL.txt",
+                                        "finding":  "QUB and Ulster are outreach/affiliation targets only. No confirmed ACTASAP academic lead, TTO support, or IFS invitation found."
+                                    },
+                                    {
+                                        "path":  "Downloads/Documents/Desktop filename search",
+                                        "finding":  "Only a QUB outreach email copy appeared. No ACTASAP, CyberASAP, TTO, or advanced-connectivity academic lead evidence found."
+                                    }
+                                ],
+    "drive_searches":  [
+                           {
+                               "query":  "ACTASAP",
+                               "result_summary":  "Returned RA Grant War Room package files only. The inspected text classifies ACTASAP as academic-institutions-only and not directly viable for R\u0026A."
+                           },
+                           {
+                               "query":  "CyberASAP",
+                               "result_summary":  "No Google Drive results."
+                           },
+                           {
+                               "query":  "advanced connectivity",
+                               "result_summary":  "Returned writing/docx and unrelated technical markdown files. No confirmed academic lead, TTO support, or ACTASAP IFS invitation found."
+                           },
+                           {
+                               "query":  "TTO ACTASAP",
+                               "result_summary":  "Returned RA Grant War Room package files only. No TTO support letter or academic institution lead evidence found."
+                           },
+                           {
+                               "query":  "QUB ACTASAP",
+                               "result_summary":  "No Google Drive results."
+                           },
+                           {
+                               "query":  "Ulster ACTASAP",
+                               "result_summary":  "No Google Drive results."
+                           }
+                       ],
+    "drive_files_inspected":  [
+                                  {
+                                      "title":  "RA_Grant_War_Room_Package.md",
+                                      "id":  "1_V8v6tYCL-LsMxrju_emMQcikxl_ZNly",
+                                      "finding":  "Planning package classifies ACTASAP as academic institutions only and R\u0026A as a business; it does not evidence a confirmed academic lead, TTO support, or IFS invitation."
+                                  }
+                              ],
+    "route_action":  {
+                         "portal_draft_opened":  false,
+                         "final_submission_attempted":  false,
+                         "partner_invite_sent":  false,
+                         "email_sent":  false,
+                         "upload_performed":  false,
+                         "reason":  "Official ACTASAP rules require a UK academic institution lead and TTO/equivalent support. Current Aureon evidence does not confirm those gates."
+                     },
+    "next_actions":  [
+                         "Do not submit ACTASAP directly as R\u0026A; R\u0026A is not the eligible lead for this competition.",
+                         "Only change route to draft-ready if a UK academic institution confirms lead status, ACT-related academic project ownership, TTO support, and an IFS invite or collaboration role.",
+                         "If R\u0026A participates, treat it as a non-funded partner unless the official rules and lead institution confirm a funded eligible academic route.",
+                         "Exclude internal language, unsupported market claims, bank details, tax references, and private contact details from any formal ACTASAP document."
+                     ],
+    "controls":  [
+                     "No unsupported academic lead claim made",
+                     "No unsupported TTO support claim made",
+                     "No unsupported funded-partner or non-funded-partner invite claim made",
+                     "No IFS portal mutation, external email, upload, partner invite, or final submission performed"
+                 ]
+}

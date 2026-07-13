@@ -1,0 +1,116 @@
+{
+  "schema_version": "aureon-external-action-queue-v1",
+  "generated_at": "2026-07-12T12:08:45+01:00",
+  "operator": "Aureon",
+  "event": "external_action_queue",
+  "result": "AUREON_EXTERNAL_ACTION_QUEUE_READY_CONFIRMATION_REQUIRED",
+  "source_queue": "applications/AUREON_EXTERNAL_ACTION_QUEUE_20260712_20260712_114554.json",
+  "queue": [
+    {
+      "id": "ACTION-IFS-UK-SWISS-PROJECT-IMPACT-SUPPORT-20260712",
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "route_type": "grant_provider_support_email",
+      "destination": "support@iuk.ukri.org",
+      "email_package": "applications/IFS_UK_SWISS_PROJECT_IMPACT_SUPPORT_REFRESH_DRAFT_20260712_20260712_114526.eml",
+      "purpose": "Ask Innovate UK support to reset or advise on Project Impact survey persistence for IFS application 10210100.",
+      "ready_status": "READY_NOT_SENT",
+      "required_confirmation": "Send the IFS 10210100 Project Impact support email to support@iuk.ukri.org with its four evidence screenshots attached.",
+      "email_readback": {
+        "exists": true,
+        "package": "applications/IFS_UK_SWISS_PROJECT_IMPACT_SUPPORT_REFRESH_DRAFT_20260712_20260712_114526.eml",
+        "to": "support@iuk.ukri.org",
+        "from": "Gary Leckey <gaxlec@gmail.com>",
+        "subject": "IFS application 10210100: Project Impact survey answer not persisting",
+        "attachment_count": 4,
+        "attachments": [
+          {
+            "filename": "ifs_uk_swiss_10210100_project_impact_numeric_blank_after_cua_retry_20260712_1148.png",
+            "bytes": 194625
+          },
+          {
+            "filename": "ifs_uk_swiss_10210100_review_project_impact_block_20260712_1128.png",
+            "bytes": 359240
+          },
+          {
+            "filename": "ifs_uk_swiss_project_impact_q1_blank_after_nocache_retry_20260711_1306.png",
+            "bytes": 54019
+          },
+          {
+            "filename": "ifs_uk_swiss_finance_complete_review_project_impact_block_20260711_1252.png",
+            "bytes": 359675
+          }
+        ],
+        "body_chars": 1934
+      },
+      "send_performed": false,
+      "external_submission_performed": false,
+      "action_time_confirmation_required": true
+    },
+    {
+      "id": "ACTION-OPENOCEAN-PITCH-SUBMISSION-20260712",
+      "application_id": "APP-PRIVATE-INVESTOR-OPENOCEAN-FIFTH-WAVE-20260711",
+      "route_type": "investor_pitch_email",
+      "destination": "info@openocean.vc",
+      "email_package": "applications/OPENOCEAN_PITCH_SUBMISSION_EMAIL_PACKAGE_20260712_20260712_111305.eml",
+      "purpose": "Send the Aureon pitch deck and sanitized key data after OpenOcean requested the deck.",
+      "ready_status": "READY_NOT_SENT",
+      "required_confirmation": "Send the OpenOcean pitch submission email to info@openocean.vc with the deck PDF and sanitized key data attached.",
+      "email_readback": {
+        "exists": true,
+        "package": "applications/OPENOCEAN_PITCH_SUBMISSION_EMAIL_PACKAGE_20260712_20260712_111305.eml",
+        "to": "info@openocean.vc",
+        "from": "Gary Leckey <gaxlec@gmail.com>",
+        "subject": "Aureon Evidence OS - OpenOcean pitch route submission",
+        "attachment_count": 2,
+        "attachments": [
+          {
+            "filename": "AUREON_OPENOCEAN_PITCH_DECK_20260712_001500.pdf",
+            "bytes": 419432
+          },
+          {
+            "filename": "OPENOCEAN_PITCH_KEY_DATA_SANITIZED_20260712_20260712_111305.md",
+            "bytes": 1085
+          }
+        ],
+        "body_chars": 732
+      },
+      "send_performed": false,
+      "external_submission_performed": false,
+      "action_time_confirmation_required": true
+    },
+    {
+      "id": "ACTION-INTERTRADEIRELAND-CLUSTER-TO-CLUSTER-CLARIFICATION-20260712",
+      "application_id": "APP-INTERTRADEIRELAND-CLUSTER-TO-CLUSTER-20260712",
+      "route_type": "grant_partner_clarification_email",
+      "destination": "SIClusters@intertradeireland.com",
+      "email_package": "applications/INTERTRADEIRELAND_CLUSTER_TO_CLUSTER_PARTNER_CLARIFICATION_DRAFT_20260712_120845.eml",
+      "purpose": "Ask InterTradeIreland whether Aureon can participate as a Northern Ireland SME/evidence workflow partner and how to identify an eligible opposite-jurisdiction cluster partner.",
+      "ready_status": "READY_NOT_SENT",
+      "required_confirmation": "Send the InterTradeIreland Cluster-to-Cluster clarification email to SIClusters@intertradeireland.com with the partner brief attached.",
+      "email_readback": {
+        "exists": true,
+        "package": "applications/INTERTRADEIRELAND_CLUSTER_TO_CLUSTER_PARTNER_CLARIFICATION_DRAFT_20260712_120845.eml",
+        "to": "SIClusters@intertradeireland.com",
+        "from": "Gary Leckey <gaxlec@gmail.com>",
+        "subject": "Shared Island Cluster-to-Cluster: Aureon Evidence OS partner eligibility clarification",
+        "attachment_count": 1,
+        "body_chars": 989
+      },
+      "send_performed": false,
+      "external_submission_performed": false,
+      "action_time_confirmation_required": true
+    }
+  ],
+  "summary": {
+    "ready_not_sent_actions": 3,
+    "grant_provider_support_emails": 1,
+    "investor_pitch_emails": 1,
+    "grant_partner_clarification_emails": 1,
+    "send_performed": false,
+    "external_submission_performed": false
+  },
+  "outputs": {
+    "json": "applications/AUREON_EXTERNAL_ACTION_QUEUE_20260712_120845_cluster_to_cluster.json",
+    "pipeline_report": "pipelines/pipeline_report_20260712_120845_intertradeireland_cluster_to_cluster_partner_packet.json"
+  }
+}

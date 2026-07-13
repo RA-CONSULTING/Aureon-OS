@@ -1,0 +1,124 @@
+﻿{
+    "schema_version":  "aureon-ifs-drive35-zev-partner-facility-evidence-audit-v1",
+    "generated_at":  "2026-07-10T09:47:06+01:00",
+    "operator":  "Aureon",
+    "scope":  "IFS_ONLY",
+    "event":  "ifs_drive35_zev_partner_facility_evidence_audit",
+    "application_ids":  [
+                            "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+                            "APP-IFS-DRIVE35-SCALE-UP-2445-20260709"
+                        ],
+    "opportunities":  [
+                          {
+                              "id":  "IFS-CURRENT-2522",
+                              "competition":  "DRIVE35 Innovation Fund: Collaborate 3",
+                              "official_url":  "https://apply-for-innovation-funding.service.gov.uk/competition/2522/overview/25a1cadb-ab0d-4d6d-a629-4f5d3ead5994",
+                              "deadline":  "2026-09-16T11:00:00+01:00"
+                          },
+                          {
+                              "id":  "IFS-CURRENT-2445",
+                              "competition":  "DRIVE35: Scale Up Fund",
+                              "official_url":  "https://apply-for-innovation-funding.service.gov.uk/competition/2445/overview/a850ba04-f0b3-42c5-8dfa-03375731a884",
+                              "deadline":  "open-no-submission-deadline"
+                          }
+                      ],
+    "result":  "NO_DRIVE35_SUBMIT_READY_ROUTE_CURRENT_EVIDENCE_ZEV_PARTNER_FACILITY_MATCH_FUNDING_REQUIRED",
+    "official_ifs_requirements":  [
+                                      {
+                                          "requirement":  "DRIVE35 Collaborate 3 must support the UK automotive supply chain, future vehicle manufacture, ZEV technologies, jobs and investment.",
+                                          "source":  "Official IFS Collaborate 3 page lines 73-80"
+                                      },
+                                      {
+                                          "requirement":  "DRIVE35 Collaborate 3 projects must be collaborative, late-stage R\u0026D, 50 percent match funded, with a total eligible grant request from GBP2.5m to GBP20m.",
+                                          "source":  "Official IFS Collaborate 3 page lines 97 and 110-119"
+                                      },
+                                      {
+                                          "requirement":  "DRIVE35 Collaborate 3 lead must be a UK registered business, collaborate with UK organisations, include a vehicle manufacturer or Tier 1 supplier, and include at least one SME claiming grant.",
+                                          "source":  "Official IFS Collaborate 3 page lines 129-135"
+                                      },
+                                      {
+                                          "requirement":  "DRIVE35 Scale Up lead or single applicant must be a UK registered business; research organisations and academics cannot lead or work alone.",
+                                          "source":  "Official IFS Scale Up page lines 123-129"
+                                      },
+                                      {
+                                          "requirement":  "DRIVE35 Scale Up funding rates are capped by company size and require a credible ZEV manufacturing facility or scale-up investment case.",
+                                          "source":  "Official IFS Scale Up page lines 212-220 and scope readback"
+                                      }
+                                  ],
+    "confirmed_findings":  {
+                               "confirmed_vehicle_manufacturer_or_tier1_partner":  false,
+                               "confirmed_zev_supply_chain_partner":  false,
+                               "confirmed_collaborative_sme_claiming_grant":  false,
+                               "confirmed_eligible_project_budget_2_5m_to_20m":  false,
+                               "confirmed_50_percent_match_funding":  false,
+                               "confirmed_zev_manufacturing_facility_or_site":  false,
+                               "confirmed_scale_up_co_investment_plan":  false,
+                               "direct_ifs_submission_unlocked":  false
+                           },
+    "local_evidence_readback":  [
+                                    {
+                                        "path":  "applications/IFS_CONVERSION_PACK_DRIVE35_INNOVATION_FUND_COLLABORATE_3_20260709.md",
+                                        "finding":  "Aureon conversion pack exists for a partner-led ZEV assurance work package, but it explicitly says partner, asset, deployment site and budget facts must be supplied by the lead partner."
+                                    },
+                                    {
+                                        "path":  "applications/IFS_PORTAL_READY_TEXT_DRIVE35_INNOVATION_FUND_COLLABORATE_3_20260709.md",
+                                        "finding":  "Portal-ready text is staged language only; it does not evidence a vehicle manufacturer, Tier 1 supplier, SME consortium member, budget or match funding."
+                                    },
+                                    {
+                                        "path":  "output/pdf/ifs/IFS_PORTAL_READY_PDF_DRIVE35_INNOVATION_FUND_COLLABORATE_3_20260709.pdf",
+                                        "finding":  "PDF pack exists for review and partner conversion, not final submission."
+                                    },
+                                    {
+                                        "path":  "applications/IFS_BATCH_ROUTE_UNLOCK_AUDIT_20260710_074640.json",
+                                        "finding":  "Earlier unlock audit found no R\u0026A manufacturing facility or qualifying facility evidence."
+                                    }
+                                ],
+    "drive_searches":  [
+                           {
+                               "query":  "DRIVE35",
+                               "result_summary":  "No Google Drive results."
+                           },
+                           {
+                               "query":  "Advanced Propulsion",
+                               "result_summary":  "Returned unrelated tool and documentation files; no APC or DRIVE35 partner evidence."
+                           },
+                           {
+                               "query":  "automotive partner",
+                               "result_summary":  "Returned unrelated documents and technical files; no confirmed vehicle manufacturer or Tier 1 supplier commitment."
+                           },
+                           {
+                               "query":  "Tier 1 supplier",
+                               "result_summary":  "Returned unrelated manuscripts and tool docs; no Tier 1 supplier evidence."
+                           },
+                           {
+                               "query":  "vehicle manufacturer",
+                               "result_summary":  "Returned unrelated docs; no vehicle manufacturer evidence."
+                           },
+                           {
+                               "query":  "manufacturing facility",
+                               "result_summary":  "Returned unrelated tooling docs and one account-statement title; no ZEV manufacturing facility, site or co-investment evidence."
+                           },
+                           {
+                               "query":  "zero emission vehicle",
+                               "result_summary":  "Returned unrelated docs; no ZEV partner, facility, asset or budget evidence."
+                           }
+                       ],
+    "route_action":  {
+                         "portal_draft_opened":  false,
+                         "final_submission_attempted":  false,
+                         "partner_invite_sent":  false,
+                         "email_sent":  false,
+                         "upload_performed":  false,
+                         "reason":  "DRIVE35 Collaborate 3 requires an eligible automotive/ZEV consortium with a vehicle manufacturer or Tier 1 supplier, an SME claiming grant, eligible costs and 50 percent match funding. DRIVE35 Scale Up requires a credible ZEV manufacturing facility/site and co-investment case. Current Aureon evidence does not confirm those gates."
+                     },
+    "next_actions":  [
+                         "Do not submit DRIVE35 Collaborate 3 directly as R\u0026A from current evidence.",
+                         "Use the staged conversion pack only to obtain a named vehicle manufacturer, Tier 1 supplier, SME claiming grant, project work packages, eligible costs and 50 percent match funding evidence.",
+                         "Do not submit DRIVE35 Scale Up until a ZEV manufacturing facility/site, capex or scale-up investment plan and eligible applicant evidence are confirmed."
+                     ],
+    "controls":  [
+                     "No unsupported vehicle manufacturer or Tier 1 supplier claim made",
+                     "No unsupported SME consortium, budget, match funding, facility/site, capex or manufacturing claim made",
+                     "No IFS portal mutation, external email, upload, partner invite or final submission performed"
+                 ]
+}

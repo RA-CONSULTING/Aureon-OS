@@ -1,0 +1,229 @@
+{
+  "timestamp": "2026-04-07T23:36:31.166492",
+  "title": "Ionospheric Object Detection Framework",
+  "objective": "Detect and track anomalous objects in low Earth orbit via ionospheric signatures",
+  "detection_principles": {
+    "ionospheric_wake": {
+      "description": "Objects moving through ionosphere create plasma disturbances",
+      "signatures": [
+        "Electron density depletions",
+        "Temperature anomalies",
+        "Electric field perturbations",
+        "VLF signal amplitude variations"
+      ],
+      "detection_methods": [
+        "Ionosonde critical frequency variations (foF2)",
+        "TEC (Total Electron Content) mapping via GNSS",
+        "VLF transmitter-receiver amplitude analysis",
+        "Schumann resonance interference patterns"
+      ]
+    },
+    "frequency_signature": {
+      "description": "Non-terrestrial technology may emit at non-standard frequencies",
+      "search_bands": [
+        "VLF: 3-30 kHz (natural and artificial sources)",
+        "ELF: 1-1250 Hz (Schumann resonances, IAR)",
+        "ULF: 0-20 Hz (geomagnetic pulsations)",
+        "HF: 0.1-20 MHz (ionosonde sweep frequencies)"
+      ],
+      "anomaly_indicators": [
+        "Persistent signals not matching known transmitters",
+        "Frequency drift inconsistent with Doppler",
+        "Phase-locked interference patterns",
+        "Harmonic series at non-integer ratios"
+      ]
+    },
+    "temporal_tracking": {
+      "description": "Orbital objects create repeating patterns",
+      "tracking_methods": [
+        "Daily recurrence at same local time",
+        "Orbital period determination from repeat intervals",
+        "Ground track mapping from multiple station observations",
+        "Shape reconstruction from ionospheric shadow patterns"
+      ],
+      "data_archives": [
+        "WALDO VLF database (2005-2017, extensible)",
+        "GIRO ionosonde archives (decades of data)",
+        "DEMETER satellite data (2004-2010)",
+        "CSES satellite data (2018-present)",
+        "Swarm satellite data (2013-present)"
+      ]
+    }
+  },
+  "open_source_analysis_tools": {
+    "ionosonde_analysis": {
+      "sources": [
+        "GIRO",
+        "Mirrion 2",
+        "SGO"
+      ],
+      "parameters_to_track": [
+        "foF2 (critical frequency of F2 layer)",
+        "hmF2 (height of maximum electron density)",
+        "Spread-F occurrences",
+        "Virtual height variations"
+      ],
+      "temporal_resolution": "Typically 15 minutes to 1 hour",
+      "spatial_resolution": "Station-specific, global coverage via network"
+    },
+    "vlf_analysis": {
+      "sources": [
+        "WALDO",
+        "NWC transmitter monitoring",
+        "CSES"
+      ],
+      "parameters_to_track": [
+        "Amplitude variations at transmitter frequencies",
+        "Phase perturbations",
+        "Signal-to-noise ratio changes",
+        "Terminator time variations"
+      ],
+      "key_transmitters": [
+        {
+          "name": "NWC",
+          "frequency": "19.8 kHz",
+          "location": "Australia"
+        },
+        {
+          "name": "NPM",
+          "frequency": "21.4 kHz",
+          "location": "Hawaii"
+        },
+        {
+          "name": "NLK",
+          "frequency": "24.8 kHz",
+          "location": "Washington"
+        },
+        {
+          "name": "NAA",
+          "frequency": "24.0 kHz",
+          "location": "Maine"
+        },
+        {
+          "name": "Alpha/RSDN-20",
+          "frequency": "11.9-14.9 kHz",
+          "location": "Russia"
+        }
+      ]
+    },
+    "schumann_resonance": {
+      "sources": [
+        "Tomsk",
+        "GeoCenter"
+      ],
+      "parameters_to_track": [
+        "Fundamental frequency (7.83 Hz baseline)",
+        "Harmonic amplitudes (14, 20, 26, 33 Hz)",
+        "Q-factor variations",
+        "Interference with IAR (Ionospheric Alfv\u00e9n Resonances)"
+      ],
+      "anomaly_signatures": [
+        "Frequency shifts > 0.5 Hz from baseline",
+        "Amplitude spikes > 3x background",
+        "Destructive interference patterns",
+        "Non-linear variations over hours"
+      ]
+    },
+    "gnss_tec": {
+      "sources": [
+        "IGS",
+        "NASA CDDIS"
+      ],
+      "parameters_to_track": [
+        "VTEC (Vertical Total Electron Content) maps",
+        "STEC (Slant TEC) variations",
+        "Ionospheric gradient measurements"
+      ],
+      "detection_capability": "Can detect traveling ionospheric disturbances (TIDs)"
+    }
+  },
+  "detection_strategy": {
+    "phase_1_reconnaissance": {
+      "description": "Identify candidate anomalies in historical data",
+      "actions": [
+        "Query WALDO for persistent VLF anomalies (2005-2017)",
+        "Analyze GIRO foF2 deviations across multiple stations",
+        "Cross-reference Schumann resonance anomalies with ionosonde data",
+        "Look for repeating patterns with orbital characteristics"
+      ],
+      "success_criteria": "Identify 3-5 candidate signatures warranting deeper analysis"
+    },
+    "phase_2_temporal_mapping": {
+      "description": "Track candidate objects over time to determine orbit",
+      "actions": [
+        "Map recurrence intervals to determine orbital period",
+        "Calculate inclination from ground track patterns",
+        "Estimate altitude from ionospheric penetration depth",
+        "Build orbital ephemeris from multi-station observations"
+      ],
+      "success_criteria": "Consistent orbital parameters across multiple data sources"
+    },
+    "phase_3_shape_reconstruction": {
+      "description": "Determine physical characteristics from ionospheric shadow",
+      "actions": [
+        "Analyze spatial extent of ionospheric disturbance",
+        "Model plasma wake geometry",
+        "Compare with known satellite signatures",
+        "Build 3D model from multiple observation angles"
+      ],
+      "success_criteria": "Unique signature inconsistent with known human technology"
+    },
+    "phase_4_verification": {
+      "description": "Confirm detection via independent methods",
+      "actions": [
+        "Correlate with optical/radar observations if available",
+        "Check against satellite catalog for known objects",
+        "Verify with multiple independent data sources",
+        "Document for peer review"
+      ],
+      "success_criteria": "Detection confirmed by 2+ independent methods"
+    }
+  },
+  "data_access_points": {
+    "real_time": [
+      {
+        "name": "HAARP Diagnostics",
+        "url": "https://haarp.gi.alaska.edu/diagnostic-suite",
+        "update_rate": "continuous"
+      },
+      {
+        "name": "Mirrion 2",
+        "url": "https://www.ncei.noaa.gov/products/space-weather/legacy-data/mirrion-2-real-time-ionosonde",
+        "update_rate": "hourly"
+      },
+      {
+        "name": "Schumann Tomsk",
+        "url": "https://schumannresonancedata.com/",
+        "update_rate": "hourly"
+      },
+      {
+        "name": "TechTIDE",
+        "url": "http://www.tech-tide.eu/",
+        "update_rate": "real-time"
+      }
+    ],
+    "archival": [
+      {
+        "name": "WALDO VLF",
+        "url": "https://waldo.world",
+        "coverage": "2005-2017"
+      },
+      {
+        "name": "GIRO GAMBIT",
+        "url": "https://giro.uml.edu/GAMBIT",
+        "coverage": "decades"
+      },
+      {
+        "name": "NASA CDDIS",
+        "url": "https://cddis.nasa.gov/",
+        "coverage": "GNSS archive"
+      },
+      {
+        "name": "DEMETER",
+        "url": "http://demeter.cnrs-orleans.fr/",
+        "coverage": "2004-2010"
+      }
+    ]
+  },
+  "key_insight": "Objects in low Earth orbit (100-1000 km) interact with the ionosphere (60-1000 km), creating detectable signatures. By analyzing ionosonde, VLF, Schumann resonance, and GNSS TEC data over time, anomalous objects can be tracked and their orbital parameters determined. Historical archives extend detection capability back decades."
+}

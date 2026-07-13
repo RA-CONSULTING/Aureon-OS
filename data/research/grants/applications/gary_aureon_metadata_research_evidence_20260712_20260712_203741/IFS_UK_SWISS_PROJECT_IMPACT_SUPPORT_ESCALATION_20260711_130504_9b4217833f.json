@@ -1,0 +1,102 @@
+{
+  "schema_version": "aureon-ifs-uk-swiss-project-impact-support-escalation-v1",
+  "generated_at": "2026-07-11T13:05:04+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_uk_swiss_project_impact_support_escalation",
+  "result": "IFS_UK_SWISS_PROJECT_IMPACT_SUPPORT_ESCALATION_DRAFT_READY_NO_EXTERNAL_SEND",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "competition": "UK-Switzerland CR&D Round 3",
+  "company": "R&A Consulting and Brokerage Services Ltd",
+  "company_number": "NI696693",
+  "contact_email": "gaxlec@gmail.com",
+  "portal_changed": false,
+  "email_sent": false,
+  "external_submission_performed": false,
+  "project_impact_submit_performed": false,
+  "award_terms_accepted": false,
+  "final_submit_performed": false,
+  "issue": {
+    "summary": "Project Impact Q1 FTE value is visible during entry but returns blank on the review page after Continue.",
+    "provider_readback": [
+      "The survey review page loaded with most answers blank and the two engagement fields already set to No.",
+      "Q1 was opened and a value of 1 was entered with standard fill; review page returned Q1 blank.",
+      "Q1 was retried with locator keystrokes; the visible field did not retain the typed value.",
+      "Q1 was retried with coordinate-based input; the visible field showed value 1 before Continue.",
+      "After Continue, the survey returned to review and Q1 was still blank."
+    ],
+    "submit_not_pressed_reason": "Provider readback did not persist Q1; final Project Impact Submit would certify incomplete/blank data.",
+    "ifs_review_state": {
+      "source": "Live IFS review-and-submit page",
+      "project_details": "Complete",
+      "application_questions_1_to_17": "Complete",
+      "finances_summary": "Complete",
+      "project_impact": "Incomplete",
+      "award_terms_and_conditions": "Incomplete",
+      "submit_application_button": "Disabled",
+      "final_application_submitted": false
+    },
+    "finance_state": {
+      "source": "Live IFS review-and-submit and project finances readback in Chrome",
+      "project_costs_status": "Complete",
+      "project_location_status": "Complete",
+      "organisation_status": "Complete",
+      "funding_status": "Complete",
+      "finances_summary_status": "Complete",
+      "total_costs_gbp": 250000,
+      "funding_level_percent": 70.0,
+      "funding_sought_gbp": 175000,
+      "company_contribution_gbp": 75000,
+      "other_public_sector_funding_gbp": 0,
+      "cost_lines_readback": {
+        "labour_gbp": 183342,
+        "overheads_gbp": 36668,
+        "other_costs_gbp": 29990,
+        "materials_gbp": 0,
+        "capital_usage_gbp": 0,
+        "subcontracting_gbp": 0,
+        "travel_and_subsistence_gbp": 0
+      },
+      "funding_page_values": {
+        "requesting_funding": "Yes",
+        "grant_claim_percentage": 70,
+        "other_public_funding": "No"
+      }
+    }
+  },
+  "support_route": {
+    "to": "support@iuk.ukri.org",
+    "from": "gaxlec@gmail.com",
+    "subject": "IFS application 10210100: Project Impact survey answer not persisting",
+    "body": "Dear Innovate UK support,\n\nI am completing Innovation Funding Service application 10210100 for R&A Consulting and Brokerage Services Ltd, company number NI696693, under UK-Switzerland CR&D Round 3.\n\nThe project finances section is complete in IFS. The remaining blocker is the Project Impact survey. When I enter Q1, \"Number of Full Time Equivalent (FTE) employees\", as 1, the value appears on the question screen but returns blank on the review page after selecting Continue. I have tried the entry more than once and have not pressed the Project Impact Submit button because the review page does not retain the answer.\n\nApplication details:\n\n- IFS application number: 10210100\n- Competition: UK-Switzerland CR&D Round 3\n- Competition ID: 2512\n- Organisation ID: 116134\n- Company number: NI696693\n- Contact email: gaxlec@gmail.com\n\nPlease advise whether the Project Impact survey record can be reset, or whether there is a supported workaround so the Project Impact survey can be completed accurately before final application submission.\n\nEvidence prepared:\n\n- Screenshot showing the Project Impact Q1 persistence issue.\n- Screenshot showing the IFS review page with finances complete and Project Impact incomplete.\n- Project costs first-save error ID, in case it helps session investigation: 8e989f7ab1a86765a99d1807d00aba78.\n\nRegards,\n\nGary Leckey\nR&A Consulting and Brokerage Services Ltd\ngaxlec@gmail.com\n\nDraft prepared: 2026-07-11T13:05:04+01:00\n",
+    "attachments": [
+      "applications/rendered/ifs_uk_swiss_project_impact_q1_blank_provider_20260711_1250.png",
+      "applications/rendered/ifs_uk_swiss_finance_complete_review_project_impact_block_20260711_1252.png"
+    ],
+    "draft_path": "applications/IFS_UK_SWISS_PROJECT_IMPACT_SUPPORT_ESCALATION_DRAFT_20260711_130504.eml",
+    "send_status": "READY_FOR_EXACT_ACTION_TIME_APPROVAL_NOT_SENT"
+  },
+  "source_artifacts": {
+    "finance_completion_project_impact_block": "applications/IFS_UK_SWISS_FINANCE_COMPLETE_PROJECT_IMPACT_BLOCK_20260711_125708.json",
+    "project_costs_appendix": "applications/IFS_UK_SWISS_PROJECT_COSTS_APPENDIX_20260711_124202.json",
+    "open_source_cost_skeletons": "applications/IFS_OPEN_SOURCE_PROJECT_COST_SKELETONS_20260711_130325.json"
+  },
+  "outputs": {
+    "json": "applications/IFS_UK_SWISS_PROJECT_IMPACT_SUPPORT_ESCALATION_20260711_130504.json",
+    "markdown": "applications/IFS_UK_SWISS_PROJECT_IMPACT_SUPPORT_ESCALATION_20260711_130504.md",
+    "email_draft": "applications/IFS_UK_SWISS_PROJECT_IMPACT_SUPPORT_ESCALATION_DRAFT_20260711_130504.eml",
+    "pipeline_report": "pipelines/pipeline_report_20260711_130504_ifs_uk_swiss_project_impact_support_escalation.json"
+  },
+  "controls": [
+    "The email body is formal and contains no internal operator instructions or half-draft language.",
+    "The email draft is prepared with two evidence screenshots attached, but no email was sent.",
+    "No Project Impact Submit, award terms acceptance, final IFS submit, partner invite, upload or account change was performed.",
+    "This escalation asks the provider to reset or advise on the survey persistence issue before legal submission actions."
+  ],
+  "backups": {
+    "applications": "backups/applications_pre_ifs_uk_swiss_project_impact_support_escalation_20260711_130504.json",
+    "autopilot_status": "backups/autopilot_status_pre_ifs_uk_swiss_project_impact_support_escalation_20260711_130504.json",
+    "pipeline": "backups/pipeline_pre_ifs_uk_swiss_project_impact_support_escalation_20260711_130504.json"
+  }
+}

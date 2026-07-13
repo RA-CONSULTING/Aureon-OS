@@ -1,0 +1,205 @@
+{
+  "act": {
+    "asset_written": true,
+    "evidence_written": true,
+    "open_requested": true,
+    "quality_gate_passed": true
+  },
+  "approval_state": {
+    "client_visible_product": true,
+    "policy": "after_apply",
+    "state": "pending_user_review_after_apply"
+  },
+  "artifact_manifest": {
+    "asset_kind": "svg",
+    "asset_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg",
+    "attempt": 1,
+    "duration_seconds": 0,
+    "kind": "image",
+    "preview_path": "",
+    "preview_url": "",
+    "public_url": "/aureon_visual_artifacts/clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg",
+    "source_asset_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg",
+    "subject": "clean graphic design badge for aureon complex build certification",
+    "variant_paths": [
+      "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg"
+    ]
+  },
+  "artifact_quality_report": {
+    "artifact_manifest": {
+      "asset_kind": "svg",
+      "asset_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg",
+      "attempt": 1,
+      "duration_seconds": 0,
+      "kind": "image",
+      "preview_path": "",
+      "preview_url": "",
+      "public_url": "/aureon_visual_artifacts/clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg",
+      "source_asset_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg",
+      "subject": "clean graphic design badge for aureon complex build certification",
+      "variant_paths": [
+        "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg"
+      ]
+    },
+    "browser_render_proof": {
+      "duration_probe": {},
+      "local_probe": true,
+      "preview_url": "",
+      "proof_status": "renderable_static_asset",
+      "public_url": "/aureon_visual_artifacts/clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg"
+    },
+    "checks": [
+      {
+        "blocking": true,
+        "evidence": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg",
+        "id": "artifact_file_exists",
+        "label": "Artifact file exists",
+        "ok": true
+      },
+      {
+        "blocking": true,
+        "evidence": "/aureon_visual_artifacts/clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg",
+        "id": "public_url_present",
+        "label": "Public URL published",
+        "ok": true
+      },
+      {
+        "blocking": true,
+        "evidence": "/aureon_visual_artifacts/clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg must end with one of .svg, .png, .jpg, .jpeg, .gif, .webp",
+        "id": "playable_or_renderable_format",
+        "label": "Browser-playable or renderable format",
+        "ok": true
+      },
+      {
+        "blocking": false,
+        "evidence": "matched prompt words against /aureon_visual_artifacts/clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg",
+        "id": "prompt_match_signal",
+        "label": "Prompt match signal present",
+        "ok": true
+      }
+    ],
+    "generated_at": "2026-05-22T18:17:49.460100+00:00",
+    "handover_ready": true,
+    "minimum_score": 0.8,
+    "provider_policy": "local_only_v1",
+    "regeneration_attempts": [
+      {
+        "attempt": 1,
+        "reason": "all blocking checks passed",
+        "status": "accepted"
+      }
+    ],
+    "schema_version": "aureon-artifact-quality-report-v1",
+    "score": 1.0,
+    "snags": [],
+    "status": "artifact_quality_passed",
+    "task_family": "image_graphic_design"
+  },
+  "asset_kind": "svg",
+  "asset_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg",
+  "duration_seconds": 0,
+  "generated_at": "2026-05-22T18:17:49.460100+00:00",
+  "handover_ready": true,
+  "how": {
+    "handover": "dashboard may show the public_url and desktop handoff may open it when armed",
+    "route": "visual_asset_request",
+    "safety": "no live trading, no credential access, no external mutation"
+  },
+  "open_requested": true,
+  "output_files": [
+    "frontend/public/aureon_visual_artifacts/clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg",
+    "frontend/public/aureon_artifact_quality_report.json",
+    "state/aureon_visual_asset_request_last_run.json",
+    "docs/audits/aureon_visual_asset_request.json",
+    "docs/audits/aureon_visual_asset_request.md",
+    "frontend/public/aureon_visual_asset_request.json"
+  ],
+  "preview_path": "",
+  "preview_url": "",
+  "prompt": "Draw a clean graphic design badge for Aureon complex build certification and publish a preview.",
+  "public_url": "/aureon_visual_artifacts/clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg",
+  "regeneration_attempts": [
+    {
+      "attempt": 1,
+      "reason": "all blocking checks passed",
+      "status": "accepted"
+    }
+  ],
+  "schema_version": "aureon-visual-asset-request-v1",
+  "source_asset_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg",
+  "status": "visual_asset_ready",
+  "subject": "clean graphic design badge for aureon complex build certification",
+  "summary": {
+    "artifact_quality_passed": true,
+    "artifact_quality_score": 1.0,
+    "asset_written": true,
+    "browser_playable": true,
+    "client_visible_artifact": true,
+    "open_requested": true,
+    "output_file_count": 6
+  },
+  "target_files": [
+    "frontend/public/aureon_visual_artifacts/clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg",
+    "frontend/public/aureon_artifact_quality_report.json",
+    "state/aureon_visual_asset_request_last_run.json",
+    "docs/audits/aureon_visual_asset_request.json",
+    "docs/audits/aureon_visual_asset_request.md",
+    "frontend/public/aureon_visual_asset_request.json"
+  ],
+  "what": {
+    "deliverable": "public visual/video artifact plus evidence packet",
+    "safe_format": "static_svg_or_browser_playable_webm_with_gif_preview_no_external_calls",
+    "subject": "clean graphic design badge for aureon complex build certification"
+  },
+  "when": {
+    "generated_at": "2026-05-22T18:17:49.460100+00:00"
+  },
+  "where": {
+    "asset_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg",
+    "preview_path": "",
+    "preview_url": "",
+    "public_url": "/aureon_visual_artifacts/clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg",
+    "repo_root": "C:\\Users\\user\\aureon-trading",
+    "source_asset_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg"
+  },
+  "who": {
+    "artifact_worker": "aureon.autonomous.aureon_visual_asset_request",
+    "client": "operator dashboard prompt",
+    "router": "aureon.core.goal_execution_engine"
+  },
+  "write_info": {
+    "asset_write": {
+      "bytes": 1875,
+      "ok": true,
+      "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_artifacts\\clean_graphic_design_badge_for_aureon_complex_bu_6750b8972dcb.svg"
+    },
+    "evidence_writes": [
+      {
+        "bytes": 8124,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\state\\aureon_visual_asset_request_last_run.json"
+      },
+      {
+        "bytes": 8124,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_visual_asset_request.json"
+      },
+      {
+        "bytes": 1864,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_visual_asset_request.md"
+      },
+      {
+        "bytes": 8124,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_visual_asset_request.json"
+      }
+    ],
+    "quality_write": {
+      "bytes": 2812,
+      "ok": true,
+      "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_artifact_quality_report.json"
+    },
+    "writer": "AureonVisualAssetRequest"
+  }
+}

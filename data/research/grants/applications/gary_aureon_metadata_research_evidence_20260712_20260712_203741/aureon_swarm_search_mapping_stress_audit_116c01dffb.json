@@ -1,0 +1,2486 @@
+{
+  "browser_mapping_rows": [
+    {
+      "evidence": "webbrowser.open and search fabric browser_opened event",
+      "path": "aureon/autonomous/aureon_agent_core.py",
+      "present": true,
+      "surface": "default browser launcher"
+    },
+    {
+      "evidence": "pyautogui screenshot and search fabric screen_captured event",
+      "path": "aureon/autonomous/aureon_agent_core.py",
+      "present": true,
+      "surface": "screen capture"
+    },
+    {
+      "evidence": "QueenHiveBrowser broadcasts hive state to temporal ladder",
+      "path": "frontend/src/core/queenHiveBrowser.ts",
+      "present": true,
+      "surface": "browser hive UI"
+    },
+    {
+      "evidence": "local browser verification capture artifact",
+      "path": "frontend/public/aureon_complex_build_artifacts/ui_browser_qa_99b733350342.json",
+      "present": true,
+      "surface": "UI browser QA artifact"
+    }
+  ],
+  "data_capture_rows": [
+    {
+      "age_sec": 219078.871,
+      "id": "state_research_index_json",
+      "modified_at": "2026-05-21T08:08:41.378264+00:00",
+      "path": "state/research_index.json",
+      "present": true,
+      "purpose": "local markdown/PDF research index cache",
+      "size_bytes": 12948173
+    },
+    {
+      "age_sec": 200497.949,
+      "id": "state_research_readiness_index_json",
+      "modified_at": "2026-05-21T13:18:22.302190+00:00",
+      "path": "state/research_readiness_index.json",
+      "present": true,
+      "purpose": "research readiness index cache",
+      "size_bytes": 14700591
+    },
+    {
+      "age_sec": 95897.23,
+      "id": "state_self_questioning_thoughts_jsonl",
+      "modified_at": "2026-05-22T18:21:43.021302+00:00",
+      "path": "state/self_questioning_thoughts.jsonl",
+      "present": true,
+      "purpose": "self-questioning ThoughtBus stream",
+      "size_bytes": 117800118
+    },
+    {
+      "age_sec": 8.179,
+      "id": "logs_aureon_thoughts_jsonl",
+      "modified_at": "2026-05-23T20:59:52.074064+00:00",
+      "path": "logs/aureon_thoughts.jsonl",
+      "present": true,
+      "purpose": "organism ThoughtBus stream",
+      "size_bytes": 107798030179
+    },
+    {
+      "age_sec": 5.658,
+      "id": "thoughts_jsonl",
+      "modified_at": "2026-05-23T20:59:54.595529+00:00",
+      "path": "thoughts.jsonl",
+      "present": true,
+      "purpose": "root ThoughtBus stream",
+      "size_bytes": 31582312533
+    },
+    {
+      "age_sec": 6.24,
+      "id": "frontend_public_aureon_swarm_search_fabric_json",
+      "modified_at": "2026-05-23T20:59:54.013819+00:00",
+      "path": "frontend/public/aureon_swarm_search_fabric.json",
+      "present": true,
+      "purpose": "current search fabric public snapshot",
+      "size_bytes": 42893
+    },
+    {
+      "age_sec": 6.463,
+      "id": "state_aureon_swarm_search_fabric_events_jsonl",
+      "modified_at": "2026-05-23T20:59:53.791829+00:00",
+      "path": "state/aureon_swarm_search_fabric_events.jsonl",
+      "present": true,
+      "purpose": "append-only search fabric event ledger",
+      "size_bytes": 161320
+    },
+    {
+      "age_sec": 2156.361,
+      "id": "state_aureon_swarm_keyword_search_latest_json",
+      "modified_at": "2026-05-23T20:24:03.894870+00:00",
+      "path": "state/aureon_swarm_keyword_search_latest.json",
+      "present": true,
+      "purpose": "latest real local keyword scan",
+      "size_bytes": 2187
+    },
+    {
+      "age_sec": 2156.347,
+      "id": "frontend_public_aureon_swarm_keyword_search_latest_json",
+      "modified_at": "2026-05-23T20:24:03.909903+00:00",
+      "path": "frontend/public/aureon_swarm_keyword_search_latest.json",
+      "present": true,
+      "purpose": "public keyword scan evidence",
+      "size_bytes": 2187
+    },
+    {
+      "age_sec": 617.937,
+      "id": "state_aureon_online_research_cinema_latest_json",
+      "modified_at": "2026-05-23T20:49:42.320636+00:00",
+      "path": "state/aureon_online_research_cinema_latest.json",
+      "present": true,
+      "purpose": "latest online research cinema packet",
+      "size_bytes": 27848
+    },
+    {
+      "age_sec": 617.937,
+      "id": "frontend_public_aureon_online_research_cinema_json",
+      "modified_at": "2026-05-23T20:49:42.320636+00:00",
+      "path": "frontend/public/aureon_online_research_cinema.json",
+      "present": true,
+      "purpose": "public online research cinema evidence",
+      "size_bytes": 27848
+    },
+    {
+      "age_sec": 618.223,
+      "id": "state_aureon_research_metacognition_latest_json",
+      "modified_at": "2026-05-23T20:49:42.036026+00:00",
+      "path": "state/aureon_research_metacognition_latest.json",
+      "present": true,
+      "purpose": "latest metacognitive understanding packet",
+      "size_bytes": 17080
+    },
+    {
+      "age_sec": 618.224,
+      "id": "frontend_public_aureon_research_metacognition_json",
+      "modified_at": "2026-05-23T20:49:42.036026+00:00",
+      "path": "frontend/public/aureon_research_metacognition.json",
+      "present": true,
+      "purpose": "public metacognitive understanding evidence",
+      "size_bytes": 17080
+    },
+    {
+      "age_sec": 618.224,
+      "id": "docs_audits_aureon_research_metacognition_json",
+      "modified_at": "2026-05-23T20:49:42.036026+00:00",
+      "path": "docs/audits/aureon_research_metacognition.json",
+      "present": true,
+      "purpose": "metacognitive understanding audit packet",
+      "size_bytes": 17080
+    },
+    {
+      "age_sec": 96130.808,
+      "id": "frontend_public_aureon_complex_build_artifacts_ui_browser_qa_99b733350342_json",
+      "modified_at": "2026-05-22T18:17:49.453097+00:00",
+      "path": "frontend/public/aureon_complex_build_artifacts/ui_browser_qa_99b733350342.json",
+      "present": true,
+      "purpose": "browser QA data capture artifact",
+      "size_bytes": 484
+    }
+  ],
+  "generated_at": "2026-05-23T21:00:01.181219+00:00",
+  "keyword_search_rows": [
+    {
+      "line": 10,
+      "match_terms": [
+        "keyword_search"
+      ],
+      "path": "tests/test_swarm_search_mapping_stress_audit.py",
+      "snippet": "from aureon.search.local_keyword_search import run_keyword_search"
+    },
+    {
+      "line": 104,
+      "match_terms": [
+        "keyword_search"
+      ],
+      "path": "tests/test_swarm_search_mapping_stress_audit.py",
+      "snippet": "def test_local_keyword_search_reads_real_test_text_and_surfaces_audit_proof(tmp_path):"
+    },
+    {
+      "line": 113,
+      "match_terms": [
+        "keyword_search"
+      ],
+      "path": "tests/test_swarm_search_mapping_stress_audit.py",
+      "snippet": "result = run_keyword_search("
+    },
+    {
+      "line": 121,
+      "match_terms": [
+        "keyword_search"
+      ],
+      "path": "tests/test_swarm_search_mapping_stress_audit.py",
+      "snippet": "assert result[\"status\"] == \"keyword_search_completed\""
+    },
+    {
+      "line": 124,
+      "match_terms": [
+        "keyword_search"
+      ],
+      "path": "tests/test_swarm_search_mapping_stress_audit.py",
+      "snippet": "assert report[\"summary\"][\"keyword_search_active\"] is True"
+    },
+    {
+      "line": 126,
+      "match_terms": [
+        "keyword_search"
+      ],
+      "path": "tests/test_swarm_search_mapping_stress_audit.py",
+      "snippet": "assert report[\"keyword_search_rows\"]"
+    }
+  ],
+  "manual_boundaries": [
+    "search fabric publishes organism/search evidence only",
+    "page bodies are not copied into public artifacts",
+    "credentials and API keys are never read or stored by this bridge",
+    "Mycelium may learn from search coherence, but it cannot place orders",
+    "ThoughtBus receives search phases without bypassing trading runtime gates"
+  ],
+  "mode": "real_repo_evidence_no_synthetic_capture",
+  "next_actions": [
+    {
+      "area": "query_received",
+      "authority": "search_capture_learning_only",
+      "next_action": "run producer aureon_agent_core through the real search/capture path",
+      "state": "waiting_for_live_capture_event"
+    },
+    {
+      "area": "source_selected",
+      "authority": "search_capture_learning_only",
+      "next_action": "run producer aureon_agent_core through the real search/capture path",
+      "state": "waiting_for_live_capture_event"
+    },
+    {
+      "area": "result_captured",
+      "authority": "search_capture_learning_only",
+      "next_action": "run producer aureon_agent_core through the real search/capture path",
+      "state": "waiting_for_live_capture_event"
+    },
+    {
+      "area": "page_fetch_requested",
+      "authority": "search_capture_learning_only",
+      "next_action": "run producer aureon_agent_core through the real search/capture path",
+      "state": "waiting_for_live_capture_event"
+    },
+    {
+      "area": "page_fetched",
+      "authority": "search_capture_learning_only",
+      "next_action": "run producer aureon_agent_core through the real search/capture path",
+      "state": "waiting_for_live_capture_event"
+    },
+    {
+      "area": "browser_opened",
+      "authority": "search_capture_learning_only",
+      "next_action": "run producer aureon_agent_core through the real search/capture path",
+      "state": "waiting_for_live_capture_event"
+    },
+    {
+      "area": "screen_captured",
+      "authority": "search_capture_learning_only",
+      "next_action": "run producer aureon_agent_core through the real search/capture path",
+      "state": "waiting_for_live_capture_event"
+    },
+    {
+      "area": "keyword_scan_requested",
+      "authority": "search_capture_learning_only",
+      "next_action": "run producer aureon_agent_core through the real search/capture path",
+      "state": "waiting_for_live_capture_event"
+    },
+    {
+      "area": "keyword_file_read",
+      "authority": "search_capture_learning_only",
+      "next_action": "run producer aureon_agent_core through the real search/capture path",
+      "state": "waiting_for_live_capture_event"
+    },
+    {
+      "area": "keyword_match_captured",
+      "authority": "search_capture_learning_only",
+      "next_action": "run producer aureon_agent_core through the real search/capture path",
+      "state": "waiting_for_live_capture_event"
+    },
+    {
+      "area": "keyword_scan_completed",
+      "authority": "search_capture_learning_only",
+      "next_action": "run producer aureon_agent_core through the real search/capture path",
+      "state": "waiting_for_live_capture_event"
+    },
+    {
+      "area": "knowledge_search_requested",
+      "authority": "search_capture_learning_only",
+      "next_action": "run producer aureon_agent_core through the real search/capture path",
+      "state": "waiting_for_live_capture_event"
+    },
+    {
+      "area": "knowledge_search_completed",
+      "authority": "search_capture_learning_only",
+      "next_action": "run producer aureon_agent_core through the real search/capture path",
+      "state": "waiting_for_live_capture_event"
+    }
+  ],
+  "online_research_motion_picture": {
+    "frame_paths": [
+      "state/online_research_cinema/harmonic-nexus-score/frames/000_title.png",
+      "state/online_research_cinema/harmonic-nexus-score/frames/001_source.png",
+      "state/online_research_cinema/harmonic-nexus-score/frames/002_source.png",
+      "state/online_research_cinema/harmonic-nexus-score/frames/003_source.png",
+      "state/online_research_cinema/harmonic-nexus-score/frames/004_source.png",
+      "state/online_research_cinema/harmonic-nexus-score/frames/005_source.png"
+    ],
+    "gif_path": "state/online_research_cinema/harmonic-nexus-score/motion.gif",
+    "html_path": "state/online_research_cinema/harmonic-nexus-score/motion.html",
+    "public_html": "/online_research_cinema/harmonic-nexus-score/motion.html"
+  },
+  "online_research_paper": {
+    "chars": 5109,
+    "path": "docs/research/harmonic-nexus-score_online_research_packet.md",
+    "title": "Harmonic Nexus Score: Online Research Packet"
+  },
+  "online_research_rows": [
+    {
+      "error": null,
+      "excerpt": "Discrete Fourier Transform \u2014 NumPy v2.4 Manual Skip to main content Back to top Ctrl + K Choose version GitHub Discrete Fourier Transform # The SciPy module scipy.fft is a more comprehensive superset of numpy.fft , which includes only a basic set of routines. Standard FFTs # fft (a[, n, axis, norm, out]) Compute the one-dimensional discrete Fourier Transform",
+      "round_trip_ms": 569.4,
+      "status_code": 200,
+      "success": true,
+      "summary": "rfftn (a[, s, axes, norm, out]) Compute the N-dimensional discrete Fourier Transform for real input. irfft2 (a[, s, axes, norm, out]) Computes the inverse of rfft2 . rfft2 (a[, s, axes, norm, out]) Compute the 2-dimensional FFT of a real array.",
+      "text_chars": 7775,
+      "text_hash": "c347fe8699c3f9f43c8de19957ac242bef2fdcb1fcfbd4d97bee6168d3cad4f9",
+      "title": "Discrete Fourier Transform \u2014 NumPy v2.4 Manual",
+      "url": "https://numpy.org/doc/stable/reference/routines.fft.html"
+    },
+    {
+      "error": null,
+      "excerpt": "Signal processing (scipy.signal) \u2014 SciPy v1.17.0 Manual Skip to main content Back to top Ctrl + K Choose version GitHub Scientific Python Forum Search Ctrl + K Signal processing ( scipy.signal ) # Convolution # convolve (in1, in2[, mode, method]) Convolve two N-dimensional arrays. correlate (in1, in2[, mode, method]) Cross-correlate two N-dimensional arrays.",
+      "round_trip_ms": 811.1,
+      "status_code": 200,
+      "success": true,
+      "summary": "qspline1d (signal[, lamb]) Compute quadratic spline coefficients for rank-1 array. cspline1d (signal[, lamb]) Compute cubic spline coefficients for rank-1 array. B-splines # gauss_spline (x, n) Gaussian approximation to B-spline basis function of order n.",
+      "text_chars": 15821,
+      "text_hash": "3fc4d052bb5660587c2165e0704e0db03451bfbe5a4929114b37fb34b5845569",
+      "title": "Signal processing (scipy.signal) \u2014 SciPy v1.17.0 Manual",
+      "url": "https://docs.scipy.org/doc/scipy/reference/signal.html"
+    },
+    {
+      "error": null,
+      "excerpt": "NIST/SEMATECH e-Handbook of Statistical Methods To view this document, you need a frames-compatible browser such as Netscape Navigator or Microsoft Internet Explorer.",
+      "round_trip_ms": 848.38,
+      "status_code": 200,
+      "success": true,
+      "summary": "NIST/SEMATECH e-Handbook of Statistical Methods To view this document, you need a frames-compatible browser such as Netscape Navigator or Microsoft Internet Explorer.",
+      "text_chars": 166,
+      "text_hash": "60c945db27e9ef2eac71b18b6b1f36aebcb95e4ffd79fafd227e0fa012ca57b9",
+      "title": "NIST/SEMATECH e-Handbook of Statistical Methods",
+      "url": "https://www.itl.nist.gov/div898/handbook/"
+    },
+    {
+      "error": null,
+      "excerpt": "Wikimedia Error Error Too many requests. Please respect our robot policy https://w.wiki/4wJS. (dd12474) If you report this error to the Wikimedia System Administrators, please include the details below. Request served via cp3072 cp3072, Varnish XID 803254173 Upstream caches: cp3072 int Error: 403, Too many requests. Please respect our robot policy https://w.",
+      "round_trip_ms": 426.35,
+      "status_code": 403,
+      "success": true,
+      "summary": "(dd12474) at Sat, 23 May 2026 20:49:34 GMT Sensitive client information IP address: 2a0a:ef40:653:4401:e879:beb:fae4:93ae Please respect our robot policy https://w.wiki/4wJS. Request served via cp3072 cp3072, Varnish XID 803254173 Upstream caches: cp3072 int Error: 403, Too many requests.",
+      "text_chars": 492,
+      "text_hash": "4a8aa3a2ec71d0dc69c43f5a1f2fdfd3016757b457db18b7e1ed133d8bc13f4a",
+      "title": "Wikimedia Error",
+      "url": "https://en.wikipedia.org/wiki/Golden_ratio"
+    },
+    {
+      "error": null,
+      "excerpt": "Signal-to-noise ratio - Wikipedia Jump to content From Wikipedia, the free encyclopedia Ratio of the desired signal to the background noise \"Signal-to-noise\" redirects here. For statistics, see Effect size . For other uses, see Signal-to-noise (disambiguation) . Not to be confused with Signal-to-interference-plus-noise ratio . A gray-scale photograph with di",
+      "round_trip_ms": 568.29,
+      "status_code": 200,
+      "success": true,
+      "summary": "[ 17 ] See also [ edit ] Audio system measurements Generation loss Matched filter Near\u2013far problem Noise margin Omega ratio Pareidolia Peak signal-to-noise ratio Signal-to-noise statistic Signal-to-interference-plus-noise ratio SINAD SINADR Subjective video quality Total harmonic distortion Video quality Notes [ edit ] ^ The connection between optical power and voltage in an imaging system is linear. A high SNR means that the signal is clear and easy to detect or interpret, while a low SNR means that the signal is corrupted or obscured by noise and may be difficult to distinguish or recover. SNR is an important parameter that affects the performance and quality of systems that process or transmit signals, such as communication systems , audio equipment , radar systems , imaging systems , and data acquisition systems.",
+      "text_chars": 25667,
+      "text_hash": "f95d763fc11a9fad03913cddb44185f0c6b1c4d3f75ef6fce505cddd457057bb",
+      "title": "Signal-to-noise ratio - Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Signal-to-noise_ratio"
+    }
+  ],
+  "phase_rows": [
+    {
+      "event_count": 0,
+      "latest_source_system": null,
+      "latest_trace_id": null,
+      "next_producer": "aureon_agent_core",
+      "phase": "query_received",
+      "seen": false
+    },
+    {
+      "event_count": 0,
+      "latest_source_system": null,
+      "latest_trace_id": null,
+      "next_producer": "aureon_agent_core",
+      "phase": "source_selected",
+      "seen": false
+    },
+    {
+      "event_count": 0,
+      "latest_source_system": null,
+      "latest_trace_id": null,
+      "next_producer": "aureon_agent_core",
+      "phase": "result_captured",
+      "seen": false
+    },
+    {
+      "event_count": 0,
+      "latest_source_system": null,
+      "latest_trace_id": null,
+      "next_producer": "aureon_agent_core",
+      "phase": "page_fetch_requested",
+      "seen": false
+    },
+    {
+      "event_count": 0,
+      "latest_source_system": null,
+      "latest_trace_id": null,
+      "next_producer": "aureon_agent_core",
+      "phase": "page_fetched",
+      "seen": false
+    },
+    {
+      "event_count": 0,
+      "latest_source_system": null,
+      "latest_trace_id": null,
+      "next_producer": "aureon_agent_core",
+      "phase": "browser_opened",
+      "seen": false
+    },
+    {
+      "event_count": 0,
+      "latest_source_system": null,
+      "latest_trace_id": null,
+      "next_producer": "aureon_agent_core",
+      "phase": "screen_captured",
+      "seen": false
+    },
+    {
+      "event_count": 0,
+      "latest_source_system": null,
+      "latest_trace_id": null,
+      "next_producer": "aureon_agent_core",
+      "phase": "keyword_scan_requested",
+      "seen": false
+    },
+    {
+      "event_count": 0,
+      "latest_source_system": null,
+      "latest_trace_id": null,
+      "next_producer": "aureon_agent_core",
+      "phase": "keyword_file_read",
+      "seen": false
+    },
+    {
+      "event_count": 0,
+      "latest_source_system": null,
+      "latest_trace_id": null,
+      "next_producer": "aureon_agent_core",
+      "phase": "keyword_match_captured",
+      "seen": false
+    },
+    {
+      "event_count": 0,
+      "latest_source_system": null,
+      "latest_trace_id": null,
+      "next_producer": "aureon_agent_core",
+      "phase": "keyword_scan_completed",
+      "seen": false
+    },
+    {
+      "event_count": 3,
+      "latest_source_system": "online_research_cinema",
+      "latest_trace_id": "search-trace-9e8cdd2cb029b25492",
+      "next_producer": "aureon_agent_core",
+      "phase": "online_research_goal_received",
+      "seen": true
+    },
+    {
+      "event_count": 15,
+      "latest_source_system": "online_research_cinema",
+      "latest_trace_id": "search-trace-9e8cdd2cb029b25492",
+      "next_producer": "aureon_agent_core",
+      "phase": "online_source_discovered",
+      "seen": true
+    },
+    {
+      "event_count": 19,
+      "latest_source_system": "online_research_cinema",
+      "latest_trace_id": "search-trace-9e8cdd2cb029b25492",
+      "next_producer": "aureon_agent_core",
+      "phase": "online_source_fetched",
+      "seen": true
+    },
+    {
+      "event_count": 19,
+      "latest_source_system": "online_research_cinema",
+      "latest_trace_id": "search-trace-9e8cdd2cb029b25492",
+      "next_producer": "aureon_agent_core",
+      "phase": "online_source_summarized",
+      "seen": true
+    },
+    {
+      "event_count": 20,
+      "latest_source_system": "online_research_cinema",
+      "latest_trace_id": "search-trace-9e8cdd2cb029b25492",
+      "next_producer": "aureon_agent_core",
+      "phase": "research_frame_rendered",
+      "seen": true
+    },
+    {
+      "event_count": 4,
+      "latest_source_system": "online_research_cinema",
+      "latest_trace_id": "search-trace-9e8cdd2cb029b25492",
+      "next_producer": "aureon_agent_core",
+      "phase": "research_motion_compiled",
+      "seen": true
+    },
+    {
+      "event_count": 4,
+      "latest_source_system": "online_research_cinema",
+      "latest_trace_id": "search-trace-9e8cdd2cb029b25492",
+      "next_producer": "aureon_agent_core",
+      "phase": "research_paper_drafted",
+      "seen": true
+    },
+    {
+      "event_count": 2,
+      "latest_source_system": "online_research_cinema",
+      "latest_trace_id": "search-trace-9e8cdd2cb029b25492",
+      "next_producer": "aureon_agent_core",
+      "phase": "coding_brief_created",
+      "seen": true
+    },
+    {
+      "event_count": 12,
+      "latest_source_system": "online_research_cinema",
+      "latest_trace_id": "search-trace-9e8cdd2cb029b25492",
+      "next_producer": "aureon_agent_core",
+      "phase": "coding_file_written",
+      "seen": true
+    },
+    {
+      "event_count": 2,
+      "latest_source_system": "online_research_cinema",
+      "latest_trace_id": "search-trace-9e8cdd2cb029b25492",
+      "next_producer": "aureon_agent_core",
+      "phase": "coding_handoff_ready",
+      "seen": true
+    },
+    {
+      "event_count": 2,
+      "latest_source_system": "research_metacognition",
+      "latest_trace_id": "search-trace-9e8cdd2cb029b25492",
+      "next_producer": "research_metacognition",
+      "phase": "metacognition_ingested",
+      "seen": true
+    },
+    {
+      "event_count": 2,
+      "latest_source_system": "research_metacognition",
+      "latest_trace_id": "search-trace-9e8cdd2cb029b25492",
+      "next_producer": "research_metacognition",
+      "phase": "metacognition_concepts_extracted",
+      "seen": true
+    },
+    {
+      "event_count": 2,
+      "latest_source_system": "research_metacognition",
+      "latest_trace_id": "search-trace-9e8cdd2cb029b25492",
+      "next_producer": "research_metacognition",
+      "phase": "metacognition_routes_mapped",
+      "seen": true
+    },
+    {
+      "event_count": 2,
+      "latest_source_system": "research_metacognition",
+      "latest_trace_id": "search-trace-9e8cdd2cb029b25492",
+      "next_producer": "research_metacognition",
+      "phase": "metacognition_understanding_published",
+      "seen": true
+    },
+    {
+      "event_count": 0,
+      "latest_source_system": null,
+      "latest_trace_id": null,
+      "next_producer": "aureon_agent_core",
+      "phase": "knowledge_search_requested",
+      "seen": false
+    },
+    {
+      "event_count": 0,
+      "latest_source_system": null,
+      "latest_trace_id": null,
+      "next_producer": "aureon_agent_core",
+      "phase": "knowledge_search_completed",
+      "seen": false
+    }
+  ],
+  "recent_search_events": [
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-9ab1e6a9f8acfdb6eb",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-18d4219c25f4125864",
+      "metadata": {
+        "frame": "state/online_research_cinema/harmonic-nexus-score/frames/002_source.png"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "research_frame_rendered",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 1,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "pillow_frame",
+      "source_system": "online_research_cinema",
+      "status": "success",
+      "timestamp": "2026-05-23T20:49:34.643689+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "https://docs.scipy.org/doc/scipy/reference/signal.html",
+      "url_hash": "url-hash-46bac14fbc28cd445e"
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-17c2067d87deafe043",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-5e382194c3ff59968d",
+      "metadata": {
+        "frame": "state/online_research_cinema/harmonic-nexus-score/frames/003_source.png"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "research_frame_rendered",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 1,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "pillow_frame",
+      "source_system": "online_research_cinema",
+      "status": "success",
+      "timestamp": "2026-05-23T20:49:34.710367+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "https://www.itl.nist.gov/div898/handbook/",
+      "url_hash": "url-hash-7a5bcae2aa18de771b"
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-9a34c9846dfd866182",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-c54031cf7ee0ca5035",
+      "metadata": {
+        "frame": "state/online_research_cinema/harmonic-nexus-score/frames/004_source.png"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "research_frame_rendered",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 1,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "pillow_frame",
+      "source_system": "online_research_cinema",
+      "status": "success",
+      "timestamp": "2026-05-23T20:49:34.777235+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "https://en.wikipedia.org/wiki/Golden_ratio",
+      "url_hash": "url-hash-a4536c4552240d1f4e"
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-d1df3ae3c4480618bb",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-fafdf84d1f01eaa52c",
+      "metadata": {
+        "frame": "state/online_research_cinema/harmonic-nexus-score/frames/005_source.png"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "research_frame_rendered",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 1,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "pillow_frame",
+      "source_system": "online_research_cinema",
+      "status": "success",
+      "timestamp": "2026-05-23T20:49:34.912441+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "https://en.wikipedia.org/wiki/Signal-to-noise_ratio",
+      "url_hash": "url-hash-6e975986e20a596b05"
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-e1133544ce328b0809",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-2386279f662951bfc5",
+      "metadata": {
+        "gif_created": true,
+        "gif_path": "state/online_research_cinema/harmonic-nexus-score/motion.gif",
+        "html_path": "state/online_research_cinema/harmonic-nexus-score/motion.html"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "research_motion_compiled",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 6,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "pillow_gif_html_replay",
+      "source_system": "online_research_cinema",
+      "status": "success",
+      "timestamp": "2026-05-23T20:49:38.415193+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-c9f8d55d7aecbbd9f1",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-9bccfd2a0c7f4089f2",
+      "metadata": {
+        "paper_chars": 5109,
+        "paper_path": "docs/research/harmonic-nexus-score_online_research_packet.md"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "research_paper_drafted",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 1,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "paper_generator",
+      "source_system": "online_research_cinema",
+      "status": "success",
+      "timestamp": "2026-05-23T20:49:38.448720+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-eadba02939f9d72f69",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-ad26804c33af4b1639",
+      "metadata": {
+        "source_count": 5,
+        "topic": "Harmonic Nexus Score"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "coding_brief_created",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 1,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "research_to_code_handoff",
+      "source_system": "online_research_cinema",
+      "status": "success",
+      "timestamp": "2026-05-23T20:49:38.733526+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-ea8d88b0646bbbab83",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-480401966d858c58fe",
+      "metadata": {
+        "bytes": 34,
+        "path": "aureon/generated/__init__.py"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "coding_file_written",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 1,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "QueenCodeArchitect.write_file",
+      "source_system": "online_research_cinema",
+      "status": "success",
+      "timestamp": "2026-05-23T20:49:40.035338+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-ea8d88b0646bbbab83",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-c8d4358c57ce21b841",
+      "metadata": {
+        "bytes": 41,
+        "path": "aureon/generated/research_cinema/__init__.py"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "coding_file_written",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 1,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "QueenCodeArchitect.write_file",
+      "source_system": "online_research_cinema",
+      "status": "success",
+      "timestamp": "2026-05-23T20:49:40.300327+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-ea8d88b0646bbbab83",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-f1368eb8252a54c99e",
+      "metadata": {
+        "bytes": 32,
+        "path": "tests/generated/__init__.py"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "coding_file_written",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 1,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "QueenCodeArchitect.write_file",
+      "source_system": "online_research_cinema",
+      "status": "success",
+      "timestamp": "2026-05-23T20:49:40.343358+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-ea8d88b0646bbbab83",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-98ce4423a9144aa5f0",
+      "metadata": {
+        "bytes": 2486,
+        "path": "aureon/generated/research_cinema/harmonic_nexus_score_model.py"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "coding_file_written",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 1,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "QueenCodeArchitect.write_file",
+      "source_system": "online_research_cinema",
+      "status": "success",
+      "timestamp": "2026-05-23T20:49:40.620604+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-ea8d88b0646bbbab83",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-e081f9135273713a68",
+      "metadata": {
+        "bytes": 1048,
+        "path": "tests/generated/test_harmonic_nexus_score_model.py"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "coding_file_written",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 1,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "QueenCodeArchitect.write_file",
+      "source_system": "online_research_cinema",
+      "status": "success",
+      "timestamp": "2026-05-23T20:49:40.934803+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-ea8d88b0646bbbab83",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-3e1009f80aa6b78606",
+      "metadata": {
+        "bytes": 799,
+        "path": "docs/research/harmonic-nexus-score_coding_handoff.md"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "coding_file_written",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 1,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "QueenCodeArchitect.write_file",
+      "source_system": "online_research_cinema",
+      "status": "success",
+      "timestamp": "2026-05-23T20:49:41.184670+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-698d68f00f9212897f",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-31d20151e851d62042",
+      "metadata": {
+        "manifest": "state/online_research_cinema/harmonic-nexus-score/generated_code_manifest.json",
+        "test_command": "python -m pytest tests/generated/test_harmonic_nexus_score_model.py -q"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "coding_handoff_ready",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 6,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "research_code_generator",
+      "source_system": "online_research_cinema",
+      "status": "coding_artifacts_ready",
+      "timestamp": "2026-05-23T20:49:41.219471+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-6ea6efbf7b2bc46ee4",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-89445548b29ae3cb48",
+      "metadata": {
+        "paper_path": "docs/research/harmonic-nexus-score_online_research_packet.md",
+        "topic": "Harmonic Nexus Score"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "metacognition_ingested",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 5,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "online_research_cinema_packet",
+      "source_system": "research_metacognition",
+      "status": "success",
+      "timestamp": "2026-05-23T20:49:41.268525+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-6772757cfa3dac4726",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-84370e4cceaef42ae3",
+      "metadata": {
+        "concept_count": 8
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "metacognition_concepts_extracted",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 8,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "knowledge_interpreter",
+      "source_system": "research_metacognition",
+      "status": "success",
+      "timestamp": "2026-05-23T20:49:41.635818+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-e40eff9e057dcd920b",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-226784b42b334355f7",
+      "metadata": {
+        "route_count": 8
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "metacognition_routes_mapped",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 7,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "organism_route_mapper",
+      "source_system": "research_metacognition",
+      "status": "success",
+      "timestamp": "2026-05-23T20:49:41.802154+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-6b927d24636c54aa7d",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-3a641bc8690724a884",
+      "metadata": {
+        "concept_count": 8,
+        "public": "frontend/public/aureon_research_metacognition.json",
+        "ready_route_count": 7,
+        "understanding_hash": "4e8fe53f1400908d66"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "metacognition_understanding_published",
+      "query": "harmonic nexus score phi signal coherence validation",
+      "query_hash": "query-hash-ed438df61f50c3a59a",
+      "query_id": "query-ed438df61f50c3a59a",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 8,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "research_metacognition_packet",
+      "source_system": "research_metacognition",
+      "status": "research_metacognition_active",
+      "timestamp": "2026-05-23T20:49:42.036026+00:00",
+      "trace_id": "search-trace-9e8cdd2cb029b25492",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-0e68a264831575f84e",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-9b64889610fa3e207d",
+      "metadata": {
+        "target_words": 1000
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "hnc_essay_benchmark_started",
+      "query": "HNC autonomous 1000 word essay benchmark",
+      "query_hash": "query-hash-c2af0918695b994c03",
+      "query_id": "query-c2af0918695b994c03",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 0,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "local_hnc_corpus",
+      "source_system": "hnc_essay_benchmark",
+      "status": "received",
+      "timestamp": "2026-05-23T20:58:01.310582+00:00",
+      "trace_id": "search-trace-650291cc855eed20e3",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-fd514aba0559e72835",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-c27bf0ec038bf51fb6",
+      "metadata": {
+        "source_count": 5
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "hnc_essay_sources_read",
+      "query": "HNC autonomous 1000 word essay benchmark",
+      "query_hash": "query-hash-c2af0918695b994c03",
+      "query_id": "query-c2af0918695b994c03",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 5,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "local_hnc_corpus",
+      "source_system": "hnc_essay_benchmark",
+      "status": "success",
+      "timestamp": "2026-05-23T20:58:04.275781+00:00",
+      "trace_id": "search-trace-650291cc855eed20e3",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-97d5a5b38242f08ac3",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-46f8c8cbf57b7008f2",
+      "metadata": {
+        "essay": "docs/research/hnc_1000_word_autonomous_essay.md",
+        "word_count": 1000
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "hnc_essay_written",
+      "query": "HNC autonomous 1000 word essay benchmark",
+      "query_hash": "query-hash-c2af0918695b994c03",
+      "query_id": "query-c2af0918695b994c03",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 1000,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "autonomous_hnc_essay_writer",
+      "source_system": "hnc_essay_benchmark",
+      "status": "success",
+      "timestamp": "2026-05-23T20:58:04.323166+00:00",
+      "trace_id": "search-trace-650291cc855eed20e3",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-4487db9e9cbb29bff6",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-025f8d9aa9e80787e8",
+      "metadata": {
+        "public": "frontend/public/aureon_hnc_essay_benchmark.json",
+        "status": "hnc_essay_benchmark_certified"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "hnc_essay_audited",
+      "query": "HNC autonomous 1000 word essay benchmark",
+      "query_hash": "query-hash-c2af0918695b994c03",
+      "query_id": "query-c2af0918695b994c03",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 5,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "benchmark_audit",
+      "source_system": "hnc_essay_benchmark",
+      "status": "hnc_essay_benchmark_certified",
+      "timestamp": "2026-05-23T20:58:04.382174+00:00",
+      "trace_id": "search-trace-650291cc855eed20e3",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-fa458ebb9c80fb3887",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-3eccee4e1c35dba22f",
+      "metadata": {
+        "target_words": 1000
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "hnc_essay_benchmark_started",
+      "query": "HNC autonomous 1000 word essay benchmark",
+      "query_hash": "query-hash-c2af0918695b994c03",
+      "query_id": "query-c2af0918695b994c03",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 0,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "local_hnc_corpus",
+      "source_system": "hnc_essay_benchmark",
+      "status": "received",
+      "timestamp": "2026-05-23T20:59:01.652816+00:00",
+      "trace_id": "search-trace-71f6971946186477c1",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-ef02cec12bd3780bf5",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-e7b044cb368092406e",
+      "metadata": {
+        "source_count": 5
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "hnc_essay_sources_read",
+      "query": "HNC autonomous 1000 word essay benchmark",
+      "query_hash": "query-hash-c2af0918695b994c03",
+      "query_id": "query-c2af0918695b994c03",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 5,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "local_hnc_corpus",
+      "source_system": "hnc_essay_benchmark",
+      "status": "success",
+      "timestamp": "2026-05-23T20:59:07.155789+00:00",
+      "trace_id": "search-trace-71f6971946186477c1",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-b37ffca20e768b817a",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-7ce738b420c95e87d9",
+      "metadata": {
+        "essay": "docs/research/hnc_1000_word_autonomous_essay.md",
+        "word_count": 1000
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "hnc_essay_written",
+      "query": "HNC autonomous 1000 word essay benchmark",
+      "query_hash": "query-hash-c2af0918695b994c03",
+      "query_id": "query-c2af0918695b994c03",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 1000,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "autonomous_hnc_essay_writer",
+      "source_system": "hnc_essay_benchmark",
+      "status": "success",
+      "timestamp": "2026-05-23T20:59:07.288943+00:00",
+      "trace_id": "search-trace-71f6971946186477c1",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-f74b32fdbcf1f74ca0",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-244ef73eb755e5ae8b",
+      "metadata": {
+        "public": "frontend/public/aureon_hnc_essay_benchmark.json",
+        "status": "hnc_essay_benchmark_certified"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "hnc_essay_audited",
+      "query": "HNC autonomous 1000 word essay benchmark",
+      "query_hash": "query-hash-c2af0918695b994c03",
+      "query_id": "query-c2af0918695b994c03",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 5,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "benchmark_audit",
+      "source_system": "hnc_essay_benchmark",
+      "status": "hnc_essay_benchmark_certified",
+      "timestamp": "2026-05-23T20:59:07.316237+00:00",
+      "trace_id": "search-trace-71f6971946186477c1",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-fa458ebb9c80fb3887",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-ec1a06e96d7759be3c",
+      "metadata": {
+        "target_words": 1000
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "hnc_essay_benchmark_started",
+      "query": "HNC autonomous 1000 word essay benchmark",
+      "query_hash": "query-hash-c2af0918695b994c03",
+      "query_id": "query-c2af0918695b994c03",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 0,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "local_hnc_corpus",
+      "source_system": "hnc_essay_benchmark",
+      "status": "received",
+      "timestamp": "2026-05-23T20:59:49.894512+00:00",
+      "trace_id": "search-trace-71f6971946186477c1",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-ef02cec12bd3780bf5",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-997b002b932dd1e7d0",
+      "metadata": {
+        "source_count": 5
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "hnc_essay_sources_read",
+      "query": "HNC autonomous 1000 word essay benchmark",
+      "query_hash": "query-hash-c2af0918695b994c03",
+      "query_id": "query-c2af0918695b994c03",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 5,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "local_hnc_corpus",
+      "source_system": "hnc_essay_benchmark",
+      "status": "success",
+      "timestamp": "2026-05-23T20:59:53.542814+00:00",
+      "trace_id": "search-trace-71f6971946186477c1",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-b37ffca20e768b817a",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-e238d849b87329fc08",
+      "metadata": {
+        "essay": "docs/research/hnc_1000_word_autonomous_essay.md",
+        "word_count": 1000
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "hnc_essay_written",
+      "query": "HNC autonomous 1000 word essay benchmark",
+      "query_hash": "query-hash-c2af0918695b994c03",
+      "query_id": "query-c2af0918695b994c03",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 1000,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "autonomous_hnc_essay_writer",
+      "source_system": "hnc_essay_benchmark",
+      "status": "success",
+      "timestamp": "2026-05-23T20:59:53.639926+00:00",
+      "trace_id": "search-trace-71f6971946186477c1",
+      "url": "",
+      "url_hash": ""
+    },
+    {
+      "authority_mode": "search_capture_learning_only",
+      "browser_mapping": "repo_browser_search_capture",
+      "capture_id": "capture-f74b32fdbcf1f74ca0",
+      "credential_boundary": "no_credentials_read",
+      "data_capture_mode": "metadata_hash_only",
+      "event_id": "search-event-21a11b4f4e0fa2bcb3",
+      "metadata": {
+        "public": "frontend/public/aureon_hnc_essay_benchmark.json",
+        "status": "hnc_essay_benchmark_certified"
+      },
+      "mutation_scope": "no_external_mutation",
+      "no_trading_gate_bypass": true,
+      "phase": "hnc_essay_audited",
+      "query": "HNC autonomous 1000 word essay benchmark",
+      "query_hash": "query-hash-c2af0918695b994c03",
+      "query_id": "query-c2af0918695b994c03",
+      "rate_budget": {
+        "api_budget_source": "producer_local_metadata",
+        "rate_limit_family": "search_capture_local_budget",
+        "rate_remaining": null,
+        "retry_after": null
+      },
+      "result_count": 5,
+      "schema_version": "aureon-swarm-search-fabric-v1",
+      "source": "benchmark_audit",
+      "source_system": "hnc_essay_benchmark",
+      "status": "hnc_essay_benchmark_certified",
+      "timestamp": "2026-05-23T20:59:53.791829+00:00",
+      "trace_id": "search-trace-71f6971946186477c1",
+      "url": "",
+      "url_hash": ""
+    }
+  ],
+  "research_coding_handoff": {
+    "authority": "research_code_artifact_only",
+    "generated_at": "2026-05-23T20:49:41.219471+00:00",
+    "generated_files": [
+      {
+        "authoring_path": "QueenCodeArchitect.write_file",
+        "bytes": 34,
+        "ok": true,
+        "path": "aureon/generated/__init__.py"
+      },
+      {
+        "authoring_path": "QueenCodeArchitect.write_file",
+        "bytes": 41,
+        "ok": true,
+        "path": "aureon/generated/research_cinema/__init__.py"
+      },
+      {
+        "authoring_path": "QueenCodeArchitect.write_file",
+        "bytes": 32,
+        "ok": true,
+        "path": "tests/generated/__init__.py"
+      },
+      {
+        "authoring_path": "QueenCodeArchitect.write_file",
+        "bytes": 2486,
+        "ok": true,
+        "path": "aureon/generated/research_cinema/harmonic_nexus_score_model.py"
+      },
+      {
+        "authoring_path": "QueenCodeArchitect.write_file",
+        "bytes": 1048,
+        "ok": true,
+        "path": "tests/generated/test_harmonic_nexus_score_model.py"
+      },
+      {
+        "authoring_path": "QueenCodeArchitect.write_file",
+        "bytes": 799,
+        "ok": true,
+        "path": "docs/research/harmonic-nexus-score_coding_handoff.md"
+      }
+    ],
+    "model_class": "HarmonicNexusScoreInputs",
+    "module_import": "aureon.generated.research_cinema.harmonic_nexus_score_model",
+    "no_external_mutation": true,
+    "no_trading_gate_bypass": true,
+    "status": "coding_artifacts_ready",
+    "test_command": "python -m pytest tests/generated/test_harmonic_nexus_score_model.py -q",
+    "topic": "Harmonic Nexus Score"
+  },
+  "research_generated_file_rows": [
+    {
+      "authoring_path": "QueenCodeArchitect.write_file",
+      "bytes": 34,
+      "ok": true,
+      "path": "aureon/generated/__init__.py"
+    },
+    {
+      "authoring_path": "QueenCodeArchitect.write_file",
+      "bytes": 41,
+      "ok": true,
+      "path": "aureon/generated/research_cinema/__init__.py"
+    },
+    {
+      "authoring_path": "QueenCodeArchitect.write_file",
+      "bytes": 32,
+      "ok": true,
+      "path": "tests/generated/__init__.py"
+    },
+    {
+      "authoring_path": "QueenCodeArchitect.write_file",
+      "bytes": 2486,
+      "ok": true,
+      "path": "aureon/generated/research_cinema/harmonic_nexus_score_model.py"
+    },
+    {
+      "authoring_path": "QueenCodeArchitect.write_file",
+      "bytes": 1048,
+      "ok": true,
+      "path": "tests/generated/test_harmonic_nexus_score_model.py"
+    },
+    {
+      "authoring_path": "QueenCodeArchitect.write_file",
+      "bytes": 799,
+      "ok": true,
+      "path": "docs/research/harmonic-nexus-score_coding_handoff.md"
+    }
+  ],
+  "research_metacognition": {
+    "coding_handoff": {
+      "authority": "research_code_artifact_only",
+      "generated_at": "2026-05-23T20:49:41.219471+00:00",
+      "generated_files": [
+        {
+          "authoring_path": "QueenCodeArchitect.write_file",
+          "bytes": 34,
+          "ok": true,
+          "path": "aureon/generated/__init__.py"
+        },
+        {
+          "authoring_path": "QueenCodeArchitect.write_file",
+          "bytes": 41,
+          "ok": true,
+          "path": "aureon/generated/research_cinema/__init__.py"
+        },
+        {
+          "authoring_path": "QueenCodeArchitect.write_file",
+          "bytes": 32,
+          "ok": true,
+          "path": "tests/generated/__init__.py"
+        },
+        {
+          "authoring_path": "QueenCodeArchitect.write_file",
+          "bytes": 2486,
+          "ok": true,
+          "path": "aureon/generated/research_cinema/harmonic_nexus_score_model.py"
+        },
+        {
+          "authoring_path": "QueenCodeArchitect.write_file",
+          "bytes": 1048,
+          "ok": true,
+          "path": "tests/generated/test_harmonic_nexus_score_model.py"
+        },
+        {
+          "authoring_path": "QueenCodeArchitect.write_file",
+          "bytes": 799,
+          "ok": true,
+          "path": "docs/research/harmonic-nexus-score_coding_handoff.md"
+        }
+      ],
+      "model_class": "HarmonicNexusScoreInputs",
+      "module_import": "aureon.generated.research_cinema.harmonic_nexus_score_model",
+      "no_external_mutation": true,
+      "no_trading_gate_bypass": true,
+      "status": "coding_artifacts_ready",
+      "test_command": "python -m pytest tests/generated/test_harmonic_nexus_score_model.py -q",
+      "topic": "Harmonic Nexus Score"
+    },
+    "concept_rows": [
+      {
+        "category": "temporal",
+        "concept_id": "source_strength",
+        "data_type": "fact",
+        "evidence_count": 36,
+        "evidence_samples": [
+          "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide"
+        ],
+        "interpreter": "knowledge_interpreter",
+        "label": "Source strength",
+        "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+        "route": "Seer evidence grading",
+        "status": "understood"
+      },
+      {
+        "category": "system",
+        "concept_id": "harmonic_coherence",
+        "data_type": "fact",
+        "evidence_count": 27,
+        "evidence_samples": [
+          "Harmonic Nexus Score",
+          "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide",
+          "[ 17 ] See also [ edit ] Audio system measurements Generation loss Matched filter Near\u2013far problem Noise margin Omega ratio Pareidolia Peak signal-to-noise ratio Signal-to-noise statistic Signal-to-interference-plus-nois"
+        ],
+        "interpreter": "knowledge_interpreter",
+        "label": "Harmonic coherence",
+        "meaning": "Harmonic Nexus Score # Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus...",
+        "route": "HNC/Auris coherence feature",
+        "status": "understood"
+      },
+      {
+        "category": "code",
+        "concept_id": "repeatability",
+        "data_type": "fact",
+        "evidence_count": 25,
+        "evidence_samples": [
+          "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide",
+          "tests/generated/__init__.py",
+          "tests/generated/test_harmonic_nexus_score_model.py"
+        ],
+        "interpreter": "knowledge_interpreter",
+        "label": "Repeatability",
+        "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+        "route": "test and replay validation",
+        "status": "understood"
+      },
+      {
+        "category": "system",
+        "concept_id": "friction_feasibility",
+        "data_type": "fact",
+        "evidence_count": 34,
+        "evidence_samples": [
+          "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide",
+          "Signal-to-noise ratio - Wikipedia",
+          "[ 17 ] See also [ edit ] Audio system measurements Generation loss Matched filter Near\u2013far problem Noise margin Omega ratio Pareidolia Peak signal-to-noise ratio Signal-to-noise statistic Signal-to-interference-plus-nois"
+        ],
+        "interpreter": "knowledge_interpreter",
+        "label": "Friction feasibility",
+        "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+        "route": "Lyra risk and market friction",
+        "status": "understood"
+      },
+      {
+        "category": "temporal",
+        "concept_id": "contradiction_handling",
+        "data_type": "fact",
+        "evidence_count": 6,
+        "evidence_samples": [
+          "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide"
+        ],
+        "interpreter": "knowledge_interpreter",
+        "label": "Contradiction handling",
+        "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+        "route": "counter-intelligence and veto pressure",
+        "status": "understood"
+      },
+      {
+        "category": "system",
+        "concept_id": "coding_actionability",
+        "data_type": "fact",
+        "evidence_count": 23,
+        "evidence_samples": [
+          "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide",
+          "qspline1d (signal[, lamb]) Compute quadratic spline coefficients for rank-1 array. cspline1d (signal[, lamb]) Compute cubic spline coefficients for rank-1 array. B-splines # gauss_spline (x, n) Gaussian approximation to ",
+          "[ 17 ] See also [ edit ] Audio system measurements Generation loss Matched filter Near\u2013far problem Noise margin Omega ratio Pareidolia Peak signal-to-noise ratio Signal-to-noise statistic Signal-to-interference-plus-nois"
+        ],
+        "interpreter": "knowledge_interpreter",
+        "label": "Coding actionability",
+        "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+        "route": "Code Architect and test runner",
+        "status": "understood"
+      },
+      {
+        "category": "market",
+        "concept_id": "visual_replay_context",
+        "data_type": "fact",
+        "evidence_count": 14,
+        "evidence_samples": [
+          "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide",
+          "NIST/SEMATECH e-Handbook of Statistical Methods To view this document, you need a frames-compatible browser such as Netscape Navigator or Microsoft Internet Explorer.",
+          "NIST/SEMATECH e-Handbook of Statistical Methods To view this document, you need a frames-compatible browser such as Netscape Navigator or Microsoft Internet Explorer."
+        ],
+        "interpreter": "knowledge_interpreter",
+        "label": "Visual replay context",
+        "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+        "route": "browser mapping and research replay",
+        "status": "understood"
+      },
+      {
+        "category": "knowledge",
+        "concept_id": "learning_memory",
+        "data_type": "fact",
+        "evidence_count": 2,
+        "evidence_samples": [
+          "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide"
+        ],
+        "interpreter": "knowledge_interpreter",
+        "label": "Learning memory",
+        "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+        "route": "ThoughtBus/Mycelium memory",
+        "status": "understood"
+      }
+    ],
+    "generated_at": "2026-05-23T20:49:42.033820+00:00",
+    "integration_proof": {
+      "deterministic_interpreter": "aureon.queen.knowledge_interpreter",
+      "fabric_publisher": "aureon.search.swarm_search_fabric.publish_search_event",
+      "metacognition_module": "aureon.search.research_metacognition",
+      "mycelium_signal_source": "swarm_search_fabric",
+      "source_packet": "online_research_cinema",
+      "thoughtbus_topic_family": "search.fabric.metacognition_*"
+    },
+    "manual_boundaries": [
+      "metacognition classifies and routes research context only",
+      "missing evidence remains visible as unknown rows",
+      "generated code must pass tests before it influences confidence",
+      "this packet cannot place trades, read credentials, or mutate external services"
+    ],
+    "mode": "real_research_understanding_packet",
+    "motion_picture": {
+      "frame_paths": [
+        "state/online_research_cinema/harmonic-nexus-score/frames/000_title.png",
+        "state/online_research_cinema/harmonic-nexus-score/frames/001_source.png",
+        "state/online_research_cinema/harmonic-nexus-score/frames/002_source.png",
+        "state/online_research_cinema/harmonic-nexus-score/frames/003_source.png",
+        "state/online_research_cinema/harmonic-nexus-score/frames/004_source.png",
+        "state/online_research_cinema/harmonic-nexus-score/frames/005_source.png"
+      ],
+      "gif_path": "state/online_research_cinema/harmonic-nexus-score/motion.gif",
+      "html_path": "state/online_research_cinema/harmonic-nexus-score/motion.html",
+      "public_html": "/online_research_cinema/harmonic-nexus-score/motion.html"
+    },
+    "organism_route_rows": [
+      {
+        "authority": "feature_context_only",
+        "input_concepts": [
+          "source_strength",
+          "contradiction_handling"
+        ],
+        "ready": true,
+        "relation": "reads source strength, freshness, contradiction, and confidence context",
+        "route_id": "seer_feature_packet",
+        "system": "Seer"
+      },
+      {
+        "authority": "risk_context_only",
+        "input_concepts": [
+          "friction_feasibility",
+          "contradiction_handling"
+        ],
+        "ready": true,
+        "relation": "reads friction, feasibility, urgency, and risk pressure from research context",
+        "route_id": "lyra_emotion_risk_packet",
+        "system": "Lyra"
+      },
+      {
+        "authority": "coherence_feature_only",
+        "input_concepts": [
+          "harmonic_coherence",
+          "repeatability"
+        ],
+        "ready": true,
+        "relation": "maps harmonic coherence and repeatability into explainable HNC score features",
+        "route_id": "hnc_harmonic_packet",
+        "system": "HNC/Auris"
+      },
+      {
+        "authority": "organism_event_publication",
+        "input_concepts": [
+          "coding_actionability",
+          "contradiction_handling",
+          "friction_feasibility",
+          "harmonic_coherence",
+          "learning_memory",
+          "repeatability",
+          "source_strength",
+          "visual_replay_context"
+        ],
+        "ready": true,
+        "relation": "publishes research understanding phases for whole-organism visibility",
+        "route_id": "thoughtbus_packet",
+        "system": "ThoughtBus"
+      },
+      {
+        "authority": "learning_signal_only",
+        "input_concepts": [
+          "learning_memory",
+          "repeatability",
+          "contradiction_handling"
+        ],
+        "ready": true,
+        "relation": "receives learning memory, route confidence, and validation pressure",
+        "route_id": "mycelium_learning_packet",
+        "system": "Mycelium"
+      },
+      {
+        "authority": "code_artifact_authoring",
+        "input_concepts": [
+          "coding_actionability"
+        ],
+        "module_import": "aureon.generated.research_cinema.harmonic_nexus_score_model",
+        "ready": true,
+        "relation": "tracks generated helper code and handoff files as authored research artifacts",
+        "route_id": "code_architect_packet",
+        "system": "Code Architect"
+      },
+      {
+        "authority": "validation_only",
+        "input_concepts": [
+          "repeatability",
+          "coding_actionability"
+        ],
+        "ready": true,
+        "relation": "validates the generated model before it influences confidence",
+        "route_id": "test_runner_packet",
+        "system": "Test Runner",
+        "test_command": "python -m pytest tests/generated/test_harmonic_nexus_score_model.py -q"
+      },
+      {
+        "authority": "no_trading_gate_bypass",
+        "input_concepts": [
+          "source_strength",
+          "harmonic_coherence",
+          "friction_feasibility"
+        ],
+        "ready": false,
+        "relation": "may consume calibrated features later, but this packet cannot place orders",
+        "route_id": "runtime_action_packet",
+        "system": "Runtime action layer"
+      }
+    ],
+    "query": "harmonic nexus score phi signal coherence validation",
+    "schema_version": "aureon-research-metacognition-v1",
+    "source_paths": {
+      "docs_json": "docs/audits/aureon_research_metacognition.json",
+      "docs_md": "docs/audits/aureon_research_metacognition.md",
+      "paper": "docs/research/harmonic-nexus-score_online_research_packet.md",
+      "public": "frontend/public/aureon_research_metacognition.json",
+      "state": "state/aureon_research_metacognition_latest.json",
+      "topic_state": "state/research_metacognition/harmonic-nexus-score/metacognition.json"
+    },
+    "status": "research_metacognition_active",
+    "summary": {
+      "coding_artifacts_present": true,
+      "concept_count": 8,
+      "knowledge_interpreter_used": true,
+      "motion_present": true,
+      "no_external_mutation": true,
+      "no_trading_gate_bypass": true,
+      "organism_route_count": 8,
+      "paper_present": true,
+      "ready_route_count": 7,
+      "source_count": 5,
+      "test_action_count": 3,
+      "thoughtbus_mycelium_publish_enabled": true,
+      "understood_concept_count": 8,
+      "unknown_count": 2
+    },
+    "test_action_rows": [
+      {
+        "action_id": "run_generated_tests",
+        "command": "python -m pytest tests/generated/test_harmonic_nexus_score_model.py -q",
+        "purpose": "prove the generated score helper is deterministic and bounded",
+        "state": "ready"
+      },
+      {
+        "action_id": "route_explainable_features",
+        "module_import": "aureon.generated.research_cinema.harmonic_nexus_score_model",
+        "purpose": "make Seer/Lyra/HNC consume the score as explainable context only",
+        "state": "ready"
+      },
+      {
+        "action_id": "calibrate_against_outcomes",
+        "purpose": "measure whether the score improves future decisions before promotion",
+        "state": "waiting_for_real_outcomes"
+      }
+    ],
+    "topic": "Harmonic Nexus Score",
+    "understanding_hash": "4e8fe53f1400908d665437860e3fab82ed0d868aad1ff4c598a0a695b94cee6f",
+    "understanding_summary": "Aureon understands Harmonic Nexus Score as a source-linked research packet with 8/8 concept rows and 7/8 organism routes ready. It is routed as evidence, learning, code, and validation context, not as direct trading authority.",
+    "unknown_rows": [
+      {
+        "area": "outcome calibration",
+        "next_action": "compare score changes against real outcome evidence before raising confidence",
+        "state": "requires_real_outcome_history",
+        "unknown_id": "outcome_calibration_missing"
+      },
+      {
+        "area": "source context",
+        "next_action": "re-fetch original URLs when deeper review is needed instead of storing public page bodies",
+        "state": "bounded_snippets_only",
+        "unknown_id": "full_source_context_not_stored"
+      }
+    ]
+  },
+  "research_metacognition_concept_rows": [
+    {
+      "category": "temporal",
+      "concept_id": "source_strength",
+      "data_type": "fact",
+      "evidence_count": 36,
+      "evidence_samples": [
+        "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide"
+      ],
+      "interpreter": "knowledge_interpreter",
+      "label": "Source strength",
+      "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+      "route": "Seer evidence grading",
+      "status": "understood"
+    },
+    {
+      "category": "system",
+      "concept_id": "harmonic_coherence",
+      "data_type": "fact",
+      "evidence_count": 27,
+      "evidence_samples": [
+        "Harmonic Nexus Score",
+        "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide",
+        "[ 17 ] See also [ edit ] Audio system measurements Generation loss Matched filter Near\u2013far problem Noise margin Omega ratio Pareidolia Peak signal-to-noise ratio Signal-to-noise statistic Signal-to-interference-plus-nois"
+      ],
+      "interpreter": "knowledge_interpreter",
+      "label": "Harmonic coherence",
+      "meaning": "Harmonic Nexus Score # Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus...",
+      "route": "HNC/Auris coherence feature",
+      "status": "understood"
+    },
+    {
+      "category": "code",
+      "concept_id": "repeatability",
+      "data_type": "fact",
+      "evidence_count": 25,
+      "evidence_samples": [
+        "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide",
+        "tests/generated/__init__.py",
+        "tests/generated/test_harmonic_nexus_score_model.py"
+      ],
+      "interpreter": "knowledge_interpreter",
+      "label": "Repeatability",
+      "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+      "route": "test and replay validation",
+      "status": "understood"
+    },
+    {
+      "category": "system",
+      "concept_id": "friction_feasibility",
+      "data_type": "fact",
+      "evidence_count": 34,
+      "evidence_samples": [
+        "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide",
+        "Signal-to-noise ratio - Wikipedia",
+        "[ 17 ] See also [ edit ] Audio system measurements Generation loss Matched filter Near\u2013far problem Noise margin Omega ratio Pareidolia Peak signal-to-noise ratio Signal-to-noise statistic Signal-to-interference-plus-nois"
+      ],
+      "interpreter": "knowledge_interpreter",
+      "label": "Friction feasibility",
+      "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+      "route": "Lyra risk and market friction",
+      "status": "understood"
+    },
+    {
+      "category": "temporal",
+      "concept_id": "contradiction_handling",
+      "data_type": "fact",
+      "evidence_count": 6,
+      "evidence_samples": [
+        "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide"
+      ],
+      "interpreter": "knowledge_interpreter",
+      "label": "Contradiction handling",
+      "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+      "route": "counter-intelligence and veto pressure",
+      "status": "understood"
+    },
+    {
+      "category": "system",
+      "concept_id": "coding_actionability",
+      "data_type": "fact",
+      "evidence_count": 23,
+      "evidence_samples": [
+        "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide",
+        "qspline1d (signal[, lamb]) Compute quadratic spline coefficients for rank-1 array. cspline1d (signal[, lamb]) Compute cubic spline coefficients for rank-1 array. B-splines # gauss_spline (x, n) Gaussian approximation to ",
+        "[ 17 ] See also [ edit ] Audio system measurements Generation loss Matched filter Near\u2013far problem Noise margin Omega ratio Pareidolia Peak signal-to-noise ratio Signal-to-noise statistic Signal-to-interference-plus-nois"
+      ],
+      "interpreter": "knowledge_interpreter",
+      "label": "Coding actionability",
+      "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+      "route": "Code Architect and test runner",
+      "status": "understood"
+    },
+    {
+      "category": "market",
+      "concept_id": "visual_replay_context",
+      "data_type": "fact",
+      "evidence_count": 14,
+      "evidence_samples": [
+        "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide",
+        "NIST/SEMATECH e-Handbook of Statistical Methods To view this document, you need a frames-compatible browser such as Netscape Navigator or Microsoft Internet Explorer.",
+        "NIST/SEMATECH e-Handbook of Statistical Methods To view this document, you need a frames-compatible browser such as Netscape Navigator or Microsoft Internet Explorer."
+      ],
+      "interpreter": "knowledge_interpreter",
+      "label": "Visual replay context",
+      "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+      "route": "browser mapping and research replay",
+      "status": "understood"
+    },
+    {
+      "category": "knowledge",
+      "concept_id": "learning_memory",
+      "data_type": "fact",
+      "evidence_count": 2,
+      "evidence_samples": [
+        "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide"
+      ],
+      "interpreter": "knowledge_interpreter",
+      "label": "Learning memory",
+      "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+      "route": "ThoughtBus/Mycelium memory",
+      "status": "understood"
+    }
+  ],
+  "research_metacognition_route_rows": [
+    {
+      "authority": "feature_context_only",
+      "input_concepts": [
+        "source_strength",
+        "contradiction_handling"
+      ],
+      "ready": true,
+      "relation": "reads source strength, freshness, contradiction, and confidence context",
+      "route_id": "seer_feature_packet",
+      "system": "Seer"
+    },
+    {
+      "authority": "risk_context_only",
+      "input_concepts": [
+        "friction_feasibility",
+        "contradiction_handling"
+      ],
+      "ready": true,
+      "relation": "reads friction, feasibility, urgency, and risk pressure from research context",
+      "route_id": "lyra_emotion_risk_packet",
+      "system": "Lyra"
+    },
+    {
+      "authority": "coherence_feature_only",
+      "input_concepts": [
+        "harmonic_coherence",
+        "repeatability"
+      ],
+      "ready": true,
+      "relation": "maps harmonic coherence and repeatability into explainable HNC score features",
+      "route_id": "hnc_harmonic_packet",
+      "system": "HNC/Auris"
+    },
+    {
+      "authority": "organism_event_publication",
+      "input_concepts": [
+        "coding_actionability",
+        "contradiction_handling",
+        "friction_feasibility",
+        "harmonic_coherence",
+        "learning_memory",
+        "repeatability",
+        "source_strength",
+        "visual_replay_context"
+      ],
+      "ready": true,
+      "relation": "publishes research understanding phases for whole-organism visibility",
+      "route_id": "thoughtbus_packet",
+      "system": "ThoughtBus"
+    },
+    {
+      "authority": "learning_signal_only",
+      "input_concepts": [
+        "learning_memory",
+        "repeatability",
+        "contradiction_handling"
+      ],
+      "ready": true,
+      "relation": "receives learning memory, route confidence, and validation pressure",
+      "route_id": "mycelium_learning_packet",
+      "system": "Mycelium"
+    },
+    {
+      "authority": "code_artifact_authoring",
+      "input_concepts": [
+        "coding_actionability"
+      ],
+      "module_import": "aureon.generated.research_cinema.harmonic_nexus_score_model",
+      "ready": true,
+      "relation": "tracks generated helper code and handoff files as authored research artifacts",
+      "route_id": "code_architect_packet",
+      "system": "Code Architect"
+    },
+    {
+      "authority": "validation_only",
+      "input_concepts": [
+        "repeatability",
+        "coding_actionability"
+      ],
+      "ready": true,
+      "relation": "validates the generated model before it influences confidence",
+      "route_id": "test_runner_packet",
+      "system": "Test Runner",
+      "test_command": "python -m pytest tests/generated/test_harmonic_nexus_score_model.py -q"
+    },
+    {
+      "authority": "no_trading_gate_bypass",
+      "input_concepts": [
+        "source_strength",
+        "harmonic_coherence",
+        "friction_feasibility"
+      ],
+      "ready": false,
+      "relation": "may consume calibrated features later, but this packet cannot place orders",
+      "route_id": "runtime_action_packet",
+      "system": "Runtime action layer"
+    }
+  ],
+  "research_metacognition_test_action_rows": [
+    {
+      "action_id": "run_generated_tests",
+      "command": "python -m pytest tests/generated/test_harmonic_nexus_score_model.py -q",
+      "purpose": "prove the generated score helper is deterministic and bounded",
+      "state": "ready"
+    },
+    {
+      "action_id": "route_explainable_features",
+      "module_import": "aureon.generated.research_cinema.harmonic_nexus_score_model",
+      "purpose": "make Seer/Lyra/HNC consume the score as explainable context only",
+      "state": "ready"
+    },
+    {
+      "action_id": "calibrate_against_outcomes",
+      "purpose": "measure whether the score improves future decisions before promotion",
+      "state": "waiting_for_real_outcomes"
+    }
+  ],
+  "research_metacognition_unknown_rows": [
+    {
+      "area": "outcome calibration",
+      "next_action": "compare score changes against real outcome evidence before raising confidence",
+      "state": "requires_real_outcome_history",
+      "unknown_id": "outcome_calibration_missing"
+    },
+    {
+      "area": "source context",
+      "next_action": "re-fetch original URLs when deeper review is needed instead of storing public page bodies",
+      "state": "bounded_snippets_only",
+      "unknown_id": "full_source_context_not_stored"
+    }
+  ],
+  "schema_version": "aureon-swarm-search-mapping-stress-audit-v1",
+  "source_paths": {
+    "audit_json": "docs/audits/aureon_swarm_search_mapping_stress_audit.json",
+    "audit_md": "docs/audits/aureon_swarm_search_mapping_stress_audit.md",
+    "fabric_ledger": "state/aureon_swarm_search_fabric_events.jsonl",
+    "fabric_public": "frontend/public/aureon_swarm_search_fabric.json",
+    "public_json": "frontend/public/aureon_swarm_search_mapping_stress_audit.json",
+    "research_metacognition": "frontend/public/aureon_research_metacognition.json",
+    "state": "state/aureon_swarm_search_mapping_stress_audit.json"
+  },
+  "source_system_rows": [
+    {
+      "id": "agent_core_search_browser",
+      "label": "Agent Core web search/browser/capture",
+      "missing_symbols": [],
+      "path": "aureon/autonomous/aureon_agent_core.py",
+      "present": true,
+      "present_symbol_count": 8,
+      "required_symbol_count": 8,
+      "role": "operator query intake, web results, page fetch, browser launch, screenshot, local keyword/text search, local knowledge search",
+      "wired": true
+    },
+    {
+      "id": "local_keyword_search",
+      "label": "Local keyword reader",
+      "missing_symbols": [],
+      "path": "aureon/search/local_keyword_search.py",
+      "present": true,
+      "present_symbol_count": 4,
+      "required_symbol_count": 4,
+      "role": "reads real repo/test/doc text and returns keyword snippets with path and line evidence",
+      "wired": true
+    },
+    {
+      "id": "online_research_cinema",
+      "label": "Online research cinema",
+      "missing_symbols": [],
+      "path": "aureon/search/online_research_cinema.py",
+      "present": true,
+      "present_symbol_count": 7,
+      "required_symbol_count": 7,
+      "role": "fetches online source evidence, renders motion replay frames, drafts cited paper packets, and writes coding handoff files",
+      "wired": true
+    },
+    {
+      "id": "research_metacognition",
+      "label": "Research metacognition",
+      "missing_symbols": [],
+      "path": "aureon/search/research_metacognition.py",
+      "present": true,
+      "present_symbol_count": 5,
+      "required_symbol_count": 5,
+      "role": "turns online research packets into structured concepts, organism routes, unknowns, and validation actions for Seer/Lyra/HNC/ThoughtBus/Mycelium",
+      "wired": true
+    },
+    {
+      "id": "queen_online_researcher",
+      "label": "Queen online researcher",
+      "missing_symbols": [],
+      "path": "aureon/queen/queen_online_researcher.py",
+      "present": true,
+      "present_symbol_count": 5,
+      "required_symbol_count": 5,
+      "role": "async market/API research and persisted findings",
+      "wired": true
+    },
+    {
+      "id": "queen_research_engine",
+      "label": "Queen research engine",
+      "missing_symbols": [],
+      "path": "aureon/utils/aureon_queen_research_engine.py",
+      "present": true,
+      "present_symbol_count": 4,
+      "required_symbol_count": 4,
+      "role": "goal-triggered research queue and ThoughtBus publication",
+      "wired": true
+    },
+    {
+      "id": "queen_research_neuron",
+      "label": "Queen research neuron",
+      "missing_symbols": [],
+      "path": "aureon/utils/aureon_queen_research_neuron.py",
+      "present": true,
+      "present_symbol_count": 4,
+      "required_symbol_count": 4,
+      "role": "Wikipedia, RSS, entity, sentiment, and market context research",
+      "wired": true
+    },
+    {
+      "id": "self_research_loop",
+      "label": "Self research loop",
+      "missing_symbols": [],
+      "path": "aureon/queen/self_research_loop.py",
+      "present": true,
+      "present_symbol_count": 5,
+      "required_symbol_count": 5,
+      "role": "turns unanswered internal questions into ingested external evidence",
+      "wired": true
+    },
+    {
+      "id": "research_corpus_index",
+      "label": "Research corpus index",
+      "missing_symbols": [],
+      "path": "aureon/queen/research_corpus_index.py",
+      "present": true,
+      "present_symbol_count": 4,
+      "required_symbol_count": 4,
+      "role": "local docs and research source retrieval",
+      "wired": true
+    },
+    {
+      "id": "frontend_queen_hive_browser",
+      "label": "Frontend Queen Hive browser",
+      "missing_symbols": [],
+      "path": "frontend/src/core/queenHiveBrowser.ts",
+      "present": true,
+      "present_symbol_count": 3,
+      "required_symbol_count": 3,
+      "role": "browser-side hive state and visible search/swarm surface context",
+      "wired": true
+    },
+    {
+      "id": "search_fabric",
+      "label": "Swarm search fabric",
+      "missing_symbols": [],
+      "path": "aureon/search/swarm_search_fabric.py",
+      "present": true,
+      "present_symbol_count": 4,
+      "required_symbol_count": 4,
+      "role": "canonical event envelope for browser mapping and data capture",
+      "wired": true
+    }
+  ],
+  "status": "swarm_search_fabric_active",
+  "summary": {
+    "browser_mapping_count": 4,
+    "browser_mapping_present_count": 4,
+    "data_capture_artifact_count": 15,
+    "data_capture_artifact_present_count": 15,
+    "fabric_event_count": 120,
+    "keyword_match_count": 6,
+    "keyword_match_file_count": 1,
+    "keyword_scanned_file_count": 325,
+    "keyword_search_active": true,
+    "latest_keyword_query": "keyword_search",
+    "live_search_capture_active": true,
+    "metacognitive_concept_count": 8,
+    "metacognitive_ready_route_count": 7,
+    "metacognitive_route_count": 8,
+    "metacognitive_test_action_count": 3,
+    "metacognitive_understanding_published": true,
+    "metacognitive_understood_concept_count": 8,
+    "metacognitive_unknown_count": 2,
+    "mycelium_receiving": true,
+    "no_external_mutation": true,
+    "no_new_trading_gate": true,
+    "no_synthetic_capture": true,
+    "online_research_cinema_active": true,
+    "online_research_frame_count": 6,
+    "online_research_motion_ready": true,
+    "online_research_paper_created": true,
+    "online_research_source_count": 5,
+    "online_research_topic": "Harmonic Nexus Score",
+    "phase_expected_count": 27,
+    "phase_seen_count": 14,
+    "research_coding_artifacts_created": true,
+    "research_generated_file_count": 6,
+    "research_metacognition_active": true,
+    "source_system_count": 11,
+    "thoughtbus_receiving": true,
+    "wired_source_system_count": 11
+  },
+  "write_info": {
+    "evidence_writes": [
+      {
+        "bytes": 101259,
+        "path": "C:\\Users\\user\\aureon-trading\\state\\aureon_swarm_search_mapping_stress_audit.json"
+      },
+      {
+        "bytes": 101259,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_swarm_search_mapping_stress_audit.json"
+      },
+      {
+        "bytes": 3767,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_swarm_search_mapping_stress_audit.md"
+      },
+      {
+        "bytes": 101259,
+        "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_swarm_search_mapping_stress_audit.json"
+      }
+    ]
+  }
+}

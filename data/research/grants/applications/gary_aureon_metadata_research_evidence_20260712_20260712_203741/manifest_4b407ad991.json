@@ -1,0 +1,33 @@
+{
+  "agent_count": 3,
+  "agents": [
+    {
+      "agent": "seer",
+      "created_or_rotated": true,
+      "fingerprint_sha256": "f030a188b53ed1fa3ea162bd01bf10b5faf2f525176bce26234b1527cecc4dff",
+      "path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\hnc_swarm_key_store\\seer.dpapi",
+      "secret_policy": "dpapi_blob_only_no_raw_key",
+      "store": "windows_dpapi_current_user"
+    },
+    {
+      "agent": "lyra",
+      "created_or_rotated": true,
+      "fingerprint_sha256": "11757df7dfd6d3fd6d5435da21587720884163dbe55bcb3aeda12a900ac47c61",
+      "path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\hnc_swarm_key_store\\lyra.dpapi",
+      "secret_policy": "dpapi_blob_only_no_raw_key",
+      "store": "windows_dpapi_current_user"
+    },
+    {
+      "agent": "king",
+      "created_or_rotated": true,
+      "fingerprint_sha256": "4ff2eb082446cb852804c35e09123723c893b847a2d243e265faa8b6293ae471",
+      "path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\hnc_swarm_key_store\\king.dpapi",
+      "secret_policy": "dpapi_blob_only_no_raw_key",
+      "store": "windows_dpapi_current_user"
+    }
+  ],
+  "generated_at": "2026-05-14T19:17:28.362953+00:00",
+  "schema_version": "aureon-hnc-swarm-key-store-v1",
+  "secret_policy": "metadata_only_no_raw_keys",
+  "store_dir": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\hnc_swarm_key_store"
+}

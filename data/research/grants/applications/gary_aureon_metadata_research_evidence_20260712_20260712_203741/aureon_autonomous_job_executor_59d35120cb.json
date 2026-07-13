@@ -1,0 +1,39 @@
+{
+  "active_job": {},
+  "generated_at": "2026-05-22T18:17:44.294225+00:00",
+  "jobs": [],
+  "ok": true,
+  "schema_version": "aureon-autonomous-job-executor-v1",
+  "status": "autonomous_jobs_ready",
+  "summary": {
+    "active_job_count": 0,
+    "current_job_id": "",
+    "current_job_state": "",
+    "failed_after_budget_count": 0,
+    "handover_ready_count": 0,
+    "job_count": 0,
+    "manual_hold_count": 0,
+    "queue_depth": 0
+  },
+  "write_info": {
+    "coding_bridge_evidence_writes": [],
+    "evidence_writes": [
+      {
+        "bytes": 1126,
+        "path": "C:\\Users\\user\\aureon-trading\\state\\aureon_autonomous_job_executor.json"
+      },
+      {
+        "bytes": 1126,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_autonomous_job_executor.json"
+      },
+      {
+        "bytes": 148,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_autonomous_job_executor.md"
+      },
+      {
+        "bytes": 1126,
+        "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_autonomous_job_executor.json"
+      }
+    ]
+  }
+}

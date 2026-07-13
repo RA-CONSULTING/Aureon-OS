@@ -1,0 +1,20 @@
+﻿{
+    "schema_version":  "aureon-pipeline-report-v1",
+    "generated_at":  "2026-07-10T09:24:20+01:00",
+    "operator":  "Aureon",
+    "event":  "ifs_akt6_academic_lead_evidence_audit",
+    "result":  "NO_AKT6_SUBMIT_READY_ROUTE_CURRENT_EVIDENCE_KB_LEAD_AND_4FTE_REQUIRED",
+    "application_id":  "APP-IFS-AKT6-2473-20260709",
+    "opportunity_id":  "IFS-CURRENT-2473",
+    "competition":  "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+    "deadline":  "2026-07-15T11:00:00+01:00",
+    "official_url":  "https://apply-for-innovation-funding.service.gov.uk/competition/2473/overview/d9a164dd-2094-4590-baa7-a057279d80a3",
+    "artifact":  "applications/IFS_AKT6_2473_ACADEMIC_LEAD_EVIDENCE_AUDIT_20260710_092420.json",
+    "markdown":  "applications/IFS_AKT6_2473_ACADEMIC_LEAD_EVIDENCE_AUDIT_20260710_092420.md",
+    "direct_ifs_submissions_unlocked":  0,
+    "new_browser_submissions_available":  0,
+    "portal_changed":  false,
+    "external_submission_performed":  false,
+    "email_sent":  false,
+    "reason":  "AKT6 requires eligible Knowledge Base lead and current four-or-more-FTE business partner evidence. Current Aureon evidence does not confirm either gate."
+}

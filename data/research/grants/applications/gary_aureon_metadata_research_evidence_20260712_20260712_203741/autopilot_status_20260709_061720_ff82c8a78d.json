@@ -1,0 +1,96 @@
+{
+  "schema_version": "aureon-grant-autopilot-v1",
+  "generated_at": "2026-07-09T04:45:15+01:00",
+  "operator": "AureonGrantOperator",
+  "mode": "automate_until_provider_or_legal_boundary",
+  "applicant": {
+    "legal_entity": "R&A Consulting and Brokerage Services Ltd",
+    "company_number": "NI696693",
+    "lead_contact": "Gary Anthony Leckey",
+    "email": "gaxlec@gmail.com",
+    "registered_office": "1 Quadrant Place, Belfast, Northern Ireland, BT12 4HX"
+  },
+  "automation_policy": [
+    "Prepare, validate, package, upload, draft, and stage all grant materials without waiting for repeated instruction.",
+    "Do not bypass CAPTCHA, MFA, phone verification, or provider account controls.",
+    "Do not press a final legal external submission button without exact action-time confirmation for that specific application.",
+    "Do not store plaintext passwords, bank data, private keys, tokens, or tax files in grant packs or Drive uploads."
+  ],
+  "queue": [
+    {
+      "id": "APP-IFS-NEXT-WAVE-10209601",
+      "funder": "Innovate UK",
+      "programme": "Next Wave: Breakthrough Wave 1",
+      "title": "Aureon Evidence Studio for Createch AI Workflows",
+      "status": "SUBMITTED",
+      "deadline": "2026-08-11T11:00:00+01:00",
+      "submitted_at": "2026-07-07T13:47:00+01:00",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/application/10209601/track",
+      "automation_next_action": "Monitor IFS, Gmail, and grant records for assessment or feedback updates due by 1 Oct 2026; do not reopen the submitted application.",
+      "human_or_provider_gate": "Waiting for funder assessment decision and feedback.",
+      "value": {
+        "currency": "GBP",
+        "grant_request": 175000,
+        "eligible_costs": 250000
+      },
+      "receipt": {
+        "application_number": "10209601",
+        "submitted_at_display": "7 Jul 2026 at 1:47pm",
+        "screenshot": "applications/rendered/ifs_overview_20260709_latest.png"
+      }
+    },
+    {
+      "id": "INTERTRADEIRELAND-INNOVATION-BOOST-ENQUIRY",
+      "funder": "InterTradeIreland",
+      "programme": "Innovation Boost",
+      "title": "Aureon Evidence Automation initial assessment",
+      "status": "SUBMITTED_ENQUIRY",
+      "submitted_at": "2026-07-05T16:12:34+01:00",
+      "confirmation_guid": "90e52212-2555-426e-a5bc-7ad9129389e3",
+      "url": "https://intertradeireland.com/contact/thank-you%20?submissionGuid=90e52212-2555-426e-a5bc-7ad9129389e3",
+      "automation_next_action": "Monitor for follow-up and convert response into full application pack.",
+      "human_or_provider_gate": "Waiting for funder response."
+    },
+    {
+      "id": "APP-AIRR-001",
+      "funder": "UKRI (EPSRC)",
+      "programme": "AIRR compute opportunity: AI open access",
+      "title": "Aureon Evidence OS for AI-Driven Scientific Discovery",
+      "status": "PORTAL_DRAFT_STAGED",
+      "deadline": "2026-07-17T16:00:00+01:00",
+      "url": "https://portal-airr.isambard.ac.uk/proposals/5a87cac10a0044db903550fe12188b4a/",
+      "portal_proposal_id": "0261-8797-7601-1",
+      "automation_next_action": "Preserve AIRR portal draft, attached supporting PDF, and saved Isambard-AI resource request; submit only after final checks.",
+      "human_or_provider_gate": "Exact final-submit confirmation plus subsidy, peer-review, and company filing checks.",
+      "value": {
+        "currency": "GPU_HOURS",
+        "request": 500000,
+        "duration_days": 365
+      },
+      "documents": [
+        "AIRR_PORTAL_FIELD_PACK_20260705.md",
+        "AIRR_AI_OPEN_ACCESS_SUPPORTING_FORM_20260706.pdf"
+      ]
+    },
+    {
+      "id": "INVEST-NI-IFAS",
+      "funder": "Invest Northern Ireland",
+      "programme": "Innovation Funding Advisory Service",
+      "title": "Aureon R&D funding advisory request",
+      "status": "STAGED_BLOCKED_BY_CAPTCHA",
+      "url": "https://www.investni.com/support-for-business/research-and-development-support/innovation-funding-advisory-service",
+      "automation_next_action": "Keep the staged enquiry ready and submit only after the provider CAPTCHA is completed.",
+      "human_or_provider_gate": "Provider CAPTCHA."
+    },
+    {
+      "id": "EIC-ACCELERATOR-STEP1",
+      "funder": "European Innovation Council",
+      "programme": "EIC Accelerator",
+      "title": "Aureon Evidence Studio commercial AI workflow assurance",
+      "status": "LOCAL_DRAFT_PACK_BUILT",
+      "url": "https://eic.ec.europa.eu/eic-funding-opportunities/eic-accelerator_en",
+      "automation_next_action": "Convert the local Step 1 draft pack into the EIC portal after EU Login is usable and evidence gaps are closed.",
+      "human_or_provider_gate": "EU Login final password step, TRL/customer evidence, competitor map, financial plan, IP review, privacy policy, and final submit confirmation."
+    }
+  ]
+}

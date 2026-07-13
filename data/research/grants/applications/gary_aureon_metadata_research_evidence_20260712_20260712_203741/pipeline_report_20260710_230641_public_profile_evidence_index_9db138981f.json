@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-07-10T23:06:41+01:00",
+  "operator": "Aureon",
+  "event": "public_profile_evidence_index",
+  "artifact": "applications/PUBLIC_PROFILE_EVIDENCE_INDEX_20260710_230641.json",
+  "markdown": "applications/PUBLIC_PROFILE_EVIDENCE_INDEX_20260710_230641.md",
+  "result": "PUBLIC_PROFILE_EVIDENCE_INDEX_ATTACHED_NO_NEW_IFS_SUBMIT_READY_ROUTE",
+  "public_sources_indexed": 8,
+  "ifs_applications_reviewed": 20,
+  "submitted_monitor_only_routes": 4,
+  "active_not_submitted_routes": 16,
+  "direct_ifs_submissions_unlocked": 0,
+  "new_browser_submissions_available": 0,
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false,
+  "private_finance_files_used": false,
+  "secrets_or_passwords_copied": false
+}

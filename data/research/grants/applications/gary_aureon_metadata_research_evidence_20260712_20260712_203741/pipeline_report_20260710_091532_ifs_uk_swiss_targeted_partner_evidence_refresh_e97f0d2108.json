@@ -1,0 +1,22 @@
+﻿{
+    "schema_version":  "aureon-pipeline-report-v1",
+    "generated_at":  "2026-07-10T09:15:32+01:00",
+    "operator":  "Aureon",
+    "mode":  "IFS_ONLY",
+    "event":  "IFS_UK_SWISS_TARGETED_PARTNER_EVIDENCE_REFRESH",
+    "application_id":  "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+    "portal_application_number":  "10210100",
+    "result":  "NO_CONFIRMED_SWISS_PARTNER_RESEARCH_WAIVER_OR_BUDGET_EVIDENCE_FOUND",
+    "artifact":  "applications/IFS_UK_SWISS_CRD_R3_10210100_TARGETED_PARTNER_EVIDENCE_REFRESH_20260710_091532.json",
+    "markdown":  "applications/IFS_UK_SWISS_CRD_R3_10210100_TARGETED_PARTNER_EVIDENCE_REFRESH_20260710_091532.md",
+    "direct_ifs_submissions_unlocked":  0,
+    "new_browser_submissions_available":  0,
+    "live_ifs_progress_percent":  80,
+    "portal_changed":  false,
+    "controls":  [
+                     "No unsupported partner, research institute, waiver, budget, permit, export, cost, or finance claim entered",
+                     "No portal mutation performed in this refresh",
+                     "No external email, partner invite, upload, award terms acceptance, Project Impact submit, or final IFS submit performed",
+                     "Live UK-Switzerland draft remains evidence-gated and not submit-ready"
+                 ]
+}

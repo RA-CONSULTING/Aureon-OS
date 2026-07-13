@@ -1,0 +1,47 @@
+{
+  "schema_version": "aureon-ifs-application-start-handoff-v1",
+  "generated_at": "2026-07-10T05:48:48+01:00",
+  "operator": "Aureon",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "competition": "UK-Switzerland CR&D Round 3",
+  "competition_number": "2512",
+  "source_url": "https://apply-for-innovation-funding.service.gov.uk/competition/2512/overview/2f0a03c4-44b7-42dc-8845-70751b6bc531",
+  "start_application_url": "https://apply-for-innovation-funding.service.gov.uk/application/create/start-application/2512",
+  "portal_state": {
+    "status": "ACCOUNT_GATE_REACHED",
+    "visible_page_title": "Do you have an account?",
+    "visible_options": [
+      "Sign in",
+      "Continue and create an account"
+    ],
+    "timeout_banner": "Your application has timed out / signed out after inactivity messaging visible on IFS public pages"
+  },
+  "eligibility_gate": {
+    "status": "PARTNER_REQUIRED_BEFORE_SUBMISSION",
+    "required": [
+      "UK registered lead organisation can start the IFS application",
+      "At least one non-linked Swiss implementation partner applying through Innosuisse",
+      "At least one UK or Swiss research institute unless the Swiss applicant is an individual start-up, pre-market and less than 50 FTE",
+      "Project focus in Semiconductors, Life Sciences, or Engineering Biology",
+      "UK grant request no greater than GBP 450,000",
+      "Project starts 1 February 2027 and lasts 18 to 36 months"
+    ]
+  },
+  "proposed_aureon_positioning": {
+    "working_title": "Aureon Evidence OS for cross-border AI assurance and semiconductor-enabled research workflows",
+    "theme_fit": "Semiconductors / AI compute assurance only if a Swiss implementation partner and research institute validate the hardware or applied technology pathway",
+    "lead_status": "R&A Consulting can start the IFS application as UK organisation, but should not submit without partner evidence"
+  },
+  "next_actions": [
+    "Human operator signs into the IFS account or confirms account creation details.",
+    "Confirm the intended IFS account and organisation profile for R&A Consulting and Brokerage Services Ltd.",
+    "Provide or identify Swiss implementation partner evidence and research institute evidence.",
+    "Use existing IFS conversion partner pack text as draft material after the portal draft exists.",
+    "Do not submit final application until all partner, scope, cost, subsidy, and terms sections are complete and verified."
+  ],
+  "controls": [
+    "No password, MFA, CAPTCHA, account creation, partner invitation, upload, email send, or final submission was attempted.",
+    "No plaintext secret was read or stored.",
+    "Browser automation could not attach to the in-app browser; public IFS page state was verified through official page readback."
+  ]
+}

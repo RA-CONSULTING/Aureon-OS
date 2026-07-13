@@ -1,0 +1,18 @@
+{
+  "asset_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_b5884c33262e\\index.html",
+  "detected_families": [
+    "coding",
+    "ui",
+    "document",
+    "browser_qa"
+  ],
+  "kind": "adaptive_skill_capsule",
+  "metadata_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_b5884c33262e\\skill.json",
+  "prompt": "Build a local barcode label generator tool for the warehouse team, with run instructions and proof.\n\nClient-approved scope answers:\n- deliverables: Adaptive local skill capsule, browser preview, runbook, Python run contract, and proof.\n- target_system: frontend/public/aureon_adaptive_skills and Aureon coding cockpit artifact preview.\n- constraints: Local-only, no live trading, payment, filing, credential, or destructive OS action.\n- goal: Build a local barcode label generator tool for the warehouse team.\n- acceptance: The skill capsule files exist, preview URL works, and no blocking snags remain.",
+  "public_url": "/aureon_adaptive_skills/build_a_local_barcode_label_generator_tool_for_t_b5884c33262e/index.html",
+  "runbook_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_b5884c33262e\\RUNBOOK.md",
+  "schema_version": "aureon-adaptive-skill-capsule-v1",
+  "skill_contract": "create a local, testable skill capsule whenever a prompt has no specialized worker yet",
+  "task_family": "mixed",
+  "tool_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_b5884c33262e\\tool.py"
+}

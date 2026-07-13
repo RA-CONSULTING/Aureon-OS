@@ -1,0 +1,1042 @@
+{
+  "generated_at": "2026-05-22T19:21:00.921505",
+  "source": "unified_market_trader",
+  "mode": "runtime_gated_order_intent",
+  "intent_count": 4,
+  "intents": [
+    {
+      "id": "uintent-1779474060-2",
+      "generated_at": "2026-05-22T19:21:00.921505",
+      "source": "unified_market_trader",
+      "topic": "execution.order.intent",
+      "symbol": "NEARUSD",
+      "side": "BUY",
+      "candidate_id": "ocand-5f055e84f5fdcab746",
+      "lifecycle_id": "olife-c97bfb17ea8d978dd6",
+      "route_key": "binance:spot:NEARUSDT:BUY",
+      "confidence": 1.0,
+      "selection_rank": 3,
+      "profit_velocity_score": 0.726515,
+      "fast_money_score": 0.759495,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.759495,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 17.625,
+        "avg_change_pct": 17.625,
+        "volume_24h": 33951519.1658,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 1.0,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.655104,
+        "orderbook_alignment": "aligned",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_liquidity_confirmed",
+          "orderbook_pressure_aligned"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "NEARUSDT",
+        "side": "BUY",
+        "pressure_side": "BUY",
+        "score": 0.655104,
+        "bid_depth_usd": 959920.2654,
+        "ask_depth_usd": 634864.7791,
+        "signed_imbalance": 0.203824,
+        "spread_pct": 0.045945,
+        "generated_at": "2026-05-22T19:17:09.239477",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 15.0,
+      "cash_capable_route_count": 1,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 1,
+      "sources": [
+        "live_stream_cache"
+      ],
+      "model_signal": {},
+      "model_alignment": false,
+      "routes": [
+        {
+          "venue": "binance",
+          "market_type": "spot",
+          "symbol": "NEARUSDT",
+          "route_key": "binance:spot:NEARUSDT:BUY",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "unified_executor",
+          "cash_capability": {
+            "state": "quote_budgeted_at_execution",
+            "score": 0.65,
+            "checked_by": "runtime_executor"
+          },
+          "cash_capability_state": "quote_budgeted_at_execution",
+          "cash_capability_score": 0.65,
+          "model_stack_key": "binance_spot",
+          "model_count": 7,
+          "model_total_count": 7,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "BinanceClient",
+              "path": "aureon/exchanges/binance_client.py",
+              "role": "Binance spot execution and account state",
+              "available": true
+            },
+            {
+              "name": "BinanceWebSocketClient",
+              "path": "aureon/exchanges/binance_ws_client.py",
+              "role": "Binance stream intelligence",
+              "available": true
+            },
+            {
+              "name": "S5BinanceEcosystem",
+              "path": "aureon/strategies/s5_binance_ecosystem.py",
+              "role": "Binance strategy ecosystem",
+              "available": true
+            }
+          ],
+          "candidate_id": "ocand-5f055e84f5fdcab746",
+          "lifecycle_id": "olife-c97bfb17ea8d978dd6"
+        }
+      ],
+      "parallel_strategy_support": [],
+      "strategy_support_count": 0,
+      "strategy_disagreement_count": 0,
+      "runtime_gate": "executor_required",
+      "authority_mode": "intent_only_runtime_gated",
+      "safety": {
+        "direct_exchange_mutation_by_cognition": false,
+        "requires_runtime_risk_gate": true,
+        "requires_executor": true
+      }
+    },
+    {
+      "id": "uintent-1779474060-1",
+      "generated_at": "2026-05-22T19:21:00.921505",
+      "source": "unified_market_trader",
+      "topic": "execution.order.intent",
+      "symbol": "XRPUSD",
+      "side": "SELL",
+      "candidate_id": "ocand-13bb3b86fe0a4d164e",
+      "lifecycle_id": "olife-218533eb9d6df06a01",
+      "route_key": "capital:cfd:XRPUSD:SELL",
+      "confidence": 0.6074,
+      "selection_rank": 2,
+      "profit_velocity_score": 0.733905,
+      "fast_money_score": 0.732957,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.732957,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.844,
+        "avg_change_pct": 1.8375,
+        "volume_24h": 20951257.08724,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.83805,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.500926,
+        "orderbook_alignment": "opposed",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_liquidity_confirmed",
+          "orderbook_pressure_opposed"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "XRPUSDT",
+        "side": "SELL",
+        "pressure_side": "BUY",
+        "score": 0.500926,
+        "bid_depth_usd": 1540389.47134,
+        "ask_depth_usd": 1061065.00512,
+        "signed_imbalance": 0.184252,
+        "spread_pct": 0.007387,
+        "generated_at": "2026-05-22T19:17:09.539865",
+        "whale_supporting_buy": false,
+        "whale_blocking_buy": false,
+        "whale_blocking_sell": false,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 15.527,
+      "cash_capable_route_count": 2,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "model_signal": {},
+      "model_alignment": false,
+      "routes": [
+        {
+          "venue": "capital",
+          "market_type": "cfd",
+          "symbol": "XRPUSD",
+          "route_key": "capital:cfd:XRPUSD:SELL",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "existing_autonomous_trader_tick",
+          "cash_capability": {
+            "state": "delegated_runtime_managed",
+            "score": 0.75,
+            "checked_by": "existing_autonomous_trader_tick"
+          },
+          "cash_capability_state": "delegated_runtime_managed",
+          "cash_capability_score": 0.75,
+          "model_stack_key": "capital_cfd",
+          "model_count": 8,
+          "model_total_count": 8,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "CapitalCFDTrader",
+              "path": "aureon/exchanges/capital_cfd_trader.py",
+              "role": "Capital CFD autonomous trader",
+              "available": true
+            },
+            {
+              "name": "CapitalMarketMonitor",
+              "path": "aureon/exchanges/capital_market_monitor.py",
+              "role": "Capital market monitor",
+              "available": true
+            },
+            {
+              "name": "CapitalSwarmRunner",
+              "path": "aureon/exchanges/capital_swarm_runner.py",
+              "role": "Capital swarm scan/decision support",
+              "available": true
+            },
+            {
+              "name": "QueenLearnCapitalTrading",
+              "path": "aureon/queen/queen_learn_capital_trading.py",
+              "role": "Capital learning loop",
+              "available": true
+            }
+          ],
+          "candidate_id": "ocand-13bb3b86fe0a4d164e",
+          "lifecycle_id": "olife-218533eb9d6df06a01"
+        },
+        {
+          "venue": "binance",
+          "market_type": "spot",
+          "symbol": "XRPUSDT",
+          "route_key": "binance:spot:XRPUSDT:SELL",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "unified_executor",
+          "cash_capability": {
+            "state": "asset_balance_checked_at_execution",
+            "score": 0.55,
+            "checked_by": "runtime_executor"
+          },
+          "cash_capability_state": "asset_balance_checked_at_execution",
+          "cash_capability_score": 0.55,
+          "model_stack_key": "binance_spot",
+          "model_count": 7,
+          "model_total_count": 7,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "BinanceClient",
+              "path": "aureon/exchanges/binance_client.py",
+              "role": "Binance spot execution and account state",
+              "available": true
+            },
+            {
+              "name": "BinanceWebSocketClient",
+              "path": "aureon/exchanges/binance_ws_client.py",
+              "role": "Binance stream intelligence",
+              "available": true
+            },
+            {
+              "name": "S5BinanceEcosystem",
+              "path": "aureon/strategies/s5_binance_ecosystem.py",
+              "role": "Binance strategy ecosystem",
+              "available": true
+            }
+          ],
+          "candidate_id": "ocand-13bb3b86fe0a4d164e",
+          "lifecycle_id": "olife-218533eb9d6df06a01"
+        }
+      ],
+      "parallel_strategy_support": [],
+      "strategy_support_count": 0,
+      "strategy_disagreement_count": 0,
+      "runtime_gate": "executor_required",
+      "authority_mode": "intent_only_runtime_gated",
+      "safety": {
+        "direct_exchange_mutation_by_cognition": false,
+        "requires_runtime_risk_gate": true,
+        "requires_executor": true
+      }
+    },
+    {
+      "id": "uintent-1779474060-4",
+      "generated_at": "2026-05-22T19:21:00.921505",
+      "source": "unified_market_trader",
+      "topic": "execution.order.intent",
+      "symbol": "BTCUSD",
+      "side": "SELL",
+      "candidate_id": "ocand-5fb23e76c91d4441df",
+      "lifecycle_id": "olife-07c7619727cafbf2f2",
+      "route_key": "capital:cfd:BTCUSD:SELL",
+      "confidence": 0.4862,
+      "selection_rank": 5,
+      "profit_velocity_score": 0.608215,
+      "fast_money_score": 0.61107,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.61107,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.399,
+        "avg_change_pct": 1.313,
+        "volume_24h": 58551.761211,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.002342,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.744805,
+        "orderbook_alignment": "aligned",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target",
+          "orderbook_pressure_aligned"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "BTCUSDT",
+        "side": "SELL",
+        "pressure_side": "SELL",
+        "score": 0.744805,
+        "bid_depth_usd": 233672.242998,
+        "ask_depth_usd": 535493.089868,
+        "signed_imbalance": -0.3924,
+        "spread_pct": 1.3e-05,
+        "generated_at": "2026-05-22T19:17:10.358586",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 16.935,
+      "cash_capable_route_count": 3,
+      "history_validation_score": 0.5,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "model_signal": {},
+      "model_alignment": false,
+      "routes": [
+        {
+          "venue": "capital",
+          "market_type": "cfd",
+          "symbol": "BTCUSD",
+          "route_key": "capital:cfd:BTCUSD:SELL",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "existing_autonomous_trader_tick",
+          "cash_capability": {
+            "state": "delegated_runtime_managed",
+            "score": 0.75,
+            "checked_by": "existing_autonomous_trader_tick"
+          },
+          "cash_capability_state": "delegated_runtime_managed",
+          "cash_capability_score": 0.75,
+          "model_stack_key": "capital_cfd",
+          "model_count": 8,
+          "model_total_count": 8,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "CapitalCFDTrader",
+              "path": "aureon/exchanges/capital_cfd_trader.py",
+              "role": "Capital CFD autonomous trader",
+              "available": true
+            },
+            {
+              "name": "CapitalMarketMonitor",
+              "path": "aureon/exchanges/capital_market_monitor.py",
+              "role": "Capital market monitor",
+              "available": true
+            },
+            {
+              "name": "CapitalSwarmRunner",
+              "path": "aureon/exchanges/capital_swarm_runner.py",
+              "role": "Capital swarm scan/decision support",
+              "available": true
+            },
+            {
+              "name": "QueenLearnCapitalTrading",
+              "path": "aureon/queen/queen_learn_capital_trading.py",
+              "role": "Capital learning loop",
+              "available": true
+            }
+          ],
+          "candidate_id": "ocand-5fb23e76c91d4441df",
+          "lifecycle_id": "olife-07c7619727cafbf2f2"
+        },
+        {
+          "venue": "alpaca",
+          "market_type": "spot",
+          "symbol": "BTC/USD",
+          "route_key": "alpaca:spot:BTC/USD:SELL",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "unified_executor",
+          "cash_capability": {
+            "state": "asset_balance_checked_at_execution",
+            "score": 0.55,
+            "checked_by": "runtime_executor"
+          },
+          "cash_capability_state": "asset_balance_checked_at_execution",
+          "cash_capability_score": 0.55,
+          "model_stack_key": "alpaca_spot",
+          "model_count": 8,
+          "model_total_count": 8,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "AlpacaClient",
+              "path": "aureon/exchanges/alpaca_client.py",
+              "role": "Alpaca spot crypto and stock execution",
+              "available": true
+            },
+            {
+              "name": "AlpacaCapitalStyleTrader",
+              "path": "aureon/exchanges/alpaca_capital_style_trader.py",
+              "role": "Alpaca autonomous trader",
+              "available": true
+            },
+            {
+              "name": "AlpacaScannerBridge",
+              "path": "aureon/bridges/aureon_alpaca_scanner_bridge.py",
+              "role": "Alpaca scanner bridge",
+              "available": true
+            },
+            {
+              "name": "AlpacaTruthTracker",
+              "path": "aureon/exchanges/alpaca_truth_tracker.py",
+              "role": "Alpaca signal truth tracking",
+              "available": true
+            }
+          ],
+          "candidate_id": "ocand-5fb23e76c91d4441df",
+          "lifecycle_id": "olife-07c7619727cafbf2f2"
+        },
+        {
+          "venue": "binance",
+          "market_type": "spot",
+          "symbol": "BTCUSDT",
+          "route_key": "binance:spot:BTCUSDT:SELL",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "unified_executor",
+          "cash_capability": {
+            "state": "asset_balance_checked_at_execution",
+            "score": 0.55,
+            "checked_by": "runtime_executor"
+          },
+          "cash_capability_state": "asset_balance_checked_at_execution",
+          "cash_capability_score": 0.55,
+          "model_stack_key": "binance_spot",
+          "model_count": 7,
+          "model_total_count": 7,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "BinanceClient",
+              "path": "aureon/exchanges/binance_client.py",
+              "role": "Binance spot execution and account state",
+              "available": true
+            },
+            {
+              "name": "BinanceWebSocketClient",
+              "path": "aureon/exchanges/binance_ws_client.py",
+              "role": "Binance stream intelligence",
+              "available": true
+            },
+            {
+              "name": "S5BinanceEcosystem",
+              "path": "aureon/strategies/s5_binance_ecosystem.py",
+              "role": "Binance strategy ecosystem",
+              "available": true
+            }
+          ],
+          "candidate_id": "ocand-5fb23e76c91d4441df",
+          "lifecycle_id": "olife-07c7619727cafbf2f2"
+        }
+      ],
+      "parallel_strategy_support": [],
+      "strategy_support_count": 0,
+      "strategy_disagreement_count": 0,
+      "runtime_gate": "executor_required",
+      "authority_mode": "intent_only_runtime_gated",
+      "safety": {
+        "direct_exchange_mutation_by_cognition": false,
+        "requires_runtime_risk_gate": true,
+        "requires_executor": true
+      }
+    },
+    {
+      "id": "uintent-1779474060-3",
+      "generated_at": "2026-05-22T19:21:00.921505",
+      "source": "unified_market_trader",
+      "topic": "execution.order.intent",
+      "symbol": "ETHUSD",
+      "side": "SELL",
+      "candidate_id": "ocand-235fe282c80c0c7030",
+      "lifecycle_id": "olife-8ba0384b8fc946156c",
+      "route_key": "capital:cfd:ETHUSD:SELL",
+      "confidence": 0.4172,
+      "selection_rank": 4,
+      "profit_velocity_score": 0.642698,
+      "fast_money_score": 0.610628,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.610628,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 1.088,
+        "avg_change_pct": 0.9455,
+        "volume_24h": 47615.045903,
+        "freshest_age_sec": 8.428,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.001905,
+        "stream_freshness_score": 0.0,
+        "orderbook_score": 0.559608,
+        "orderbook_alignment": "neutral",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "ETHUSDT",
+        "side": "SELL",
+        "pressure_side": "NEUTRAL",
+        "score": 0.559608,
+        "bid_depth_usd": 652912.871543,
+        "ask_depth_usd": 592753.59886,
+        "signed_imbalance": 0.048295,
+        "spread_pct": 0.000472,
+        "generated_at": "2026-05-22T19:17:10.088050",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 18.854,
+      "cash_capable_route_count": 3,
+      "history_validation_score": 1.0,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 2,
+      "sources": [
+        "binance",
+        "live_stream_cache"
+      ],
+      "model_signal": {},
+      "model_alignment": false,
+      "routes": [
+        {
+          "venue": "capital",
+          "market_type": "cfd",
+          "symbol": "ETHUSD",
+          "route_key": "capital:cfd:ETHUSD:SELL",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "existing_autonomous_trader_tick",
+          "cash_capability": {
+            "state": "delegated_runtime_managed",
+            "score": 0.75,
+            "checked_by": "existing_autonomous_trader_tick"
+          },
+          "cash_capability_state": "delegated_runtime_managed",
+          "cash_capability_score": 0.75,
+          "model_stack_key": "capital_cfd",
+          "model_count": 8,
+          "model_total_count": 8,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "CapitalCFDTrader",
+              "path": "aureon/exchanges/capital_cfd_trader.py",
+              "role": "Capital CFD autonomous trader",
+              "available": true
+            },
+            {
+              "name": "CapitalMarketMonitor",
+              "path": "aureon/exchanges/capital_market_monitor.py",
+              "role": "Capital market monitor",
+              "available": true
+            },
+            {
+              "name": "CapitalSwarmRunner",
+              "path": "aureon/exchanges/capital_swarm_runner.py",
+              "role": "Capital swarm scan/decision support",
+              "available": true
+            },
+            {
+              "name": "QueenLearnCapitalTrading",
+              "path": "aureon/queen/queen_learn_capital_trading.py",
+              "role": "Capital learning loop",
+              "available": true
+            }
+          ],
+          "candidate_id": "ocand-235fe282c80c0c7030",
+          "lifecycle_id": "olife-8ba0384b8fc946156c"
+        },
+        {
+          "venue": "alpaca",
+          "market_type": "spot",
+          "symbol": "ETH/USD",
+          "route_key": "alpaca:spot:ETH/USD:SELL",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "unified_executor",
+          "cash_capability": {
+            "state": "asset_balance_checked_at_execution",
+            "score": 0.55,
+            "checked_by": "runtime_executor"
+          },
+          "cash_capability_state": "asset_balance_checked_at_execution",
+          "cash_capability_score": 0.55,
+          "model_stack_key": "alpaca_spot",
+          "model_count": 8,
+          "model_total_count": 8,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "AlpacaClient",
+              "path": "aureon/exchanges/alpaca_client.py",
+              "role": "Alpaca spot crypto and stock execution",
+              "available": true
+            },
+            {
+              "name": "AlpacaCapitalStyleTrader",
+              "path": "aureon/exchanges/alpaca_capital_style_trader.py",
+              "role": "Alpaca autonomous trader",
+              "available": true
+            },
+            {
+              "name": "AlpacaScannerBridge",
+              "path": "aureon/bridges/aureon_alpaca_scanner_bridge.py",
+              "role": "Alpaca scanner bridge",
+              "available": true
+            },
+            {
+              "name": "AlpacaTruthTracker",
+              "path": "aureon/exchanges/alpaca_truth_tracker.py",
+              "role": "Alpaca signal truth tracking",
+              "available": true
+            }
+          ],
+          "candidate_id": "ocand-235fe282c80c0c7030",
+          "lifecycle_id": "olife-8ba0384b8fc946156c"
+        },
+        {
+          "venue": "binance",
+          "market_type": "spot",
+          "symbol": "ETHUSDT",
+          "route_key": "binance:spot:ETHUSDT:SELL",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "unified_executor",
+          "cash_capability": {
+            "state": "asset_balance_checked_at_execution",
+            "score": 0.55,
+            "checked_by": "runtime_executor"
+          },
+          "cash_capability_state": "asset_balance_checked_at_execution",
+          "cash_capability_score": 0.55,
+          "model_stack_key": "binance_spot",
+          "model_count": 7,
+          "model_total_count": 7,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "BinanceClient",
+              "path": "aureon/exchanges/binance_client.py",
+              "role": "Binance spot execution and account state",
+              "available": true
+            },
+            {
+              "name": "BinanceWebSocketClient",
+              "path": "aureon/exchanges/binance_ws_client.py",
+              "role": "Binance stream intelligence",
+              "available": true
+            },
+            {
+              "name": "S5BinanceEcosystem",
+              "path": "aureon/strategies/s5_binance_ecosystem.py",
+              "role": "Binance strategy ecosystem",
+              "available": true
+            }
+          ],
+          "candidate_id": "ocand-235fe282c80c0c7030",
+          "lifecycle_id": "olife-8ba0384b8fc946156c"
+        }
+      ],
+      "parallel_strategy_support": [],
+      "strategy_support_count": 0,
+      "strategy_disagreement_count": 0,
+      "runtime_gate": "executor_required",
+      "authority_mode": "intent_only_runtime_gated",
+      "safety": {
+        "direct_exchange_mutation_by_cognition": false,
+        "requires_runtime_risk_gate": true,
+        "requires_executor": true
+      }
+    }
+  ],
+  "order_intent_log": "C:\\Users\\user\\aureon-trading\\state\\unified_exchange_order_intents.jsonl",
+  "order_intent_state": "C:\\Users\\user\\aureon-trading\\state\\unified_exchange_order_intents.json"
+}

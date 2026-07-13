@@ -1,0 +1,72 @@
+{
+  "schema_version": "aureon-ifs-review-submit-disabled-v1",
+  "generated_at": "2026-07-11T10:53:02+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_uk_swiss_review_submit_disabled",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "portal_review_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210100/review-and-submit",
+  "competition": "UK-Switzerland CR&D Round 3",
+  "provider_readback": {
+    "page_title": "Application summary - Aureon Evidence OS for Cross-Border R&D Assurance - Innovation Funding Service",
+    "submit_form_action": "/application/10210100/confirm-submit",
+    "submit_button_id": "submit-application-button",
+    "submit_button_text": "Submit application",
+    "submit_button_disabled": true,
+    "contains_submit_application_text": true,
+    "live_readback_method": "Chrome live IFS review page readback; no portal field was changed."
+  },
+  "complete_sections": [
+    "Subsidy basis",
+    "Application team",
+    "Application details",
+    "Research category",
+    "Project summary",
+    "Public description",
+    "Scope",
+    "Themes",
+    "Applicant location",
+    "Animal testing",
+    "International collaboration",
+    "Trusted Research and Innovation",
+    "Need or challenge",
+    "Approach and innovation",
+    "Team and resources",
+    "Market awareness",
+    "Outcomes and route to market",
+    "Wider impacts",
+    "Project management",
+    "Risks",
+    "Added value",
+    "(UK applicants only) Permits and licences (not scored)",
+    "Export licence (not scored)",
+    "Costs and value for money"
+  ],
+  "incomplete_sections": [
+    "Finances summary",
+    "Project impact",
+    "Award terms and conditions"
+  ],
+  "decision": {
+    "is_100_percent_complete": false,
+    "provider_verified_submitted": false,
+    "direct_submit_ready": false,
+    "safe_portal_action_now": false,
+    "final_submission_attempted": false,
+    "why_not_100_percent": "The live IFS review page exposes the final submit form but disables the Submit application button because the application has incomplete finance, Project Impact and award-terms sections.",
+    "required_before_final_submit": [
+      "Finances summary",
+      "Project impact",
+      "Award terms and conditions"
+    ]
+  },
+  "controls": [
+    "Runtime IFS credential was used only in memory for authenticated readback.",
+    "No plaintext password or secret was printed or written.",
+    "No IFS portal field was changed by this readback.",
+    "No disabled submit control was bypassed.",
+    "No final submission, upload, partner invite, email send, Project Impact submission or award-terms acceptance was performed."
+  ],
+  "result": "LIVE_IFS_REVIEW_SUBMIT_DISABLED_FINANCE_IMPACT_TERMS_NO_FINAL_SUBMISSION"
+}

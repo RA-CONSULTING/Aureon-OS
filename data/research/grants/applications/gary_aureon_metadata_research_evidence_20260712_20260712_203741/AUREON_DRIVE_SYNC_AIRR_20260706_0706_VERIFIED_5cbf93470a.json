@@ -1,0 +1,23 @@
+{
+  "schema_version": "aureon-drive-readback-v1",
+  "generated_at": "2026-07-06T07:09:16+01:00",
+  "drive_folder": "https://drive.google.com/drive/folders/1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr",
+  "status": "CONNECTOR_READBACK_CONFIRMED",
+  "confirmed_files": [
+    {
+      "name": "AUREON_DRIVE_SYNC_AIRR_20260706_0704.json",
+      "id": "199rjvVwMj0Yf1EQH3pUO-nzsugyP7vMk",
+      "url": "https://drive.google.com/file/d/199rjvVwMj0Yf1EQH3pUO-nzsugyP7vMk/view?usp=drivesdk"
+    },
+    {
+      "name": "AUREON_AIRR_PORTAL_STAGED_MANIFEST_20260706_0702.json",
+      "id": "1rA5ZODtqnKRoxp9DEt2DFHrA_sSxmMdy",
+      "url": "https://drive.google.com/file/d/1rA5ZODtqnKRoxp9DEt2DFHrA_sSxmMdy/view?usp=drivesdk"
+    },
+    {
+      "name": "AUREON_AIRR_PORTAL_STAGED_20260706_0702.tar.gz",
+      "id": "1E3DKBFNwX-6xJvHwi1eQlRt8vgeyJU9_",
+      "url": "https://drive.google.com/file/d/1E3DKBFNwX-6xJvHwi1eQlRt8vgeyJU9_/view?usp=drivesdk"
+    }
+  ]
+}

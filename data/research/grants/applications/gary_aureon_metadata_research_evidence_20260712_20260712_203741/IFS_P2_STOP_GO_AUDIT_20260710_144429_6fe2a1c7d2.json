@@ -1,0 +1,153 @@
+{
+  "schema_version": "aureon-ifs-p2-stop-go-audit-v1",
+  "generated_at": "2026-07-10T14:44:29+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_p2_stop_go_audit",
+  "source_refs": {
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_144010.json",
+    "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_144008.json",
+    "official_ifs_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_143047.json",
+    "company_compliance_readback": "applications/IFS_COMPANY_COMPLIANCE_READBACK_20260710_143531.json",
+    "targeted_local_unlock_recheck": "applications/IFS_TARGETED_UNLOCK_EVIDENCE_RECHECK_20260710_141910.json",
+    "live_drive_route_unlock_readback": "applications/IFS_LIVE_DRIVE_ROUTE_UNLOCK_READBACK_20260710_142308.json",
+    "non_p1_evidence_acquisition_register": "applications/IFS_NON_P1_EVIDENCE_ACQUISITION_REGISTER_20260710_141505.json",
+    "p2_submission_unlock_control_packet": "applications/IFS_P2_SUBMISSION_UNLOCK_CONTROL_PACKET_20260710_133012.json",
+    "formal_attachment_guard": "applications/IFS_FORMAL_ATTACHMENT_GUARD_20260710_142728.json"
+  },
+  "summary": {
+    "p2_routes_reviewed": 3,
+    "go_routes": 0,
+    "no_go_routes": 3,
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0,
+    "safe_portal_actions_available": 0,
+    "company_compliance_warning_active": true,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false
+  },
+  "decisions": [
+    {
+      "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+      "name": "ACTASAP Pilot Phase 1",
+      "deadline": "2026-07-28T11:00:00+01:00",
+      "current_status": "ACTASAP_ACADEMIC_LEAD_AND_TTO_EVIDENCE_REQUIRED",
+      "queue": "ACADEMIC_LEAD_EVIDENCE_REQUIRED",
+      "go_decision": "NO_GO_EVIDENCE_MISSING",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false,
+      "missing_evidence_from_board": [
+        "eligible UK academic institution lead",
+        "TTO or authorised research-office contact",
+        "scope and validation work package",
+        "budget and commitment evidence"
+      ],
+      "go_required": [
+        "Eligible UK academic institution lead",
+        "TTO or authorised research-office contact",
+        "Approved scope and validation work package",
+        "Budget and commitment evidence",
+        "Company confirmation statement warning cleared or explicitly risk-managed for submission"
+      ],
+      "why_not_now": "ACTASAP must be led by a UK academic institution. Aureon has formal text and academic target routes, but no eligible academic lead, TTO/research-office authorisation, approved scope or budget commitment.",
+      "next_operator_action": "Use the non-P1 evidence acquisition register to pursue QUB CSIT, Ulster AIRC and AICC routes; do not start or submit IFS ACTASAP as R&A lead.",
+      "source_refs": {
+        "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_144010.json",
+        "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_144008.json",
+        "official_ifs_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_143047.json",
+        "company_compliance_readback": "applications/IFS_COMPANY_COMPLIANCE_READBACK_20260710_143531.json",
+        "targeted_local_unlock_recheck": "applications/IFS_TARGETED_UNLOCK_EVIDENCE_RECHECK_20260710_141910.json",
+        "live_drive_route_unlock_readback": "applications/IFS_LIVE_DRIVE_ROUTE_UNLOCK_READBACK_20260710_142308.json",
+        "non_p1_evidence_acquisition_register": "applications/IFS_NON_P1_EVIDENCE_ACQUISITION_REGISTER_20260710_141505.json",
+        "p2_submission_unlock_control_packet": "applications/IFS_P2_SUBMISSION_UNLOCK_CONTROL_PACKET_20260710_133012.json",
+        "formal_attachment_guard": "applications/IFS_FORMAL_ATTACHMENT_GUARD_20260710_142728.json"
+      }
+    },
+    {
+      "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+      "name": "Full ADOPT Grant: Round 8",
+      "deadline": "2026-07-29T11:00:00+01:00",
+      "current_status": "ADOPT_FULL_FARMING_LEAD_AND_PARTNER_EVIDENCE_REQUIRED",
+      "queue": "FARMING_LEAD_EVIDENCE_REQUIRED",
+      "go_decision": "NO_GO_EVIDENCE_MISSING",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false,
+      "missing_evidence_from_board": [
+        "England farming, growing or forestry lead",
+        "collaborating farm business",
+        "farm problem statement",
+        "facilitator or support role evidence"
+      ],
+      "go_required": [
+        "England farming, growing or forestry lead",
+        "Collaborating farm business",
+        "Farm problem statement",
+        "Facilitator or Aureon support role evidence",
+        "Eligible budget and partner commitment evidence",
+        "Company confirmation statement warning cleared or explicitly risk-managed for submission"
+      ],
+      "why_not_now": "Full ADOPT Round 8 must be led by an eligible England farming, growing or forestry business. Aureon has support-positioning material and ADOPT target contacts, but no farmer lead, collaborating farm, problem statement or facilitator/support-role evidence.",
+      "next_operator_action": "Use the non-P1 evidence acquisition register to pursue ADOPT Support Hub, Innovative Farmers, BOFIN and Farm Carbon Toolkit routes for farm-led project evidence.",
+      "source_refs": {
+        "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_144010.json",
+        "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_144008.json",
+        "official_ifs_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_143047.json",
+        "company_compliance_readback": "applications/IFS_COMPANY_COMPLIANCE_READBACK_20260710_143531.json",
+        "targeted_local_unlock_recheck": "applications/IFS_TARGETED_UNLOCK_EVIDENCE_RECHECK_20260710_141910.json",
+        "live_drive_route_unlock_readback": "applications/IFS_LIVE_DRIVE_ROUTE_UNLOCK_READBACK_20260710_142308.json",
+        "non_p1_evidence_acquisition_register": "applications/IFS_NON_P1_EVIDENCE_ACQUISITION_REGISTER_20260710_141505.json",
+        "p2_submission_unlock_control_packet": "applications/IFS_P2_SUBMISSION_UNLOCK_CONTROL_PACKET_20260710_133012.json",
+        "formal_attachment_guard": "applications/IFS_FORMAL_ATTACHMENT_GUARD_20260710_142728.json"
+      }
+    },
+    {
+      "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+      "name": "ADOPT Facilitator Support Grant: Round 10",
+      "deadline": "2026-08-12T11:00:00+01:00",
+      "current_status": "ADOPT_FACILITATOR_ENGLAND_FARM_BUSINESS_AND_REGISTERED_FACILITATOR_EVIDENCE_REQUIRED",
+      "queue": "FARMING_FACILITATOR_ROUTE_GATED",
+      "go_decision": "NO_GO_EVIDENCE_MISSING",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false,
+      "missing_evidence_from_board": [
+        "England farm business context",
+        "registered facilitator evidence",
+        "role and procurement evidence"
+      ],
+      "go_required": [
+        "England farm business context",
+        "Registered facilitator evidence",
+        "Role and procurement evidence",
+        "Eligible support route evidence",
+        "Company confirmation statement warning cleared or explicitly risk-managed for submission"
+      ],
+      "why_not_now": "The ADOPT Facilitator route requires an England farming, growing or forestry business context and a valid facilitator/support arrangement. Aureon has target contacts, but no current farm business context or registered facilitator evidence.",
+      "next_operator_action": "Hold direct R&A submission; acquire ADOPT Support Hub or approved facilitator route evidence before any IFS portal action.",
+      "source_refs": {
+        "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_144010.json",
+        "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_144008.json",
+        "official_ifs_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_143047.json",
+        "company_compliance_readback": "applications/IFS_COMPANY_COMPLIANCE_READBACK_20260710_143531.json",
+        "targeted_local_unlock_recheck": "applications/IFS_TARGETED_UNLOCK_EVIDENCE_RECHECK_20260710_141910.json",
+        "live_drive_route_unlock_readback": "applications/IFS_LIVE_DRIVE_ROUTE_UNLOCK_READBACK_20260710_142308.json",
+        "non_p1_evidence_acquisition_register": "applications/IFS_NON_P1_EVIDENCE_ACQUISITION_REGISTER_20260710_141505.json",
+        "p2_submission_unlock_control_packet": "applications/IFS_P2_SUBMISSION_UNLOCK_CONTROL_PACKET_20260710_133012.json",
+        "formal_attachment_guard": "applications/IFS_FORMAL_ATTACHMENT_GUARD_20260710_142728.json"
+      }
+    }
+  ],
+  "controls": [
+    "No P2 IFS route is marked submit-ready.",
+    "No IFS portal field was changed.",
+    "No email, contact form, partner invitation, upload or external submission was performed.",
+    "The audit uses current Aureon evidence and readbacks; it does not invent missing academic, TTO, farm, facilitator, budget or compliance evidence."
+  ],
+  "result": "IFS_P2_STOP_GO_AUDIT_NO_GO_ALL_P2_ROUTES"
+}

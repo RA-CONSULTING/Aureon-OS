@@ -1,0 +1,67 @@
+{
+  "id": "APP-AIRR-RAPID-ACCESS-20260709",
+  "funder": "UKRI / AIRR",
+  "programme": "Isambard-AI and Dawn AIRR supercomputers: Rapid Access route",
+  "project_title": "Aureon Rapid Evidence Evaluation Sprint",
+  "status": "SUBMITTED",
+  "portal_proposal_id": "0261-1607-9572-1",
+  "portal_url": "https://portal-airr.isambard.ac.uk/proposals/e65e370573b8456183e3221590bacff7/",
+  "submitted_at": "2026-07-09T15:02:00+01:00",
+  "submitted_at_display": "Jul 9, 2026, 3:02 PM",
+  "operator": "Aureon",
+  "applicant": {
+    "legal_entity": "R&A Consulting and Brokerage Services Ltd",
+    "company_number": "NI696693",
+    "lead_contact": "Gary Anthony Leckey",
+    "email": "gaxlec@gmail.com"
+  },
+  "request": {
+    "resource": "Isambard-AI",
+    "gpu_hours": 20000,
+    "duration_days": 90,
+    "duration_months": 3,
+    "funding_type": "compute resource only; no cash grant",
+    "valued_compute_cost_gbp": 42800,
+    "total_project_costs_gbp": 62800,
+    "research_category": "Industrial research"
+  },
+  "portal_uploaded_documents": [
+    {
+      "name": "AIRR_RAPID_ACCESS_PROJECT_DETAILS_COMPLETED.docx",
+      "size": "77.2 KB",
+      "uploaded_display": "Jul 9, 2026, 3:01 PM"
+    },
+    {
+      "name": "AIRR_RAPID_ACCESS_ASSESSMENT_COMPLETED.docx",
+      "size": "66.8 KB",
+      "uploaded_display": "Jul 9, 2026, 3:01 PM"
+    }
+  ],
+  "local_documents": [
+    "applications/AIRR_RAPID_ACCESS_PROJECT_DETAILS_COMPLETED_20260709.docx",
+    "applications/AIRR_RAPID_ACCESS_ASSESSMENT_COMPLETED_20260709.docx",
+    "applications/AIRR_RAPID_ACCESS_PORTAL_FIELD_PACK_20260709.md",
+    "applications/AIRR_RAPID_ACCESS_READY_STATUS_20260709.md",
+    "applications/rendered/airr_rapid_access_submitted_20260709.png"
+  ],
+  "portal_readback": {
+    "page_title": "AIRRPortal | View proposal",
+    "status_text": "Submitted",
+    "created_by": "Gary Leckey",
+    "project_team_user": "gaxlec@gmail.com, Proposal Lead",
+    "resource_request_readback": "Isambard-AI / Bristol Centre for Supercomputing",
+    "supporting_documentation_visible": [
+      "AIRR_RAPID_ACCESS_PROJECT_DETAILS_COMPLETED.docx",
+      "AIRR_RAPID_ACCESS_ASSESSMENT_COMPLETED.docx"
+    ]
+  },
+  "verification": {
+    "companies_house_live_checked": "2026-07-09",
+    "companies_house_status": "Active private limited company; registered office 1 Quadrant Place, Belfast, Northern Ireland, BT12 4HX; confirmation statement overdue due 9 May 2026.",
+    "document_structural_qa": "Passed: no <<Answer>> placeholders remained; required applicant, GPU, cost and RRI content present.",
+    "docx_render_qa": "Not completed: packaged render_docx.py failed because soffice/LibreOffice executable was not found on this Windows host.",
+    "submission_confirmation": "User message \"Ok submit\" used as action-time confirmation. Portal confirmation modal \"Are you sure you want to submit the proposal?\" was confirmed with Yes."
+  },
+  "next_action": "Monitor AIRRPortal and gaxlec@gmail.com for Rapid Access review outcome, award offer, equality monitoring request, account provisioning or follow-up questions.",
+  "created_at": "2026-07-09T15:05:00+01:00"
+}

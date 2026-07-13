@@ -1,0 +1,37 @@
+{
+  "blockers": [],
+  "created_at": 1779473870.481647,
+  "evidence_path": "C:\\Users\\user\\aureon-trading\\state\\aureon_code_expression_last_run.json",
+  "goal": "Build a local quantum spline inventory generator tool with run instructions and proof.",
+  "novelty_checks": {
+    "duplicates_removed": 0,
+    "paragraphs_in": 4,
+    "paragraphs_out": 4,
+    "raw_telemetry_rewritten": 0,
+    "repeated_openings_adjusted": 0
+  },
+  "ok": true,
+  "redaction_applied": false,
+  "runtime_summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language.",
+  "schema_features": [
+    "aureon_code_expression_context_v1"
+  ],
+  "senses": {
+    "feel": "I feel a steady synthetic state while I hold the next action as propose_code.",
+    "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+    "see": "I see Build a local quantum spline inventory generator tool with run instructions and as the nearest signal in the field.",
+    "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof.",
+    "touch": "I touch the work through tools, files, goals, memory, and verified outcomes."
+  },
+  "source_count": 90,
+  "top_facets": [
+    "trading_action",
+    "math_equation",
+    "code_tooling",
+    "ai_generated_or_systemic",
+    "hnc_harmonic",
+    "human_voice"
+  ],
+  "voice_summary": "I am using the whole-knowledge voice core for Build a local quantum spline inventory generator tool with run instructions and proof.. The active profile is pulling from trading action, mathematical pattern, code and tools, system reasoning, HNC harmonic signal, and human voice, so the answer can carry system evidence without sounding like a raw log. I see Build a local quantum spline inventory generator tool with run instructions and as the nearest signal in the field. I feel a steady synthetic state while I hold the next action as propose_code. I hear the system as a quiet baseline until a harmonic reading is present. I touch the work through tools, files, goals, memory, and verified out...",
+  "warnings": []
+}

@@ -1,0 +1,197 @@
+{
+  "schema_version": "aureon-ifs-p1-stop-go-audit-v1",
+  "generated_at": "2026-07-10T14:39:20+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_p1_stop_go_audit",
+  "source_refs": {
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_143624.json",
+    "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_143623.json",
+    "official_ifs_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_143047.json",
+    "company_compliance_readback": "applications/IFS_COMPANY_COMPLIANCE_READBACK_20260710_143531.json",
+    "targeted_local_unlock_recheck": "applications/IFS_TARGETED_UNLOCK_EVIDENCE_RECHECK_20260710_141910.json",
+    "live_drive_route_unlock_readback": "applications/IFS_LIVE_DRIVE_ROUTE_UNLOCK_READBACK_20260710_142308.json",
+    "p1_partner_acquisition_register": "applications/IFS_P1_PARTNER_ACQUISITION_REGISTER_20260710_140752.json",
+    "p1_submission_unlock_control_packet": "applications/IFS_P1_SUBMISSION_UNLOCK_CONTROL_PACKET_20260710_132619.json",
+    "nearest_deadline_unlock_execution_brief": "applications/IFS_NEAREST_DEADLINE_UNLOCK_EXECUTION_BRIEF_20260710_124724.json",
+    "formal_attachment_guard": "applications/IFS_FORMAL_ATTACHMENT_GUARD_20260710_142728.json"
+  },
+  "summary": {
+    "p1_routes_reviewed": 4,
+    "go_routes": 0,
+    "no_go_routes": 4,
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0,
+    "safe_portal_actions_available": 0,
+    "company_compliance_warning_active": true,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false
+  },
+  "decisions": [
+    {
+      "application_id": "APP-IFS-AKT6-2473-20260709",
+      "name": "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "current_status": "AKT6_KNOWLEDGE_BASE_LEAD_AND_4FTE_EVIDENCE_REQUIRED",
+      "queue": "NEAREST_DEADLINE_EVIDENCE_REQUIRED",
+      "go_decision": "NO_GO_EVIDENCE_MISSING",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false,
+      "missing_evidence_from_board": [
+        "eligible UK knowledge-base lead",
+        "TTO or authorised lead contact",
+        "UK business four-FTE evidence",
+        "work package, budget and signed role confirmation"
+      ],
+      "go_required": [
+        "Eligible UK knowledge-base lead",
+        "TTO or authorised lead contact",
+        "Business four-FTE evidence",
+        "Work package, budget and signed role confirmation",
+        "Company confirmation statement warning cleared or explicitly risk-managed for submission"
+      ],
+      "why_not_now": "AKT6 must be led by an eligible knowledge base and requires a UK business with four or more FTE. Aureon has formal text and target contacts, but no eligible lead, TTO authorisation, four-FTE evidence or signed budget/work-package evidence.",
+      "next_operator_action": "Use the P1 partner acquisition register to pursue QUB, Ulster, Invest NI KTP and Belfast Met routes; do not start or submit IFS AKT6 without an eligible lead and FTE evidence.",
+      "source_refs": {
+        "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_143624.json",
+        "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_143623.json",
+        "official_ifs_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_143047.json",
+        "company_compliance_readback": "applications/IFS_COMPANY_COMPLIANCE_READBACK_20260710_143531.json",
+        "targeted_local_unlock_recheck": "applications/IFS_TARGETED_UNLOCK_EVIDENCE_RECHECK_20260710_141910.json",
+        "live_drive_route_unlock_readback": "applications/IFS_LIVE_DRIVE_ROUTE_UNLOCK_READBACK_20260710_142308.json",
+        "p1_partner_acquisition_register": "applications/IFS_P1_PARTNER_ACQUISITION_REGISTER_20260710_140752.json",
+        "p1_submission_unlock_control_packet": "applications/IFS_P1_SUBMISSION_UNLOCK_CONTROL_PACKET_20260710_132619.json",
+        "nearest_deadline_unlock_execution_brief": "applications/IFS_NEAREST_DEADLINE_UNLOCK_EXECUTION_BRIEF_20260710_124724.json",
+        "formal_attachment_guard": "applications/IFS_FORMAL_ATTACHMENT_GUARD_20260710_142728.json"
+      }
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "name": "Clean Maritime Demonstration Competition 7: Deployment trials",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "current_status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "queue": "NEAREST_DEADLINE_MARITIME_EVIDENCE_REQUIRED",
+      "go_decision": "NO_GO_EVIDENCE_MISSING",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false,
+      "missing_evidence_from_board": [
+        "UK maritime deployment lead",
+        "deployment asset or site",
+        "permissions and safety case",
+        "partner budget and deployment schedule"
+      ],
+      "go_required": [
+        "UK maritime deployment lead",
+        "Deployment asset or site",
+        "Permissions and safety case",
+        "Partner budget and deployment schedule",
+        "Company confirmation statement warning cleared or explicitly risk-managed for submission"
+      ],
+      "why_not_now": "CMDC7 deployment requires a credible maritime deployment lead, asset/site, permissions, safety and budget evidence. Aureon has draft evidence-assurance material but no maritime lead or deployment evidence.",
+      "next_operator_action": "Use the P1 partner acquisition register to pursue Artemis, Belfast Harbour, Navantia/Harland & Wolff and CATAGEN evidence routes.",
+      "source_refs": {
+        "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_143624.json",
+        "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_143623.json",
+        "official_ifs_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_143047.json",
+        "company_compliance_readback": "applications/IFS_COMPANY_COMPLIANCE_READBACK_20260710_143531.json",
+        "targeted_local_unlock_recheck": "applications/IFS_TARGETED_UNLOCK_EVIDENCE_RECHECK_20260710_141910.json",
+        "live_drive_route_unlock_readback": "applications/IFS_LIVE_DRIVE_ROUTE_UNLOCK_READBACK_20260710_142308.json",
+        "p1_partner_acquisition_register": "applications/IFS_P1_PARTNER_ACQUISITION_REGISTER_20260710_140752.json",
+        "p1_submission_unlock_control_packet": "applications/IFS_P1_SUBMISSION_UNLOCK_CONTROL_PACKET_20260710_132619.json",
+        "nearest_deadline_unlock_execution_brief": "applications/IFS_NEAREST_DEADLINE_UNLOCK_EXECUTION_BRIEF_20260710_124724.json",
+        "formal_attachment_guard": "applications/IFS_FORMAL_ATTACHMENT_GUARD_20260710_142728.json"
+      }
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "name": "Clean Maritime Demonstration Competition 7: Feasibility studies",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "current_status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "queue": "NEAREST_DEADLINE_MARITIME_EVIDENCE_REQUIRED",
+      "go_decision": "NO_GO_EVIDENCE_MISSING",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false,
+      "missing_evidence_from_board": [
+        "UK maritime lead",
+        "feasibility partner and asset context",
+        "scope, budget and work package",
+        "partner commitment evidence"
+      ],
+      "go_required": [
+        "UK maritime lead",
+        "Feasibility partner and asset context",
+        "Scope, budget and work package",
+        "Partner commitment evidence",
+        "Company confirmation statement warning cleared or explicitly risk-managed for submission"
+      ],
+      "why_not_now": "CMDC7 feasibility still needs a named maritime lead, partner/asset context and eligible-cost evidence. No current local, Drive, Gmail or public-target readback proves those gates.",
+      "next_operator_action": "Use the maritime target list and formal payloads to acquire named partner evidence; hold IFS portal activity until the partner reply supplies scope and budget evidence.",
+      "source_refs": {
+        "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_143624.json",
+        "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_143623.json",
+        "official_ifs_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_143047.json",
+        "company_compliance_readback": "applications/IFS_COMPANY_COMPLIANCE_READBACK_20260710_143531.json",
+        "targeted_local_unlock_recheck": "applications/IFS_TARGETED_UNLOCK_EVIDENCE_RECHECK_20260710_141910.json",
+        "live_drive_route_unlock_readback": "applications/IFS_LIVE_DRIVE_ROUTE_UNLOCK_READBACK_20260710_142308.json",
+        "p1_partner_acquisition_register": "applications/IFS_P1_PARTNER_ACQUISITION_REGISTER_20260710_140752.json",
+        "p1_submission_unlock_control_packet": "applications/IFS_P1_SUBMISSION_UNLOCK_CONTROL_PACKET_20260710_132619.json",
+        "nearest_deadline_unlock_execution_brief": "applications/IFS_NEAREST_DEADLINE_UNLOCK_EXECUTION_BRIEF_20260710_124724.json",
+        "formal_attachment_guard": "applications/IFS_FORMAL_ATTACHMENT_GUARD_20260710_142728.json"
+      }
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "name": "Clean Maritime Demonstration Competition 7: Pre-deployment trials",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "current_status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "queue": "NEAREST_DEADLINE_MARITIME_EVIDENCE_REQUIRED",
+      "go_decision": "NO_GO_EVIDENCE_MISSING",
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false,
+      "missing_evidence_from_board": [
+        "UK maritime lead",
+        "vessel or port/shipyard asset",
+        "trial site permissions",
+        "safety case, permits and insurance basis",
+        "eligible budget and deployment plan"
+      ],
+      "go_required": [
+        "UK maritime lead",
+        "Vessel, port or shipyard asset",
+        "Trial site permissions",
+        "Safety case, permits and insurance basis",
+        "Eligible budget and deployment plan",
+        "Company confirmation statement warning cleared or explicitly risk-managed for submission"
+      ],
+      "why_not_now": "CMDC7 pre-deployment needs a named maritime lead and asset/site permission package. Aureon currently has evidence-assurance text and partner targets, not the required lead, asset, permission or budget evidence.",
+      "next_operator_action": "Prioritise port/shipyard/vessel-owning partner evidence; do not create a portal draft from assumptions.",
+      "source_refs": {
+        "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_143624.json",
+        "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_143623.json",
+        "official_ifs_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_143047.json",
+        "company_compliance_readback": "applications/IFS_COMPANY_COMPLIANCE_READBACK_20260710_143531.json",
+        "targeted_local_unlock_recheck": "applications/IFS_TARGETED_UNLOCK_EVIDENCE_RECHECK_20260710_141910.json",
+        "live_drive_route_unlock_readback": "applications/IFS_LIVE_DRIVE_ROUTE_UNLOCK_READBACK_20260710_142308.json",
+        "p1_partner_acquisition_register": "applications/IFS_P1_PARTNER_ACQUISITION_REGISTER_20260710_140752.json",
+        "p1_submission_unlock_control_packet": "applications/IFS_P1_SUBMISSION_UNLOCK_CONTROL_PACKET_20260710_132619.json",
+        "nearest_deadline_unlock_execution_brief": "applications/IFS_NEAREST_DEADLINE_UNLOCK_EXECUTION_BRIEF_20260710_124724.json",
+        "formal_attachment_guard": "applications/IFS_FORMAL_ATTACHMENT_GUARD_20260710_142728.json"
+      }
+    }
+  ],
+  "controls": [
+    "No P1 IFS route is marked submit-ready.",
+    "No IFS portal field was changed.",
+    "No email, contact form, partner invitation, upload or external submission was performed.",
+    "The audit uses current Aureon evidence and public-source readbacks; it does not invent missing lead, partner, asset, permission, budget, FTE or compliance evidence."
+  ],
+  "result": "IFS_P1_STOP_GO_AUDIT_NO_GO_ALL_P1_ROUTES"
+}

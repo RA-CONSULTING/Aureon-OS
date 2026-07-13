@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-07-09T07:13:29+01:00",
+  "application_id": "APP-IFS-FLF-R11-2499-20260709",
+  "competition": "Future Leaders Fellowships: Round 11, business and non-academic",
+  "portal": "Innovation Funding Service",
+  "portal_url": "https://apply-for-innovation-funding.service.gov.uk/application/create/start-application/2499",
+  "status": "SUPERSEDED_BY_EXISTING_IFS_ACCOUNT_APPLICATION_10209992",
+  "superseded_by": {
+    "account_email": "gaxlec@gmail.com",
+    "ifs_application_number": "10209992",
+    "portal_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209992",
+    "status_file": "IFS_FUTURE_LEADERS_R11_10209992_DRAFT_STATUS_20260709.json"
+  },
+  "lead_organisation": {
+    "name": "R&A Consulting and Brokerage Services Ltd",
+    "company_number": "NI696693",
+    "type": "Business",
+    "uk_based": true
+  },
+  "account_form": {
+    "first_name": "Gary",
+    "last_name": "Leckey",
+    "phone": "07547743773",
+    "email": "superseded by existing gaxlec@gmail.com IFS account",
+    "password_rules_passed": true,
+    "terms_checkbox_tick": true,
+    "password_stored_in_receipt": false
+  },
+  "evidence": [
+    "rendered/flf_ifs_account_ready_20260709.png",
+    "IFS_FUTURE_LEADERS_R11_AUREON_PACK_20260709.md",
+    "IFS_FUTURE_LEADERS_R11_AUREON_PACK_20260709.json",
+    "IFS_FUTURE_LEADERS_R11_AUREON_PACK_20260709.pdf"
+  ],
+  "next_action": "Resume IFS application 10209992 in the existing gaxlec@gmail.com account; complete subsidy basis, project finances, finances overview, award terms and conditions, and final review.",
+  "final_submission_boundary": "Do not final-submit FLF until host, eligibility, finance, and cost declarations are factual and complete."
+}

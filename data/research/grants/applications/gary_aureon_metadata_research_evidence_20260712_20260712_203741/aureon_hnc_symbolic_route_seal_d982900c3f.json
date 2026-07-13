@@ -1,0 +1,434 @@
+{
+  "acceptance": {
+    "all_sample_routes_valid": true,
+    "catalogs_present": 5,
+    "packet_tamper_effect": "route changes alter the HNC alignment hash and packet hash before decode",
+    "symbol_count": 114
+  },
+  "catalog_manifest": {
+    "catalog_manifest_sha256": "45987210d183d88b14258080ec4126cdddc6c850ee8f993d70b164061a1bb109",
+    "catalogs": {
+      "auris_symbols": {
+        "json_valid": true,
+        "modified_at": "2026-05-08T09:18:00.552651+00:00",
+        "name": "auris_symbols",
+        "path": "public/auris_symbols.json",
+        "present": true,
+        "schema": null,
+        "sha256": "3179aa4e0834b0b5bf7849ad6066b46fe5a82469f17cd272f1d28b4e6ab099dd",
+        "size_bytes": 2036,
+        "symbol_count": 8
+      },
+      "aztec_star_glyphs": {
+        "json_valid": true,
+        "modified_at": "2026-05-08T09:18:00.552651+00:00",
+        "name": "aztec_star_glyphs",
+        "path": "public/aztec-star-glyphs.json",
+        "present": true,
+        "schema": null,
+        "sha256": "4890836f3182d4b99d47a536659c97e66022fa95f7ba211bffe94ca103c3bfb5",
+        "size_bytes": 23465,
+        "symbol_count": 30
+      },
+      "elder_futhark_runes": {
+        "json_valid": true,
+        "modified_at": "2026-05-08T09:18:00.611657+00:00",
+        "name": "elder_futhark_runes",
+        "path": "public/elder-futhark-runes.json",
+        "present": true,
+        "schema": "elder-futhark-runes-star-chart",
+        "sha256": "01488f7602f06378c4a8a497458ce19a934dbae2b16dfb88852593ec6ba7e377",
+        "size_bytes": 21403,
+        "symbol_count": 24
+      },
+      "japanese_star_symbols": {
+        "json_valid": true,
+        "modified_at": "2026-05-08T09:18:00.667959+00:00",
+        "name": "japanese_star_symbols",
+        "path": "public/japanese-star-symbols.json",
+        "present": true,
+        "schema": null,
+        "sha256": "96f5ad12085d9efa9b5a5659257cc6b1abf54f351034e782ea41ed07985cec1f",
+        "size_bytes": 25180,
+        "symbol_count": 28
+      },
+      "mogollon_star_symbols": {
+        "json_valid": true,
+        "modified_at": "2026-05-08T09:18:00.693475+00:00",
+        "name": "mogollon_star_symbols",
+        "path": "public/mogollon-star-symbols.json",
+        "present": true,
+        "schema": null,
+        "sha256": "219187d5db4862c1038bf392bdafb13e873a82d94932fb16bf48b47dff884fd5",
+        "size_bytes": 23365,
+        "symbol_count": 24
+      }
+    },
+    "generated_at": "2026-05-14T20:00:43.961240+00:00",
+    "provenance": {
+      "civilizational_dna": {
+        "modified_at": "2026-05-08T09:17:55.023932+00:00",
+        "name": "civilizational_dna",
+        "path": "aureon/wisdom/civilizational_dna.py",
+        "present": true,
+        "sha256": "7c3e0ab37c430f932fa6ec7b9ea0ca7632fc2379b2484325daab722c76c2617d",
+        "size_bytes": 50004
+      },
+      "maeshowe_seer_decode": {
+        "modified_at": "2026-05-08T09:17:55.030803+00:00",
+        "name": "maeshowe_seer_decode",
+        "path": "aureon/wisdom/maeshowe_seer_decode.py",
+        "present": true,
+        "sha256": "77326617cd6caf44b1e0fedd930190b6dc009375733e7bce29df3443fea0b558",
+        "size_bytes": 66896
+      },
+      "tandem_in_unity_v1": {
+        "modified_at": "2026-05-08T09:17:56.397831+00:00",
+        "name": "tandem_in_unity_v1",
+        "path": "docs/research/whitepapers/Tandem_in_Unity_Unifying_Resonant_Fields_v1.pdf",
+        "present": true,
+        "sha256": "ec0f7df7ba7cf632d7508942e93b8f247d934522a253a3c9afc7333eddfbe2a5",
+        "size_bytes": 162997
+      },
+      "tandem_in_unity_v2": {
+        "modified_at": "2026-05-08T09:17:56.397831+00:00",
+        "name": "tandem_in_unity_v2",
+        "path": "docs/research/whitepapers/Tandem_in_Unity_Unifying_Resonant_Fields_v2.pdf",
+        "present": true,
+        "sha256": "6ada121bd7d741d4ef7e0ab2d1614c89b35d3402ff4cba33964fa61c075d2093",
+        "size_bytes": 336847
+      }
+    },
+    "schema_version": "aureon-hnc-symbolic-route-seal-v1",
+    "security_boundary": {
+      "does_not_replace": "AES-GCM, HKDF, DPAPI, KMS, HSM, OS permissions, or key custody",
+      "not_a_secret": true,
+      "role": "authenticated_symbolic_context_and_route_selection"
+    },
+    "summary": {
+      "catalog_count": 5,
+      "catalogs_present": 5,
+      "provenance_count": 4,
+      "provenance_present": 4,
+      "symbol_count": 114
+    }
+  },
+  "generated_at": "2026-05-14T20:00:43.972800+00:00",
+  "sample_routes": [
+    {
+      "purpose": "repo:singularity_vault",
+      "route": {
+        "caller_voice": "operator_intent",
+        "emergent_route_rule": "meaning_exists_when_caller_and_seer_are_bound_by_authenticated_context",
+        "maeshowe_protocol": {
+          "caller": "L(t)_identity_function",
+          "role": "two_voice_route_model",
+          "seer": "O(t)_present_observation",
+          "source": "aureon/wisdom/maeshowe_seer_decode.py"
+        },
+        "seer_voice": "present_observation",
+        "selected_auris_symbol": {
+          "domain": null,
+          "id": "\u221e",
+          "meaning": "Infinite balance, grounding, prime field stabilizer",
+          "name": "\u221e",
+          "source_index": 0,
+          "trading_signal": null,
+          "unicode": null
+        },
+        "selected_rune": {
+          "domain": "cycles",
+          "id": "jera",
+          "meaning": "Year, harvest, cycles, reward for labor, natural timing",
+          "name": "Jera",
+          "source_index": 11,
+          "trading_signal": {
+            "bias": "BUY",
+            "domain": "cycles",
+            "strength": 0.7
+          },
+          "unicode": "\u16c3"
+        },
+        "selected_star_symbols": {
+          "aztec": {
+            "domain": "crypto_stocks",
+            "id": "aztec_tochtli",
+            "meaning": "Rabbit",
+            "name": "Tochtli",
+            "source_index": 7,
+            "trading_signal": {
+              "bias": "BUY",
+              "domain": "crypto_stocks",
+              "strength": 0.78
+            },
+            "unicode": null
+          },
+          "japanese": {
+            "domain": "crypto_stocks",
+            "id": "jp_moku_wood",
+            "meaning": "Growth, spring, expansion, the liver, the dragon, the colour green",
+            "name": "Moku (\u6728) \u2014 Wood Phase",
+            "source_index": 14,
+            "trading_signal": {
+              "bias": "BUY",
+              "domain": "crypto_stocks",
+              "strength": 0.76
+            },
+            "unicode": null
+          },
+          "mogollon": {
+            "domain": "stocks",
+            "id": "mogollon_mimbres_turtle",
+            "meaning": "Turtle carries the world \u2014 the Turtle Island creation story, patience and foundation",
+            "name": "Mimbres Turtle Bowl",
+            "source_index": 22,
+            "trading_signal": {
+              "bias": "BUY",
+              "domain": "stocks",
+              "strength": 0.8
+            },
+            "unicode": null
+          }
+        },
+        "threshold_layer": "threshold_people_crossing_from_observation_to_authenticated_action"
+      },
+      "route_seal_sha256": "261c5a51589d9e6249e294f9efa0e85e4cfda5ec7d5498d47df0364b480ef8e8",
+      "summary": {
+        "auris_symbol": "\u221e",
+        "catalog_manifest_sha256": "45987210d183d88b14258080ec4126cdddc6c850ee8f993d70b164061a1bb109",
+        "purpose": "repo:singularity_vault",
+        "reasons": [],
+        "route_seal_sha256": "261c5a51589d9e6249e294f9efa0e85e4cfda5ec7d5498d47df0364b480ef8e8",
+        "rune": "Jera",
+        "security_boundary": "authenticated_context_not_secret_key_material",
+        "star_symbols": {
+          "aztec": "Tochtli",
+          "japanese": "Moku (\u6728) \u2014 Wood Phase",
+          "mogollon": "Mimbres Turtle Bowl"
+        },
+        "threshold_layer": "threshold_people_crossing_from_observation_to_authenticated_action",
+        "valid": true
+      },
+      "validation": {
+        "catalog_manifest_sha256": "45987210d183d88b14258080ec4126cdddc6c850ee8f993d70b164061a1bb109",
+        "purpose": "repo:singularity_vault",
+        "reasons": [],
+        "route_seal_sha256": "261c5a51589d9e6249e294f9efa0e85e4cfda5ec7d5498d47df0364b480ef8e8",
+        "valid": true
+      }
+    },
+    {
+      "purpose": "env:exchange_credential_packet",
+      "route": {
+        "caller_voice": "operator_intent",
+        "emergent_route_rule": "meaning_exists_when_caller_and_seer_are_bound_by_authenticated_context",
+        "maeshowe_protocol": {
+          "caller": "L(t)_identity_function",
+          "role": "two_voice_route_model",
+          "seer": "O(t)_present_observation",
+          "source": "aureon/wisdom/maeshowe_seer_decode.py"
+        },
+        "seer_voice": "present_observation",
+        "selected_auris_symbol": {
+          "domain": null,
+          "id": "\u2b50",
+          "meaning": "Starlight resonance, connection to Source, crown ignition",
+          "name": "\u2b50",
+          "source_index": 4,
+          "trading_signal": null,
+          "unicode": null
+        },
+        "selected_rune": {
+          "domain": "accumulation",
+          "id": "fehu",
+          "meaning": "Wealth, abundance, new beginnings, mobile property",
+          "name": "Fehu",
+          "source_index": 0,
+          "trading_signal": {
+            "bias": "BUY",
+            "domain": "accumulation",
+            "strength": 0.75
+          },
+          "unicode": "\u16a0"
+        },
+        "selected_star_symbols": {
+          "aztec": {
+            "domain": "crypto_stocks",
+            "id": "aztec_xiuhmolpilli",
+            "meaning": "Binding of Years / 52-Year Cycle",
+            "name": "Xiuhmolpilli (New Fire Ceremony)",
+            "source_index": 26,
+            "trading_signal": {
+              "bias": "BUY",
+              "domain": "crypto_stocks",
+              "strength": 0.82
+            },
+            "unicode": null
+          },
+          "japanese": {
+            "domain": "crypto_stocks",
+            "id": "jp_enso",
+            "meaning": "The Zen circle \u2014 drawn in a single brushstroke, represents enlightenment, the universe, the void",
+            "name": "Ens\u014d (\u5186\u76f8)",
+            "source_index": 27,
+            "trading_signal": {
+              "bias": "HOLD",
+              "domain": "crypto_stocks",
+              "strength": 0.55
+            },
+            "unicode": null
+          },
+          "mogollon": {
+            "domain": "crypto_stocks",
+            "id": "mogollon_medicine_wheel",
+            "meaning": "28 spokes radiating from central cairn \u2014 lunar month, aligned to solstice and star risings",
+            "name": "Medicine Wheel (Bighorn)",
+            "source_index": 17,
+            "trading_signal": {
+              "bias": "HOLD",
+              "domain": "crypto_stocks",
+              "strength": 0.52
+            },
+            "unicode": null
+          }
+        },
+        "threshold_layer": "threshold_people_crossing_from_observation_to_authenticated_action"
+      },
+      "route_seal_sha256": "e0b4194d1f415966923599ba9f3378c2cffeb0b13b2c54b79189a375637c6ce4",
+      "summary": {
+        "auris_symbol": "\u2b50",
+        "catalog_manifest_sha256": "45987210d183d88b14258080ec4126cdddc6c850ee8f993d70b164061a1bb109",
+        "purpose": "env:exchange_credential_packet",
+        "reasons": [],
+        "route_seal_sha256": "e0b4194d1f415966923599ba9f3378c2cffeb0b13b2c54b79189a375637c6ce4",
+        "rune": "Fehu",
+        "security_boundary": "authenticated_context_not_secret_key_material",
+        "star_symbols": {
+          "aztec": "Xiuhmolpilli (New Fire Ceremony)",
+          "japanese": "Ens\u014d (\u5186\u76f8)",
+          "mogollon": "Medicine Wheel (Bighorn)"
+        },
+        "threshold_layer": "threshold_people_crossing_from_observation_to_authenticated_action",
+        "valid": true
+      },
+      "validation": {
+        "catalog_manifest_sha256": "45987210d183d88b14258080ec4126cdddc6c850ee8f993d70b164061a1bb109",
+        "purpose": "env:exchange_credential_packet",
+        "reasons": [],
+        "route_seal_sha256": "e0b4194d1f415966923599ba9f3378c2cffeb0b13b2c54b79189a375637c6ce4",
+        "valid": true
+      }
+    },
+    {
+      "purpose": "trading:decision_route",
+      "route": {
+        "caller_voice": "operator_intent",
+        "emergent_route_rule": "meaning_exists_when_caller_and_seer_are_bound_by_authenticated_context",
+        "maeshowe_protocol": {
+          "caller": "L(t)_identity_function",
+          "role": "two_voice_route_model",
+          "seer": "O(t)_present_observation",
+          "source": "aureon/wisdom/maeshowe_seer_decode.py"
+        },
+        "seer_voice": "present_observation",
+        "selected_auris_symbol": {
+          "domain": null,
+          "id": "\u25ca",
+          "meaning": "Diamond resonance, cellular repair, lattice harmonization",
+          "name": "\u25ca",
+          "source_index": 1,
+          "trading_signal": null,
+          "unicode": null
+        },
+        "selected_rune": {
+          "domain": "constraint",
+          "id": "nauthiz",
+          "meaning": "Need, constraint, friction, the need-fire, necessity as teacher",
+          "name": "Nauthiz",
+          "source_index": 9,
+          "trading_signal": {
+            "bias": "HOLD",
+            "domain": "constraint",
+            "strength": 0.3
+          },
+          "unicode": "\u16be"
+        },
+        "selected_star_symbols": {
+          "aztec": {
+            "domain": "crypto_stocks",
+            "id": "aztec_venus_cycle",
+            "meaning": "Morning Star Lord / Venus-Sun Synodic Cycle",
+            "name": "Venus Cycle (Tlahuizcalpantecuhtli)",
+            "source_index": 25,
+            "trading_signal": {
+              "bias": "BUY",
+              "domain": "crypto_stocks",
+              "strength": 0.85
+            },
+            "unicode": null
+          },
+          "japanese": {
+            "domain": "crypto_stocks",
+            "id": "jp_enso",
+            "meaning": "The Zen circle \u2014 drawn in a single brushstroke, represents enlightenment, the universe, the void",
+            "name": "Ens\u014d (\u5186\u76f8)",
+            "source_index": 27,
+            "trading_signal": {
+              "bias": "HOLD",
+              "domain": "crypto_stocks",
+              "strength": 0.55
+            },
+            "unicode": null
+          },
+          "mogollon": {
+            "domain": "crypto_stocks",
+            "id": "mogollon_gila_cliff_dwelling",
+            "meaning": "Five natural caves with 40 rooms \u2014 south-facing alcoves capture winter solstice sunlight deep into the caves",
+            "name": "Gila Cliff Dwellings",
+            "source_index": 21,
+            "trading_signal": {
+              "bias": "BUY",
+              "domain": "crypto_stocks",
+              "strength": 0.75
+            },
+            "unicode": null
+          }
+        },
+        "threshold_layer": "threshold_people_crossing_from_observation_to_authenticated_action"
+      },
+      "route_seal_sha256": "656f5945e295259a4e61cecffdd2704db223cc5a923b6423b79b512433336696",
+      "summary": {
+        "auris_symbol": "\u25ca",
+        "catalog_manifest_sha256": "45987210d183d88b14258080ec4126cdddc6c850ee8f993d70b164061a1bb109",
+        "purpose": "trading:decision_route",
+        "reasons": [],
+        "route_seal_sha256": "656f5945e295259a4e61cecffdd2704db223cc5a923b6423b79b512433336696",
+        "rune": "Nauthiz",
+        "security_boundary": "authenticated_context_not_secret_key_material",
+        "star_symbols": {
+          "aztec": "Venus Cycle (Tlahuizcalpantecuhtli)",
+          "japanese": "Ens\u014d (\u5186\u76f8)",
+          "mogollon": "Gila Cliff Dwellings"
+        },
+        "threshold_layer": "threshold_people_crossing_from_observation_to_authenticated_action",
+        "valid": true
+      },
+      "validation": {
+        "catalog_manifest_sha256": "45987210d183d88b14258080ec4126cdddc6c850ee8f993d70b164061a1bb109",
+        "purpose": "trading:decision_route",
+        "reasons": [],
+        "route_seal_sha256": "656f5945e295259a4e61cecffdd2704db223cc5a923b6423b79b512433336696",
+        "valid": true
+      }
+    }
+  ],
+  "schema_version": "aureon-hnc-symbolic-route-report-v1",
+  "secret_policy": "metadata_only_no_secret_values",
+  "security_boundary": {
+    "does_not_replace": "AES-GCM, HKDF, DPAPI, Windows Credential Manager, KMS, HSM, or OS permissions",
+    "not_a_cipher": true,
+    "not_a_secret_store": true,
+    "role": "authenticated symbolic packet metadata"
+  },
+  "status": "symbolic_route_seal_ready"
+}

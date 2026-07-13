@@ -1,0 +1,640 @@
+{
+  "civilization": "Hindu Vedic",
+  "last_updated": "2025-12-30T17:28:37.975458",
+  "version": "1.0.0",
+  "sources": [
+    "hardcoded",
+    "wikipedia"
+  ],
+  "topics": [
+    {
+      "name": "Karma - Action and Consequence",
+      "content": "Every action creates future results - the law of cause and effect governing existence",
+      "trading_insight": "Position consequences compound. Every trade creates future karma - good entries lead to good outcomes.",
+      "source": "hardcoded",
+      "relevance_score": 0.95
+    },
+    {
+      "name": "Dharma - Righteous Path",
+      "content": "Cosmic order, proper action aligned with purpose and duty",
+      "trading_insight": "Following your system is your dharma. Discipline over impulse. Honor your trading plan.",
+      "source": "hardcoded",
+      "relevance_score": 0.9
+    },
+    {
+      "name": "Maya - Seeing Through Illusion",
+      "content": "The world of appearances obscuring deeper reality",
+      "trading_insight": "Market deception is maya. See through noise to signal. Headlines are illusion.",
+      "source": "hardcoded",
+      "relevance_score": 0.85
+    },
+    {
+      "name": "Kalachakra - Wheel of Time",
+      "content": "Cycles within cycles at all scales - time's eternal wheel turning",
+      "trading_insight": "Multiple timeframe analysis reveals nested cycles. Daily within weekly within monthly.",
+      "source": "hardcoded",
+      "relevance_score": 0.9
+    },
+    {
+      "name": "Satya Yuga - Golden Age",
+      "content": "Age of truth and virtue, maximum dharma, prosperity reigns",
+      "trading_insight": "Bull market, high trust, growth phase. Accumulate and ride the trend.",
+      "source": "hardcoded",
+      "relevance_score": 0.8
+    },
+    {
+      "name": "Kali Yuga - Dark Age",
+      "content": "Age of strife and discord, minimum virtue, destruction before renewal",
+      "trading_insight": "Bear market, fear dominates. But the Vedas say: This too shall pass. Accumulate quality.",
+      "source": "hardcoded",
+      "relevance_score": 0.85
+    },
+    {
+      "name": "Chakra Energy Centers",
+      "content": "Seven energy centers from root to crown, representing different levels of consciousness",
+      "trading_insight": "Market has chakras too: Root (fundamentals), Heart (sentiment), Crown (institutional flow).",
+      "source": "hardcoded",
+      "relevance_score": 0.75
+    },
+    {
+      "name": "Prana - Life Force",
+      "content": "Vital energy flowing through all living things, breath of life",
+      "trading_insight": "Volume is market prana. Without volume, price movement is false. Follow the breath.",
+      "source": "hardcoded",
+      "relevance_score": 0.8
+    }
+  ],
+  "core_principles": {
+    "karma": {
+      "description": "Action and consequence - every action creates future results",
+      "trading_application": "Position consequences, compound effects of decisions",
+      "confidence": 0.95
+    },
+    "dharma": {
+      "description": "Righteous duty, cosmic order, proper action aligned with purpose",
+      "trading_application": "Following your system, discipline over impulse",
+      "confidence": 0.9
+    },
+    "maya": {
+      "description": "Illusion - the world of appearances obscuring deeper reality",
+      "trading_application": "Market deception, seeing through noise to signal",
+      "confidence": 0.85
+    },
+    "kalachakra": {
+      "description": "Wheel of time - cycles within cycles at all scales",
+      "trading_application": "Multiple timeframe analysis, nested cycles",
+      "confidence": 0.9
+    }
+  },
+  "yugas_world_ages": {
+    "satya_yuga": {
+      "duration": 1728000,
+      "virtue_percentage": 100,
+      "description": "Golden age of truth and virtue",
+      "market_analog": "Bull market, high trust"
+    },
+    "treta_yuga": {
+      "duration": 1296000,
+      "virtue_percentage": 75,
+      "description": "Silver age, virtue diminishes",
+      "market_analog": "Late cycle, deterioration begins"
+    },
+    "dvapara_yuga": {
+      "duration": 864000,
+      "virtue_percentage": 50,
+      "description": "Bronze age, equal virtue and vice",
+      "market_analog": "Volatile transition, uncertainty"
+    },
+    "kali_yuga": {
+      "duration": 432000,
+      "virtue_percentage": 25,
+      "description": "Iron age, strife and degradation",
+      "market_analog": "Bear market, fear dominates"
+    }
+  },
+  "vedic_mathematics": {
+    "sacred_numbers": {
+      "0": "Shunya - void, potential, infinity",
+      "1": "Brahman - unity, source",
+      "3": "Trimurti (Brahma, Vishnu, Shiva)",
+      "7": "Sacred number (chakras, rishis, days)",
+      "9": "Completeness, Durga's days",
+      "108": "Sacred number (mala beads, names of gods)"
+    },
+    "vedic_squares": {
+      "description": "Patterns in number multiplication revealing cosmic order",
+      "application": "Pattern recognition in price data"
+    }
+  },
+  "cosmic_structure": {
+    "trimurti": {
+      "brahma": {
+        "role": "Creator",
+        "market": "New trends, IPOs, innovation"
+      },
+      "vishnu": {
+        "role": "Preserver",
+        "market": "Trend continuation, stability"
+      },
+      "shiva": {
+        "role": "Destroyer",
+        "market": "Crashes, regime change, transformation"
+      }
+    },
+    "gunas": {
+      "sattva": {
+        "quality": "Purity, harmony",
+        "market": "Balanced, trending"
+      },
+      "rajas": {
+        "quality": "Activity, passion",
+        "market": "Volatile, active"
+      },
+      "tamas": {
+        "quality": "Inertia, darkness",
+        "market": "Stagnant, consolidation"
+      }
+    }
+  },
+  "jyotish_astrology": {
+    "navagrahas": {
+      "surya": "Sun - authority, government",
+      "chandra": "Moon - mind, emotions, public",
+      "mangala": "Mars - energy, conflict, metals",
+      "budha": "Mercury - communication, trade",
+      "guru": "Jupiter - expansion, wisdom, banking",
+      "shukra": "Venus - luxury, arts, pleasure",
+      "shani": "Saturn - discipline, restriction, time",
+      "rahu": "North Node - obsession, innovation",
+      "ketu": "South Node - spirituality, release"
+    },
+    "dashas": {
+      "description": "Planetary periods governing life phases",
+      "application": "Long-term cycle timing"
+    }
+  },
+  "philosophical_texts": {
+    "bhagavad_gita": "Duty without attachment to results",
+    "upanishads": "Ultimate reality beyond appearances",
+    "rigveda": "Cosmic order through sacrifice and hymns",
+    "arthashastra": "Ancient treatise on economics and statecraft"
+  },
+  "wikipedia_topics": [
+    "Vedas",
+    "Hinduism",
+    "Karma",
+    "Dharma",
+    "Yuga",
+    "Hindu astrology",
+    "Bhagavad Gita",
+    "Upanishads",
+    "Hindu cosmology",
+    "Arthashastra"
+  ],
+  "learned_insights": [
+    {
+      "source": "Sacred-Texts",
+      "civilization": "hindu",
+      "topic": "Hinduism",
+      "content": "There are four Vedas, the Rig Veda, Sama Veda, Yajur Veda and Atharva Veda.\n The Vedas are the primary texts of Hinduism.\n They also had a vast influence on Buddhism, Jainism, and Sikhism.\n Traditionally the text of the Vedas was coeval with the universe.\n Scholars have determined that the Rig Veda, the oldest of the four Vedas, was\n composed about 1500 B.C., and codified about 600 B.C.\n It is unk",
+      "relevance_score": 0.8881513480296094,
+      "trading_application": "Ancient hindu wisdom for market understanding",
+      "timestamp": "2025-12-15T10:24:52.286934",
+      "content_hash": "063e76a7380f55db42e17374f4f87c98"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "hindu",
+      "topic": "Hinduism",
+      "content": "The Vedas contain hymns, incantations, and rituals from ancient\n India.  Along withthe Book of the Dead,\n theEnuma Elish,\n theI Ching,\n and theAvesta, they are among\n the most ancient religious texts still in existence.\n Besides their spiritual value, they also give a unique\n view of everyday life in India four thousand years ago.\n The Vedas are also the most ancient extensive texts in\n an Indo-Eu",
+      "relevance_score": 0.8248378097908047,
+      "trading_application": "Ancient hindu wisdom for market understanding",
+      "timestamp": "2025-12-15T10:24:52.286959",
+      "content_hash": "043d5d59bada763338ecbe647c490857"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "hindu",
+      "topic": "Hinduism",
+      "content": "The Rig-Vedatranslated byRalph Griffith[1896]A complete English translation of the Rig Veda.Rig-Veda (Sanskrit)The complete Rig Veda in Sanskrit, in Unicode Devanagari script and standard romanization.",
+      "relevance_score": 0.7244618004645834,
+      "trading_application": "Ancient hindu wisdom for market understanding",
+      "timestamp": "2025-12-15T10:24:52.286966",
+      "content_hash": "4bd5b0036ef0c70b7aabc7b8549e76f9"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "hindu",
+      "topic": "Hinduism",
+      "content": "A Vedic Reader for Students(excerpts)byA.A. Macdonell[1917]An introduction to the Dramatis Personæ of the Rig Veda.",
+      "relevance_score": 0.8028359890102336,
+      "trading_application": "Ancient hindu wisdom for market understanding",
+      "timestamp": "2025-12-15T10:24:52.286970",
+      "content_hash": "e57846e68066470f9bc2712bdf5e13fc"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "hindu",
+      "topic": "Hinduism",
+      "content": "The Sama-Vedatranslated byRalph Griffith[1895]A collection of hymns used by the priests during the Soma sacrifice.Many of these duplicate in part or in whole hymns from the Rig Veda.\n This is a complete translation.",
+      "relevance_score": 0.6171373684803113,
+      "trading_application": "Ancient hindu wisdom for market understanding",
+      "timestamp": "2025-12-15T10:24:52.286974",
+      "content_hash": "0f446bb3458dc6677296d8bd376993e6"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "hindu",
+      "topic": "Hinduism",
+      "content": "There are four Vedas, the Rig Veda, Sama Veda, Yajur Veda and Atharva Veda.\n The Vedas are the primary texts of Hinduism.\n They also had a vast influence on Buddhism, Jainism, and Sikhism.\n Traditionally the text of the Vedas was coeval with the universe.\n Scholars have determined that the Rig Veda, the oldest of the four Vedas, was\n composed about 1500 B.C., and codified about 600 B.C.\n It is unk",
+      "relevance_score": 0.8871573251156832,
+      "trading_application": "Ancient hindu wisdom for market understanding",
+      "timestamp": "2025-12-25T19:41:27.556331",
+      "content_hash": "063e76a7380f55db42e17374f4f87c98"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "hindu",
+      "topic": "Hinduism",
+      "content": "The Vedas contain hymns, incantations, and rituals from ancient\n India.  Along withthe Book of the Dead,\n theEnuma Elish,\n theI Ching,\n and theAvesta, they are among\n the most ancient religious texts still in existence.\n Besides their spiritual value, they also give a unique\n view of everyday life in India four thousand years ago.\n The Vedas are also the most ancient extensive texts in\n an Indo-Eu",
+      "relevance_score": 0.875610174670304,
+      "trading_application": "Ancient hindu wisdom for market understanding",
+      "timestamp": "2025-12-25T19:41:27.556357",
+      "content_hash": "043d5d59bada763338ecbe647c490857"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "hindu",
+      "topic": "Hinduism",
+      "content": "The Rig-Vedatranslated byRalph Griffith[1896]A complete English translation of the Rig Veda.Rig-Veda (Sanskrit)The complete Rig Veda in Sanskrit, in Unicode Devanagari script and standard romanization.",
+      "relevance_score": 0.8247265837989897,
+      "trading_application": "Ancient hindu wisdom for market understanding",
+      "timestamp": "2025-12-25T19:41:27.556363",
+      "content_hash": "4bd5b0036ef0c70b7aabc7b8549e76f9"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "hindu",
+      "topic": "Hinduism",
+      "content": "A Vedic Reader for Students(excerpts)byA.A. Macdonell[1917]An introduction to the Dramatis Personæ of the Rig Veda.",
+      "relevance_score": 0.6763126471198975,
+      "trading_application": "Ancient hindu wisdom for market understanding",
+      "timestamp": "2025-12-25T19:41:27.556368",
+      "content_hash": "e57846e68066470f9bc2712bdf5e13fc"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "hindu",
+      "topic": "Hinduism",
+      "content": "The Sama-Vedatranslated byRalph Griffith[1895]A collection of hymns used by the priests during the Soma sacrifice.Many of these duplicate in part or in whole hymns from the Rig Veda.\n This is a complete translation.",
+      "relevance_score": 0.6780650624790395,
+      "trading_application": "Ancient hindu wisdom for market understanding",
+      "timestamp": "2025-12-25T19:41:27.556373",
+      "content_hash": "0f446bb3458dc6677296d8bd376993e6"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Vedas",
+      "content": "The Vedas ( or ; Sanskrit: वेदः, romanized: Vēdaḥ, lit. 'knowledge'), sometimes collectively called the Veda, are a large body of religious texts originating in ancient India. Composed in Vedic Sanskrit, the texts constitute the oldest layer of Sanskrit literature and the oldest scriptures of Hinduism.\nThere are four Vedas: the Rigveda, the Yajurveda, the Samaveda and the Atharvaveda. Each Veda has four subdivisions – the Samhitas (mantras and benedictions), the Brahmanas (commentaries on and ex",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from hindu tradition",
+      "timestamp": "2025-12-25T19:51:56.354701",
+      "content_hash": "a656f812e663994b78c97f4c2b2b5beb"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Vedas",
+      "content": "== Etymology and usage ==\nThe Sanskrit word véda \"knowledge, wisdom\" is derived from the root vid- \"to know\". This is reconstructed as being derived from the Proto-Indo-European root *weyd-, meaning \"see\" or \"know\".\nThe noun is from Proto-Indo-European *weydos, cognate to Greek (ϝ)εἶδος \"aspect\", \"form\" . This is not to be confused with the homonymous 1st and 3rd person singular perfect tense véda, cognate to Greek (ϝ)οἶδα ((w)oida) \"I know\". Root cognates are Greek ἰδέα, English wit, Latin vide",
+      "relevance_score": 0.6,
+      "trading_application": "Commercial patterns and value exchange",
+      "timestamp": "2025-12-25T19:51:56.354794",
+      "content_hash": "ba53bee4e9b6394a767ab15c8934740e"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Vedas",
+      "content": "These classifications are often not tenable for linguistic and formal reasons: There is not only one collection at any one time, but rather several handed down in separate Vedic schools; Upanişads [...] are sometimes not to be distinguished from Āraṇyakas [...]; Brāhmaṇas contain older strata of language attributed to the Saṃhitās; there are various dialects and locally prominent traditions of the Vedic schools. Nevertheless, it is advisable to stick to the division adopted by Max Müller because",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from hindu tradition",
+      "timestamp": "2025-12-25T19:51:56.355009",
+      "content_hash": "9e7eaa8ecf37d8786431058806d57cb3"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Yuga",
+      "content": "Yoga (UK: , US: ; Sanskrit: योग 'yoga' [joːɡɐ] ; lit. 'yoke'  or 'union') is a group of physical, mental, and spiritual practices or disciplines that originated with its own philosophy in ancient India, aimed at controlling body and mind to attain liberation (moksha), as practiced in the Hindu, Jain, and Buddhist traditions. Modern forms of Yoga are practiced worldwide, often entailing posture-based physical fitness, stress-relief and relaxation technique.\nYoga may have pre-Vedic origins, but is",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:52:15.524717",
+      "content_hash": "f50fc5b01cc9d35ba712ce67fd76f2ec"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Yuga",
+      "content": "Richard King (1999): \"Yoga in the more traditional sense of the term has been practised throughout South Asia and beyond and involves a multitude of techniques leading to spiritual and ethical purification. Hindu and Buddhist traditions alike place a great deal of emphasis upon the practice of yoga as a means of attaining liberation from the world of rebirth and yogic practices have been aligned with a variety of philosophical theories and metaphysical positions.\"\nJohn Bowker (2000): \"The means ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:52:15.524931",
+      "content_hash": "3f009a79b8679756e7313ced0ed4a09c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Yuga",
+      "content": "A disciplined method for attaining a goal\nTechniques of controlling the body and mind\nA name of a school or system of philosophy (darśana)\nWith prefixes such as \"hatha-, mantra-, and laya-, traditions specialising in particular yoga techniques\nThe goal of yoga practice\nWhite writes that yoga's core principles were more or less in place in the 5th century CE, and variations of the principles developed over time:",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from hindu tradition",
+      "timestamp": "2025-12-25T19:52:15.524990",
+      "content_hash": "8349520c09a0fa5a2df298eca77eac5b"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Yuga",
+      "content": "A meditative means of discovering dysfunctional perception and cognition, as well as overcoming it to release any suffering, find inner peace, and salvation. Illustration of this principle is found in Hindu texts such as the Bhagavad Gita and Yogasutras, in a number of Buddhist Mahāyāna works, as well as Jain texts.\nThe raising and expansion of consciousness from oneself to being coextensive with everyone and everything. These are discussed in sources such as in Hinduism Vedic literature and its",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:52:15.525133",
+      "content_hash": "401dfde214cf57028db7da8951fd5bf4"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Hindu astrology",
+      "content": "Astronomy has a long history in the Indian subcontinent, stretching from pre-historic to modern times. Some of the earliest roots of Indian astronomy can be dated to the period of Indus Valley civilisation or earlier. Astronomy later developed as a discipline of Vedanga, or one of the \"auxiliary disciplines\" associated with the study of the Vedas dating 1500 BCE or older. The oldest known text is the Vedanga Jyotisha, dated to 1400–1200 BCE (with the extant form possibly from 700 to 600 BCE).\nIn",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:52:20.549994",
+      "content_hash": "db664288bdb09da63a5965b794daa3a5"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Hindu astrology",
+      "content": "Some of the earliest forms of astronomy can be dated to the Indus Valley Civilisation or earlier. Some cosmological concepts are present in the Vedas, as are notions of the movement of heavenly bodies and the course of the year. The Rig Veda is one of the oldest pieces of Indian literature. Rig Veda 1-64-11 & 48 describes time as a wheel with 12 parts and 360 spokes (days), with a remainder of 5, making reference to the solar calendar. As in other traditions, there is a close association of astr",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:52:20.550082",
+      "content_hash": "bcffb1a8253ada3aa07d65fb84aa339a"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Hindu astrology",
+      "content": "The divisions of the year were on the basis of religious rites and seasons (Ṛtú). The duration from mid March–mid May was taken to be spring (vasanta), mid May–mid July: summer (grishma), mid July–mid September: rains (varsha), mid September–mid November: autumn (sharada), mid November–mid January: winter (hemanta), mid January–mid March: the dews (shishira).\nIn the Vedānga Jyotiṣa, the year begins with the winter solstice. Hindu calendars have several eras:",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:52:20.550113",
+      "content_hash": "a5b77ba1bbec3bcfde2a207ebef97cb9"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Hindu astrology",
+      "content": "== Astronomers ==\nLagadha (1st millennium BCE): The earliest astronomical text – named Vedānga Jyotiṣa details several astronomical attributes generally applied for timing social and religious events. The Vedānga Jyotiṣa also details astronomical calculations, calendrical studies, and establishes rules for empirical observation. Since the texts written by 1200 BCE were largely religious compositions the Vedānga Jyotiṣa has connections with Indian astrology and details several important aspects o",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:52:20.550253",
+      "content_hash": "5d5f3d7a105a05ca303a6faec5ea5188"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Bhagavad Gita",
+      "content": "The Bhagavad Gita (; Sanskrit: भगवद्गीता, IPA: [ˌbʱɐɡɐʋɐd ˈɡiːtɑː], romanized: bhagavad-gītā, lit. 'God's song'), often referred to as the Gita (IAST: gītā), is a Hindu scripture, likely composed in the second or first century BCE, which forms part of the epic poem Mahabharata. The Gita is a synthesis of various strands of Indian religious thought, including the Vedic concept of dharma (duty, rightful action); Sankhya-based yoga and jnana (knowledge); and bhakti (devotion). Among the Hindu tradi",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:52:26.105706",
+      "content_hash": "96c722de0ace7d770e2df038fcc060dd"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Upanishads",
+      "content": "The Upanishads (; Sanskrit: उपनिषद्, IAST: Upaniṣad, pronounced [ˈupɐniʂɐd]) are Sanskrit texts of the late Vedic and post-Vedic periods that \"document the transition from the archaic ritualism of the Veda into new religious ideas and institutions\" and the emergence of the central religious concepts of Hinduism. They are the most recent addition to the Vedas, the oldest scriptures of Hinduism, and deal with meditation, philosophy, consciousness, and ontological knowledge. Earlier parts of the Ve",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:52:31.302742",
+      "content_hash": "66da56980fef4e34487a85a59cf94d72"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Upanishads",
+      "content": "The Brhadaranyaka and the Chandogya are the two earliest Upanishads. They are edited texts, some of whose sources are much older than others. The two texts are pre-Buddhist; they may be placed in the 7th to 6th centuries BCE, give or take a century or so.\nThe three other early prose Upanishads—Taittiriya, Aitareya, and Kausitaki come next; all are probably pre-Buddhist and can be assigned to the 6th to 5th centuries BCE.\nThe Kena is the oldest of the verse Upanishads followed by probably the Kat",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:52:31.302980",
+      "content_hash": "365e2e7c2976c08c4dfc5baa49b31bb0"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Hindu cosmology",
+      "content": "Hindu cosmology is the description of the universe and its states of matter, cycles within time, physical structure, and effects on living entities according to Hindu texts. Hindu cosmology is also intertwined with the idea of a creator who allows the world to exist and take shape.",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:52:36.379950",
+      "content_hash": "6f43766d97ddf0f4c1a8b746e4246f5a"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Hindu cosmology",
+      "content": "Time is infinite with a cyclic universe, where the current universe was preceded and will be followed by an infinite number of universes. The different states of matter are guided by eternal kala (time), which repeats general events ranging from a moment to the lifespan of the universe, which is cyclically created and destroyed.\nThe earliest mentions of cosmic cycles in Sanskrit literature are found in the Yuga Purana (c. 1st century BCE), the Mahabharata (c. 3rd century BCE – 4th century CE), a",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:52:36.380063",
+      "content_hash": "e499eb589fc468c397d9a097f83122c2"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Hindu cosmology",
+      "content": "The individual, spiritual jiva-atma (embodied soul) is the life force or consciousness within a living entity. Jivas are eternal; they are not created or destroyed, and are distinct from the created unconscious matter. The gunas in their manifest state of matter, cover the jivas in various ways based on each jiva's karma and impressions. This material covering of matter allows the jivas to interact with the material sense objects that make up the material universe, such as their temporary materi",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:52:36.380119",
+      "content_hash": "abae7c95eb9b50268c16812c06a32b0e"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Arthashastra",
+      "content": "Kautilya's Arthashastra (Sanskrit: कौतिलियम् अर्थशास्त्रम्, IAST: Kautiliyam Arthaśāstram; transl. Kautilya's compendium on worldly affairs) is an Ancient Indian Sanskrit treatise on statecraft, politics, economic policy and military strategy. The text is likely the work of several authors over centuries, starting as a compilation of Arthashastras, texts which according to Olivelle date from the 2nd c. BCE to the 1st c. CE. These treatises were compiled and amended in a new treatise, according t",
+      "relevance_score": 0.6,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-25T19:52:41.770019",
+      "content_hash": "12bc019abfc3946a8c946e4b5376e107"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "hindu",
+      "topic": "Arthashastra",
+      "content": "R.P. Kangle: \"Artha is the sustenance or livelihood of men, and Arthaśāstra is the science of the means to Artha\" \"science of politics\";\nA.L. Basham: a \"treatise on polity\"\nD.D. Kosambi: \"science of material gain\"\nG.P. Singh: \"science of polity\"\nRoger Boesche: \"science of political economy\"\nPatrick Olivelle: \"science of politics\"\nArtha (prosperity, wealth, purpose, meaning, economic security) is one of the four aims of human life in Hinduism (Puruṣārtha), the others being dharma (laws, duties, r",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:52:41.776106",
+      "content_hash": "98bb61471d4c013d16fac896fcbcb886"
+    }
+  ],
+  "scan_history": [
+    {
+      "timestamp": "2025-12-15T10:25:26.550200",
+      "insights_found": 5,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:42:01.834853",
+      "insights_found": 5,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:52:45.790522",
+      "insights_found": 19,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:36:13.286020",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T14:56:09.862754",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:07:06.433970",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:55:19.294055",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T12:38:44.533611",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T13:53:11.219231",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T14:47:15.264385",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T12:09:34.095929",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:28:10.334253",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:44:15.821061",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T14:11:06.946248",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:04:43.033652",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:32:53.355448",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:49:28.386931",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T16:18:14.288279",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T17:28:37.975458",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    }
+  ]
+}

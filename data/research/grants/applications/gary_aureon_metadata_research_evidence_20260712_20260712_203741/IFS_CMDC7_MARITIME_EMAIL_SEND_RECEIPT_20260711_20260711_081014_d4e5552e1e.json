@@ -1,0 +1,81 @@
+{
+  "schema_version": "aureon-ifs-cmdc7-email-send-receipt-v1",
+  "generated_at": "2026-07-11T08:10:14.933182+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_cmdc7_maritime_email_send_receipt",
+  "application_ids": [
+    "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+    "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+    "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709"
+  ],
+  "competition_group": "Clean Maritime Demonstration Competition 7",
+  "result": "CMDC7_MARITIME_EVIDENCE_REQUESTS_SENT_WAITING_REPLY",
+  "sent_items": [
+    {
+      "target": "Belfast Harbour",
+      "to": "info@belfast-harbour.co.uk",
+      "subject": "CMDC7 fit check: Aureon evidence automation collaborator route",
+      "source_draft": "applications/IFS_P1_CMDC7_BELFAST_HARBOUR_OUTREACH_DRAFT_20260710_114411.eml",
+      "sent_via": "Chrome Gmail session gaxlec@gmail.com",
+      "provider_confirmation_text": "Message sent",
+      "receipt_screenshot": "applications/evidence/IFS_CMDC7_BELFAST_HARBOUR_GMAIL_SENT_20260711_0810.png"
+    },
+    {
+      "target": "NI Maritime & Offshore",
+      "to": "contact@nimaritime.com",
+      "subject": "CMDC7 partner route query: Belfast evidence automation SME",
+      "source_draft": "applications/IFS_P1_CMDC7_NI_MARITIME_OFFSHORE_OUTREACH_DRAFT_20260710_114411.eml",
+      "sent_via": "Chrome Gmail session gaxlec@gmail.com",
+      "provider_confirmation_text": "Message sent",
+      "receipt_screenshot": "applications/evidence/IFS_CMDC7_NI_MARITIME_GMAIL_SENT_20260711_0810.png"
+    },
+    {
+      "target": "Navantia UK",
+      "to": "info@navantia.co.uk",
+      "subject": "CMDC7 fit check: Aureon evidence automation work package",
+      "source_draft": "applications/IFS_P1_CMDC7_NAVANTIA_UK_OUTREACH_DRAFT_20260710_114411.eml",
+      "sent_via": "Chrome Gmail session gaxlec@gmail.com",
+      "provider_confirmation_text": "Message sent",
+      "receipt_screenshot": "applications/evidence/IFS_CMDC7_NAVANTIA_UK_GMAIL_SENT_20260711_0810.png"
+    },
+    {
+      "target": "Innovate UK support / Business Connect Transport",
+      "to": "support@iuk.ukri.org",
+      "subject": "CMDC7 partner support request: Belfast evidence automation SME seeking maritime lead",
+      "source_draft": "applications/IFS_P1_CMDC7_IUKBC_TRANSPORT_SUPPORT_REQUEST_20260710_114411.eml",
+      "sent_via": "Chrome Gmail session gaxlec@gmail.com",
+      "provider_confirmation_text": "Message sent",
+      "receipt_screenshot": "applications/evidence/IFS_CMDC7_IUKBC_SUPPORT_GMAIL_SENT_20260711_0810.png"
+    }
+  ],
+  "remaining_gates": [
+    "committed UK maritime lead or consortium referral",
+    "vessel, port, shipyard or infrastructure asset/site evidence",
+    "strand fit across feasibility, pre-deployment or deployment",
+    "permissions, safety, permit and insurance basis",
+    "partner budget owner and eligible-cost split",
+    "deployment or feasibility work package confirmation"
+  ],
+  "decision": {
+    "direct_submit_ready": false,
+    "safe_portal_action_now": false,
+    "new_browser_submission_available": false,
+    "external_send_performed": true,
+    "email_sent": true,
+    "emails_sent_count": 4,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false
+  },
+  "controls": [
+    "Emails were sent only to staged CMDC7 partner/support contacts.",
+    "No Artemis contact form was submitted in this pass.",
+    "No confidential finance files, passwords, tokens, bank data, tax records or raw ledgers were attached or copied.",
+    "No IFS CMDC7 portal draft was opened or changed.",
+    "No public target was treated as a partner commitment.",
+    "No final grant submission, upload, partner invite, or provider-control bypass was performed."
+  ]
+}

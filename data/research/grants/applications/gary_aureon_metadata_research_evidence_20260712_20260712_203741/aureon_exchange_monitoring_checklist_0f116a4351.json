@@ -1,0 +1,287 @@
+{
+  "contract": {
+    "no_execution_change": "This checklist changes no exchange orders, credentials, payments, filings, or live mutation gates.",
+    "purpose": "Show what each exchange is monitoring and what is missing before its evidence can feed fast-profit trading decisions.",
+    "source_of_truth": "state/unified_runtime_status.json plus ws_cache/ws_prices.json source_health and waveform recorder evidence"
+  },
+  "generated_at": "2026-05-22T07:23:19.643386+00:00",
+  "repo_root": "C:\\Users\\user\\aureon-trading",
+  "rows": [
+    {
+      "action_plan_venue_count": 0,
+      "age_sec": 1.75,
+      "cache_active": true,
+      "cache_fresh": true,
+      "cache_present": true,
+      "connected": true,
+      "evidence": {
+        "action_plan": "state/unified_runtime_status.json#exchange_action_plan.venues",
+        "runtime_ready_key": "state/unified_runtime_status.json#exchanges.binance_ready",
+        "stream_cache": "ws_cache/ws_prices.json#source_health.binance",
+        "waveform_recorder": "state/aureon_live_waveform_recorder.json"
+      },
+      "exchange": "binance",
+      "feeds_decision_logic": false,
+      "known_venues": [],
+      "label": "Binance",
+      "last_timestamp": 1779434541.5711634,
+      "markets": [
+        "crypto_spot",
+        "crypto_quote_universe"
+      ],
+      "missing": [
+        "no_exchange_action_plan_venue",
+        "per_exchange_orderbook_depth_not_proven"
+      ],
+      "monitored_now": [
+        "all_market_24h_tickers",
+        "exchange_client_ready",
+        "fresh_tickers",
+        "live_market_cache",
+        "live_stream_or_rest_gap_fill",
+        "price_cache",
+        "source_health",
+        "ticker_cache",
+        "ticker_universe",
+        "volume_and_change",
+        "waveform_history"
+      ],
+      "required_for_fast_money": [
+        "fresh_tickers",
+        "volume",
+        "change24h",
+        "decision_cache"
+      ],
+      "ticker_count": 2978,
+      "usable_for_fast_money": false,
+      "waveform_history_active": true
+    },
+    {
+      "action_plan_venue_count": 0,
+      "age_sec": 18.955,
+      "cache_active": true,
+      "cache_fresh": true,
+      "cache_present": true,
+      "connected": false,
+      "evidence": {
+        "action_plan": "state/unified_runtime_status.json#exchange_action_plan.venues",
+        "runtime_ready_key": "state/unified_runtime_status.json#exchanges.kraken_ready",
+        "stream_cache": "ws_cache/ws_prices.json#source_health.kraken",
+        "waveform_recorder": "state/aureon_live_waveform_recorder.json"
+      },
+      "exchange": "kraken",
+      "feeds_decision_logic": false,
+      "known_venues": [],
+      "label": "Kraken",
+      "last_timestamp": 1779434524.3657744,
+      "markets": [
+        "crypto_spot",
+        "crypto_margin",
+        "portfolio_balance"
+      ],
+      "missing": [
+        "cost_and_fee_context_not_confirmed",
+        "exchange_client_not_ready_or_credentials_missing",
+        "margin_pair_quotes_not_confirmed",
+        "no_exchange_action_plan_venue",
+        "per_exchange_orderbook_depth_not_proven",
+        "spot_margin_fee_and_collateral_live_probe_not_proven"
+      ],
+      "monitored_now": [
+        "fresh_tickers",
+        "kraken_equity_context",
+        "live_market_cache",
+        "portfolio_balance",
+        "price_cache",
+        "public_ticker_snapshot",
+        "source_health",
+        "spot_pair_quotes",
+        "ticker_cache",
+        "ticker_universe",
+        "waveform_history"
+      ],
+      "required_for_fast_money": [
+        "fresh_tickers",
+        "spot_margin_context",
+        "fees",
+        "collateral_context"
+      ],
+      "ticker_count": 24,
+      "usable_for_fast_money": false,
+      "waveform_history_active": true
+    },
+    {
+      "action_plan_venue_count": 0,
+      "age_sec": 1.451,
+      "cache_active": true,
+      "cache_fresh": true,
+      "cache_present": true,
+      "connected": true,
+      "evidence": {
+        "action_plan": "state/unified_runtime_status.json#exchange_action_plan.venues",
+        "runtime_ready_key": "state/unified_runtime_status.json#exchanges.alpaca_ready",
+        "stream_cache": "ws_cache/ws_prices.json#source_health.alpaca",
+        "waveform_recorder": "state/aureon_live_waveform_recorder.json"
+      },
+      "exchange": "alpaca",
+      "feeds_decision_logic": false,
+      "known_venues": [],
+      "label": "Alpaca",
+      "last_timestamp": 1779434541.8692882,
+      "markets": [
+        "stocks",
+        "etfs",
+        "crypto_if_enabled",
+        "portfolio_balance"
+      ],
+      "missing": [
+        "authenticated_market_data_entitlement_not_proven",
+        "market_hours_state_not_confirmed",
+        "news_context_if_available_not_confirmed",
+        "no_exchange_action_plan_venue",
+        "portfolio_balance_not_confirmed"
+      ],
+      "monitored_now": [
+        "exchange_client_ready",
+        "fresh_tickers",
+        "latest_trade_or_quote",
+        "live_market_cache",
+        "price_cache",
+        "source_health",
+        "stock_snapshot",
+        "ticker_cache",
+        "ticker_universe",
+        "waveform_history"
+      ],
+      "required_for_fast_money": [
+        "fresh_equity_quotes",
+        "market_hours",
+        "tradability_state"
+      ],
+      "ticker_count": 6,
+      "usable_for_fast_money": false,
+      "waveform_history_active": true
+    },
+    {
+      "action_plan_venue_count": 1,
+      "age_sec": 37.767,
+      "cache_active": true,
+      "cache_fresh": true,
+      "cache_present": true,
+      "connected": true,
+      "evidence": {
+        "action_plan": "state/unified_runtime_status.json#exchange_action_plan.venues",
+        "runtime_ready_key": "state/unified_runtime_status.json#exchanges.capital_ready",
+        "stream_cache": "ws_cache/ws_prices.json#source_health.capital",
+        "waveform_recorder": "state/aureon_live_waveform_recorder.json"
+      },
+      "exchange": "capital",
+      "feeds_decision_logic": true,
+      "known_venues": [
+        "capital_cfd"
+      ],
+      "label": "Capital.com",
+      "last_timestamp": 1779434505.5541828,
+      "markets": [
+        "cfd_indices",
+        "cfd_fx",
+        "cfd_equities",
+        "open_positions"
+      ],
+      "missing": [
+        "capital_market_hours_and_position_close_speed_not_proven",
+        "market_hours_state_not_confirmed",
+        "open_position_context_not_confirmed",
+        "portfolio_balance_not_confirmed",
+        "profit_loss_context_not_confirmed"
+      ],
+      "monitored_now": [
+        "capital_market_snapshot",
+        "exchange_action_plan_venues",
+        "exchange_client_ready",
+        "fresh_tickers",
+        "live_market_cache",
+        "price_cache",
+        "source_health",
+        "ticker_cache",
+        "ticker_universe",
+        "waveform_history"
+      ],
+      "required_for_fast_money": [
+        "fresh_cfd_quotes",
+        "position_profit_state",
+        "market_hours"
+      ],
+      "ticker_count": 26,
+      "usable_for_fast_money": true,
+      "waveform_history_active": true
+    }
+  ],
+  "schema_version": "aureon-exchange-monitoring-checklist-v1",
+  "status": "exchange_monitoring_ready",
+  "summary": {
+    "active_exchange_count": 4,
+    "connected_exchange_count": 3,
+    "decision_fed_exchange_count": 1,
+    "exchange_count": 4,
+    "fast_money_usable_exchange_count": 1,
+    "fresh_exchange_count": 4,
+    "runtime_stale": false,
+    "stale_reason": "",
+    "status": "exchange_monitoring_ready",
+    "stream_cache_generated_at": 1779434595.9798863,
+    "stream_cache_source": "multi_exchange_stream_cache",
+    "top_missing": [
+      {
+        "exchange": "binance",
+        "missing": "no_exchange_action_plan_venue"
+      },
+      {
+        "exchange": "binance",
+        "missing": "per_exchange_orderbook_depth_not_proven"
+      },
+      {
+        "exchange": "kraken",
+        "missing": "cost_and_fee_context_not_confirmed"
+      },
+      {
+        "exchange": "kraken",
+        "missing": "exchange_client_not_ready_or_credentials_missing"
+      },
+      {
+        "exchange": "kraken",
+        "missing": "margin_pair_quotes_not_confirmed"
+      },
+      {
+        "exchange": "kraken",
+        "missing": "no_exchange_action_plan_venue"
+      },
+      {
+        "exchange": "kraken",
+        "missing": "per_exchange_orderbook_depth_not_proven"
+      },
+      {
+        "exchange": "alpaca",
+        "missing": "authenticated_market_data_entitlement_not_proven"
+      },
+      {
+        "exchange": "alpaca",
+        "missing": "market_hours_state_not_confirmed"
+      },
+      {
+        "exchange": "alpaca",
+        "missing": "news_context_if_available_not_confirmed"
+      },
+      {
+        "exchange": "alpaca",
+        "missing": "no_exchange_action_plan_venue"
+      },
+      {
+        "exchange": "alpaca",
+        "missing": "portfolio_balance_not_confirmed"
+      }
+    ],
+    "total_tickers_monitored": 3034,
+    "waveform_history_exchange_count": 4
+  }
+}

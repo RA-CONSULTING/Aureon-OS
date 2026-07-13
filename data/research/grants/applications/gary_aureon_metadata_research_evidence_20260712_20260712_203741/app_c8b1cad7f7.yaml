@@ -1,0 +1,154 @@
+# 👑🌌 AUREON TRADING SYSTEM - DIGITAL OCEAN APP PLATFORM
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# SINGLE SERVICE with PARALLEL PROCESSES via supervisord:
+#   1. 👑 Command Center UI (port 8080) - Dashboard & WebSocket
+#   2. 🦈 Orca Kill Cycle - Trading Engine  
+#   3. 🧠 Autonomous Engine - 9 Intelligence Loops
+#
+# All processes start together on boot via supervisord.conf
+#
+# Gary Leckey | January 2026 | DIGITAL OCEAN DEPLOYMENT
+# ═══════════════════════════════════════════════════════════════════════════
+
+name: aureon-trading
+region: lon
+
+services:
+  # 👑 MAIN SERVICE - Runs ALL parallel processes via supervisord
+  - name: aureon-command-center
+    dockerfile_path: Dockerfile
+    source_dir: /
+    github:
+      branch: main
+      deploy_on_push: true
+      repo: RA-CONSULTING/aureon-trading
+    
+    # HTTP settings for health checks
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: apps-d-8vcpu-32gb  # 32GB RAM, 8 vCPU - DigitalOcean recommended size
+    
+    # Autoscaling for memory spikes during parallel supervisord startup
+    autoscaling:
+      min_instance_count: 1
+      max_instance_count: 2
+      metrics:
+        cpu:
+          percent: 80
+        memory:
+          percent: 85
+    
+    # Health check - Queen Power Dashboard /health endpoint on port 8080
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 240
+      period_seconds: 45
+      timeout_seconds: 30
+      success_threshold: 1
+      failure_threshold: 6
+    
+    # Environment variables
+    envs:
+      # Python settings
+      - key: PYTHONUNBUFFERED
+        scope: RUN_AND_BUILD_TIME
+        value: "1"
+      - key: PYTHONIOENCODING
+        scope: RUN_AND_BUILD_TIME
+        value: "utf-8"
+      
+      # Aureon settings
+      - key: PORT
+        scope: RUN_TIME
+        value: "8080"
+      - key: AUREON_STATE_DIR
+        scope: RUN_TIME
+        value: /app/state
+      - key: HEALTH_PORT
+        scope: RUN_TIME
+        value: "8081"
+      - key: KRAKEN_NONCE_PATH
+        scope: RUN_TIME
+        value: /app/state/kraken_nonce.json
+      - key: KRAKEN_PRIVATE_LOCK_PATH
+        scope: RUN_TIME
+        value: /app/state/kraken_private.lock
+      - key: AUREON_ENABLE_AUTONOMOUS_CONTROL
+        scope: RUN_TIME
+        value: "1"
+      - key: AUREON_DEADLINE_MODE
+        scope: RUN_TIME
+        value: "false"
+      - key: AUREON_MIN_PROFIT_PCT
+        scope: RUN_TIME
+        value: "0.4"
+      
+      # 🔥 LIVE TRADING MODE
+      - key: LIVE
+        scope: RUN_TIME
+        value: "1"
+      - key: KRAKEN_DRY_RUN
+        scope: RUN_TIME
+        value: "false"
+      - key: BINANCE_DRY_RUN
+        scope: RUN_TIME
+        value: "false"
+      - key: ALPACA_DRY_RUN
+        scope: RUN_TIME
+        value: "false"
+      
+      # ═══════════════════════════════════════════════════════════════
+      # ⚠️ API KEYS - SET THESE IN DIGITAL OCEAN DASHBOARD ⚠️
+      # Go to: App > Settings > App-Level Environment Variables
+      # ═══════════════════════════════════════════════════════════════
+      
+      # 🐙 KRAKEN
+      - key: KRAKEN_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: KRAKEN_API_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      
+      # 🟡 BINANCE
+      - key: BINANCE_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: BINANCE_API_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      
+      # 🦙 ALPACA
+      - key: ALPACA_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: ALPACA_SECRET_KEY
+        scope: RUN_TIME
+        type: SECRET
+      
+      # 💼 CAPITAL.COM (CFD Trading)
+      - key: CAPITAL_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: CAPITAL_IDENTIFIER
+        scope: RUN_TIME
+        type: SECRET
+      - key: CAPITAL_PASSWORD
+        scope: RUN_TIME
+        type: SECRET
+      - key: CAPITAL_DEMO
+        scope: RUN_TIME
+        value: "false"
+      
+      # 🧠 Redis for ThoughtBus (optional - uses internal if available)
+      - key: AUREON_REDIS_URL
+        scope: RUN_TIME
+        value: "\${db.REDIS_URL}"
+
+# 🧠 Redis Database for ThoughtBus Pub/Sub
+databases:
+  - name: db
+    engine: REDIS
+    production: true
+    version: "7"

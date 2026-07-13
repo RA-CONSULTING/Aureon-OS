@@ -1,0 +1,227 @@
+Skip to main content
+Print your application
+You can print your application by pressing CTRL+P (Windows) or CMD+P (mac)
+Project details
+Subsidy basis
+Partner	Funding rules	
+R&A CONSULTING AND BROKERAGE SERVICES LTD (Lead)	Subsidy control	View answers
+Application team
+R&A CONSULTING AND BROKERAGE SERVICES LTD
+Organisation details	
+Type	Business
+Team members
+Full name	Email	EDI survey
+gary leckey	gaxlec@gmail.com	Complete
+Application details
+Competition name
+Consumer Led Flexibility for the Clean Energy Superpower Mission
+Application name
+Aureon Flex Evidence OS: AI Assurance for Consumer-Led Flexibility
+When do you wish to start your project?
+1 January 2027
+Project duration in months
+6 months
+Research category
+Selected research category
+Feasibility studies
+Project summary
+Project summary
+
+Aureon Flex Evidence OS is a six-month feasibility study to adapt R&A Consulting and Brokerage Services Ltd's local-first evidence and workflow automation capability into an auditable decision-support layer for consumer-led flexibility. The project will not directly control customer assets during this feasibility phase. It will build and validate a prototype that ingests open energy-flexibility datasets, tariff and network constraint signals, and simulated portfolios of flexible loads; produces confidence-scored forecasts; and generates explainable evidence records for proposed flexibility actions.
+
+The innovation sits in the software-first strand of the competition: confidence and AI forecasting, portfolio reliability and risk transfer, feeder-level flexibility and resilience, and open datasets for AI. Current consumer flexibility products often optimise dispatch or tariffs but leave weak evidence around confidence, comfort, fairness, baseline assumptions and the reasons an action should be trusted. Aureon will focus on making those decisions auditable and easier for aggregators, suppliers, network operators and future end-user partners to test.
+
+By project end, R&A will deliver a working prototype, validation dataset, benchmark report, benefits realisation plan, commercialisation pathway and partner-readiness pack. The feasibility output will support a later real-world trial with an energy-system partner or Catapult environment and a route toward multi-MW deployment by 2030.
+
+Public description
+Public description
+
+This project will test whether auditable AI and evidence automation can make consumer-led flexibility easier to trust, validate and scale. R&A Consulting and Brokerage Services Ltd will adapt its Aureon evidence operating system into a prototype for energy flexibility decision support.
+
+The prototype will use open datasets and simulated flexible-load portfolios to forecast opportunities for flexibility, score confidence and risk, and explain why a proposed action is expected to benefit consumers and the wider electricity system. The feasibility study will focus on transparency, comfort protection, baseline evidence, reproducible testing and clear records that can be reviewed by future partners.
+
+The project will not switch or control customer devices during the feasibility phase. Instead, it will create the evidence, validation methods and partner-readiness material needed for a later trial with energy-sector organisations. If successful, the work will help aggregators, suppliers, network operators and public programmes assess AI-enabled flexibility propositions more quickly and with stronger consumer safeguards.
+
+Scope
+How does your project align with the scope of this competition?
+
+The project aligns with the Consumer Led Flexibility challenge by developing software-first tooling that can improve the confidence, transparency and adoption readiness of flexibility propositions. It addresses the challenge's need for AI and digital solutions that help flexible loads be better used in system operation and that can evidence a pathway to impact by 2030.
+
+The primary themes are confidence and AI forecasting, portfolio reliability and risk transfer, feeder-level flexibility and resilience, and open datasets for AI. The project also supports residential scaling and industrial/commercial anchor-load routes by producing evidence records that future partners can use when testing different demand segments.
+
+R&A is applying as a sole UK business for a feasibility study. The project does not claim to have an energy-system deployment partner already embedded. Instead, it is structured to create the prototype, validation assets, benefits realisation plan and partner-readiness pack needed to secure a Catapult, supplier, aggregator, local authority or network partner for a follow-on trial. The proposal is therefore an enabling feasibility project, not a live deployment.
+
+Application questions
+1. Applicant location (not scored)
+Applicant location (not scored)
+
+R&A Consulting and Brokerage Services Ltd is registered at 1 Quadrant Place, Belfast, Northern Ireland, BT12 4HX. The company is the sole applicant and lead organisation for this feasibility study. No partners or subcontractors are included in the current application draft.
+
+2. Animal testing (not scored)
+Will your project involve any trials with animals or animal testing?
+
+No
+
+3. Permits and licences (not scored)
+Will you have the correct permits and licences in place to carry out your project?
+
+Not applicable
+
+4. International collaboration (not scored)
+Does your proposed work involve any international collaboration or engagement?
+
+The proposed work does not involve international collaboration or engagement. The application is led by R&A Consulting and Brokerage Services Ltd in the UK. No international project co-leads, partners, visiting researchers, collaborators, subcontractors or service providers are included in this draft.
+
+5. Export licence (not scored)
+Export licence (not scored)
+
+No
+
+6. Trusted Research and Innovation (not scored)
+Trusted Research and Innovation (not scored)
+
+The proposed work is civilian software feasibility research for energy flexibility evidence, forecasting confidence and workflow assurance. It does not involve military or dual-use deployment, controlled goods, controlled substances or items on the UK Strategic Export Control List. No export control licence is expected to be required. The project uses open or internally generated datasets and does not include international collaboration in this draft. R&A will keep TR&I, cyber security and data protection risks under review as part of the risk register.
+
+7. Research theme (not scored)
+Research theme (not scored)
+
+Strand 1: confidence and AI forecasting; portfolio reliability and risk transfer; feeder-level flexibility and resilience; open datasets for AI. Secondary relevance: residential scaling and industrial/commercial anchor-load readiness, because the prototype will produce evidence records for future end-user and energy-system partner trials.
+
+8. Innovator support (not scored)
+Innovator support (not scored)
+
+R&A would like to be considered for package two scale-up support services after selection, particularly commercial strategy, technical advisory support, partner-readiness review and support to shape a route toward an energy-system trial. This would help convert the feasibility outputs into a partner-backed development or demonstration project.
+
+R&A is not requesting package one trials and testing services in this draft because it has not yet contacted the Catapults through the required route for pre-application costing. Without Innovator Support, the project can still deliver the prototype, validation report and partner pack, but Catapult support would improve the quality of the route-to-impact plan and reduce the risk of misalignment with real energy-system adoption needs.
+
+9. Technical project summary and commercial potential
+What approach will you take, where will the focus of the innovation be, and what is the business need, technological challenge, or market opportunity behind your innovation?
+
+Consumer-led flexibility depends on trust. Suppliers, aggregators, network operators and consumers need to know whether proposed flexibility actions are reliable, fair, explainable and commercially viable before they can scale. Many AI tools can produce forecasts or optimise portfolios, but the evidence trail behind those decisions is often weak: assumptions are hard to compare, consumer comfort can be under-evidenced, and portfolio risk may be difficult to explain to non-technical stakeholders.
+
+R&A will respond by adapting the Aureon Evidence OS into a feasibility prototype for flexibility decision assurance. The prototype will ingest open flexibility datasets, public tariff or market signals where available, network-constraint scenarios and simulated flexible-load portfolios. It will generate confidence-scored forecasts, baseline comparisons, risk flags, comfort and consumer-impact assumptions, and an auditable record explaining why each proposed flexibility action should or should not proceed.
+
+The company has already developed local-first evidence automation, workflow logging, validation and reproducible research tooling. This project focuses that existing capability on the Clean Energy Superpower Mission and tests whether an evidence layer can help de-risk future flexibility trials.
+
+By the end of the project R&A will deliver a working prototype, benchmark dataset, validation report, benefits realisation plan, commercialisation plan and partner-readiness pack. The initial target market is UK flexibility innovators: aggregators, energy suppliers, local authorities, network operators, Catapult testbeds and software vendors preparing consumer flexibility propositions. The route to scale is to use the feasibility results to secure a trial partner, validate in a representative environment, then integrate the evidence layer with operational flexibility platforms. Public funding accelerates this by allowing R&A to produce a sector-specific prototype and independent validation assets before commercial revenue exists.
+
+IFS_CLF_10210032_Q9_TECHNICAL_COMMERCIAL_APPENDIX_20260709.pdf (opens in a new window).
+
+10. Project management and delivery
+How will you manage and deliver your project effectively to achieve the desired outcomes?
+
+The project will run as a six-month feasibility study with R&A as sole lead.
+
+WP1 - Requirements, baseline and stakeholder mapping, GBP30,000, months 1-2. Define flexibility use cases, consumer-risk assumptions, open datasets, acceptance criteria and the benefits realisation plan structure.
+
+WP2 - Data and simulation pipeline, GBP55,000, months 1-3. Build reproducible data ingestion, synthetic portfolio generation, baseline comparison and scenario replay for flexible loads.
+
+WP3 - Evidence and confidence prototype, GBP70,000, months 2-5. Adapt Aureon's evidence logging, confidence scoring and workflow automation into a prototype that explains forecast uncertainty, risk transfer and consumer-impact assumptions.
+
+WP4 - Validation, benefits and impact assessment, GBP45,000, months 4-6. Run benchmark tests, produce validation evidence, prepare the benefits realisation plan required three months after project start, and assess route-to-2030 assumptions.
+
+WP5 - Commercialisation, dissemination and project control, GBP50,000, months 1-6. Maintain project governance, risk management, reporting, partner-readiness material, dissemination outputs and the route-to-market plan.
+
+R&A will manage delivery through fortnightly sprint planning, version-controlled evidence logs, issue tracking, monthly milestone reviews and a live risk register. The critical path is: requirements and datasets, prototype build, validation, then benefits and commercialisation evidence. Key risks are lack of energy-user input, data limitations, over-claiming system impact and cyber/data-protection concerns. These are mitigated by using open data first, limiting the project to feasibility, recording assumptions transparently, seeking Catapult or energy-sector review, and avoiding direct consumer-device control in this phase.
+
+IFS_CLF_10210032_Q10_PROJECT_PLAN_RISK_APPENDIX_20260709.pdf (opens in a new window).
+
+11. Team and resources
+Who is in the project team and what are their roles?
+
+Gary Leckey will lead the project for R&A Consulting and Brokerage Services Ltd. The project uses the Aureon evidence automation capability already developed by the company: local workflow control, reproducible evidence logging, validation records, operator review loops and document generation. The immediate resources required are software development time, open datasets, local compute, version control, evaluation notebooks, project management and access to public energy-market and flexibility information.
+
+The feasibility study is deliberately scoped around software assurance and evidence production rather than live device control. R&A will not claim that it already has an embedded energy-system deployment partner. That is a known feasibility risk and a main reason for the project structure. The work will produce a credible prototype and partner-readiness pack, then use those outputs to engage suppliers, aggregators, local authorities, network operators, the Energy Systems Catapult, the Digital Catapult or other test environments for a follow-on trial.
+
+The team requires input from future external parties to move beyond feasibility: an energy-domain reviewer, an end-user or consumer-representative route, and a potential trial partner. During this feasibility phase R&A will seek structured interviews or review sessions rather than pretending those relationships are already secured. The application therefore has a business lead and relevant AI/evidence capability, but direct energy-system expertise is a gap to be closed through Innovator Support, sector engagement and the partner-readiness work package.
+
+No subcontractors are included in the current draft. If specialist energy-system or data-protection advice is procured before final submission, the finance and team sections should be updated to name the role, procurement rationale and cost.
+
+12. Current state of the art and intellectual property
+Are similar products currently available in the market? How is your proposed project differentiated from them?
+
+Current flexibility platforms, aggregators and energy-management systems commonly focus on optimisation, dispatch, tariffs, device orchestration or customer engagement. The proposed differentiation is an evidence and assurance layer that sits beside those systems and makes AI-supported flexibility decisions easier to test, explain and trust. It will record forecast confidence, baseline assumptions, risk flags, comfort constraints, consumer-impact assumptions and reproducible validation evidence.
+
+R&A's existing IP is the Aureon evidence automation and workflow tooling, including local-first operator workflows, evidence logging, validation records and grant-ready documentation methods. The project will adapt this capability to the CLF domain. New project outputs will include flexibility-specific data schemas, simulation scenarios, confidence scoring patterns, evidence templates and a prototype interface.
+
+The project will use open-source and open-data components where appropriate, with licences recorded in a dependency register. R&A will not use third-party proprietary data or operational energy-system interfaces without permission. Freedom to operate will be managed through a lightweight IP and dependency review, version control, documentation of open-source licences, and separation of generic Aureon tooling from any partner-specific material in later trials. Public funding is needed to de-risk this domain adaptation and create validated sector evidence before commercial customers are available.
+
+13. Wider Impacts and benefits
+What impact and benefits might this project have outside the project team?
+
+The expected benefit is a stronger evidence route for consumer-led flexibility propositions. If flexibility actions can be forecast, justified and reviewed with clearer evidence, future partners may be able to reduce validation time, compare options more consistently and improve confidence for consumers, suppliers, aggregators and network operators.
+
+The pre-innovation baseline is that early-stage AI flexibility concepts can be difficult to trust because baseline assumptions, uncertainty, comfort effects and portfolio risks are not always transparent. The project will create a prototype evidence layer and theory of change showing how auditable records can support better trial design and later deployment.
+
+Economic benefits are predictive at feasibility stage. The route to benefit is reduced due-diligence effort for flexibility innovators, faster preparation for trials, better targeting of investment, and stronger evidence for scaling decisions. Environmental benefit would come indirectly through improved readiness to unlock flexible loads, reduce peak demand pressure and support renewable integration. Regional benefit includes building digital energy innovation capability from Northern Ireland.
+
+Social benefits include clearer consumer safeguards, better transparency around comfort and fairness assumptions, and reduced risk of opaque AI decisions affecting households without explainable records. R&A differentiates from competitors by focusing on auditability, reproducibility and evidence governance rather than only optimisation.
+
+IFS_CLF_10210032_Q13_THEORY_OF_CHANGE_APPENDIX_20260709.pdf (opens in a new window).
+
+14. Costs and value for money
+How much will the project cost and how does it represent value for money for the team and the taxpayer?
+
+The draft project model is GBP250,000 total eligible costs for a six-month feasibility study. As a micro or small business applying under the feasibility category, the draft funding model is a 70% grant request of GBP175,000, with R&A contributing GBP75,000 from company resources or approved project finance before award.
+
+The costs represent value for money because they convert an existing evidence automation capability into a targeted clean-energy feasibility asset without funding live hardware deployment or customer-device control. The largest cost elements are development, validation, benefits realisation, project management and commercialisation evidence. The project avoids premature deployment spend and focuses public funding on the de-risking work needed before a credible energy-system trial.
+
+The alternative use of company resources would be a slower, unfunded prototype with less sector validation and weaker partner-readiness evidence. Public support accelerates the work, improves the chance of alignment with UKRI's CLF outcomes, and creates reusable evidence artefacts for assessors, future partners and investors.
+
+No funded partners or subcontractors are included in this draft. If specialist energy-system or data-protection advice is added before final submission, the finance model and value-for-money narrative should be updated. R&A is not currently costing package one Catapult trials and testing support because it has not completed the required pre-application Catapult contact route. Package two scale-up support would be treated outside the project cost model as described in the competition brief.
+
+Video submission
+Video pitch (not scored)
+Video pitch (not scored)
+
+Video not provided
+
+Aureon Flex Evidence OS addresses a core barrier to consumer-led flexibility: trust. Flexible loads can support a cleaner and more resilient electricity system, but consumers, suppliers, aggregators and network operators need evidence that proposed actions are reliable, fair and explainable before they scale.
+
+R&A Consulting and Brokerage Services Ltd will adapt its Aureon evidence operating system into a feasibility prototype for AI-supported flexibility assurance. The project will not control consumer devices during this phase. It will use open datasets and simulated flexible-load portfolios to forecast flexibility opportunities, score confidence and risk, record baseline assumptions, and explain why a proposed action should or should not proceed.
+
+The expected impact is faster, better-evidenced preparation for future trials with suppliers, aggregators, network operators, local authorities or Catapult test environments. The work supports the Clean Energy Superpower Mission by improving transparency, auditability and adoption readiness.
+
+R&A can deliver the prototype using its existing local-first workflow, validation and documentation capability. The GBP250,000 feasibility budget funds targeted development, validation, benefits planning and commercialisation evidence before live deployment, creating a partner-ready route toward real-world testing and later deployment by 2030.
+
+The finances of all project partners are included in this summary.
+
+Organisation name
+	Total costs (£)	Funding level (%)	Funding sought (£)	Contribution to project (£)	Other public sector funding (£)
+
+R&A CONSULTING AND BROKERAGE SERVICES LTD
+Organisation
+	250,000	70.00	175,000	75,000	0
+Funding breakdown
+R&A CONSULTING AND BROKERAGE SERVICES LTD  
+£250,000
+Organisation
+View finances
+Labour	£200,000
+Overheads	£40,000
+Materials	£0
+Capital usage	£0
+Subcontracting	£0
+Travel and subsistence	£0
+Other costs	£10,000
+Totals  
+£250,000
+Labour	£200,000
+Overheads	£40,000
+Materials	£0
+Capital usage	£0
+Subcontracting	£0
+Travel and subsistence	£0
+Other costs	£10,000
+Supporting information
+Project impact
+Understanding the benefits of the projects Innovate UK supports
+Partner	Status
+R&A CONSULTING AND BROKERAGE SERVICES LTD (Lead)	
+
+Complete
+
+Terms and conditions
+Award terms and conditions
+Partner	Funding rules	Terms and conditions
+R&A CONSULTING AND BROKERAGE SERVICES LTD (Lead)	Subsidy control	Innovate UK - Subsidy control

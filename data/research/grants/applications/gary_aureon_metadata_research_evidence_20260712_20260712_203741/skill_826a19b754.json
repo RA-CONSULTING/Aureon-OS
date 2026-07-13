@@ -1,0 +1,15 @@
+{
+  "asset_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_93ee25e08886\\index.html",
+  "detected_families": [
+    "coding"
+  ],
+  "kind": "adaptive_skill_capsule",
+  "metadata_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_93ee25e08886\\skill.json",
+  "prompt": "Build a local quantum spline inventory generator tool with run instructions and proof.",
+  "public_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_93ee25e08886/index.html",
+  "runbook_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_93ee25e08886\\RUNBOOK.md",
+  "schema_version": "aureon-adaptive-skill-capsule-v1",
+  "skill_contract": "create a local, testable skill capsule whenever a prompt has no specialized worker yet",
+  "task_family": "coding",
+  "tool_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_adaptive_skills\\build_a_local_quantum_spline_inventory_generator_93ee25e08886\\tool.py"
+}

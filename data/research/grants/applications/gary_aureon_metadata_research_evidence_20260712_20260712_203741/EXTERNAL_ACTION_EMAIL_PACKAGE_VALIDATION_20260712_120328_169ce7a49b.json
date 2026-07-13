@@ -1,0 +1,110 @@
+{
+  "schema_version": "aureon-external-action-email-package-validation-v1",
+  "generated_at": "2026-07-12T12:03:28+01:00",
+  "operator": "Aureon",
+  "event": "external_action_email_package_validation",
+  "result": "EXTERNAL_ACTION_EMAIL_PACKAGES_VALIDATED_READY_NOT_SENT",
+  "source_external_action_queue": "applications/AUREON_EXTERNAL_ACTION_QUEUE_20260712_20260712_114554.json",
+  "summary": {
+    "ready_not_sent_actions": 2,
+    "packages_validated": 2,
+    "attachments_validated": 6,
+    "issue_count": 0
+  },
+  "packages": [
+    {
+      "action_id": "ACTION-IFS-UK-SWISS-PROJECT-IMPACT-SUPPORT-20260712",
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "route_type": "grant_provider_support_email",
+      "destination": "support@iuk.ukri.org",
+      "ready_status": "READY_NOT_SENT",
+      "email_validation": {
+        "path": "applications/IFS_UK_SWISS_PROJECT_IMPACT_SUPPORT_REFRESH_DRAFT_20260712_20260712_114526.eml",
+        "exists": true,
+        "bytes": 1310594,
+        "sha256": "5e4f8ea7002e1cbbe13ec856032736fe449fa91b16c796ba79675f62bb43ea32",
+        "to": "support@iuk.ukri.org",
+        "from": "Gary Leckey <gaxlec@gmail.com>",
+        "subject": "IFS application 10210100: Project Impact survey answer not persisting",
+        "date": "Sun, 12 Jul 2026 11:45:26 +0100",
+        "body_chars": 1933,
+        "attachment_count": 4,
+        "attachments": [
+          {
+            "filename": "ifs_uk_swiss_10210100_project_impact_numeric_blank_after_cua_retry_20260712_1148.png",
+            "content_type": "image/png",
+            "bytes": 194625,
+            "sha256": "1a781c437dbbada02281a94e873ff5a2b0c6bb243ed93bb1b3c2f5cce787e457"
+          },
+          {
+            "filename": "ifs_uk_swiss_10210100_review_project_impact_block_20260712_1128.png",
+            "content_type": "image/png",
+            "bytes": 359240,
+            "sha256": "ce8960bc9cc6369ffffa51622240707e4538c040bdac24dc3414a0ff58849bbe"
+          },
+          {
+            "filename": "ifs_uk_swiss_project_impact_q1_blank_after_nocache_retry_20260711_1306.png",
+            "content_type": "image/png",
+            "bytes": 54019,
+            "sha256": "0a849fc7519bb409a5257da24b974e93ef06b238a1c09a796733a64d68f2d494"
+          },
+          {
+            "filename": "ifs_uk_swiss_finance_complete_review_project_impact_block_20260711_1252.png",
+            "content_type": "image/png",
+            "bytes": 359675,
+            "sha256": "e9fa5c37d8bf3cce73d6a558976b3c49bd5185e7b8e358f1c417514800248544"
+          }
+        ]
+      },
+      "issues": [],
+      "send_performed": false,
+      "external_submission_performed": false
+    },
+    {
+      "action_id": "ACTION-OPENOCEAN-PITCH-SUBMISSION-20260712",
+      "application_id": "APP-PRIVATE-INVESTOR-OPENOCEAN-FIFTH-WAVE-20260711",
+      "route_type": "investor_pitch_email",
+      "destination": "info@openocean.vc",
+      "ready_status": "READY_NOT_SENT",
+      "email_validation": {
+        "path": "applications/OPENOCEAN_PITCH_SUBMISSION_EMAIL_PACKAGE_20260712_20260712_111305.eml",
+        "exists": true,
+        "bytes": 577362,
+        "sha256": "b85bf1ef11e9f51368bf7731f2c1c8e1d9ff3b3f32475a384b761cd31a139d58",
+        "to": "info@openocean.vc",
+        "from": "Gary Leckey <gaxlec@gmail.com>",
+        "subject": "Aureon Evidence OS - OpenOcean pitch route submission",
+        "date": null,
+        "body_chars": 731,
+        "attachment_count": 2,
+        "attachments": [
+          {
+            "filename": "AUREON_OPENOCEAN_PITCH_DECK_20260712_001500.pdf",
+            "content_type": "application/pdf",
+            "bytes": 419432,
+            "sha256": "77a7ad08de686633d1ec33fb81c88107ba8b97e29b1fa6ae1868486a34dfb71b"
+          },
+          {
+            "filename": "OPENOCEAN_PITCH_KEY_DATA_SANITIZED_20260712_20260712_111305.md",
+            "content_type": "text/markdown",
+            "bytes": 1085,
+            "sha256": "71dc633d5ea7fa51f7e55c20111b23cec9a8c066bfd54807f2247b59bc431e42"
+          }
+        ]
+      },
+      "issues": [],
+      "send_performed": false,
+      "external_submission_performed": false
+    }
+  ],
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false,
+  "upload_performed": false,
+  "contact_route_submitted": false,
+  "outputs": {
+    "json": "applications/EXTERNAL_ACTION_EMAIL_PACKAGE_VALIDATION_20260712_120328.json",
+    "markdown": "applications/EXTERNAL_ACTION_EMAIL_PACKAGE_VALIDATION_20260712_120328.md",
+    "pipeline_report": "pipelines/pipeline_report_20260712_120328_external_action_email_package_validation.json"
+  }
+}

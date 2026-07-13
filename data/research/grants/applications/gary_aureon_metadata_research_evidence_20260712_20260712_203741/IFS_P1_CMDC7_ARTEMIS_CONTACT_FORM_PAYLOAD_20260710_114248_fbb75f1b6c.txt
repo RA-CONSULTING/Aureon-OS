@@ -1,0 +1,19 @@
+Target: Artemis Technologies
+Status: CONTACT_FORM_PAYLOAD_ONLY_NOT_SUBMITTED
+Route: IFS CMDC7 feasibility / pre-deployment / deployment
+
+Suggested form message:
+
+I am Gary Leckey of R&A Consulting and Brokerage Services Ltd in Belfast. Aureon is coordinating our grant evidence workflow for Clean Maritime Demonstration Competition 7, closing 15 July 2026 at 11:00.
+
+We are seeking a rapid fit check for a possible partner-led project. R&A/Aureon would support evidence capture, audit trail, compliance documentation, trial-readiness records and operator workflow automation. We are not presenting R&A as the vessel, port, shipyard or site owner.
+
+Fit question: whether an Artemis-led or Artemis-supported clean-maritime route has a useful evidence-automation work package for trial readiness, compliance evidence and operator workflow.
+
+Evidence needed before any IFS application can be completed: eligible maritime lead or collaborator role, asset/site candidate, strand fit, permissions/safety/permit/insurance basis, budget owner and eligible-cost split.
+
+Please direct this to the correct innovation, commercial, sustainability or consortium contact.
+
+Gary Leckey
+R&A Consulting and Brokerage Services Ltd
+gaxlec@gmail.com

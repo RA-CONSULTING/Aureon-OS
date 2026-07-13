@@ -1,0 +1,32 @@
+﻿[
+    {
+        "name":  "AureonResearch",
+        "path":  "C:\\Users\\user\\AureonResearch",
+        "files":  209,
+        "mb":  66.02
+    },
+    {
+        "name":  "AureonObsidianVault",
+        "path":  "C:\\Users\\user\\AureonObsidianVault",
+        "files":  18,
+        "mb":  0.17
+    },
+    {
+        "name":  "substack_posts",
+        "path":  "C:\\Users\\user\\substack_posts",
+        "files":  15,
+        "mb":  0.06
+    },
+    {
+        "name":  "aureon-json-backup",
+        "path":  "C:\\Users\\user\\aureon-json-backup",
+        "files":  13,
+        "mb":  0.59
+    },
+    {
+        "name":  "aureon-update-preservation-20260508",
+        "path":  "C:\\Users\\user\\aureon-update-preservation-20260508",
+        "files":  6,
+        "mb":  0.86
+    }
+]

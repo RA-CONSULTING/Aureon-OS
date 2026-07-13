@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-07-09T07:24:00+01:00",
+  "account": "gaxlec@gmail.com",
+  "method": "Chrome Google Drive UI upload",
+  "folder": {
+    "name": "Aureon Grant War Room - 2026-07-04",
+    "url": "https://drive.google.com/drive/folders/1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr",
+    "id": "1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr"
+  },
+  "uploaded_file": {
+    "name": "AUREON_GRANT_OPERATOR_SUBMISSION_RUN_20260709.zip",
+    "local_path": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\AUREON_GRANT_OPERATOR_SUBMISSION_RUN_20260709.zip",
+    "size_bytes": 160193,
+    "drive_file_id": null,
+    "drive_search_status": "Browser upload complete; Drive connector search had not indexed the new file at receipt time."
+  },
+  "connector_write_status": {
+    "attempted": true,
+    "result": "failed",
+    "reason": "Google Drive connector token has insufficient Drive update/upload OAuth scope; browser UI upload succeeded."
+  }
+}

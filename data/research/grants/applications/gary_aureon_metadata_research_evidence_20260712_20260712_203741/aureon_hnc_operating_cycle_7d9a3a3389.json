@@ -1,0 +1,189 @@
+{
+  "schema_version": "aureon-hnc-operating-cycle-v1",
+  "generated_at": "2026-05-15T18:57:10.713964",
+  "mode": "harmonic_nexus_core_operating_cycle",
+  "status": "passing",
+  "passed": true,
+  "passed_count": 6,
+  "step_count": 6,
+  "cycle_order": [
+    "who",
+    "what",
+    "where",
+    "when",
+    "how",
+    "act"
+  ],
+  "questions": [
+    {
+      "step": "who",
+      "question": "Who is evaluating the market state?",
+      "answer": "HNC master protocol, probability matrix, Auris sensory nodes, Seer vision, Lyra resonance, King capital logic, shadow agents, and the unified exchange runtime.",
+      "auris_node_focus": "whole_node_set",
+      "cognitive_systems": [
+        "HNCMasterProtocol",
+        "HNCProbabilityMatrix",
+        "AurisNodes",
+        "Seer",
+        "Lyra",
+        "KingCapitalLogic"
+      ],
+      "evidence_source": "state/unified_runtime_status.json#hnc_cognitive_proof.systems",
+      "evidence": {
+        "system_count": 6,
+        "passed_system_count": 6
+      },
+      "timestamp": "2026-05-15T18:57:10.713964",
+      "fed_to_decision_logic": true,
+      "passed": true
+    },
+    {
+      "step": "what",
+      "question": "What live opportunity or market texture is being evaluated?",
+      "answer": "XRPUSD SELL confidence=1.000",
+      "auris_node_focus": "market_texture",
+      "cognitive_systems": [
+        "UnifiedSignalEngine",
+        "Seer",
+        "AurisNodes"
+      ],
+      "evidence_source": "state/unified_runtime_status.json#shared_order_flow.active_order_flow",
+      "evidence": {
+        "symbol": "XRPUSD",
+        "side": "SELL",
+        "confidence": 1.0,
+        "market_texture": {
+          "volatility": 1.0,
+          "momentum": -1.0,
+          "volume": 1.0,
+          "spread": 0.0024849999999999595,
+          "route_unity": 0.8,
+          "model_alignment": 0.4,
+          "confidence": 0.997515
+        }
+      },
+      "timestamp": "2026-05-15T18:57:10.713964",
+      "fed_to_decision_logic": true,
+      "passed": true
+    },
+    {
+      "step": "where",
+      "question": "Where can the route act across the connected financial ecosystem?",
+      "answer": "4/5 ready execution venues: kraken_spot, kraken_margin, binance_spot, alpaca_spot",
+      "auris_node_focus": "infrastructure_and_symbiosis",
+      "cognitive_systems": [
+        "ExchangeRouteClearance",
+        "KingCapitalLogic",
+        "UnifiedExecutor"
+      ],
+      "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.venues",
+      "evidence": {
+        "ready_venue_count": 4,
+        "venue_count": 5,
+        "route_scope": [
+          "kraken_spot",
+          "kraken_margin",
+          "binance_spot",
+          "alpaca_spot"
+        ],
+        "runtime_clearances": []
+      },
+      "timestamp": "2026-05-15T18:57:10.713964",
+      "fed_to_decision_logic": true,
+      "passed": true
+    },
+    {
+      "step": "when",
+      "question": "When was the evidence measured and is it aligned to the current cycle?",
+      "answer": "cycle timestamp 2026-05-15T18:57:10.713964; source_count=6 price_count=20",
+      "auris_node_focus": "sensing_and_memory",
+      "cognitive_systems": [
+        "RuntimeWatchdog",
+        "CentralBeat",
+        "AurisNodes"
+      ],
+      "evidence_source": "state/unified_runtime_status.json#central_beat",
+      "evidence": {
+        "generated_at": "2026-05-15T18:57:10.713964",
+        "source_count": 6,
+        "price_count": 20,
+        "symbol_count": 201
+      },
+      "timestamp": "2026-05-15T18:57:10.713964",
+      "fed_to_decision_logic": true,
+      "passed": true
+    },
+    {
+      "step": "how",
+      "question": "How was the choice reasoned through HNC and Auris?",
+      "answer": "HNC score=0.758529 coherence=0.513367 status=low_coherence",
+      "auris_node_focus": "formula_and_resonance",
+      "cognitive_systems": [
+        "HNCMasterProtocol",
+        "HNCProbabilityMatrix",
+        "Lyra",
+        "AurisNodes"
+      ],
+      "evidence_source": "state/unified_runtime_status.json#hnc_cognitive_proof.master_formula",
+      "evidence": {
+        "master_formula": {
+          "source": "unified runtime blend over HNC/Auris/Seer/Lyra/King contracts",
+          "evaluated": true,
+          "formula": "HNC = 0.22*real_data + 0.16*source_unity + 0.22*auris + 0.14*model_alignment + 0.12*shadow + 0.14*route_unity",
+          "inputs": {
+            "real_data": 1.0,
+            "source_unity": 1.0,
+            "auris": 0.513367,
+            "model_alignment": 0.4,
+            "shadow": 0.813237,
+            "route_unity": 0.8
+          },
+          "score": 0.758529,
+          "passed": true,
+          "timestamp": "2026-05-15T18:57:10.713964"
+        },
+        "auris_coherence": 0.513367,
+        "auris_status": "low_coherence",
+        "shadow_average_score": 0.813237
+      },
+      "timestamp": "2026-05-15T18:57:10.713964",
+      "fed_to_decision_logic": true,
+      "passed": true
+    },
+    {
+      "step": "act",
+      "question": "What action state does the cycle move into?",
+      "answer": "runtime_gated_order_intent_ready",
+      "auris_node_focus": "execution_state",
+      "cognitive_systems": [
+        "KingCapitalLogic",
+        "ShadowTradeValidator",
+        "UnifiedExecutor"
+      ],
+      "evidence_source": "state/unified_runtime_status.json#exchange_action_plan",
+      "evidence": {
+        "action_state": "runtime_gated_order_intent_ready",
+        "shadow_opened_count": 9,
+        "active_shadow_count": 12,
+        "runtime_clearances": []
+      },
+      "timestamp": "2026-05-15T18:57:10.713964",
+      "fed_to_decision_logic": true,
+      "passed": true
+    }
+  ],
+  "fed_to_decision_logic": true,
+  "auris_node_count": 9,
+  "auris_coherence": 0.513367,
+  "master_formula_score": 0.758529,
+  "decision_output": {
+    "symbol": "XRPUSD",
+    "side": "SELL",
+    "confidence": 1.0,
+    "action_state": "runtime_gated_order_intent_ready",
+    "ready_venue_count": 4,
+    "venue_count": 5,
+    "runtime_clearances": []
+  },
+  "contract": "Each who/what/where/when/how/act step must be timestamped, evidence-backed, Auris-evaluated, HNC-scored, and fed into the runtime decision path."
+}

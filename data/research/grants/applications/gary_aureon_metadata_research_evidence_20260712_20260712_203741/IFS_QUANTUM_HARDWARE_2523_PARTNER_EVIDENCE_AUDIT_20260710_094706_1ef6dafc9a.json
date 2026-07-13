@@ -1,0 +1,98 @@
+﻿{
+    "schema_version":  "aureon-ifs-quantum-hardware-partner-evidence-audit-v1",
+    "generated_at":  "2026-07-10T09:47:06+01:00",
+    "operator":  "Aureon",
+    "scope":  "IFS_ONLY",
+    "event":  "ifs_quantum_hardware_partner_evidence_audit",
+    "application_id":  "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+    "opportunity_id":  "IFS-CURRENT-2523",
+    "competition":  "Scaling performance of quantum computing hardware: CR\u0026D",
+    "official_url":  "https://apply-for-innovation-funding.service.gov.uk/competition/2523/overview/780f14e7-b64d-4264-b206-b498304d03c5",
+    "deadline":  "2026-09-18T11:00:00+01:00",
+    "result":  "NO_QUANTUM_HARDWARE_SUBMIT_READY_ROUTE_CURRENT_EVIDENCE_HARDWARE_LEAD_ACCESS_BUDGET_REQUIRED",
+    "official_ifs_requirements":  [
+                                      {
+                                          "requirement":  "Collaborative project lead must be a UK registered business or research and technology organisation.",
+                                          "source":  "Official IFS Quantum Hardware page lines 110-111"
+                                      },
+                                      {
+                                          "requirement":  "Collaborators are invited into IFS and must form an eligible collaboration with at least one organisation claiming funding; one partner cannot account for more than 75 percent of eligible costs.",
+                                          "source":  "Official IFS Quantum Hardware page lines 121-132"
+                                      },
+                                      {
+                                          "requirement":  "Scope must be directly relevant to exploitation of second generation quantum technologies for universal fault tolerant quantum computing.",
+                                          "source":  "Official IFS Quantum Hardware page lines 240-242"
+                                      },
+                                      {
+                                          "requirement":  "Funded themes include below-threshold error rate, scalable control/input-output, syndrome processing latency/throughput, and modular interconnect/qubit networking hardware.",
+                                          "source":  "Official IFS Quantum Hardware page lines 248-255"
+                                      },
+                                      {
+                                          "requirement":  "Projects that do not provide a hardware solution for fault-tolerant quantum computers or do not address specific capability gaps will not be funded.",
+                                          "source":  "Official IFS Quantum Hardware page lines 258-263"
+                                      }
+                                  ],
+    "confirmed_findings":  {
+                               "confirmed_quantum_hardware_lead":  false,
+                               "confirmed_hardware_access":  false,
+                               "confirmed_fault_tolerant_hardware_solution":  false,
+                               "confirmed_capability_gap_and_solution":  false,
+                               "confirmed_collaborative_budget":  false,
+                               "confirmed_ifs_partner_invites_ready":  false,
+                               "direct_ifs_submission_unlocked":  false
+                           },
+    "local_evidence_readback":  [
+                                    {
+                                        "path":  "applications/IFS_CONVERSION_PACK_SCALING_PERFORMANCE_OF_QUANTUM_COMPUTING_HARDWARE_CR_D_20260709.md",
+                                        "finding":  "Aureon partner pack exists for assurance, reproducibility, benchmark traceability and reporting; it explicitly requires a quantum hardware lead and hardware access."
+                                    },
+                                    {
+                                        "path":  "applications/IFS_PORTAL_READY_TEXT_SCALING_PERFORMANCE_OF_QUANTUM_COMPUTING_HARDWARE_CR_D_20260709.md",
+                                        "finding":  "Portal-ready text is staged language only and does not evidence hardware ownership, hardware access, consortium budget or eligible partner invites."
+                                    },
+                                    {
+                                        "path":  "applications/IFS_QUANTUM_HARDWARE_PARTNER_ABSTRACT_20260709.md",
+                                        "finding":  "Local abstract states the route is not a standalone Aureon submission and requires a quantum hardware lead partner, device-level work packages, hardware milestones and scale evidence."
+                                    },
+                                    {
+                                        "path":  "applications/IFS_BATCH_ROUTE_UNLOCK_AUDIT_20260710_074640.json",
+                                        "finding":  "Earlier unlock audit found only planning/index files, not a quantum hardware lead partner commitment."
+                                    }
+                                ],
+    "drive_searches":  [
+                           {
+                               "query":  "quantum hardware",
+                               "result_summary":  "Returned Aureon War Room/planning files, master index, research documents and grant package files. No hardware lead partner commitment or hardware access evidence found."
+                           },
+                           {
+                               "query":  "fault tolerant quantum",
+                               "result_summary":  "No route-specific evidence surfaced from Drive metadata searches."
+                           },
+                           {
+                               "query":  "qubit",
+                               "result_summary":  "No confirmed hardware partner or access evidence surfaced from Drive metadata searches."
+                           },
+                           {
+                               "query":  "syndrome processing",
+                               "result_summary":  "No confirmed hardware partner or access evidence surfaced from Drive metadata searches."
+                           }
+                       ],
+    "route_action":  {
+                         "portal_draft_opened":  false,
+                         "final_submission_attempted":  false,
+                         "partner_invite_sent":  false,
+                         "email_sent":  false,
+                         "upload_performed":  false,
+                         "reason":  "Official scope is quantum hardware CR\u0026D for fault-tolerant quantum computing. Current Aureon evidence supports a possible assurance work package only and does not evidence hardware lead, hardware access, device work packages, consortium budget or partner invites."
+                     },
+    "next_actions":  [
+                         "Do not submit the Quantum Hardware route as a standalone R\u0026A/Aureon application.",
+                         "Use the staged partner abstract only to obtain a named quantum hardware business or RTO lead, device/access evidence, capability gap, hardware-solution scope and eligible-cost budget.",
+                         "Only move to IFS drafting after partner invite details and cost shares are evidenced."
+                     ],
+    "controls":  [
+                     "No unsupported quantum hardware lead or access claim made",
+                     "No unsupported device, fault-tolerant hardware, benchmark, partner invite or budget claim made",
+                     "No IFS portal mutation, external email, upload, partner invite or final submission performed"
+                 ]
+}

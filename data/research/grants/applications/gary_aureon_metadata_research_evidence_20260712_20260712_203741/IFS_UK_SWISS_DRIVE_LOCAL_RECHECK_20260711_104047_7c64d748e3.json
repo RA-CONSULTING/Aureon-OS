@@ -1,0 +1,130 @@
+{
+  "schema_version": "aureon-ifs-uk-swiss-drive-local-recheck-v1",
+  "generated_at": "2026-07-11T10:40:47+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_uk_swiss_drive_local_evidence_recheck",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "portal_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210100",
+  "competition": "UK-Switzerland CR&D Round 3",
+  "result": "IFS_UK_SWISS_DRIVE_LOCAL_RECHECK_NO_UNLOCK_KEEP_90_PERCENT_DRAFT",
+  "live_ifs_basis": {
+    "source": "applications/IFS_UK_SWISS_LIVE_BLOCKER_READBACK_20260711_103601.json",
+    "progress_percent": "90%",
+    "incomplete_sections": [
+      "Your project finances",
+      "Finances overview",
+      "Project impact",
+      "Award terms and conditions"
+    ],
+    "finance_total_costs_gbp": 0,
+    "finance_funding_sought_gbp": 0,
+    "project_impact_q1_attempted_value": "1",
+    "project_impact_q1_provider_persisted": false,
+    "project_impact_final_submit_pressed": false,
+    "award_terms_accepted": false
+  },
+  "drive_readback": [
+    {
+      "query": "10210100",
+      "finding": "No direct Drive result found for the portal application number.",
+      "unlock_evidence_found": false
+    },
+    {
+      "query": "UK Switzerland",
+      "finding": "Returned the Aureon Grant War Room and duplicate workbook uploads; these are planning/control records, not partner or budget evidence.",
+      "unlock_evidence_found": false
+    },
+    {
+      "query": "Swiss partner",
+      "finding": "Returned the Aureon Grant War Room and operating log. The Swiss partner entry is a target requirement/prospect, not a named commitment.",
+      "unlock_evidence_found": false
+    },
+    {
+      "query": "Innosuisse",
+      "finding": "Returned the same grant war-room records. No Innosuisse-side application, Swiss participant acceptance, or research institute evidence was found.",
+      "unlock_evidence_found": false
+    },
+    {
+      "query": "Project Impact",
+      "finding": "Returned unrelated research/tooling files rather than provider-persisted Project Impact answers for application 10210100.",
+      "unlock_evidence_found": false
+    }
+  ],
+  "drive_artifact_readback": [
+    {
+      "source": "Aureon Grant War Room - 2026-07-04",
+      "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+      "finding": "Funding Pipeline row for UK-Switzerland records that a Swiss implementation partner and research institute are required; next action is to build a target list and collaboration pitch.",
+      "unlock_evidence_found": false
+    },
+    {
+      "source": "Aureon Grant War Room validation checklist",
+      "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+      "finding": "Partners remain 'Not clear' and budget remains 'Not started'.",
+      "unlock_evidence_found": false
+    },
+    {
+      "source": "AUREON_GRANT_OPERATING_LOG.md",
+      "url": "https://drive.google.com/file/d/18RIGlvCCNBx_GH_Mdo-37QSImZ-SXkfg",
+      "finding": "Operating log records UK-Switzerland blocker as Swiss implementation partner plus research institute; no later partner commitment or budget unlock was present in Drive readback.",
+      "unlock_evidence_found": false
+    }
+  ],
+  "local_search_readback": [
+    {
+      "scope": "C:/Users/user/aureon-trading/data/research/grants",
+      "finding": "Found prior Aureon IFS readbacks, stop/go audits, completion workbooks, and partner-targeting/outreach drafts. They confirm the same missing Swiss partner, research institute/waiver, budget, finance, Project Impact and terms gates.",
+      "unlock_evidence_found": false
+    },
+    {
+      "scope": "C:/Users/user/outputs, Documents, Downloads, Desktop, AureonResearch",
+      "finding": "Found general grant, research, accounting and outreach material only. No signed partner commitment, partner budget, eligible-cost split, Project Impact persistence proof or award-terms authority was found.",
+      "unlock_evidence_found": false
+    },
+    {
+      "scope": "Project Impact baseline values",
+      "finding": "Aureon records contain baseline values for employee count and some historic impact fields, but the live provider readback still showed Q1 FTE did not persist and partner-dependent forecast/readiness fields are not evidenced.",
+      "unlock_evidence_found": false
+    }
+  ],
+  "remaining_required_before_final_submit": [
+    "Named Swiss implementation partner",
+    "Research institute or valid waiver evidence",
+    "Partner commitment evidence",
+    "Partner budget and eligible-cost split",
+    "R&A project finance cost lines with source evidence",
+    "Project Impact values that persist on provider readback",
+    "Partner-dependent Project Impact forecast/readiness inputs",
+    "Award terms acceptance after finance and Project Impact completion",
+    "Final IFS review and submit action-time confirmation"
+  ],
+  "decision": {
+    "confirmed_unlock_evidence_found": false,
+    "direct_submit_ready": false,
+    "safe_portal_action_now": false,
+    "provider_verified_submitted": false,
+    "is_100_percent_complete": false,
+    "submit_button_disabled": true,
+    "new_browser_submissions_available": 0,
+    "portal_changed_by_this_recheck": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_form_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false,
+    "award_terms_accepted": false,
+    "project_impact_submission_performed": false
+  },
+  "controls": [
+    "Drive connector was used for readback/search only.",
+    "Local search was targeted to grant/evidence locations and did not copy credentials or secrets into artifacts.",
+    "No IFS field was changed by this evidence recheck.",
+    "No Project Impact final Submit button was pressed.",
+    "No award terms were accepted.",
+    "No final IFS application submit was attempted.",
+    "No email, contact form, upload, partner invite or external account action was performed.",
+    "Aureon did not infer partner commitments, budgets, permits, export-control status, readiness levels or forecast values from planning documents."
+  ]
+}

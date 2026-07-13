@@ -1,0 +1,113 @@
+{
+  "schema_version": "aureon-ifs-maritime-unlock-evidence-search-v1",
+  "generated_at": "2026-07-10T09:03:49+01:00",
+  "operator": "Aureon",
+  "scope": "IFS_ONLY",
+  "event": "ifs_maritime_unlock_evidence_search",
+  "target_routes": [
+    "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+    "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+    "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+    "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+    "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+    "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709"
+  ],
+  "nearest_deadline_routes": [
+    {
+      "id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "deadline": "2026-07-15T11:00:00+01:00"
+    },
+    {
+      "id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "deadline": "2026-07-15T11:00:00+01:00"
+    },
+    {
+      "id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "deadline": "2026-07-15T11:00:00+01:00"
+    }
+  ],
+  "result": "NO_CONFIRMED_MARITIME_PARTNER_ASSET_BUDGET_PERMIT_EVIDENCE_FOUND",
+  "confirmed_findings": {
+    "confirmed_maritime_lead_partner": false,
+    "confirmed_vessel_or_infrastructure_asset": false,
+    "confirmed_port_shipyard_or_trial_site_access": false,
+    "confirmed_safety_or_permit_basis": false,
+    "confirmed_deployment_or_trial_plan": false,
+    "confirmed_partner_budget_or_eligible_costs": false,
+    "confirmed_aureon_role_contract_or_collaboration_status": false,
+    "direct_ifs_draft_unlocked": false
+  },
+  "drive_searches": [
+    {
+      "query": "Clean Maritime",
+      "result_summary": "Returned mostly unrelated markdown/setup files. No confirmed clean maritime partner, asset, budget, permit, or trial evidence found."
+    },
+    {
+      "query": "CMDC7",
+      "result_summary": "No Google Drive search results."
+    },
+    {
+      "query": "maritime partner",
+      "result_summary": "Returned an older untitled document and leads.xlsx containing broad company lists, plus unrelated files. No confirmed CMDC7 or ZEVI partner relationship found."
+    },
+    {
+      "query": "Belfast Harbour",
+      "result_summary": "Returned private bank statement PDFs and unrelated documents; bank/statement material is excluded from default grant use and did not evidence a maritime partner commitment."
+    },
+    {
+      "query": "vessel",
+      "result_summary": "Returned writing/docx material including Arctic Threshold and related documents. No confirmed vessel asset or deployment partner evidence found."
+    },
+    {
+      "query": "Artemis Technologies",
+      "result_summary": "No Google Drive search results."
+    },
+    {
+      "query": "Belfast Maritime",
+      "result_summary": "Returned Atlantic Seaboard Substrate and other writing/research documents. No confirmed CMDC7 or ZEVI partner commitment found."
+    },
+    {
+      "query": "Green Seas",
+      "result_summary": "Returned writing/research documents. No confirmed consortium membership, lead-applicant commitment, budget, or asset access for Aureon found."
+    }
+  ],
+  "drive_files_inspected": [
+    {
+      "title": "Untitled document",
+      "id": "193kdmEUMF19tE7Oo_drxrfCgRioSiZddeimfakhYulU",
+      "finding": "Broad UK company-name list. It contains potential companies only; it does not evidence a CMDC7/ZEVI partner commitment, maritime asset, project budget, or permit basis."
+    },
+    {
+      "title": "leads.xlsx",
+      "id": "1R21WvaP1IjwO8P7Abc3ilKjZrkCWs4sm",
+      "finding": "Broad company-name spreadsheet. It includes possible industrial contacts only; no confirmed clean maritime project relationship or budget."
+    }
+  ],
+  "local_evidence_readback": [
+    {
+      "path": "applications/IFS_PARTNER_OUTREACH_PIPELINE_20260710_081819.json",
+      "finding": "Maritime candidates are Artemis Technologies, Belfast Harbour, Harland & Wolff / Navantia UK Belfast, and the NI Green Seas / Belfast Maritime Consortium route. The file explicitly states all targets are candidates, not confirmed partners."
+    },
+    {
+      "path": "applications/IFS_PARTNER_OUTREACH_PIPELINE_20260710_081819.md",
+      "finding": "Current gate requires named maritime lead partner, vessel/infrastructure asset, site, safety/permit basis, deployment/trial plan and partner budget before portal draft or submission."
+    },
+    {
+      "path": "applications/IFS_MARITIME_CONVERSION_PACK_MANIFEST_20260710_073407.json",
+      "finding": "Manifest controls state that no partner invitation was sent and no vessel, port, shipyard, infrastructure, permit, insurance, budget, or partner relationship was claimed without evidence."
+    }
+  ],
+  "route_action": {
+    "portal_draft_opened": false,
+    "final_submission_attempted": false,
+    "partner_invite_sent": false,
+    "email_sent": false,
+    "upload_performed": false,
+    "reason": "No confirmed partner, asset, safety/permit, trial/deployment plan, or partner budget evidence was found."
+  },
+  "next_actions": [
+    "Use the existing maritime outreach template only after an exact target recipient and payload are action-time approved.",
+    "If any partner response is obtained, record it as source evidence before changing any maritime route to draft-ready or submit-ready.",
+    "Do not open CMDC7 or ZEVI IFS drafts without named maritime lead, asset/site, safety/permit, trial/deployment plan, and budget evidence."
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "schema_version": "aureon-live-portal-status-v1",
+  "operator": "Aureon",
+  "recorded_at": "2026-07-09T11:09:28+01:00",
+  "application_id": "APP-IFS-FLF-R11-2499-20260709",
+  "ifs_application_number": "10209992",
+  "portal_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209992",
+  "account_email": "gaxlec@gmail.com",
+  "applicant_organisation": "R&A Consulting and Brokerage Services Ltd",
+  "company_number": "NI696693",
+  "lead_applicant": "Gary Anthony Leckey",
+  "project_title": "Aureon Evidence OS for AI-Driven Scientific Discovery and Auditable SME Automation",
+  "status": "SUBMITTED",
+  "completed_sections": [
+    "Application details",
+    "Subsidy basis",
+    "Research category",
+    "Application team",
+    "Project summary",
+    "Public description",
+    "Scope",
+    "Applicant location",
+    "Host organisation",
+    "Core team members",
+    "Non-funded project partners",
+    "Animal testing",
+    "Permits and licences",
+    "International collaboration",
+    "Export licence",
+    "Trusted Research and Innovation",
+    "Resubmissions",
+    "Reduced hours",
+    "Vision",
+    "Approach and innovation",
+    "Capability",
+    "Career development",
+    "Host support",
+    "Ethics and responsible research and innovation",
+    "Project management",
+    "Risks",
+    "Added value",
+    "Costs and value for money",
+    "Data management and sharing",
+    "Your project finances",
+    "Finances overview",
+    "Award terms and conditions",
+    "Review and submit"
+  ],
+  "uploaded_files": [
+    "IFS_FUTURE_LEADERS_R11_10209992_ETHICS_RESPONSE_20260709.pdf",
+    "IFS_FUTURE_LEADERS_R11_10209992_PAYE_EVIDENCE_20260709.md",
+    "applications/evidence/HMRC_PAYE_APPLICATION_RECEIVED_RNA_CONSULTING_BRPY00000169269_20260709.jpg",
+    "IFS_FUTURE_LEADERS_R11_10209992_READY_FOR_FINAL_SUBMIT_20260709.md",
+    "applications/evidence/HMRC_PAYE_APPLICATION_RECEIVED_RNA_CONSULTING_BRPY00000169269_20260709_source2.jpg",
+    "IFS_FUTURE_LEADERS_R11_10209992_SUBMISSION_STATUS_20260709.md",
+    "IFS_FUTURE_LEADERS_R11_10209992_SUBMISSION_RECEIPT_20260709.json"
+  ],
+  "diagnostics": [
+    "CHROME_IFS_ACCESS_DIAGNOSTIC_20260709.md"
+  ],
+  "finance_entry_draft": [
+    "IFS_FUTURE_LEADERS_R11_10209992_FINANCE_PORTAL_ENTRY_20260709.md",
+    "IFS_FUTURE_LEADERS_R11_10209992_PAYE_EVIDENCE_20260709.md"
+  ],
+  "remaining_sections": [],
+  "portal_progress": "100%",
+  "subsidy_basis": {
+    "completed_at": "2026-07-09T08:55:00+01:00",
+    "basis": "Subsidy Control Act 2022",
+    "answers": {
+      "enterprise_incorporated_and_registered_in_northern_ireland": "Yes",
+      "funding_directed_outside_agriculture_fisheries_and_aquaculture": "Yes",
+      "enterprise_affects_trade_in_goods_or_ni_electricity_market": "No",
+      "enterprise_only_trades_in_services_market_of_northern_ireland": "Yes"
+    }
+  },
+  "company_house_control": {
+    "source": "https://find-and-update.company-information.service.gov.uk/company/NI696693",
+    "company_status": "Active",
+    "control_item": "Confirmation statement listed as overdue; resolve or document before final submission."
+  },
+  "final_submission_made": true,
+  "next_action": "Monitor IFS track page and gaxlec@gmail.com for eligibility checks, assessment updates, and funder correspondence. Do not reopen unless deliberately resubmitting before deadline.",
+  "paye_evidence": {
+    "received_at": "2026-07-09T09:27:00+01:00",
+    "source": "User-supplied GOV.UK / HM Revenue & Customs screenshot",
+    "applicant_organisation": "R&A Consulting and Brokerage Services Ltd",
+    "addressee": "Gary Leckey",
+    "status": "PAYE application received by HMRC; final employer PAYE reference not yet evidenced",
+    "application_reference": "BRPY00000169269",
+    "local_image": "applications/evidence/HMRC_PAYE_APPLICATION_RECEIVED_RNA_CONSULTING_BRPY00000169269_20260709.jpg",
+    "local_note": "IFS_FUTURE_LEADERS_R11_10209992_PAYE_EVIDENCE_20260709.md",
+    "additional_local_image": "applications/evidence/HMRC_PAYE_APPLICATION_RECEIVED_RNA_CONSULTING_BRPY00000169269_20260709_source2.jpg"
+  },
+  "finance": {
+    "total_eligible_costs_gbp": 250000,
+    "funding_level_percent": 70,
+    "funding_sought_gbp": 175000,
+    "company_contribution_gbp": 75000,
+    "other_public_funding_gbp": 0,
+    "project_location_postcode": "BT12 4HX",
+    "organisation_size": "Micro or small",
+    "turnover_gbp": 100497,
+    "full_time_employees": 1,
+    "labour_gbp": 200000,
+    "overhead_gbp": 40000,
+    "other_costs_gbp": 10000,
+    "paye_portal_option": "NOT_REGISTERED",
+    "paye_evidence_reference": "BRPY00000169269"
+  },
+  "final_review": {
+    "url": "https://apply-for-innovation-funding.service.gov.uk/application/10209992/track",
+    "status": "Application submitted",
+    "submitted_at_display": "9 Jul 2026 at 11:07am"
+  },
+  "submission": {
+    "status": "Application submitted",
+    "submitted_at": "2026-07-09T11:07:00+01:00",
+    "submitted_at_display": "9 Jul 2026 at 11:07am",
+    "track_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209992/track",
+    "competition": "Future Leaders Fellowships: Round 11, business and non-academic",
+    "finance": {
+      "currency": "GBP",
+      "grant_request": 175000,
+      "eligible_costs": 250000,
+      "company_contribution": 75000,
+      "other_public_funding": 0,
+      "funding_level_percent": 70
+    }
+  }
+}

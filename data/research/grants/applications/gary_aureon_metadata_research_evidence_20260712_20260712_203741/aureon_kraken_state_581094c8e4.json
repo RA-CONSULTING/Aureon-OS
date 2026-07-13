@@ -1,0 +1,106 @@
+{
+  "balance": 111.4954282039699,
+  "peak_balance": 155.69962862831332,
+  "total_trades": 6,
+  "wins": 2,
+  "losses": 4,
+  "total_fees": 2.4951727897095397,
+  "compounded": 0.0,
+  "harvested": 0.0,
+  "max_drawdown": 50.42967033293107,
+  "positions": {
+    "TUSDUSD": {
+      "entry_price": 0.9789,
+      "quantity": 11.80156,
+      "entry_fee": 0.046210188336000005,
+      "entry_value": 11.552547084,
+      "momentum": 0.0,
+      "coherence": 0.5,
+      "entry_time": 1765715880.4809604,
+      "dominant_node": "Portfolio",
+      "cycles": 56
+    },
+    "BTCUSDC": {
+      "entry_price": 89471.435,
+      "quantity": 6.74e-06,
+      "entry_fee": 0.0006030374719,
+      "entry_value": 0.6030374719,
+      "momentum": 0.0,
+      "coherence": 0.5,
+      "entry_time": 1765715880.7190425,
+      "dominant_node": "Portfolio",
+      "cycles": 56
+    },
+    "DOGEUSDC": {
+      "entry_price": 0.13705,
+      "quantity": 55.0,
+      "entry_fee": 0.0071608625,
+      "entry_value": 7.53775,
+      "momentum": -1.877,
+      "coherence": 0.65,
+      "entry_time": 1765716057.5193965,
+      "dominant_node": "ForceScout",
+      "cycles": 56
+    },
+    "SOLUSDC": {
+      "entry_price": 131.79,
+      "quantity": 0.057,
+      "entry_fee": 0.0071364285,
+      "entry_value": 7.51203,
+      "momentum": -1.089,
+      "coherence": 0.65,
+      "entry_time": 1765716061.079393,
+      "dominant_node": "ForceScout",
+      "cycles": 56
+    },
+    "XRPUSDC": {
+      "entry_price": 2.0046,
+      "quantity": 3.7,
+      "entry_fee": 0.007046169,
+      "entry_value": 7.41702,
+      "momentum": -1.789,
+      "coherence": 0.65,
+      "entry_time": 1765716062.848897,
+      "dominant_node": "ForceScout",
+      "cycles": 56
+    },
+    "LTCUSDC": {
+      "entry_price": 80.33,
+      "quantity": 0.093,
+      "entry_fee": 0.0070971555000000006,
+      "entry_value": 7.470689999999999,
+      "momentum": -1.738,
+      "coherence": 0.65,
+      "entry_time": 1765716071.3029408,
+      "dominant_node": "ForceScout",
+      "cycles": 56
+    },
+    "ADAUSDC": {
+      "entry_price": 0.4041,
+      "quantity": 18.6,
+      "entry_fee": 0.007140447000000001,
+      "entry_value": 7.516260000000001,
+      "momentum": -2.06,
+      "coherence": 0.65,
+      "entry_time": 1765716073.09984,
+      "dominant_node": "ForceScout",
+      "cycles": 56
+    },
+    "HBARUSDC": {
+      "entry_price": 0.12188,
+      "quantity": 61.0,
+      "entry_fee": 0.0070629460000000005,
+      "entry_value": 7.43468,
+      "momentum": -1.783,
+      "coherence": 0.65,
+      "entry_time": 1765716081.5632493,
+      "dominant_node": "ForceScout",
+      "cycles": 56
+    }
+  },
+  "timestamp": 1765717231.5139668,
+  "iteration": 37,
+  "first_start_balance": 111.4954282039699,
+  "first_start_time": 1765798489.4154055,
+  "initial_balance": 111.4954282039699
+}

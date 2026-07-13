@@ -1,0 +1,32 @@
+{
+  "schema_version": "aureon-validation-v1",
+  "generated_at": "2026-07-10T15:01:18+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_repayable_finance_hold_validation",
+  "source_repayable_finance_hold_audit": "applications/IFS_REPAYABLE_FINANCE_HOLD_AUDIT_20260710_145906.json",
+  "source_current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_145945.json",
+  "source_current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_145957.json",
+  "summary": {
+    "validation_passed": true,
+    "failures": [],
+    "repayable_finance_routes_reviewed": 1,
+    "grant_routes_created": 0,
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0,
+    "safe_portal_actions_available": 0,
+    "route_held_outside_grant_queue": true,
+    "board_ifs_applications_total": 20,
+    "board_submitted_monitor_only": 4,
+    "board_active_not_submitted": 16,
+    "secret_scan_hits": {},
+    "internal_language_scan_hits": {}
+  },
+  "controls": [
+    "Validation only; no IFS portal field was changed.",
+    "No IFS application was submitted.",
+    "No email, contact form, partner invite, upload, award terms or Project Impact action was performed.",
+    "Innovation Loans remains outside the grant-submit queue as repayable finance."
+  ],
+  "result": "IFS_REPAYABLE_FINANCE_HOLD_VALIDATION_PASSED"
+}

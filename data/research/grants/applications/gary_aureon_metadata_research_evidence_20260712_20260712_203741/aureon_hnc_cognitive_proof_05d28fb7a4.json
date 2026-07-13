@@ -1,0 +1,725 @@
+{
+  "generated_at": "2026-05-22T19:21:00.880531",
+  "status": "passing",
+  "passed": true,
+  "who": "HNC master formula plus Auris nodes, Seer, Lyra, King, shadow agents, and unified exchange runtime",
+  "what": "timestamped proof that cognitive logic evaluated real market data and moved through the intended flow",
+  "where": "C:\\Users\\user\\aureon-trading\\state\\aureon_hnc_cognitive_proof.json",
+  "when": "2026-05-22T19:21:00.880531",
+  "how": "HNC formula, Auris node coherence, Seer/Lyra/King readings, route state, and shadow validation were evaluated together.",
+  "act": "runtime_gated_order_intent_ready",
+  "real_data": {
+    "passed": true,
+    "source_count": 3,
+    "source_names": [
+      "capital",
+      "binance",
+      "live_stream_cache"
+    ],
+    "symbol_count": 158,
+    "active_signal_count": 20,
+    "price_count": 20,
+    "avg_confidence": 0.88604,
+    "avg_change_pct": -3.13145,
+    "avg_abs_change_pct": 13.29885,
+    "avg_support_count": 1.25,
+    "model_alignment_rate": 0.0,
+    "simulation_fallback_disabled": true,
+    "live_env_enabled": true,
+    "data_source_kind": "live_exchange_runtime"
+  },
+  "market_texture": {
+    "volatility": 1.0,
+    "momentum": -0.62629,
+    "volume": 0.53125,
+    "spread": 0.11395999999999995,
+    "route_unity": 0.6,
+    "model_alignment": 0.0,
+    "confidence": 0.88604
+  },
+  "master_formula": {
+    "source": "unified runtime blend over HNC/Auris/Seer/Lyra/King contracts",
+    "evaluated": true,
+    "formula": "HNC = 0.22*real_data + 0.16*source_unity + 0.22*auris + 0.14*model_alignment + 0.12*shadow + 0.14*route_unity",
+    "inputs": {
+      "real_data": 1.0,
+      "source_unity": 0.75,
+      "auris": 0.343464,
+      "model_alignment": 0.0,
+      "shadow": 0.734881,
+      "route_unity": 0.6
+    },
+    "score": 0.587748,
+    "passed": true,
+    "timestamp": "2026-05-22T19:21:00.880531"
+  },
+  "auris_nodes": {
+    "source": "aureon/utils/aureon_queen_hive_mind.py::AURIS_NODES",
+    "evaluated": true,
+    "passed": true,
+    "node_count": 9,
+    "coherence": 0.343464,
+    "status": "low_coherence",
+    "market_texture": {
+      "volatility": 1.0,
+      "momentum": -0.62629,
+      "volume": 0.53125,
+      "spread": 0.11396,
+      "route_unity": 0.6,
+      "model_alignment": 0.0,
+      "confidence": 0.88604
+    },
+    "nodes": {
+      "Tiger": {
+        "value": 0.0,
+        "freq": 220.0,
+        "role": "volatility",
+        "weight": 1.0,
+        "weighted_value": 0.0,
+        "domain": "cuts noise",
+        "timestamp": "2026-05-22T19:21:00.880531"
+      },
+      "Falcon": {
+        "value": 0.597778,
+        "freq": 285.0,
+        "role": "momentum",
+        "weight": 1.2,
+        "weighted_value": 0.717334,
+        "domain": "speed and attack",
+        "timestamp": "2026-05-22T19:21:00.880531"
+      },
+      "Hummingbird": {
+        "value": 0.005941,
+        "freq": 396.0,
+        "role": "stability",
+        "weight": 0.8,
+        "weighted_value": 0.004752,
+        "domain": "high frequency lock",
+        "timestamp": "2026-05-22T19:21:00.880531"
+      },
+      "Dolphin": {
+        "value": 0.038839,
+        "freq": 528.0,
+        "role": "emotion",
+        "weight": 1.5,
+        "weighted_value": 0.058259,
+        "domain": "waveform carrier",
+        "timestamp": "2026-05-22T19:21:00.880531"
+      },
+      "Deer": {
+        "value": 0.11396,
+        "freq": 639.0,
+        "role": "sensing",
+        "weight": 0.9,
+        "weighted_value": 0.102564,
+        "domain": "micro shifts",
+        "timestamp": "2026-05-22T19:21:00.880531"
+      },
+      "Owl": {
+        "value": 0.6,
+        "freq": 741.0,
+        "role": "memory",
+        "weight": 1.1,
+        "weighted_value": 0.66,
+        "domain": "pattern memory",
+        "timestamp": "2026-05-22T19:21:00.880531"
+      },
+      "Panda": {
+        "value": 0.5,
+        "freq": 852.0,
+        "role": "love",
+        "weight": 1.3,
+        "weighted_value": 0.65,
+        "domain": "grounding safety",
+        "timestamp": "2026-05-22T19:21:00.880531"
+      },
+      "CargoShip": {
+        "value": 0.6,
+        "freq": 936.0,
+        "role": "infrastructure",
+        "weight": 0.7,
+        "weighted_value": 0.42,
+        "domain": "liquidity buffer",
+        "timestamp": "2026-05-22T19:21:00.880531"
+      },
+      "Clownfish": {
+        "value": 0.65,
+        "freq": 963.0,
+        "role": "symbiosis",
+        "weight": 1.0,
+        "weighted_value": 0.65,
+        "domain": "connection",
+        "timestamp": "2026-05-22T19:21:00.880531"
+      }
+    }
+  },
+  "systems": {
+    "hnc_master_protocol": {
+      "name": "HNC master protocol",
+      "role": "global financial frequency mapper and trading bridge",
+      "path": "aureon/strategies/hnc_master_protocol.py",
+      "present": true,
+      "passed": true,
+      "markers_found": [
+        "class HarmonicNexusCore",
+        "class HNCTradingBridge",
+        "def enhance_opportunity"
+      ],
+      "markers_required": [
+        "class HarmonicNexusCore",
+        "class HNCTradingBridge",
+        "def enhance_opportunity"
+      ],
+      "line_count": 1508
+    },
+    "hnc_probability_matrix": {
+      "name": "HNC probability matrix",
+      "role": "timestamped harmonic probability validation",
+      "path": "aureon/strategies/hnc_probability_matrix.py",
+      "present": true,
+      "passed": true,
+      "markers_found": [
+        "class FrequencySnapshot",
+        "class ProbabilityMatrix",
+        "class HNCProbabilityIntegration"
+      ],
+      "markers_required": [
+        "class FrequencySnapshot",
+        "class ProbabilityMatrix",
+        "class HNCProbabilityIntegration"
+      ],
+      "line_count": 2219
+    },
+    "auris_nodes": {
+      "name": "Auris nodes",
+      "role": "nine-node sensory market texture evaluation",
+      "path": "aureon/utils/aureon_queen_hive_mind.py",
+      "present": true,
+      "passed": true,
+      "markers_found": [
+        "AURIS_NODES",
+        "def read_auris_nodes",
+        "def get_auris_coherence"
+      ],
+      "markers_required": [
+        "AURIS_NODES",
+        "def read_auris_nodes",
+        "def get_auris_coherence"
+      ],
+      "line_count": 15548
+    },
+    "seer": {
+      "name": "Seer",
+      "role": "vision and oracle consensus layer",
+      "path": "aureon/intelligence/aureon_seer.py",
+      "present": true,
+      "passed": true,
+      "markers_found": [
+        "class SeerVision",
+        "class SeerConsensus",
+        "class OracleReading"
+      ],
+      "markers_required": [
+        "class SeerVision",
+        "class SeerConsensus",
+        "class OracleReading"
+      ],
+      "line_count": 3633,
+      "runtime_reading": {
+        "evaluated": true,
+        "symbol": "XAUUSD",
+        "signal": "NEUTRAL",
+        "confidence": 0.7352,
+        "vision_grade": "clear",
+        "timestamp": "2026-05-22T19:21:00.880531"
+      }
+    },
+    "lyra": {
+      "name": "Lyra",
+      "role": "harmonic resonance and market affect layer",
+      "path": "aureon/trading/aureon_lyra.py",
+      "present": true,
+      "passed": true,
+      "markers_found": [
+        "class LyraResonance",
+        "class TheLyre",
+        "class ChamberOfSpirit"
+      ],
+      "markers_required": [
+        "class LyraResonance",
+        "class TheLyre",
+        "class ChamberOfSpirit"
+      ],
+      "line_count": 1491,
+      "runtime_reading": {
+        "evaluated": true,
+        "resonance_score": 0.335752,
+        "resonance_frequency_hz": 590.744,
+        "resonance_grade": "low_coherence",
+        "timestamp": "2026-05-22T19:21:00.880531"
+      }
+    },
+    "king": {
+      "name": "King",
+      "role": "capital growth and compounding discipline layer",
+      "path": "aureon/trading/compound_king.py",
+      "present": true,
+      "passed": true,
+      "markers_found": [
+        "class CompoundKing",
+        "def get_daily_return_target",
+        "def run_30_days"
+      ],
+      "markers_required": [
+        "class CompoundKing",
+        "def get_daily_return_target",
+        "def run_30_days"
+      ],
+      "line_count": 345,
+      "runtime_reading": {
+        "evaluated": true,
+        "executor_quote_usd": 5.0,
+        "max_open_positions": 12,
+        "route_unity": 0.6,
+        "discipline_score": 0.72056,
+        "timestamp": "2026-05-22T19:21:00.880531"
+      }
+    }
+  },
+  "operating_cycle": {
+    "schema_version": "aureon-hnc-operating-cycle-v1",
+    "generated_at": "2026-05-22T19:21:00.880531",
+    "mode": "harmonic_nexus_core_operating_cycle",
+    "status": "passing",
+    "passed": true,
+    "passed_count": 6,
+    "step_count": 6,
+    "cycle_order": [
+      "who",
+      "what",
+      "where",
+      "when",
+      "how",
+      "act"
+    ],
+    "questions": [
+      {
+        "step": "who",
+        "question": "Who is evaluating the market state?",
+        "answer": "HNC master protocol, probability matrix, Auris sensory nodes, Seer vision, Lyra resonance, King capital logic, shadow agents, and the unified exchange runtime.",
+        "auris_node_focus": "whole_node_set",
+        "cognitive_systems": [
+          "HNCMasterProtocol",
+          "HNCProbabilityMatrix",
+          "AurisNodes",
+          "Seer",
+          "Lyra",
+          "KingCapitalLogic"
+        ],
+        "evidence_source": "state/unified_runtime_status.json#hnc_cognitive_proof.systems",
+        "evidence": {
+          "system_count": 6,
+          "passed_system_count": 6
+        },
+        "timestamp": "2026-05-22T19:21:00.880531",
+        "fed_to_decision_logic": true,
+        "passed": true
+      },
+      {
+        "step": "what",
+        "question": "What live opportunity or market texture is being evaluated?",
+        "answer": "XAUUSD HOLD confidence=0.735",
+        "auris_node_focus": "market_texture",
+        "cognitive_systems": [
+          "UnifiedSignalEngine",
+          "Seer",
+          "AurisNodes"
+        ],
+        "evidence_source": "state/unified_runtime_status.json#shared_order_flow.active_order_flow",
+        "evidence": {
+          "symbol": "XAUUSD",
+          "side": "HOLD",
+          "confidence": 0.7352,
+          "market_texture": {
+            "volatility": 1.0,
+            "momentum": -0.62629,
+            "volume": 0.53125,
+            "spread": 0.11395999999999995,
+            "route_unity": 0.6,
+            "model_alignment": 0.0,
+            "confidence": 0.88604
+          }
+        },
+        "timestamp": "2026-05-22T19:21:00.880531",
+        "fed_to_decision_logic": true,
+        "passed": true
+      },
+      {
+        "step": "where",
+        "question": "Where can the route act across the connected financial ecosystem?",
+        "answer": "3/5 ready execution venues: capital_cfd, binance_spot, alpaca_spot",
+        "auris_node_focus": "infrastructure_and_symbiosis",
+        "cognitive_systems": [
+          "ExchangeRouteClearance",
+          "KingCapitalLogic",
+          "UnifiedExecutor"
+        ],
+        "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.venues",
+        "evidence": {
+          "ready_venue_count": 3,
+          "venue_count": 5,
+          "route_scope": [
+            "capital_cfd",
+            "binance_spot",
+            "alpaca_spot"
+          ],
+          "runtime_clearances": []
+        },
+        "timestamp": "2026-05-22T19:21:00.880531",
+        "fed_to_decision_logic": true,
+        "passed": true
+      },
+      {
+        "step": "when",
+        "question": "When was the evidence measured and is it aligned to the current cycle?",
+        "answer": "cycle timestamp 2026-05-22T19:21:00.880531; source_count=3 price_count=20",
+        "auris_node_focus": "sensing_and_memory",
+        "cognitive_systems": [
+          "RuntimeWatchdog",
+          "CentralBeat",
+          "AurisNodes"
+        ],
+        "evidence_source": "state/unified_runtime_status.json#central_beat",
+        "evidence": {
+          "generated_at": "2026-05-22T19:21:00.880531",
+          "source_count": 3,
+          "price_count": 20,
+          "symbol_count": 158
+        },
+        "timestamp": "2026-05-22T19:21:00.880531",
+        "fed_to_decision_logic": true,
+        "passed": true
+      },
+      {
+        "step": "how",
+        "question": "How was the choice reasoned through HNC and Auris?",
+        "answer": "HNC score=0.587748 coherence=0.343464 status=low_coherence",
+        "auris_node_focus": "formula_and_resonance",
+        "cognitive_systems": [
+          "HNCMasterProtocol",
+          "HNCProbabilityMatrix",
+          "Lyra",
+          "AurisNodes"
+        ],
+        "evidence_source": "state/unified_runtime_status.json#hnc_cognitive_proof.master_formula",
+        "evidence": {
+          "master_formula": {
+            "source": "unified runtime blend over HNC/Auris/Seer/Lyra/King contracts",
+            "evaluated": true,
+            "formula": "HNC = 0.22*real_data + 0.16*source_unity + 0.22*auris + 0.14*model_alignment + 0.12*shadow + 0.14*route_unity",
+            "inputs": {
+              "real_data": 1.0,
+              "source_unity": 0.75,
+              "auris": 0.343464,
+              "model_alignment": 0.0,
+              "shadow": 0.734881,
+              "route_unity": 0.6
+            },
+            "score": 0.587748,
+            "passed": true,
+            "timestamp": "2026-05-22T19:21:00.880531"
+          },
+          "auris_coherence": 0.343464,
+          "auris_status": "low_coherence",
+          "shadow_average_score": 0.734881
+        },
+        "timestamp": "2026-05-22T19:21:00.880531",
+        "fed_to_decision_logic": true,
+        "passed": true
+      },
+      {
+        "step": "act",
+        "question": "What action state does the cycle move into?",
+        "answer": "runtime_gated_order_intent_ready",
+        "auris_node_focus": "execution_state",
+        "cognitive_systems": [
+          "KingCapitalLogic",
+          "ShadowTradeValidator",
+          "UnifiedExecutor"
+        ],
+        "evidence_source": "state/unified_runtime_status.json#exchange_action_plan",
+        "evidence": {
+          "action_state": "runtime_gated_order_intent_ready",
+          "shadow_opened_count": 7,
+          "active_shadow_count": 8,
+          "runtime_clearances": []
+        },
+        "timestamp": "2026-05-22T19:21:00.880531",
+        "fed_to_decision_logic": true,
+        "passed": true
+      }
+    ],
+    "fed_to_decision_logic": true,
+    "auris_node_count": 9,
+    "auris_coherence": 0.343464,
+    "master_formula_score": 0.587748,
+    "decision_output": {
+      "symbol": "XAUUSD",
+      "side": "HOLD",
+      "confidence": 0.7352,
+      "action_state": "runtime_gated_order_intent_ready",
+      "ready_venue_count": 3,
+      "venue_count": 5,
+      "runtime_clearances": []
+    },
+    "contract": "Each who/what/where/when/how/act step must be timestamped, evidence-backed, Auris-evaluated, HNC-scored, and fed into the runtime decision path."
+  },
+  "hnc_operating_cycle": {
+    "schema_version": "aureon-hnc-operating-cycle-v1",
+    "generated_at": "2026-05-22T19:21:00.880531",
+    "mode": "harmonic_nexus_core_operating_cycle",
+    "status": "passing",
+    "passed": true,
+    "passed_count": 6,
+    "step_count": 6,
+    "cycle_order": [
+      "who",
+      "what",
+      "where",
+      "when",
+      "how",
+      "act"
+    ],
+    "questions": [
+      {
+        "step": "who",
+        "question": "Who is evaluating the market state?",
+        "answer": "HNC master protocol, probability matrix, Auris sensory nodes, Seer vision, Lyra resonance, King capital logic, shadow agents, and the unified exchange runtime.",
+        "auris_node_focus": "whole_node_set",
+        "cognitive_systems": [
+          "HNCMasterProtocol",
+          "HNCProbabilityMatrix",
+          "AurisNodes",
+          "Seer",
+          "Lyra",
+          "KingCapitalLogic"
+        ],
+        "evidence_source": "state/unified_runtime_status.json#hnc_cognitive_proof.systems",
+        "evidence": {
+          "system_count": 6,
+          "passed_system_count": 6
+        },
+        "timestamp": "2026-05-22T19:21:00.880531",
+        "fed_to_decision_logic": true,
+        "passed": true
+      },
+      {
+        "step": "what",
+        "question": "What live opportunity or market texture is being evaluated?",
+        "answer": "XAUUSD HOLD confidence=0.735",
+        "auris_node_focus": "market_texture",
+        "cognitive_systems": [
+          "UnifiedSignalEngine",
+          "Seer",
+          "AurisNodes"
+        ],
+        "evidence_source": "state/unified_runtime_status.json#shared_order_flow.active_order_flow",
+        "evidence": {
+          "symbol": "XAUUSD",
+          "side": "HOLD",
+          "confidence": 0.7352,
+          "market_texture": {
+            "volatility": 1.0,
+            "momentum": -0.62629,
+            "volume": 0.53125,
+            "spread": 0.11395999999999995,
+            "route_unity": 0.6,
+            "model_alignment": 0.0,
+            "confidence": 0.88604
+          }
+        },
+        "timestamp": "2026-05-22T19:21:00.880531",
+        "fed_to_decision_logic": true,
+        "passed": true
+      },
+      {
+        "step": "where",
+        "question": "Where can the route act across the connected financial ecosystem?",
+        "answer": "3/5 ready execution venues: capital_cfd, binance_spot, alpaca_spot",
+        "auris_node_focus": "infrastructure_and_symbiosis",
+        "cognitive_systems": [
+          "ExchangeRouteClearance",
+          "KingCapitalLogic",
+          "UnifiedExecutor"
+        ],
+        "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.venues",
+        "evidence": {
+          "ready_venue_count": 3,
+          "venue_count": 5,
+          "route_scope": [
+            "capital_cfd",
+            "binance_spot",
+            "alpaca_spot"
+          ],
+          "runtime_clearances": []
+        },
+        "timestamp": "2026-05-22T19:21:00.880531",
+        "fed_to_decision_logic": true,
+        "passed": true
+      },
+      {
+        "step": "when",
+        "question": "When was the evidence measured and is it aligned to the current cycle?",
+        "answer": "cycle timestamp 2026-05-22T19:21:00.880531; source_count=3 price_count=20",
+        "auris_node_focus": "sensing_and_memory",
+        "cognitive_systems": [
+          "RuntimeWatchdog",
+          "CentralBeat",
+          "AurisNodes"
+        ],
+        "evidence_source": "state/unified_runtime_status.json#central_beat",
+        "evidence": {
+          "generated_at": "2026-05-22T19:21:00.880531",
+          "source_count": 3,
+          "price_count": 20,
+          "symbol_count": 158
+        },
+        "timestamp": "2026-05-22T19:21:00.880531",
+        "fed_to_decision_logic": true,
+        "passed": true
+      },
+      {
+        "step": "how",
+        "question": "How was the choice reasoned through HNC and Auris?",
+        "answer": "HNC score=0.587748 coherence=0.343464 status=low_coherence",
+        "auris_node_focus": "formula_and_resonance",
+        "cognitive_systems": [
+          "HNCMasterProtocol",
+          "HNCProbabilityMatrix",
+          "Lyra",
+          "AurisNodes"
+        ],
+        "evidence_source": "state/unified_runtime_status.json#hnc_cognitive_proof.master_formula",
+        "evidence": {
+          "master_formula": {
+            "source": "unified runtime blend over HNC/Auris/Seer/Lyra/King contracts",
+            "evaluated": true,
+            "formula": "HNC = 0.22*real_data + 0.16*source_unity + 0.22*auris + 0.14*model_alignment + 0.12*shadow + 0.14*route_unity",
+            "inputs": {
+              "real_data": 1.0,
+              "source_unity": 0.75,
+              "auris": 0.343464,
+              "model_alignment": 0.0,
+              "shadow": 0.734881,
+              "route_unity": 0.6
+            },
+            "score": 0.587748,
+            "passed": true,
+            "timestamp": "2026-05-22T19:21:00.880531"
+          },
+          "auris_coherence": 0.343464,
+          "auris_status": "low_coherence",
+          "shadow_average_score": 0.734881
+        },
+        "timestamp": "2026-05-22T19:21:00.880531",
+        "fed_to_decision_logic": true,
+        "passed": true
+      },
+      {
+        "step": "act",
+        "question": "What action state does the cycle move into?",
+        "answer": "runtime_gated_order_intent_ready",
+        "auris_node_focus": "execution_state",
+        "cognitive_systems": [
+          "KingCapitalLogic",
+          "ShadowTradeValidator",
+          "UnifiedExecutor"
+        ],
+        "evidence_source": "state/unified_runtime_status.json#exchange_action_plan",
+        "evidence": {
+          "action_state": "runtime_gated_order_intent_ready",
+          "shadow_opened_count": 7,
+          "active_shadow_count": 8,
+          "runtime_clearances": []
+        },
+        "timestamp": "2026-05-22T19:21:00.880531",
+        "fed_to_decision_logic": true,
+        "passed": true
+      }
+    ],
+    "fed_to_decision_logic": true,
+    "auris_node_count": 9,
+    "auris_coherence": 0.343464,
+    "master_formula_score": 0.587748,
+    "decision_output": {
+      "symbol": "XAUUSD",
+      "side": "HOLD",
+      "confidence": 0.7352,
+      "action_state": "runtime_gated_order_intent_ready",
+      "ready_venue_count": 3,
+      "venue_count": 5,
+      "runtime_clearances": []
+    },
+    "contract": "Each who/what/where/when/how/act step must be timestamped, evidence-backed, Auris-evaluated, HNC-scored, and fed into the runtime decision path."
+  },
+  "flow": [
+    {
+      "step": "real_market_data",
+      "passed": true,
+      "evidence": "3 sources, 158 symbols, 20 live prices",
+      "timestamp": "2026-05-22T19:21:00.880531"
+    },
+    {
+      "step": "hnc_master_formula",
+      "passed": true,
+      "evidence": "score=0.587748",
+      "timestamp": "2026-05-22T19:21:00.880531"
+    },
+    {
+      "step": "auris_nodes",
+      "passed": true,
+      "evidence": "9 nodes coherence=0.343464",
+      "timestamp": "2026-05-22T19:21:00.880531"
+    },
+    {
+      "step": "hnc_operating_cycle",
+      "passed": true,
+      "evidence": "6/6 who/what/where/when/how/act fed=True",
+      "timestamp": "2026-05-22T19:21:00.880531"
+    },
+    {
+      "step": "seer_vision",
+      "passed": true,
+      "evidence": "XAUUSD NEUTRAL clear",
+      "timestamp": "2026-05-22T19:21:00.880531"
+    },
+    {
+      "step": "lyra_resonance",
+      "passed": true,
+      "evidence": "590.744Hz low_coherence",
+      "timestamp": "2026-05-22T19:21:00.880531"
+    },
+    {
+      "step": "king_capital_logic",
+      "passed": true,
+      "evidence": "discipline=0.72056",
+      "timestamp": "2026-05-22T19:21:00.880531"
+    },
+    {
+      "step": "shadow_trade_self_validation",
+      "passed": true,
+      "evidence": "7 opened, 8 active, 2 validated",
+      "timestamp": "2026-05-22T19:21:00.880531"
+    },
+    {
+      "step": "public_state_publication",
+      "passed": true,
+      "evidence": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_hnc_cognitive_proof.json",
+      "timestamp": "2026-05-22T19:21:00.880531"
+    }
+  ],
+  "passed_count": 9,
+  "step_count": 9,
+  "runtime_clearances": [],
+  "shadow_report_path": "C:\\Users\\user\\aureon-trading\\state\\unified_shadow_trade_report.json"
+}

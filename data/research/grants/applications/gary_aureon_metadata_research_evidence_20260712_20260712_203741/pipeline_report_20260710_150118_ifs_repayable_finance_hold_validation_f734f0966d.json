@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-07-10T15:01:18+01:00",
+  "operator": "Aureon",
+  "event": "ifs_repayable_finance_hold_validation",
+  "artifact": "applications/IFS_REPAYABLE_FINANCE_HOLD_VALIDATION_20260710_150118.json",
+  "markdown": "applications/IFS_REPAYABLE_FINANCE_HOLD_VALIDATION_20260710_150118.md",
+  "result": "IFS_REPAYABLE_FINANCE_HOLD_VALIDATION_PASSED",
+  "validation_passed": true,
+  "source_repayable_finance_hold_audit": "applications/IFS_REPAYABLE_FINANCE_HOLD_AUDIT_20260710_145906.json",
+  "source_current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_145945.json",
+  "source_current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_145957.json",
+  "direct_submit_ready_routes": 0,
+  "new_browser_submissions_available": 0,
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false
+}

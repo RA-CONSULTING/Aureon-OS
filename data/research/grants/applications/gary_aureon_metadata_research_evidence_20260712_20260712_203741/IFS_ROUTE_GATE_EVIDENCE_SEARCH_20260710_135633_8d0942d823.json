@@ -1,0 +1,780 @@
+{
+  "schema_version": "aureon-ifs-route-gate-evidence-search-v1",
+  "generated_at": "2026-07-10T13:56:33+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_route_gate_evidence_search",
+  "source_refs": {
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_134923.json",
+    "official_current_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_135154.json",
+    "master_grant_ready_metadata_coverage": "applications/IFS_MASTER_GRANT_READY_METADATA_COVERAGE_20260710_134910.json"
+  },
+  "summary": {
+    "active_routes_reviewed": 16,
+    "drive_queries_reviewed": 9,
+    "local_roots_reviewed": 4,
+    "route_unlock_evidence_found": 0,
+    "formal_or_planning_material_found": 5,
+    "research_background_material_found": 4,
+    "private_finance_or_compliance_material_found_locally": true,
+    "private_finance_files_used_for_grant_attachment": false,
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0,
+    "safe_portal_actions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false
+  },
+  "local_search": {
+    "roots": [
+      "C:/Users/user/Desktop",
+      "C:/Users/user/Documents",
+      "C:/Users/user/Downloads",
+      "C:/Users/user/OneDrive"
+    ],
+    "filename_terms": [
+      "Swiss",
+      "Innosuisse",
+      "academic",
+      "TTO",
+      "maritime",
+      "vessel",
+      "shipyard",
+      "port",
+      "farm",
+      "farming",
+      "forestry",
+      "quantum",
+      "hardware",
+      "DRIVE35",
+      "CKAF",
+      "knowledge asset",
+      "AKT6",
+      "ACTASAP",
+      "ADOPT",
+      "partner",
+      "budget",
+      "facility",
+      "co-investment"
+    ],
+    "readback_summary": [
+      "Company accounts, director reports, bank transaction exports, and P&L/accounting workpapers were found on Desktop and OneDrive; these are private finance/compliance sources and are excluded from default grant attachment use.",
+      "Research papers and extracted research notes were found in Downloads and OneDrive/GitHub mirrors; they support research-background claims only.",
+      "No local readback found an eligible Swiss implementation partner commitment, academic/TTO lead, England farm lead, maritime vessel/site/permission, ZEV manufacturing facility/co-investment, quantum hardware facility, or CKAF public-sector research organisation lead."
+    ]
+  },
+  "drive_searches": [
+    {
+      "query": "Aureon grant",
+      "result_class": "GRANT_OPERATING_CONTEXT_FOUND",
+      "findings": [
+        {
+          "title": "Aureon Grant War Room - 2026-07-04",
+          "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+          "classification": "Pipeline, company profile, grant package and evidence register source; not a route-unlocking partner commitment."
+        },
+        {
+          "title": "IFS_FUTURE_LEADERS_R11_AUREON_PACK_20260709.pdf",
+          "url": "https://drive.google.com/file/d/1O0NHcbNsRrgS-n1Vf87x78bUPse2mmGR",
+          "classification": "Submitted/draft pack evidence for Future Leaders route; not an active-route lead, asset, facility or budget unlock."
+        },
+        {
+          "title": "AUREON_GRANT_OPERATING_LOG_REFRESHED_20260705.md",
+          "url": "https://drive.google.com/file/d/1AgBUZhuDzRZl-7RaDrm5zoGHZ1C2Npbf",
+          "classification": "Prior operating log and Drive publication evidence; confirms historical outreach packs and governance controls."
+        }
+      ]
+    },
+    {
+      "query": "Swiss partner",
+      "result_class": "PLANNING_MATERIAL_ONLY",
+      "findings": [
+        {
+          "title": "Aureon Grant War Room - 2026-07-04",
+          "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+          "classification": "Contains UK-Switzerland target row and next action to build a Swiss partner list; no named Swiss implementation partner commitment found."
+        },
+        {
+          "title": "AUREON_GRANT_OPERATING_LOG_REFRESHED_20260705.md",
+          "url": "https://drive.google.com/file/d/1AgBUZhuDzRZl-7RaDrm5zoGHZ1C2Npbf",
+          "classification": "Records UK-Switzerland blocker as requiring Swiss implementation partner and research institute."
+        }
+      ]
+    },
+    {
+      "query": "academic partner",
+      "result_class": "OUTREACH_DRAFT_ONLY",
+      "findings": [
+        {
+          "title": "03_Academic_Validation_Sprint_Email_Pack.pdf",
+          "url": "https://drive.google.com/file/d/1Gwy7fl-jo8Mc5HD4lRopWuhocVuf7V3S",
+          "classification": "Academic validation outreach pack; draft only and not a signed academic lead, TTO, or research-office commitment."
+        },
+        {
+          "title": "Aureon Grant War Room - 2026-07-04",
+          "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+          "classification": "Names academic partner outreach as a required action; no partner commitment evidence found."
+        }
+      ]
+    },
+    {
+      "query": "maritime vessel",
+      "result_class": "RESEARCH_OR_UNRELATED_ONLY",
+      "findings": [
+        {
+          "title": "Atlantic_Seaboard_Substrate_v.docx",
+          "url": "https://drive.google.com/file/d/1gt25FWYhVMAzynVz2Bk5DXBNtmqyPBe0",
+          "classification": "Research paper mentioning maritime archaeology/narrative context; not a maritime lead, vessel, port, shipyard, site permission, safety case or budget."
+        },
+        {
+          "title": "guardrail-shipping-health.md",
+          "url": "https://drive.google.com/file/d/1C7VDWeD79cxOyYpGA8j7WaoPOAZNsKgb",
+          "classification": "Unrelated software reference about ecommerce shipping health."
+        }
+      ]
+    },
+    {
+      "query": "farm ADOPT",
+      "result_class": "RESEARCH_ONLY",
+      "findings": [
+        {
+          "title": "People_of_the_Threshold_v.docx",
+          "url": "https://drive.google.com/file/d/1uOYvgUevOR67wmasyq_Ex3Sp7Rmss5Dc",
+          "classification": "Research text; not an England farming, growing or forestry applicant, registered facilitator, farm problem statement, or procurement evidence."
+        }
+      ]
+    },
+    {
+      "query": "quantum hardware",
+      "result_class": "RESEARCH_OR_PLANNING_ONLY",
+      "findings": [
+        {
+          "title": "Aureon Grant War Room - 2026-07-04",
+          "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+          "classification": "Marks quantum routes as partner-led or weak without a consortium; not hardware access or facility evidence."
+        },
+        {
+          "title": "Research corpus files",
+          "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+          "classification": "Quantum research content exists, but no eligible hardware lead, facility access, consortium commitment, or budget evidence found."
+        }
+      ]
+    },
+    {
+      "query": "DRIVE35 facility",
+      "result_class": "NO_RESULTS",
+      "findings": []
+    },
+    {
+      "query": "ZEV manufacturing",
+      "result_class": "NO_RESULTS",
+      "findings": []
+    },
+    {
+      "query": "knowledge asset",
+      "result_class": "RESEARCH_ONLY",
+      "findings": [
+        {
+          "title": "THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_Now.md",
+          "url": "https://drive.google.com/file/d/1-PSJ7sCg6O6rID452Rj010TNLTFniUia",
+          "classification": "Research text; not a public-sector research organisation lead or knowledge-asset ownership evidence for CKAF."
+        }
+      ]
+    }
+  ],
+  "route_entries": [
+    {
+      "application_id": "APP-IFS-AKT6-2473-20260709",
+      "name": "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+      "status": "AKT6_KNOWLEDGE_BASE_LEAD_AND_4FTE_EVIDENCE_REQUIRED",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "route_family": "P1_NEAREST_DEADLINE",
+      "required_before_portal_action": [
+        "eligible UK knowledge-base lead",
+        "TTO or authorised lead contact",
+        "UK business four-FTE evidence",
+        "work package, budget and signed role confirmation"
+      ],
+      "queries_checked": [
+        "academic partner"
+      ],
+      "drive_readbacks": [
+        {
+          "query": "academic partner",
+          "result_class": "OUTREACH_DRAFT_ONLY",
+          "findings": [
+            {
+              "title": "03_Academic_Validation_Sprint_Email_Pack.pdf",
+              "url": "https://drive.google.com/file/d/1Gwy7fl-jo8Mc5HD4lRopWuhocVuf7V3S",
+              "classification": "Academic validation outreach pack; draft only and not a signed academic lead, TTO, or research-office commitment."
+            },
+            {
+              "title": "Aureon Grant War Room - 2026-07-04",
+              "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+              "classification": "Names academic partner outreach as a required action; no partner commitment evidence found."
+            }
+          ]
+        }
+      ],
+      "local_readback_class": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND",
+      "route_gate_state_after_search": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND_IN_LOCAL_OR_DRIVE_READBACK",
+      "safe_portal_action_now": false,
+      "direct_submit_ready": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "name": "Clean Maritime Demonstration Competition 7: Deployment trials",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "route_family": "P1_NEAREST_DEADLINE",
+      "required_before_portal_action": [
+        "UK maritime deployment lead",
+        "deployment asset or site",
+        "permissions and safety case",
+        "partner budget and deployment schedule"
+      ],
+      "queries_checked": [
+        "maritime vessel"
+      ],
+      "drive_readbacks": [
+        {
+          "query": "maritime vessel",
+          "result_class": "RESEARCH_OR_UNRELATED_ONLY",
+          "findings": [
+            {
+              "title": "Atlantic_Seaboard_Substrate_v.docx",
+              "url": "https://drive.google.com/file/d/1gt25FWYhVMAzynVz2Bk5DXBNtmqyPBe0",
+              "classification": "Research paper mentioning maritime archaeology/narrative context; not a maritime lead, vessel, port, shipyard, site permission, safety case or budget."
+            },
+            {
+              "title": "guardrail-shipping-health.md",
+              "url": "https://drive.google.com/file/d/1C7VDWeD79cxOyYpGA8j7WaoPOAZNsKgb",
+              "classification": "Unrelated software reference about ecommerce shipping health."
+            }
+          ]
+        }
+      ],
+      "local_readback_class": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND",
+      "route_gate_state_after_search": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND_IN_LOCAL_OR_DRIVE_READBACK",
+      "safe_portal_action_now": false,
+      "direct_submit_ready": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "name": "Clean Maritime Demonstration Competition 7: Feasibility studies",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "route_family": "P1_NEAREST_DEADLINE",
+      "required_before_portal_action": [
+        "UK maritime lead",
+        "feasibility partner and asset context",
+        "scope, budget and work package",
+        "partner commitment evidence"
+      ],
+      "queries_checked": [
+        "maritime vessel"
+      ],
+      "drive_readbacks": [
+        {
+          "query": "maritime vessel",
+          "result_class": "RESEARCH_OR_UNRELATED_ONLY",
+          "findings": [
+            {
+              "title": "Atlantic_Seaboard_Substrate_v.docx",
+              "url": "https://drive.google.com/file/d/1gt25FWYhVMAzynVz2Bk5DXBNtmqyPBe0",
+              "classification": "Research paper mentioning maritime archaeology/narrative context; not a maritime lead, vessel, port, shipyard, site permission, safety case or budget."
+            },
+            {
+              "title": "guardrail-shipping-health.md",
+              "url": "https://drive.google.com/file/d/1C7VDWeD79cxOyYpGA8j7WaoPOAZNsKgb",
+              "classification": "Unrelated software reference about ecommerce shipping health."
+            }
+          ]
+        }
+      ],
+      "local_readback_class": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND",
+      "route_gate_state_after_search": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND_IN_LOCAL_OR_DRIVE_READBACK",
+      "safe_portal_action_now": false,
+      "direct_submit_ready": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "name": "Clean Maritime Demonstration Competition 7: Pre-deployment trials",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "route_family": "P1_NEAREST_DEADLINE",
+      "required_before_portal_action": [
+        "UK maritime lead",
+        "vessel or port/shipyard asset",
+        "trial site permissions",
+        "safety case, permits and insurance basis",
+        "eligible budget and deployment plan"
+      ],
+      "queries_checked": [
+        "maritime vessel"
+      ],
+      "drive_readbacks": [
+        {
+          "query": "maritime vessel",
+          "result_class": "RESEARCH_OR_UNRELATED_ONLY",
+          "findings": [
+            {
+              "title": "Atlantic_Seaboard_Substrate_v.docx",
+              "url": "https://drive.google.com/file/d/1gt25FWYhVMAzynVz2Bk5DXBNtmqyPBe0",
+              "classification": "Research paper mentioning maritime archaeology/narrative context; not a maritime lead, vessel, port, shipyard, site permission, safety case or budget."
+            },
+            {
+              "title": "guardrail-shipping-health.md",
+              "url": "https://drive.google.com/file/d/1C7VDWeD79cxOyYpGA8j7WaoPOAZNsKgb",
+              "classification": "Unrelated software reference about ecommerce shipping health."
+            }
+          ]
+        }
+      ],
+      "local_readback_class": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND",
+      "route_gate_state_after_search": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND_IN_LOCAL_OR_DRIVE_READBACK",
+      "safe_portal_action_now": false,
+      "direct_submit_ready": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+      "name": "ACTASAP Pilot Phase 1",
+      "status": "ACTASAP_ACADEMIC_LEAD_AND_TTO_EVIDENCE_REQUIRED",
+      "deadline": "2026-07-28T11:00:00+01:00",
+      "route_family": "P2_NEXT_DEADLINE",
+      "required_before_portal_action": [
+        "eligible UK academic institution lead",
+        "TTO or authorised research-office contact",
+        "scope and validation work package",
+        "budget and commitment evidence"
+      ],
+      "queries_checked": [
+        "academic partner"
+      ],
+      "drive_readbacks": [
+        {
+          "query": "academic partner",
+          "result_class": "OUTREACH_DRAFT_ONLY",
+          "findings": [
+            {
+              "title": "03_Academic_Validation_Sprint_Email_Pack.pdf",
+              "url": "https://drive.google.com/file/d/1Gwy7fl-jo8Mc5HD4lRopWuhocVuf7V3S",
+              "classification": "Academic validation outreach pack; draft only and not a signed academic lead, TTO, or research-office commitment."
+            },
+            {
+              "title": "Aureon Grant War Room - 2026-07-04",
+              "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+              "classification": "Names academic partner outreach as a required action; no partner commitment evidence found."
+            }
+          ]
+        }
+      ],
+      "local_readback_class": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND",
+      "route_gate_state_after_search": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND_IN_LOCAL_OR_DRIVE_READBACK",
+      "safe_portal_action_now": false,
+      "direct_submit_ready": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+      "name": "Full ADOPT Grant: Round 8",
+      "status": "ADOPT_FULL_FARMING_LEAD_AND_PARTNER_EVIDENCE_REQUIRED",
+      "deadline": "2026-07-29T11:00:00+01:00",
+      "route_family": "P2_NEXT_DEADLINE",
+      "required_before_portal_action": [
+        "England farming, growing or forestry lead",
+        "collaborating farm business",
+        "farm problem statement",
+        "facilitator or support role evidence"
+      ],
+      "queries_checked": [
+        "farm ADOPT"
+      ],
+      "drive_readbacks": [
+        {
+          "query": "farm ADOPT",
+          "result_class": "RESEARCH_ONLY",
+          "findings": [
+            {
+              "title": "People_of_the_Threshold_v.docx",
+              "url": "https://drive.google.com/file/d/1uOYvgUevOR67wmasyq_Ex3Sp7Rmss5Dc",
+              "classification": "Research text; not an England farming, growing or forestry applicant, registered facilitator, farm problem statement, or procurement evidence."
+            }
+          ]
+        }
+      ],
+      "local_readback_class": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND",
+      "route_gate_state_after_search": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND_IN_LOCAL_OR_DRIVE_READBACK",
+      "safe_portal_action_now": false,
+      "direct_submit_ready": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+      "name": "ADOPT Facilitator Support Grant: Round 10",
+      "status": "ADOPT_FACILITATOR_ENGLAND_FARM_BUSINESS_AND_REGISTERED_FACILITATOR_EVIDENCE_REQUIRED",
+      "deadline": "2026-08-12T11:00:00+01:00",
+      "route_family": "P2_NEXT_DEADLINE",
+      "required_before_portal_action": [
+        "England farm business context",
+        "registered facilitator evidence",
+        "role and procurement evidence"
+      ],
+      "queries_checked": [
+        "farm ADOPT"
+      ],
+      "drive_readbacks": [
+        {
+          "query": "farm ADOPT",
+          "result_class": "RESEARCH_ONLY",
+          "findings": [
+            {
+              "title": "People_of_the_Threshold_v.docx",
+              "url": "https://drive.google.com/file/d/1uOYvgUevOR67wmasyq_Ex3Sp7Rmss5Dc",
+              "classification": "Research text; not an England farming, growing or forestry applicant, registered facilitator, farm problem statement, or procurement evidence."
+            }
+          ]
+        }
+      ],
+      "local_readback_class": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND",
+      "route_gate_state_after_search": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND_IN_LOCAL_OR_DRIVE_READBACK",
+      "safe_portal_action_now": false,
+      "direct_submit_ready": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "name": "UK-Switzerland CR&D Round 3",
+      "status": "IFS_DRAFT_80_PERCENT_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-03T11:00:00+01:00",
+      "route_family": "LIVE_DRAFT_UK_SWISS",
+      "required_before_portal_action": [
+        "Swiss implementation partner",
+        "research institute or waiver evidence",
+        "partner commitment letter",
+        "partner budget and eligible-cost split",
+        "permit/licence position",
+        "export-control position",
+        "project finances and Project Impact"
+      ],
+      "queries_checked": [
+        "Swiss partner"
+      ],
+      "drive_readbacks": [
+        {
+          "query": "Swiss partner",
+          "result_class": "PLANNING_MATERIAL_ONLY",
+          "findings": [
+            {
+              "title": "Aureon Grant War Room - 2026-07-04",
+              "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+              "classification": "Contains UK-Switzerland target row and next action to build a Swiss partner list; no named Swiss implementation partner commitment found."
+            },
+            {
+              "title": "AUREON_GRANT_OPERATING_LOG_REFRESHED_20260705.md",
+              "url": "https://drive.google.com/file/d/1AgBUZhuDzRZl-7RaDrm5zoGHZ1C2Npbf",
+              "classification": "Records UK-Switzerland blocker as requiring Swiss implementation partner and research institute."
+            }
+          ]
+        }
+      ],
+      "local_readback_class": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND",
+      "route_gate_state_after_search": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND_IN_LOCAL_OR_DRIVE_READBACK",
+      "safe_portal_action_now": false,
+      "direct_submit_ready": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+      "name": "Commercialising Knowledge Assets Fund (CKAF) Autumn",
+      "status": "CKAF_PUBLIC_SECTOR_RESEARCH_ORG_AND_KNOWLEDGE_ASSET_EVIDENCE_REQUIRED",
+      "deadline": "2026-09-01T11:00:00+01:00",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "required_before_portal_action": [
+        "eligible public-sector research organisation lead",
+        "knowledge-asset ownership evidence",
+        "senior support or authorised lead evidence",
+        "Aureon support/procurement role"
+      ],
+      "queries_checked": [
+        "knowledge asset"
+      ],
+      "drive_readbacks": [
+        {
+          "query": "knowledge asset",
+          "result_class": "RESEARCH_ONLY",
+          "findings": [
+            {
+              "title": "THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_Now.md",
+              "url": "https://drive.google.com/file/d/1-PSJ7sCg6O6rID452Rj010TNLTFniUia",
+              "classification": "Research text; not a public-sector research organisation lead or knowledge-asset ownership evidence for CKAF."
+            }
+          ]
+        }
+      ],
+      "local_readback_class": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND",
+      "route_gate_state_after_search": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND_IN_LOCAL_OR_DRIVE_READBACK",
+      "safe_portal_action_now": false,
+      "direct_submit_ready": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+      "name": "DRIVE35 Innovation Fund: Collaborate 3",
+      "status": "DRIVE35_COLLAB3_ZEV_PARTNER_MATCH_FUNDING_AND_TIER1_EVIDENCE_REQUIRED",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "required_before_portal_action": [
+        "vehicle manufacturer or Tier 1 partner",
+        "ZEV work package",
+        "match funding evidence",
+        "eligible budget and consortium role"
+      ],
+      "queries_checked": [
+        "DRIVE35 facility",
+        "ZEV manufacturing"
+      ],
+      "drive_readbacks": [
+        {
+          "query": "DRIVE35 facility",
+          "result_class": "NO_RESULTS",
+          "findings": []
+        },
+        {
+          "query": "ZEV manufacturing",
+          "result_class": "NO_RESULTS",
+          "findings": []
+        }
+      ],
+      "local_readback_class": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND",
+      "route_gate_state_after_search": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND_IN_LOCAL_OR_DRIVE_READBACK",
+      "safe_portal_action_now": false,
+      "direct_submit_ready": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+      "name": "Zero Emission Vessels and Infrastructure 2: Alternative Fuels",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "required_before_portal_action": [
+        "UK maritime lead",
+        "alternative-fuel vessel or infrastructure asset",
+        "three-year demonstration commitment",
+        "eligible budget and permissions"
+      ],
+      "queries_checked": [
+        "maritime vessel"
+      ],
+      "drive_readbacks": [
+        {
+          "query": "maritime vessel",
+          "result_class": "RESEARCH_OR_UNRELATED_ONLY",
+          "findings": [
+            {
+              "title": "Atlantic_Seaboard_Substrate_v.docx",
+              "url": "https://drive.google.com/file/d/1gt25FWYhVMAzynVz2Bk5DXBNtmqyPBe0",
+              "classification": "Research paper mentioning maritime archaeology/narrative context; not a maritime lead, vessel, port, shipyard, site permission, safety case or budget."
+            },
+            {
+              "title": "guardrail-shipping-health.md",
+              "url": "https://drive.google.com/file/d/1C7VDWeD79cxOyYpGA8j7WaoPOAZNsKgb",
+              "classification": "Unrelated software reference about ecommerce shipping health."
+            }
+          ]
+        }
+      ],
+      "local_readback_class": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND",
+      "route_gate_state_after_search": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND_IN_LOCAL_OR_DRIVE_READBACK",
+      "safe_portal_action_now": false,
+      "direct_submit_ready": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+      "name": "Zero Emission Vessels and Infrastructure 2: Electric Power",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "required_before_portal_action": [
+        "UK maritime lead",
+        "electric-power vessel or infrastructure asset",
+        "three-year demonstration commitment",
+        "eligible budget and permissions"
+      ],
+      "queries_checked": [
+        "maritime vessel"
+      ],
+      "drive_readbacks": [
+        {
+          "query": "maritime vessel",
+          "result_class": "RESEARCH_OR_UNRELATED_ONLY",
+          "findings": [
+            {
+              "title": "Atlantic_Seaboard_Substrate_v.docx",
+              "url": "https://drive.google.com/file/d/1gt25FWYhVMAzynVz2Bk5DXBNtmqyPBe0",
+              "classification": "Research paper mentioning maritime archaeology/narrative context; not a maritime lead, vessel, port, shipyard, site permission, safety case or budget."
+            },
+            {
+              "title": "guardrail-shipping-health.md",
+              "url": "https://drive.google.com/file/d/1C7VDWeD79cxOyYpGA8j7WaoPOAZNsKgb",
+              "classification": "Unrelated software reference about ecommerce shipping health."
+            }
+          ]
+        }
+      ],
+      "local_readback_class": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND",
+      "route_gate_state_after_search": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND_IN_LOCAL_OR_DRIVE_READBACK",
+      "safe_portal_action_now": false,
+      "direct_submit_ready": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+      "name": "Zero Emission Vessels and Infrastructure 2: Energy Efficiency",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "required_before_portal_action": [
+        "UK maritime lead",
+        "vessel/infrastructure asset",
+        "three-year demonstration commitment",
+        "eligible budget and permissions"
+      ],
+      "queries_checked": [
+        "maritime vessel"
+      ],
+      "drive_readbacks": [
+        {
+          "query": "maritime vessel",
+          "result_class": "RESEARCH_OR_UNRELATED_ONLY",
+          "findings": [
+            {
+              "title": "Atlantic_Seaboard_Substrate_v.docx",
+              "url": "https://drive.google.com/file/d/1gt25FWYhVMAzynVz2Bk5DXBNtmqyPBe0",
+              "classification": "Research paper mentioning maritime archaeology/narrative context; not a maritime lead, vessel, port, shipyard, site permission, safety case or budget."
+            },
+            {
+              "title": "guardrail-shipping-health.md",
+              "url": "https://drive.google.com/file/d/1C7VDWeD79cxOyYpGA8j7WaoPOAZNsKgb",
+              "classification": "Unrelated software reference about ecommerce shipping health."
+            }
+          ]
+        }
+      ],
+      "local_readback_class": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND",
+      "route_gate_state_after_search": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND_IN_LOCAL_OR_DRIVE_READBACK",
+      "safe_portal_action_now": false,
+      "direct_submit_ready": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "name": "Scaling performance of quantum computing hardware: CR&D",
+      "status": "QUANTUM_HARDWARE_LEAD_ACCESS_CONSORTIUM_AND_BUDGET_EVIDENCE_REQUIRED",
+      "deadline": "2026-09-18T11:00:00+01:00",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "required_before_portal_action": [
+        "eligible quantum hardware lead",
+        "facility or hardware access",
+        "consortium commitment",
+        "budget and validation plan"
+      ],
+      "queries_checked": [
+        "quantum hardware"
+      ],
+      "drive_readbacks": [
+        {
+          "query": "quantum hardware",
+          "result_class": "RESEARCH_OR_PLANNING_ONLY",
+          "findings": [
+            {
+              "title": "Aureon Grant War Room - 2026-07-04",
+              "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+              "classification": "Marks quantum routes as partner-led or weak without a consortium; not hardware access or facility evidence."
+            },
+            {
+              "title": "Research corpus files",
+              "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+              "classification": "Quantum research content exists, but no eligible hardware lead, facility access, consortium commitment, or budget evidence found."
+            }
+          ]
+        }
+      ],
+      "local_readback_class": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND",
+      "route_gate_state_after_search": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND_IN_LOCAL_OR_DRIVE_READBACK",
+      "safe_portal_action_now": false,
+      "direct_submit_ready": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+      "name": "DRIVE35: Scale Up Fund",
+      "status": "DRIVE35_SCALEUP_ZEV_MANUFACTURING_FACILITY_AND_COINVESTMENT_EVIDENCE_REQUIRED",
+      "deadline": "open-no-submission-deadline",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "required_before_portal_action": [
+        "ZEV manufacturing facility or site",
+        "co-investment evidence",
+        "eligible GBP5m plus project cost basis",
+        "manufacturing scale-up plan"
+      ],
+      "queries_checked": [
+        "DRIVE35 facility",
+        "ZEV manufacturing"
+      ],
+      "drive_readbacks": [
+        {
+          "query": "DRIVE35 facility",
+          "result_class": "NO_RESULTS",
+          "findings": []
+        },
+        {
+          "query": "ZEV manufacturing",
+          "result_class": "NO_RESULTS",
+          "findings": []
+        }
+      ],
+      "local_readback_class": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND",
+      "route_gate_state_after_search": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND_IN_LOCAL_OR_DRIVE_READBACK",
+      "safe_portal_action_now": false,
+      "direct_submit_ready": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+      "name": "Innovation Loans Expression of Interest",
+      "status": "INNOVATION_LOANS_REPAYABLE_FINANCE_CAPACITY_AND_ACTION_APPROVAL_REQUIRED",
+      "deadline": "open-no-submission-deadline",
+      "route_family": "REPAYABLE_FINANCE_HELD_OUTSIDE_GRANT_QUEUE",
+      "required_before_portal_action": [
+        "repayable finance approval",
+        "repayment capacity evidence",
+        "cash-flow forecast",
+        "specific action-time approval for loan route"
+      ],
+      "queries_checked": [],
+      "drive_readbacks": [],
+      "local_readback_class": "NO_ROUTE_UNLOCK_EVIDENCE_FOUND",
+      "route_gate_state_after_search": "REPAYABLE_FINANCE_HELD_NO_GRANT_UNLOCK",
+      "safe_portal_action_now": false,
+      "direct_submit_ready": false,
+      "new_browser_submission_available": false
+    }
+  ],
+  "controls": [
+    "Drive and local checks were read-only.",
+    "Planning material and research background were not treated as signed partner or lead evidence.",
+    "Private finance/compliance files were not used as grant attachments.",
+    "No IFS portal field was changed, no email was sent, and no application was submitted."
+  ],
+  "result": "IFS_ROUTE_GATE_EVIDENCE_SEARCH_COMPLETE_NO_UNLOCKS_FOUND"
+}

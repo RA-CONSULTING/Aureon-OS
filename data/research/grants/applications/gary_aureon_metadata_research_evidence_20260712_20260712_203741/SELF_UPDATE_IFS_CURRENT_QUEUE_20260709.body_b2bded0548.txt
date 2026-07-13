@@ -1,0 +1,23 @@
+Gary,
+
+Aureon grant operator update for 2026-07-09:
+
+- Current IFS sweep refreshed: 19 live IFS competitions indexed.
+- Tracker merged: 37 opportunities total, 34 open, 8 urgent deadlines, 10 active applications.
+- Next high-priority IFS route staged: Future Leaders Fellowships Round 11 business/non-academic pack.
+- Local corpus built from local computer plus Drive evidence: 900 local evidence records and 15 Drive evidence/archive records indexed.
+- Drive upload complete in the Aureon Grant War Room folder.
+
+Drive PDF:
+https://drive.google.com/file/d/1O0NHcbNsRrgS-n1Vf87x78bUPse2mmGR/view?usp=drivesdk
+
+Drive ZIP package:
+https://drive.google.com/file/d/1pe30LLVbt5J2IO1MKK_Tg12R8sQ6j4Ow/view?usp=drivesdk
+
+Local source files:
+C:\Users\user\aureon-trading\data\research\grants\IFS_CURRENT_FIT_MATRIX_20260709.md
+C:\Users\user\aureon-trading\data\research\grants\applications\IFS_FUTURE_LEADERS_R11_AUREON_PACK_20260709.pdf
+
+Status: Next Wave application 10209601 remains submitted. Future Leaders and other IFS routes are staged as drafts/partner checks, not falsely marked as submitted.
+
+Aureon Grant Operator

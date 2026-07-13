@@ -1,0 +1,378 @@
+{
+  "authority_boundaries": [
+    "Ollama is a local language worker, not an authority bypass.",
+    "Aureon cognitive evidence can enrich prompts and status, but live trading remains runtime-gated.",
+    "Credential values are never emitted; only readiness/status may be reported.",
+    "Payments, official filings, and destructive OS actions remain blocked unless existing safe routes explicitly allow them.",
+    "Phi chat replies must be evidence-honest and publish ThoughtBus proof when used through the hub."
+  ],
+  "bridge_mode": "local_ollama_plus_aureon_cognition",
+  "cognitive_readiness": {
+    "cognitive_ready": true,
+    "cognitive_source_count": 6,
+    "hnc_auris_ready": true,
+    "metacognitive_ready": true,
+    "minimum_source_count": 3,
+    "role_contracts_ready": true
+  },
+  "generated_at": "2026-05-22T07:21:40.504692+00:00",
+  "handshake_crew": [
+    {
+      "day_to_day": "Accept the human message, redact context, and keep the dashboard conversation live.",
+      "department": "operator",
+      "role": "Phi Chat Steward"
+    },
+    {
+      "day_to_day": "Gather HNC/Auris, cognitive, voice, role, and skill evidence before the model answers.",
+      "department": "cognition",
+      "role": "Aureon Metacognitive Context Builder"
+    },
+    {
+      "day_to_day": "Generate local language responses through the installed Ollama model when reachable.",
+      "department": "local_llm",
+      "role": "Ollama Language Worker"
+    },
+    {
+      "day_to_day": "Keep reasoning available when the local model is offline, slow, or blocked by audit mode.",
+      "department": "cognition",
+      "role": "Aureon Brain Fallback"
+    },
+    {
+      "day_to_day": "Hold claims when harmonic, node, or cognitive proof is missing or stale.",
+      "department": "quality",
+      "role": "HNC/Auris Drift Inspector"
+    },
+    {
+      "day_to_day": "Publish chat and bridge status evidence without leaking secrets.",
+      "department": "memory",
+      "role": "ThoughtBus Evidence Clerk"
+    }
+  ],
+  "handshake_flow": [
+    {
+      "how": "Read local cognitive evidence, HNC/Auris state, voice state, role memory, and skill maps.",
+      "owner": "Aureon Metacognitive Context Builder",
+      "step": "sense"
+    },
+    {
+      "how": "Check that the response lane has safety boundaries, source evidence, and fallback behavior.",
+      "owner": "HNC/Auris Drift Inspector",
+      "step": "guard"
+    },
+    {
+      "how": "Use the configured local model through Ollama native/OpenAI-compatible routes.",
+      "owner": "Ollama Language Worker",
+      "step": "speak"
+    },
+    {
+      "how": "Answer through Aureon's in-house rule/brain layer when Ollama is unavailable.",
+      "owner": "Aureon Brain Fallback",
+      "step": "fallback"
+    },
+    {
+      "how": "Write state, audit, public JSON, and chat evidence so the cockpit can show the truth.",
+      "owner": "ThoughtBus Evidence Clerk",
+      "step": "publish"
+    }
+  ],
+  "model_resolution": {
+    "configured_model": "llama3:latest",
+    "model_ready": true,
+    "resolution_reason": "configured_model_installed",
+    "resolved_model": "llama3:latest",
+    "running": false
+  },
+  "next_actions": [
+    {
+      "action": "Use the hand-in-hand voice backend for the dashboard chat lane.",
+      "id": "use_hybrid_backend",
+      "powershell": "$env:AUREON_VOICE_BACKEND = \"ollama_hybrid\"",
+      "severity": "setup"
+    }
+  ],
+  "ok": true,
+  "ollama": {
+    "base_url": "http://localhost:11434",
+    "chat_model": "llama3",
+    "embed_model": "nomic-embed-text",
+    "models": [
+      "qwen2.5:0.5b",
+      "llama3:latest"
+    ],
+    "reachable": true,
+    "requests_installed": true,
+    "running": [],
+    "version": "0.24.0"
+  },
+  "output_files": [
+    "state/aureon_ollama_cognitive_bridge_last_run.json",
+    "docs/audits/aureon_ollama_cognitive_bridge.json",
+    "docs/audits/aureon_ollama_cognitive_bridge.md",
+    "frontend/public/aureon_ollama_cognitive_bridge.json"
+  ],
+  "proof_checklist": [
+    {
+      "blocking": true,
+      "evidence": "http://localhost:11434",
+      "id": "ollama_server_reachable",
+      "label": "Ollama server is reachable on the local machine",
+      "ok": true
+    },
+    {
+      "blocking": true,
+      "evidence": "qwen2.5:0.5b, llama3:latest",
+      "id": "local_model_library_visible",
+      "label": "Ollama model library is visible",
+      "ok": true
+    },
+    {
+      "blocking": true,
+      "evidence": "llama3:latest",
+      "id": "chat_model_resolved",
+      "label": "A chat model is resolved for Aureon",
+      "ok": true
+    },
+    {
+      "blocking": true,
+      "evidence": "sources=6",
+      "id": "hnc_auris_context_ready",
+      "label": "HNC/Auris context is ready for guarded conversation",
+      "ok": true
+    },
+    {
+      "blocking": true,
+      "evidence": "sources=6",
+      "id": "metacognitive_context_ready",
+      "label": "Aureon metacognitive evidence is present",
+      "ok": true
+    },
+    {
+      "blocking": true,
+      "evidence": "agent company / creative guardian",
+      "id": "role_contracts_ready",
+      "label": "Agent roles can declare who, what, where, when, how, and act",
+      "ok": true
+    },
+    {
+      "blocking": true,
+      "evidence": "AureonHybridAdapter falls back to AureonBrainAdapter",
+      "id": "brain_fallback_declared",
+      "label": "Aureon Brain fallback is declared when Ollama is unavailable",
+      "ok": true
+    },
+    {
+      "blocking": true,
+      "evidence": "no bypass introduced",
+      "id": "authority_boundaries_preserved",
+      "label": "Existing live-action and credential gates remain authoritative",
+      "ok": true
+    }
+  ],
+  "provider_policy": "local_only",
+  "recommended_voice_backend": "ollama_hybrid",
+  "schema_version": "aureon-ollama-cognitive-bridge-v1",
+  "source_contracts": [
+    {
+      "age_sec": 293.14,
+      "max_age_sec": 86400,
+      "name": "hnc_cognitive_proof",
+      "path": "C:\\Users\\user\\aureon-trading\\state\\aureon_hnc_cognitive_proof.json",
+      "present": true,
+      "schema_version": "",
+      "stale": false,
+      "status": "passing",
+      "summary": {}
+    },
+    {
+      "age_sec": 14.368,
+      "max_age_sec": 86400,
+      "name": "harmonic_affect_state",
+      "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_harmonic_affect_state.json",
+      "present": true,
+      "schema_version": "aureon-harmonic-affect-state-v1",
+      "stale": false,
+      "status": "harmonic_affect_state_ready",
+      "summary": {
+        "affect_phase": "protective_recalibration",
+        "anchor_readiness": 0.8,
+        "arousal": 0.615,
+        "auris_emotion_count": 6,
+        "blind_spot_count": 34,
+        "emotion_anchor": "Reason",
+        "goal_alignment": 0.165714,
+        "hnc_anchor_count": 8,
+        "hnc_coherence_score": 0.245343,
+        "inner_peace_candidate": false,
+        "nexus_total_trades": 0,
+        "resonance_frequency_hz": 400.0,
+        "reward_alignment": 0.0,
+        "runtime_stale": false,
+        "safety_blocker_count": 20,
+        "stability": 0.3,
+        "trade_evidence_count": 0,
+        "valence": 0.094714
+      }
+    },
+    {
+      "age_sec": 14.471,
+      "max_age_sec": 86400,
+      "name": "cognitive_trade_evidence",
+      "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_cognitive_trade_evidence.json",
+      "present": true,
+      "schema_version": "aureon-cognitive-trade-evidence-v1",
+      "stale": false,
+      "status": "cognitive_trade_evidence_ready",
+      "summary": {
+        "action_mode": "observe_and_refine",
+        "average_learning_reward": 0.0,
+        "evidence_count": 0,
+        "losses": 0,
+        "net_pnl": 0,
+        "open_positions": 0,
+        "runtime_stale": false,
+        "signal_quality": 0.0,
+        "win_rate": 0.0,
+        "wins": 0
+      }
+    },
+    {
+      "age_sec": 35748.416,
+      "max_age_sec": 604800,
+      "name": "expression_profile",
+      "path": "C:\\Users\\user\\aureon-trading\\state\\aureon_expression_profile.json",
+      "present": true,
+      "schema_version": "",
+      "stale": false,
+      "status": "present",
+      "summary": {}
+    },
+    {
+      "age_sec": 35748.727,
+      "max_age_sec": 604800,
+      "name": "voice_state",
+      "path": "C:\\Users\\user\\aureon-trading\\state\\aureon_voice_last_run.json",
+      "present": true,
+      "schema_version": "",
+      "stale": false,
+      "status": "present",
+      "summary": {}
+    },
+    {
+      "age_sec": 35770.843,
+      "max_age_sec": 86400,
+      "name": "agent_creative_process_guardian",
+      "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_agent_creative_process_guardian.json",
+      "present": true,
+      "schema_version": "aureon-agent-creative-process-guardian-v1",
+      "stale": false,
+      "status": "agent_creative_process_guardian_attention",
+      "summary": {
+        "all_agents_guarded": false,
+        "blocked_role_count": 0,
+        "blocking_snag_count": 2,
+        "creative_process_ready_role_count": 41,
+        "hnc_auris_ready": false,
+        "metacognitive_ready": true,
+        "mind_source_count": 5,
+        "present_mind_source_count": 5,
+        "repo_agent_surface_count": 350,
+        "role_count": 41,
+        "sensory_ready": true,
+        "sentient_style_ready": true,
+        "who_what_where_when_how_act_ready": true
+      }
+    },
+    {
+      "age_sec": null,
+      "max_age_sec": 604800,
+      "name": "agent_company_registry",
+      "path": "",
+      "present": false,
+      "schema_version": "",
+      "stale": false,
+      "status": "missing",
+      "summary": {}
+    },
+    {
+      "age_sec": null,
+      "max_age_sec": 604800,
+      "name": "coding_skill_base",
+      "path": "",
+      "present": false,
+      "schema_version": "",
+      "stale": false,
+      "status": "missing",
+      "summary": {}
+    }
+  ],
+  "status": "ollama_cognitive_bridge_ready",
+  "summary": {
+    "blocking_check_count": 0,
+    "cognitive_ready": true,
+    "hand_in_hand_ready": true,
+    "hnc_auris_ready": true,
+    "installed_model_count": 2,
+    "metacognitive_ready": true,
+    "model_ready": true,
+    "ollama_reachable": true,
+    "resolved_model": "llama3:latest",
+    "role_contracts_ready": true,
+    "running_model_count": 0
+  },
+  "who_what_where_when_how_act": {
+    "act": "Answer the operator, publish evidence, expose blockers, and fall back to AureonBrain without bypassing safety gates.",
+    "how": "Redacted dashboard context is enriched with Aureon cognitive proof, sent through local Ollama when reachable, and held by HNC/Auris and authority boundaries.",
+    "what": {
+      "job": "Make local Ollama and Aureon's internal cognitive systems work as one agent crew.",
+      "model": "llama3:latest",
+      "status": "ollama_cognitive_bridge_ready"
+    },
+    "when": "At startup, on cockpit refresh, and before/after Phi chat replies.",
+    "where": {
+      "ollama_base_url": "http://localhost:11434",
+      "ollama_cognitive_status_endpoint": "http://127.0.0.1:13002/api/ollama-cognitive/status",
+      "phi_status_endpoint": "http://127.0.0.1:13002/api/phi-bridge/status",
+      "public_json": "/aureon_ollama_cognitive_bridge.json"
+    },
+    "who": {
+      "cognitive_context": "Aureon Metacognitive Context Builder",
+      "fallback": "Aureon Brain Fallback",
+      "language_worker": "Ollama Language Worker",
+      "operator_lane": "MindThoughtActionHub Phi chat",
+      "safety_guard": "HNC/Auris Drift Inspector"
+    }
+  },
+  "write_info": {
+    "authoring_path": [
+      "probe_ollama_bridge",
+      "resolve_local_model",
+      "read_cognitive_evidence",
+      "build_handshake_crew",
+      "run_proof_checklist",
+      "publish_state_docs_frontend"
+    ],
+    "evidence_writes": [
+      {
+        "bytes": 12090,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\state\\aureon_ollama_cognitive_bridge_last_run.json"
+      },
+      {
+        "bytes": 12090,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_ollama_cognitive_bridge.json"
+      },
+      {
+        "bytes": 1741,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_ollama_cognitive_bridge.md"
+      },
+      {
+        "bytes": 12090,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_ollama_cognitive_bridge.json"
+      }
+    ],
+    "writer": "AureonOllamaCognitiveBridge"
+  }
+}

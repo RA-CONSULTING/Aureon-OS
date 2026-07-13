@@ -1,0 +1,177 @@
+{
+  "authoring_path": [
+    "GoalExecutionEngine.submit_goal",
+    "GoalExecutionEngine._execute_self_repair_operational_ui",
+    "aureon.autonomous.aureon_unified_ui_builder.self_review_and_repair_operational_ui",
+    "review_operational_ui",
+    "self_author_operational_ui",
+    "QueenCodeArchitect.write_file",
+    "npm run build"
+  ],
+  "cycles": [
+    {
+      "phase": "initial_review",
+      "review": {
+        "blocking_issue_count": 0,
+        "build_result": {
+          "ran": false
+        },
+        "checks": {
+          "blind_spot_count": 28,
+          "blocked_output_marker_count": 0,
+          "blocked_work_order_count": 36,
+          "capability_count": 9,
+          "component_bytes": 32962,
+          "component_exists": true,
+          "public_spec_exists": true,
+          "queen_writer_provenance": true,
+          "required_marker_count": 8,
+          "runtime_feed_status": "offline",
+          "self_authored_state_exists": true,
+          "template_count": 64
+        },
+        "generated_at": "2026-05-13T19:37:53.707982+00:00",
+        "issues": [
+          {
+            "code": "runtime_feed_not_live_in_ui_evidence",
+            "next_action": "Run the production launcher or refresh runtime manifests; do not patch UI code for an offline runtime.",
+            "severity": "attention",
+            "value": "offline"
+          },
+          {
+            "code": "ui_exposes_blind_spots",
+            "next_action": "Use the blind-spot list as Aureon's next self-work queue.",
+            "severity": "attention",
+            "value": 28
+          },
+          {
+            "code": "ui_exposes_blocked_work_orders",
+            "next_action": "Resolve or archive blocked work orders through the frontend evolution queue.",
+            "severity": "attention",
+            "value": 36
+          }
+        ],
+        "reviewed_paths": {
+          "component": "frontend/src/components/generated/AureonGeneratedOperationalConsole.tsx",
+          "public_spec": "frontend/public/aureon_operational_ui_spec.json",
+          "state": "state/aureon_self_authored_ui_last_run.json"
+        },
+        "status": "ui_review_passed",
+        "success": true
+      }
+    },
+    {
+      "phase": "final_review",
+      "review": {
+        "blocking_issue_count": 0,
+        "build_result": {
+          "exit_code": 0,
+          "ran": true,
+          "stderr_tail": "",
+          "stdout_tail": "\n> vite_react_shadcn_ts@0.0.0 build\n> vite build\n\n\u001b[36mvite v5.4.21 \u001b[32mbuilding for production...\u001b[36m\u001b[39m\ntransforming...\n\u001b[32m\u00e2\u0153\u201c\u001b[39m 1685 modules transformed.\nrendering chunks...\ncomputing gzip size...\n\u001b[2mdist/\u001b[22m\u001b[32mindex.html                 \u001b[39m\u001b[1m\u001b[2m  1.16 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m \u00e2\u201d\u201a gzip:   0.51 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[35massets/index-Ccs5pZ3J.css  \u001b[39m\u001b[1m\u001b[2m171.71 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m \u00e2\u201d\u201a gzip:  25.10 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[36massets/index-D70gORz6.js   \u001b[39m\u001b[1m\u001b[2m408.89 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m \u00e2\u201d\u201a gzip: 121.53 kB\u001b[22m\n\u001b[32m\u00e2\u0153\u201c built in 6.41s\u001b[39m\n",
+          "success": true
+        },
+        "checks": {
+          "blind_spot_count": 28,
+          "blocked_output_marker_count": 0,
+          "blocked_work_order_count": 36,
+          "capability_count": 9,
+          "component_bytes": 32962,
+          "component_exists": true,
+          "public_spec_exists": true,
+          "queen_writer_provenance": true,
+          "required_marker_count": 8,
+          "runtime_feed_status": "offline",
+          "self_authored_state_exists": true,
+          "template_count": 64
+        },
+        "generated_at": "2026-05-13T19:38:01.207428+00:00",
+        "issues": [
+          {
+            "code": "runtime_feed_not_live_in_ui_evidence",
+            "next_action": "Run the production launcher or refresh runtime manifests; do not patch UI code for an offline runtime.",
+            "severity": "attention",
+            "value": "offline"
+          },
+          {
+            "code": "ui_exposes_blind_spots",
+            "next_action": "Use the blind-spot list as Aureon's next self-work queue.",
+            "severity": "attention",
+            "value": 28
+          },
+          {
+            "code": "ui_exposes_blocked_work_orders",
+            "next_action": "Resolve or archive blocked work orders through the frontend evolution queue.",
+            "severity": "attention",
+            "value": 36
+          }
+        ],
+        "reviewed_paths": {
+          "component": "frontend/src/components/generated/AureonGeneratedOperationalConsole.tsx",
+          "public_spec": "frontend/public/aureon_operational_ui_spec.json",
+          "state": "state/aureon_self_authored_ui_last_run.json"
+        },
+        "status": "ui_review_passed",
+        "success": true
+      }
+    }
+  ],
+  "final_review": {
+    "blocking_issue_count": 0,
+    "build_result": {
+      "exit_code": 0,
+      "ran": true,
+      "stderr_tail": "",
+      "stdout_tail": "\n> vite_react_shadcn_ts@0.0.0 build\n> vite build\n\n\u001b[36mvite v5.4.21 \u001b[32mbuilding for production...\u001b[36m\u001b[39m\ntransforming...\n\u001b[32m\u00e2\u0153\u201c\u001b[39m 1685 modules transformed.\nrendering chunks...\ncomputing gzip size...\n\u001b[2mdist/\u001b[22m\u001b[32mindex.html                 \u001b[39m\u001b[1m\u001b[2m  1.16 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m \u00e2\u201d\u201a gzip:   0.51 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[35massets/index-Ccs5pZ3J.css  \u001b[39m\u001b[1m\u001b[2m171.71 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m \u00e2\u201d\u201a gzip:  25.10 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[36massets/index-D70gORz6.js   \u001b[39m\u001b[1m\u001b[2m408.89 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m \u00e2\u201d\u201a gzip: 121.53 kB\u001b[22m\n\u001b[32m\u00e2\u0153\u201c built in 6.41s\u001b[39m\n",
+      "success": true
+    },
+    "checks": {
+      "blind_spot_count": 28,
+      "blocked_output_marker_count": 0,
+      "blocked_work_order_count": 36,
+      "capability_count": 9,
+      "component_bytes": 32962,
+      "component_exists": true,
+      "public_spec_exists": true,
+      "queen_writer_provenance": true,
+      "required_marker_count": 8,
+      "runtime_feed_status": "offline",
+      "self_authored_state_exists": true,
+      "template_count": 64
+    },
+    "generated_at": "2026-05-13T19:38:01.207428+00:00",
+    "issues": [
+      {
+        "code": "runtime_feed_not_live_in_ui_evidence",
+        "next_action": "Run the production launcher or refresh runtime manifests; do not patch UI code for an offline runtime.",
+        "severity": "attention",
+        "value": "offline"
+      },
+      {
+        "code": "ui_exposes_blind_spots",
+        "next_action": "Use the blind-spot list as Aureon's next self-work queue.",
+        "severity": "attention",
+        "value": 28
+      },
+      {
+        "code": "ui_exposes_blocked_work_orders",
+        "next_action": "Resolve or archive blocked work orders through the frontend evolution queue.",
+        "severity": "attention",
+        "value": 36
+      }
+    ],
+    "reviewed_paths": {
+      "component": "frontend/src/components/generated/AureonGeneratedOperationalConsole.tsx",
+      "public_spec": "frontend/public/aureon_operational_ui_spec.json",
+      "state": "state/aureon_self_authored_ui_last_run.json"
+    },
+    "status": "ui_review_passed",
+    "success": true
+  },
+  "generated_at": "2026-05-13T19:38:01.207428+00:00",
+  "goal": "Aureon repo self-repair includes operational UI self-review.",
+  "repair_actions": [],
+  "schema_version": "aureon-self-ui-review-repair-v1",
+  "status": "self_repair_passed",
+  "success": true
+}

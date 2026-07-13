@@ -1,0 +1,739 @@
+{
+  "attack_cases": [
+    {
+      "benchmark_id": "bench_auth_breakout",
+      "benign_method": "Attempt denied cross-role and cross-tenant requests with benign canary identifiers.",
+      "blocked_behaviors": [
+        "credential theft",
+        "password spraying",
+        "phishing",
+        "malware",
+        "persistence",
+        "evasion",
+        "real exploit against third party",
+        "data exfiltration",
+        "destructive payload"
+      ],
+      "expected_defense": "deny, log, trace, and route any weakness to repair work orders",
+      "id": "case_hist_broken_access_control_bench_auth_breakout",
+      "objective": "Historically, authorization failures are often more damaging than authentication failures; every route, worker, and queue claim must deny by default.",
+      "safe_target": "http://localhost",
+      "simulation_mode": "benign_self_attack_simulation",
+      "status": "simulated_finding",
+      "success_metrics": [
+        "attack canary cannot cross the target boundary",
+        "unsafe action blocks with reason",
+        "audit trace is produced",
+        "finding routes to retest if control is missing"
+      ],
+      "tactic_family": "access_control"
+    },
+    {
+      "benchmark_id": "bench_tenant_escape",
+      "benign_method": "Attempt denied cross-role and cross-tenant requests with benign canary identifiers.",
+      "blocked_behaviors": [
+        "credential theft",
+        "password spraying",
+        "phishing",
+        "malware",
+        "persistence",
+        "evasion",
+        "real exploit against third party",
+        "data exfiltration",
+        "destructive payload"
+      ],
+      "expected_defense": "deny, log, trace, and route any weakness to repair work orders",
+      "id": "case_hist_broken_access_control_bench_tenant_escape",
+      "objective": "Historically, authorization failures are often more damaging than authentication failures; every route, worker, and queue claim must deny by default.",
+      "safe_target": "http://localhost",
+      "simulation_mode": "benign_self_attack_simulation",
+      "status": "simulated_passed",
+      "success_metrics": [
+        "attack canary cannot cross the target boundary",
+        "unsafe action blocks with reason",
+        "audit trace is produced",
+        "finding routes to retest if control is missing"
+      ],
+      "tactic_family": "access_control"
+    },
+    {
+      "benchmark_id": "bench_prompt_tool_breakout",
+      "benign_method": "Replay harmless prompt-injection canaries against mocked tools and assert unsafe contracts are blocked.",
+      "blocked_behaviors": [
+        "credential theft",
+        "password spraying",
+        "phishing",
+        "malware",
+        "persistence",
+        "evasion",
+        "real exploit against third party",
+        "data exfiltration",
+        "destructive payload"
+      ],
+      "expected_defense": "deny, log, trace, and route any weakness to repair work orders",
+      "id": "case_hist_prompt_injection_tool_abuse_bench_prompt_tool_breakout",
+      "objective": "Agentic systems fail when untrusted text can redirect tools; prompts, uploads, and vault notes must be treated as hostile input.",
+      "safe_target": "http://localhost",
+      "simulation_mode": "benign_self_attack_simulation",
+      "status": "simulated_passed",
+      "success_metrics": [
+        "attack canary cannot cross the target boundary",
+        "unsafe action blocks with reason",
+        "audit trace is produced",
+        "finding routes to retest if control is missing"
+      ],
+      "tactic_family": "llm_tool_governance"
+    },
+    {
+      "benchmark_id": "bench_money_authority_breakout",
+      "benign_method": "Replay harmless prompt-injection canaries against mocked tools and assert unsafe contracts are blocked.",
+      "blocked_behaviors": [
+        "credential theft",
+        "password spraying",
+        "phishing",
+        "malware",
+        "persistence",
+        "evasion",
+        "real exploit against third party",
+        "data exfiltration",
+        "destructive payload"
+      ],
+      "expected_defense": "deny, log, trace, and route any weakness to repair work orders",
+      "id": "case_hist_prompt_injection_tool_abuse_bench_money_authority_breakout",
+      "objective": "Agentic systems fail when untrusted text can redirect tools; prompts, uploads, and vault notes must be treated as hostile input.",
+      "safe_target": "http://localhost",
+      "simulation_mode": "benign_self_attack_simulation",
+      "status": "simulated_passed",
+      "success_metrics": [
+        "attack canary cannot cross the target boundary",
+        "unsafe action blocks with reason",
+        "audit trace is produced",
+        "finding routes to retest if control is missing"
+      ],
+      "tactic_family": "llm_tool_governance"
+    },
+    {
+      "benchmark_id": "bench_money_authority_breakout",
+      "benign_method": "Queue blocked action contracts for live order, filing, payment, and withdrawal attempts and assert fail-closed behavior.",
+      "blocked_behaviors": [
+        "credential theft",
+        "password spraying",
+        "phishing",
+        "malware",
+        "persistence",
+        "evasion",
+        "real exploit against third party",
+        "data exfiltration",
+        "destructive payload"
+      ],
+      "expected_defense": "deny, log, trace, and route any weakness to repair work orders",
+      "id": "case_hist_money_workflow_authority_bench_money_authority_breakout",
+      "objective": "Any system that touches trading, filing, tax, payments, or exchange state needs separate authority gates and audit proof.",
+      "safe_target": "http://localhost",
+      "simulation_mode": "benign_self_attack_simulation",
+      "status": "simulated_passed",
+      "success_metrics": [
+        "attack canary cannot cross the target boundary",
+        "unsafe action blocks with reason",
+        "audit trace is produced",
+        "finding routes to retest if control is missing"
+      ],
+      "tactic_family": "financial_authority"
+    },
+    {
+      "benchmark_id": "bench_api_fuzz_dast",
+      "benign_method": "Use non-destructive canary strings for injection, path traversal, SSRF, CSRF, and upload-name validation.",
+      "blocked_behaviors": [
+        "credential theft",
+        "password spraying",
+        "phishing",
+        "malware",
+        "persistence",
+        "evasion",
+        "real exploit against third party",
+        "data exfiltration",
+        "destructive payload"
+      ],
+      "expected_defense": "deny, log, trace, and route any weakness to repair work orders",
+      "id": "case_hist_input_and_upload_abuse_bench_api_fuzz_dast",
+      "objective": "Input, upload, path, and egress controls must reject malformed data before it reaches storage, tools, or SSRF-capable clients.",
+      "safe_target": "http://localhost",
+      "simulation_mode": "benign_self_attack_simulation",
+      "status": "simulated_passed",
+      "success_metrics": [
+        "attack canary cannot cross the target boundary",
+        "unsafe action blocks with reason",
+        "audit trace is produced",
+        "finding routes to retest if control is missing"
+      ],
+      "tactic_family": "api_input_validation"
+    },
+    {
+      "benchmark_id": "bench_supply_chain_breakout",
+      "benign_method": "Run local secret-pattern and dependency-artifact checks without uploading tokens or private files.",
+      "blocked_behaviors": [
+        "credential theft",
+        "password spraying",
+        "phishing",
+        "malware",
+        "persistence",
+        "evasion",
+        "real exploit against third party",
+        "data exfiltration",
+        "destructive payload"
+      ],
+      "expected_defense": "deny, log, trace, and route any weakness to repair work orders",
+      "id": "case_hist_supply_chain_and_secret_leak_bench_supply_chain_breakout",
+      "objective": "Dependencies, generated artifacts, logs, and reports must be scanned because secrets and vulnerable components often leak through build outputs.",
+      "safe_target": "http://localhost",
+      "simulation_mode": "benign_self_attack_simulation",
+      "status": "simulated_passed",
+      "success_metrics": [
+        "attack canary cannot cross the target boundary",
+        "unsafe action blocks with reason",
+        "audit trace is produced",
+        "finding routes to retest if control is missing"
+      ],
+      "tactic_family": "supply_chain"
+    },
+    {
+      "benchmark_id": "bench_audit_tamper_resilience",
+      "benign_method": "Attempt local fixture tamper/replay and require trace continuity plus tamper-evidence.",
+      "blocked_behaviors": [
+        "credential theft",
+        "password spraying",
+        "phishing",
+        "malware",
+        "persistence",
+        "evasion",
+        "real exploit against third party",
+        "data exfiltration",
+        "destructive payload"
+      ],
+      "expected_defense": "deny, log, trace, and route any weakness to repair work orders",
+      "id": "case_hist_audit_tamper_and_replay_bench_audit_tamper_resilience",
+      "objective": "Attackers target logs and traces after compromise; audit chains need tamper detection and replay resistance.",
+      "safe_target": "http://localhost",
+      "simulation_mode": "benign_self_attack_simulation",
+      "status": "simulated_passed",
+      "success_metrics": [
+        "attack canary cannot cross the target boundary",
+        "unsafe action blocks with reason",
+        "audit trace is produced",
+        "finding routes to retest if control is missing"
+      ],
+      "tactic_family": "audit_integrity"
+    }
+  ],
+  "contract_plan": {
+    "queued_persistently": true,
+    "state_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\hnc_authorized_attack_lab_contracts.json",
+    "status": {
+      "contract_count": 5,
+      "contract_schema_version": "aureon-organism-contract-v1",
+      "queue_count": 2,
+      "queues": {
+        "organism.default": 1,
+        "organism.hnc_attack_lab": 1
+      },
+      "recent": [
+        {
+          "contract_id": "goal_5173516196b6",
+          "contract_type": "goal",
+          "event": "organism.contract.goal.created",
+          "status": "created",
+          "ts": "2026-05-11T19:17:14.314510+00:00"
+        },
+        {
+          "contract_id": "task_e2e16c28bf37",
+          "contract_type": "task",
+          "event": "organism.contract.task.created",
+          "status": "created",
+          "ts": "2026-05-11T19:17:14.314510+00:00"
+        },
+        {
+          "contract_id": "job_6d7df05ece90",
+          "contract_type": "job",
+          "event": "organism.contract.job.created",
+          "status": "created",
+          "ts": "2026-05-11T19:17:14.314510+00:00"
+        },
+        {
+          "contract_id": "wo_6b00eff09a06",
+          "contract_type": "work_order",
+          "event": "organism.contract.work_order.queued",
+          "status": "queued",
+          "ts": "2026-05-11T19:17:14.314510+00:00"
+        },
+        {
+          "contract_id": "wo_2a63807a330e",
+          "contract_type": "work_order",
+          "event": "organism.contract.work_order.queued",
+          "status": "queued",
+          "ts": "2026-05-11T19:17:14.323664+00:00"
+        }
+      ],
+      "schema_version": "aureon-contract-stack-status-v1",
+      "state_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\hnc_authorized_attack_lab_contracts.json",
+      "status_counts": {
+        "created": 3,
+        "queued": 2
+      },
+      "topics": {
+        "blocked": "organism.contract.blocked",
+        "claimed": "organism.contract.work_order.claimed",
+        "completed": "organism.contract.work_order.completed",
+        "directive": "organism.contract.directive",
+        "failed": "organism.contract.work_order.failed",
+        "goal": "organism.contract.goal.created",
+        "job": "organism.contract.job.created",
+        "result": "organism.contract.result",
+        "skill": "organism.contract.skill.registered",
+        "status": "organism.contract.status",
+        "task": "organism.contract.task.created",
+        "work_order": "organism.contract.work_order.queued"
+      },
+      "type_counts": {
+        "goal": 1,
+        "job": 1,
+        "task": 1,
+        "work_order": 2
+      }
+    },
+    "work_order_count": 1,
+    "work_orders": [
+      {
+        "blocked": false,
+        "blocked_reason": "",
+        "contract_id": "wo_2a63807a330e",
+        "contract_type": "work_order",
+        "created_at": "2026-05-11T19:17:14.323664+00:00",
+        "parent_id": "",
+        "payload": {
+          "action_type": "execute_internal_task",
+          "cycle": [
+            "define_authorized_scope",
+            "threat_model",
+            "implement_control",
+            "try_to_break_own_system",
+            "stress_test",
+            "record_vulnerability_or_proof",
+            "queue_fix",
+            "retest",
+            "update_benchmark",
+            "deployment_gate_review",
+            "write_vault_memory"
+          ],
+          "finding": {
+            "benchmark_id": "bench_auth_breakout",
+            "evidence": [
+              "frontend/src/lib/harmonic-nexus-auth.ts",
+              "case=bench_auth_breakout"
+            ],
+            "id": "finding_auth_autologin_surface",
+            "queued": false,
+            "recommended_fix": "Replace production SaaS auto-login with explicit authenticated session creation, MFA policy, short-lived tokens, and tests proving auto-login is disabled outside local demo mode.",
+            "severity": "high",
+            "status": "needs_fix",
+            "title": "Frontend HNC auth surface still exposes an auto-login path that must not be production SaaS default."
+          },
+          "goal_id": "",
+          "guardrails": [
+            "credential theft",
+            "password spraying",
+            "phishing",
+            "malware",
+            "persistence",
+            "evasion",
+            "real exploit against third party",
+            "data exfiltration",
+            "destructive payload"
+          ],
+          "job_id": "",
+          "queue": "organism.hnc_attack_lab",
+          "required_retest": "bench_auth_breakout"
+        },
+        "priority": 6,
+        "queue": "organism.hnc_attack_lab",
+        "requires_human": false,
+        "risk": "low",
+        "safety": {
+          "audit_mode": "1",
+          "companies_house_submission_manual_only": true,
+          "exchange_or_trading_mutation_requires_live_gate": true,
+          "hmrc_submission_manual_only": true,
+          "official_filing_manual_only": true,
+          "real_orders_allowed": false,
+          "schema_version": "aureon-contract-safety-v1",
+          "tax_or_penalty_payment_manual_only": true
+        },
+        "schema_version": "aureon-organism-contract-v1",
+        "source": "hnc_authorized_attack_lab",
+        "status": "queued",
+        "tags": [],
+        "title": "Fix self-attack finding: Frontend HNC auth surface still exposes an auto-login path that must not be production SaaS default.",
+        "trace_id": "trace_bfa75231f65e",
+        "updated_at": "2026-05-11T19:17:14.323664+00:00"
+      }
+    ],
+    "workflow": {
+      "goal": {
+        "blocked": false,
+        "blocked_reason": "",
+        "contract_id": "goal_5173516196b6",
+        "contract_type": "goal",
+        "created_at": "2026-05-11T19:17:14.314510+00:00",
+        "parent_id": "",
+        "payload": {
+          "loop": [
+            "understand",
+            "recall_memory",
+            "choose_route",
+            "create_tasks",
+            "queue_work_orders",
+            "observe_result",
+            "write_memory"
+          ],
+          "objective": "Repair weaknesses found by Aureon's authorized unhackable self-attack lab and retest.",
+          "route_surfaces": [
+            "saas_security",
+            "contracts",
+            "self_enhancement",
+            "validation"
+          ],
+          "success_criteria": [
+            "work orders queued",
+            "result observed",
+            "memory written"
+          ]
+        },
+        "priority": 5,
+        "queue": "default",
+        "requires_human": false,
+        "risk": "low",
+        "safety": {
+          "audit_mode": "1",
+          "companies_house_submission_manual_only": true,
+          "exchange_or_trading_mutation_requires_live_gate": true,
+          "hmrc_submission_manual_only": true,
+          "official_filing_manual_only": true,
+          "real_orders_allowed": false,
+          "schema_version": "aureon-contract-safety-v1",
+          "tax_or_penalty_payment_manual_only": true
+        },
+        "schema_version": "aureon-organism-contract-v1",
+        "source": "hnc_authorized_attack_lab",
+        "status": "created",
+        "tags": [],
+        "title": "Repair weaknesses found by Aureon's authorized unhackable self-attack lab and retest.",
+        "trace_id": "trace_df5d4c73834b",
+        "updated_at": "2026-05-11T19:17:14.314510+00:00"
+      },
+      "jobs": [
+        {
+          "blocked": false,
+          "blocked_reason": "",
+          "contract_id": "job_6d7df05ece90",
+          "contract_type": "job",
+          "created_at": "2026-05-11T19:17:14.314510+00:00",
+          "parent_id": "goal_5173516196b6",
+          "payload": {
+            "goal_id": "goal_5173516196b6",
+            "queue": "organism.default",
+            "retry_policy": {
+              "max_attempts": 1,
+              "mode": "manual_retry"
+            },
+            "task_ids": [
+              "task_e2e16c28bf37"
+            ]
+          },
+          "priority": 5,
+          "queue": "organism.default",
+          "requires_human": false,
+          "risk": "low",
+          "safety": {
+            "audit_mode": "1",
+            "companies_house_submission_manual_only": true,
+            "exchange_or_trading_mutation_requires_live_gate": true,
+            "hmrc_submission_manual_only": true,
+            "official_filing_manual_only": true,
+            "real_orders_allowed": false,
+            "schema_version": "aureon-contract-safety-v1",
+            "tax_or_penalty_payment_manual_only": true
+          },
+          "schema_version": "aureon-organism-contract-v1",
+          "source": "hnc_authorized_attack_lab",
+          "status": "created",
+          "tags": [],
+          "title": "Execute routed goal plan",
+          "trace_id": "trace_a86e50a27be5",
+          "updated_at": "2026-05-11T19:17:14.314510+00:00"
+        }
+      ],
+      "tasks": [
+        {
+          "blocked": false,
+          "blocked_reason": "",
+          "contract_id": "task_e2e16c28bf37",
+          "contract_type": "task",
+          "created_at": "2026-05-11T19:17:14.314510+00:00",
+          "parent_id": "goal_5173516196b6",
+          "payload": {
+            "acceptance_checks": [
+              "route selected",
+              "safe boundary checked",
+              "next work order queued"
+            ],
+            "goal_id": "goal_5173516196b6",
+            "instructions": "Use the goal-capability map, relevant skills, ThoughtBus, vault memory, and safe local tools to plan the next step.",
+            "required_skills": [
+              "hnc_authorized_attack_lab",
+              "hnc_saas_security_architect",
+              "capability_growth_loop"
+            ]
+          },
+          "priority": 5,
+          "queue": "default",
+          "requires_human": false,
+          "risk": "low",
+          "safety": {
+            "audit_mode": "1",
+            "companies_house_submission_manual_only": true,
+            "exchange_or_trading_mutation_requires_live_gate": true,
+            "hmrc_submission_manual_only": true,
+            "official_filing_manual_only": true,
+            "real_orders_allowed": false,
+            "schema_version": "aureon-contract-safety-v1",
+            "tax_or_penalty_payment_manual_only": true
+          },
+          "schema_version": "aureon-organism-contract-v1",
+          "source": "hnc_authorized_attack_lab",
+          "status": "created",
+          "tags": [],
+          "title": "Plan and route goal",
+          "trace_id": "trace_21878e4665e2",
+          "updated_at": "2026-05-11T19:17:14.314510+00:00"
+        }
+      ],
+      "work_orders": [
+        {
+          "blocked": false,
+          "blocked_reason": "",
+          "contract_id": "wo_6b00eff09a06",
+          "contract_type": "work_order",
+          "created_at": "2026-05-11T19:17:14.314510+00:00",
+          "parent_id": "job_6d7df05ece90",
+          "payload": {
+            "action_type": "execute_internal_task",
+            "goal_id": "goal_5173516196b6",
+            "job_id": "job_6d7df05ece90",
+            "objective": "Repair weaknesses found by Aureon's authorized unhackable self-attack lab and retest.",
+            "queue": "organism.default",
+            "recommended_skills": [
+              "hnc_authorized_attack_lab",
+              "hnc_saas_security_architect",
+              "capability_growth_loop"
+            ],
+            "route_surfaces": [
+              "saas_security",
+              "contracts",
+              "self_enhancement",
+              "validation"
+            ],
+            "task_id": "task_e2e16c28bf37"
+          },
+          "priority": 5,
+          "queue": "organism.default",
+          "requires_human": false,
+          "risk": "low",
+          "safety": {
+            "audit_mode": "1",
+            "companies_house_submission_manual_only": true,
+            "exchange_or_trading_mutation_requires_live_gate": true,
+            "hmrc_submission_manual_only": true,
+            "official_filing_manual_only": true,
+            "real_orders_allowed": false,
+            "schema_version": "aureon-contract-safety-v1",
+            "tax_or_penalty_payment_manual_only": true
+          },
+          "schema_version": "aureon-organism-contract-v1",
+          "source": "hnc_authorized_attack_lab",
+          "status": "queued",
+          "tags": [],
+          "title": "Run internal goal step",
+          "trace_id": "trace_76768361514c",
+          "updated_at": "2026-05-11T19:17:14.314510+00:00"
+        }
+      ]
+    }
+  },
+  "findings": [
+    {
+      "benchmark_id": "bench_auth_breakout",
+      "evidence": [
+        "frontend/src/lib/harmonic-nexus-auth.ts",
+        "case=bench_auth_breakout"
+      ],
+      "id": "finding_auth_autologin_surface",
+      "queued": true,
+      "recommended_fix": "Replace production SaaS auto-login with explicit authenticated session creation, MFA policy, short-lived tokens, and tests proving auto-login is disabled outside local demo mode.",
+      "severity": "high",
+      "status": "needs_fix",
+      "title": "Frontend HNC auth surface still exposes an auto-login path that must not be production SaaS default."
+    }
+  ],
+  "generated_at": "2026-05-11T19:17:14.325704+00:00",
+  "guardrails": [
+    "Only Aureon-owned local/staging loopback targets and repo-local paths are allowed.",
+    "No third-party systems, credential attacks, phishing, malware, persistence, evasion, destructive payloads, or data exfiltration.",
+    "Live trading, official filing, payments, exchange mutation, and secret access remain mocked or blocked.",
+    "Every finding must become a fix-and-retest work order before release gates can pass."
+  ],
+  "historical_knowledge": [
+    {
+      "defensive_lesson": "Historically, authorization failures are often more damaging than authentication failures; every route, worker, and queue claim must deny by default.",
+      "evidence_sources": [
+        "docs/SECURITY.md",
+        "frontend/src/lib/harmonic-nexus-auth.ts",
+        "docs/audits/hnc_saas_security_blueprint.md"
+      ],
+      "family": "access_control",
+      "guardrails": [
+        "synthetic tenants only",
+        "no real credential guessing"
+      ],
+      "id": "hist_broken_access_control",
+      "maps_to_benchmarks": [
+        "bench_auth_breakout",
+        "bench_tenant_escape"
+      ],
+      "safe_simulation": "Attempt denied cross-role and cross-tenant requests with benign canary identifiers."
+    },
+    {
+      "defensive_lesson": "Agentic systems fail when untrusted text can redirect tools; prompts, uploads, and vault notes must be treated as hostile input.",
+      "evidence_sources": [
+        "docs/audits/hnc_saas_security_blueprint.md",
+        "docs/audits/mind_wiring_audit.md",
+        "aureon/core/organism_contracts.py"
+      ],
+      "family": "llm_tool_governance",
+      "guardrails": [
+        "mock live-order, filing, payment, and secret tools",
+        "no real secrets in prompts"
+      ],
+      "id": "hist_prompt_injection_tool_abuse",
+      "maps_to_benchmarks": [
+        "bench_prompt_tool_breakout",
+        "bench_money_authority_breakout"
+      ],
+      "safe_simulation": "Replay harmless prompt-injection canaries against mocked tools and assert unsafe contracts are blocked."
+    },
+    {
+      "defensive_lesson": "Any system that touches trading, filing, tax, payments, or exchange state needs separate authority gates and audit proof.",
+      "evidence_sources": [
+        "docs/runbooks/SECURITY_TRADING.md",
+        "aureon/core/organism_contracts.py",
+        "docs/audits/hnc_saas_security_blueprint.md"
+      ],
+      "family": "financial_authority",
+      "guardrails": [
+        "no exchange calls",
+        "no HMRC/Companies House calls",
+        "no bank/payment calls"
+      ],
+      "id": "hist_money_workflow_authority",
+      "maps_to_benchmarks": [
+        "bench_money_authority_breakout"
+      ],
+      "safe_simulation": "Queue blocked action contracts for live order, filing, payment, and withdrawal attempts and assert fail-closed behavior."
+    },
+    {
+      "defensive_lesson": "Input, upload, path, and egress controls must reject malformed data before it reaches storage, tools, or SSRF-capable clients.",
+      "evidence_sources": [
+        "docs/audits/hnc_saas_security_blueprint.md"
+      ],
+      "family": "api_input_validation",
+      "guardrails": [
+        "local/staging allowlist only",
+        "no destructive payloads",
+        "no third-party scanning"
+      ],
+      "id": "hist_input_and_upload_abuse",
+      "maps_to_benchmarks": [
+        "bench_api_fuzz_dast"
+      ],
+      "safe_simulation": "Use non-destructive canary strings for injection, path traversal, SSRF, CSRF, and upload-name validation."
+    },
+    {
+      "defensive_lesson": "Dependencies, generated artifacts, logs, and reports must be scanned because secrets and vulnerable components often leak through build outputs.",
+      "evidence_sources": [
+        "docs/SECURITY.md",
+        "docs/audits/hnc_saas_security_blueprint.md"
+      ],
+      "family": "supply_chain",
+      "guardrails": [
+        "local scanning only",
+        "redact secret values",
+        "no package publishing"
+      ],
+      "id": "hist_supply_chain_and_secret_leak",
+      "maps_to_benchmarks": [
+        "bench_supply_chain_breakout"
+      ],
+      "safe_simulation": "Run local secret-pattern and dependency-artifact checks without uploading tokens or private files."
+    },
+    {
+      "defensive_lesson": "Attackers target logs and traces after compromise; audit chains need tamper detection and replay resistance.",
+      "evidence_sources": [
+        "aureon/core/organism_contracts.py",
+        "docs/audits/hnc_saas_security_blueprint.md"
+      ],
+      "family": "audit_integrity",
+      "guardrails": [
+        "test audit stores only",
+        "no production log deletion"
+      ],
+      "id": "hist_audit_tamper_and_replay",
+      "maps_to_benchmarks": [
+        "bench_audit_tamper_resilience"
+      ],
+      "safe_simulation": "Attempt local fixture tamper/replay and require trace continuity plus tamper-evidence."
+    }
+  ],
+  "notes": [
+    "Historical tactic knowledge is used as defensive memory and test design, not as an operational intrusion playbook.",
+    "Endpoint-level testing should only run after the SaaS service exposes local/staging allowlisted endpoints.",
+    "Official anchors: {'owasp_asvs': 'https://owasp.org/www-project-application-security-verification-standard/', 'owasp_top_10': 'https://owasp.org/www-project-top-ten/', 'nist_zero_trust': 'https://csrc.nist.gov/pubs/sp/800/207/final'}"
+  ],
+  "repo_root": "C:\\Users\\user\\aureon-trading-integrated-main-20260508",
+  "safe_environment": {
+    "AUREON_AUDIT_MODE": "1",
+    "AUREON_DISABLE_EXTERNAL_ATTACKS": "1",
+    "AUREON_DISABLE_OFFICIAL_FILING": "1",
+    "AUREON_DISABLE_REAL_ORDERS": "1",
+    "AUREON_LIVE_TRADING": "0"
+  },
+  "schema_version": "aureon-hnc-authorized-attack-lab-v1",
+  "scope": [
+    {
+      "allowed": true,
+      "normalized": "http://localhost",
+      "reason": "Allowed local/staging loopback target.",
+      "target": "http://localhost"
+    }
+  ],
+  "status": "simulations_completed_with_findings",
+  "summary": {
+    "actionable_finding_count": 1,
+    "attack_case_count": 8,
+    "authorized_self_attack_required": true,
+    "blocked_scope_count": 0,
+    "executed_simulation_count": 8,
+    "external_attacks_allowed": false,
+    "finding_count": 1,
+    "fix_contracts_queued": true,
+    "historical_lesson_count": 6,
+    "scope_target_count": 1
+  }
+}

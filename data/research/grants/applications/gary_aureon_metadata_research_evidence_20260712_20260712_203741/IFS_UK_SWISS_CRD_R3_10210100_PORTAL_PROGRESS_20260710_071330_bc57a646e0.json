@@ -1,0 +1,110 @@
+﻿{
+    "schema_version":  "aureon-ifs-portal-progress-v1",
+    "generated_at":  "2026-07-10T07:13:30+01:00",
+    "operator":  "Aureon",
+    "scope":  "IFS_ONLY",
+    "application_id":  "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+    "portal_application_number":  "10210100",
+    "portal_url":  "https://apply-for-innovation-funding.service.gov.uk/application/10210100",
+    "competition":  "UK-Switzerland CR\u0026D Round 3",
+    "status":  "IFS_DRAFT_PROJECT_DETAILS_Q2_Q3_COMPLETE_SCORED_DRAFTS_AND_IMPACT_BASELINE_FIELDS_SAVED_PARTNER_EVIDENCE_REQUIRED",
+    "completed_sections":  [
+                               "Application details",
+                               "Research category",
+                               "Project summary",
+                               "Public description",
+                               "Scope",
+                               "Q2 Applicant location",
+                               "Q3 Animal testing"
+                           ],
+    "saved_draft_sections":  [
+                                 "Q5 International collaboration",
+                                 "Q7 Trusted Research and Innovation",
+                                 "Q8 Need or challenge",
+                                 "Q9 Approach and innovation",
+                                 "Q10 Team and resources",
+                                 "Q11 Market awareness",
+                                 "Q12 Outcomes and route to market",
+                                 "Q13 Wider impacts",
+                                 "Q14 Project management",
+                                 "Q15 Risks",
+                                 "Q16 Added value",
+                                 "Project Impact Q1 FTE employees = 1",
+                                 "Project Impact Q2 innovation FTE employees = 1",
+                                 "Project Impact Q4 operating profit/loss = 76000",
+                                 "Project Impact Q5 innovation expenditure = 25000",
+                                 "Project Impact Q6 turnover from innovative products/services = 100",
+                                 "Project Impact Q8 R\u0026D projects = 1",
+                                 "Project Impact Q9 Catapult engagement = No",
+                                 "Project Impact Q10 Innovate UK Business Connect engagement = No",
+                                 "Project Impact Q14 commercialisation training people = 0",
+                                 "Project Impact Q15 innovation training people = 0"
+                             ],
+    "incomplete_gates":  [
+                             "Subsidy basis",
+                             "Application team",
+                             "Q1 Themes",
+                             "Q4 Permits and licences",
+                             "Q6 Export licence",
+                             "Q17 Costs and value for money",
+                             "Your project finances",
+                             "Finances overview",
+                             "Project Impact Q3 expected additional FTE",
+                             "Project Impact Q7 expected additional turnover",
+                             "Project Impact Q11 expected new products/services/processes",
+                             "Project Impact Q12 commercial readiness level",
+                             "Project Impact Q13 technology readiness level",
+                             "Project Impact final review/submit",
+                             "Award terms and conditions",
+                             "Review and submit"
+                         ],
+    "project_impact_observation":  {
+                                       "survey_url":  "https://innovateuk.my.site.com/IMCommunity/s/?CompanyNumber=NI696693\u0026CompetitionId=2512\u0026IFSApplicationNumber=10210100\u0026OrganisationId=116134\u0026PreApproval=true",
+                                       "saved_fields":  {
+                                                            "Number of Full Time Equivalent (FTE) employees":  "1",
+                                                            "Number of innovation Full Time Equivalent (FTE) employees":  "1",
+                                                            "Total operating profit or loss":  "76000",
+                                                            "Total innovation expenditure":  "25000",
+                                                            "Proportion of turnover from innovative products and services":  "100",
+                                                            "Number of Research and Development (R\u0026D) projects":  "1",
+                                                            "Catapult centre engagement related to this support":  "No",
+                                                            "Innovate UK Business Connect engagement related to this support":  "No",
+                                                            "Number received commercialisation training":  "0",
+                                                            "Number received innovation training":  "0"
+                                                        },
+                                       "skipped_fields":  [
+                                                              "Expected number of additional FTE employees as a result of this support",
+                                                              "Expected additional turnover as a result of this support",
+                                                              "Expected new products, services or processes as a result of this support",
+                                                              "Commercial readiness level related to this support",
+                                                              "Technology readiness level related to this support"
+                                                          ],
+                                       "evidence":  "Baseline values reused from prior submitted IFS records and finance portal entries for the same company; partner-dependent forecasts and readiness fields were not entered.",
+                                       "action":  "Saved evidence-backed baseline fields and returned to Project Impact review page. Did not press Submit because remaining forecast/readiness values depend on partner and technical scope evidence."
+                                   },
+    "evidence_files":  [
+                           "applications/IFS_CLF_10210032_SUBMISSION_RECEIPT_20260709.json",
+                           "applications/IFS_FUTURE_LEADERS_R11_10209992_FINANCE_PORTAL_ENTRY_20260709.md",
+                           "applications/IFS_FUTURE_LEADERS_R11_10209992_DRAFT_STATUS_20260709.json",
+                           "applications/IFS_NEXT_WAVE_SUBMISSION_STATUS_20260709.md"
+                       ],
+    "next_actions":  [
+                         "Secure named Swiss implementation partner and research institute or waiver evidence",
+                         "Complete Project Impact forecast/readiness fields only after partner, theme, market and budget evidence exists",
+                         "Fix selected technical theme before Q1, Q4, Q6, Q7, Q17 and finance completion",
+                         "Prepare partner budgets, person months, IP/data plan, export-control and TR\u0026I review",
+                         "Upload appendices only after action-time upload confirmation for the exact files",
+                         "Review and submit only after all sections are complete and evidence-backed"
+                     ],
+    "controls":  [
+                     "No final IFS submission attempted",
+                     "No Project Impact survey submission attempted",
+                     "No partner invitation attempted",
+                     "No file upload attempted",
+                     "No email or Drive upload attempted",
+                     "No plaintext password, MFA, CAPTCHA, or provider control bypass attempted",
+                     "No Q4 permits/licences or Q6 export-control binary answer selected because partner technical scope is not fixed",
+                     "No Q17 costs or finance values entered because eligible costs and partner contributions are not evidenced",
+                     "No partner-dependent Project Impact forecasts or readiness levels were entered"
+                 ]
+}

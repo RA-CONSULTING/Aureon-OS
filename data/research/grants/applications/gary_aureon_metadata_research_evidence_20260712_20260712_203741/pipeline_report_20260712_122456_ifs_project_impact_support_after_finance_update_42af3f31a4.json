@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-07-12T12:24:56+01:00",
+  "operator": "Aureon",
+  "event": "ifs_project_impact_support_after_finance_update",
+  "result": "IFS_PROJECT_IMPACT_SUPPORT_AFTER_FINANCE_UPDATE_READY_NOT_SENT",
+  "artifact": "applications/IFS_UK_SWISS_PROJECT_IMPACT_SUPPORT_AFTER_FINANCE_UPDATE_20260712_122456.json",
+  "markdown": "applications/IFS_UK_SWISS_PROJECT_IMPACT_SUPPORT_AFTER_FINANCE_UPDATE_20260712_122456.md",
+  "email_package": "applications/IFS_UK_SWISS_PROJECT_IMPACT_SUPPORT_AFTER_FINANCE_UPDATE_20260712_122456.eml",
+  "external_action_queue": "applications/AUREON_EXTERNAL_ACTION_QUEUE_20260712_122456_project_impact_after_finance_update.json",
+  "validation": "applications/EXTERNAL_ACTION_EMAIL_PACKAGE_VALIDATION_20260712_122456.json",
+  "ready_not_sent_actions": 3,
+  "email_sent": false,
+  "external_submission_performed": false,
+  "portal_changed": false
+}

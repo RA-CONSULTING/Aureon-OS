@@ -1,0 +1,47 @@
+{
+  "schema_version": "aureon-ifs-grant-application-execution-v1",
+  "generated_at": "2026-07-10T05:56:33+01:00",
+  "operator": "Aureon",
+  "user_instruction": "Use Aureon repo to log in, complete, and apply for grants.",
+  "selected_route": {
+    "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+    "competition": "UK-Switzerland CR&D Round 3",
+    "competition_number": "2512",
+    "start_application_url": "https://apply-for-innovation-funding.service.gov.uk/application/create/start-application/2512",
+    "signin_url_observed": "https://auth.apply-for-innovation-funding.service.gov.uk/idp/profile/SAML2/Redirect/SSO"
+  },
+  "repo_materials_used": [
+    "applications/IFS_CONVERSION_PACK_UK_SWITZERLAND_CR_D_ROUND_3_20260709.md",
+    "applications/IFS_PORTAL_READY_TEXT_UK_SWITZERLAND_CR_D_ROUND_3_20260709.md",
+    "applications/IFS_UK_SWISS_CRD_R3_APPLICATION_START_HANDOFF_20260710.md",
+    "AUREON_UNIFIED_WORK_CORPUS_20260709.md"
+  ],
+  "browser_result": {
+    "surface": "Chrome with existing profile state",
+    "state_reached": "IFS_SIGN_IN_FORM",
+    "visible_fields": [
+      "email input j_username",
+      "password input j_password",
+      "Sign in button"
+    ],
+    "handoff": "Chrome tab left open at IFS sign-in form for human account completion"
+  },
+  "blocked_by": [
+    "IFS account password/sign-in required; no plaintext password was available or requested in chat",
+    "Route requires Swiss implementation partner evidence and research institute or waiver evidence before truthful completion/submission"
+  ],
+  "submission_status": "NOT_SUBMITTED_PROVIDER_AND_ELIGIBILITY_GATED",
+  "next_human_actions": [
+    "Complete sign-in in the open Chrome IFS tab using the intended account",
+    "Confirm or create the R&A Consulting organisation profile in IFS",
+    "Provide named Swiss implementation partner evidence",
+    "Provide named research institute evidence or documented waiver condition",
+    "Then use the portal-ready text pack to populate draft sections"
+  ],
+  "controls": [
+    "No password, MFA code, CAPTCHA, or provider control bypass attempted",
+    "No account creation, partner invitation, file upload, email send, Drive upload, or final submission attempted",
+    "No plaintext secret read or stored",
+    "Submitted IFS and AIRR application records were preserved unchanged"
+  ]
+}

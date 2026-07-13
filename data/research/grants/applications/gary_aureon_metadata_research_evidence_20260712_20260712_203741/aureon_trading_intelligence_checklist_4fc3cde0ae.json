@@ -1,0 +1,443 @@
+{
+  "contract": {
+    "fed_to_decision_logic": "system evidence is wired into exchange_action_plan, HNC/Auris proof, shadow validation, or profit velocity ranking",
+    "freshness_source": "state/unified_runtime_status.json runtime stale/tick truth checks",
+    "metacognitive_data_context": "data-ocean, global coverage, and exchange-monitoring reports feed HNC/Auris as wider context while runtime freshness remains authoritative",
+    "no_execution_change": "checklist is proof/visibility only and does not loosen live exchange mutation rules",
+    "self_trust": "Aureon trusts aligned evidence to decide; live action still requires fresh runtime truth and clear execution state",
+    "usable_for_decision": "present, active, fed, and runtime fresh-live"
+  },
+  "decision_trust": {
+    "evidence_self_trust_score": 0.178429,
+    "inputs": {
+      "active_ratio": 0.071429,
+      "counter_intelligence_ratio": 0.25,
+      "fed_ratio": 0.285714,
+      "hnc_ratio": 0.0,
+      "hnc_score": 0.0,
+      "live_ratio": 0.0,
+      "metacognitive_context_ratio": 1.0,
+      "profit_timing_ratio": 0.0,
+      "route_ratio": 0.0,
+      "runtime_clearances": [],
+      "shadow_score": 0.0,
+      "top_candidate": {
+        "combined_score": 0.0,
+        "confidence": 0.0,
+        "fast_money_score": 0.0,
+        "profit_velocity_score": 0.0,
+        "side": "",
+        "symbol": "",
+        "venue": ""
+      },
+      "usable_ratio": 0.0
+    },
+    "live_action_trust_score": 0.06245,
+    "not_fear_reason": "The decision system is not hesitating; live data is not ready.",
+    "posture": "wait_for_live_data",
+    "schema_version": 1,
+    "self_instruction": "Wait for live market data to return, then re-rank candidates before publishing intent.",
+    "synthetic_affect_state": "quiet_observation",
+    "thresholds": {
+      "trust_to_decide": 0.62,
+      "trust_to_shadow": 0.42
+    },
+    "trust_to_act": false,
+    "trust_to_decide": false,
+    "trust_to_shadow": false
+  },
+  "generated_at": "2026-05-22T18:20:47.022653+00:00",
+  "repo_root": "C:\\Users\\user\\aureon-trading",
+  "rows": [
+    {
+      "active_this_cycle": false,
+      "blocker": "stream_cache_not_fresh, repo_path_missing, not_wired_to_decision_logic, runtime_data_not_ready",
+      "category": "live_market_intelligence",
+      "downstream_stage": "market_feed",
+      "evidence_source": "state/unified_runtime_status.json#live_stream_cache",
+      "facet": "live_stream_data",
+      "fed_to_decision_logic": false,
+      "fresh": false,
+      "last_timestamp": "2026-05-22T18:20:47.022653+00:00",
+      "path": "ws_cache/ws_prices.json",
+      "present": false,
+      "system": "LiveStreamCacheRuntime",
+      "usable_for_decision": false,
+      "wire_path": "direct_live_signal"
+    },
+    {
+      "active_this_cycle": false,
+      "blocker": "fast_money_report_missing, not_active_this_cycle, not_wired_to_decision_logic, runtime_data_not_ready",
+      "category": "profit_timing",
+      "downstream_stage": "profit_velocity",
+      "evidence_source": "state/unified_runtime_status.json#shared_order_flow.fast_money_intelligence",
+      "facet": "fast_money_selection",
+      "fed_to_decision_logic": false,
+      "fresh": false,
+      "last_timestamp": "2026-05-22T18:20:47.022653+00:00",
+      "path": "aureon/exchanges/unified_market_trader.py",
+      "present": true,
+      "system": "FastMoneySelectorRuntime",
+      "usable_for_decision": false,
+      "wire_path": "profit_context"
+    },
+    {
+      "active_this_cycle": false,
+      "blocker": "orderbook_pressure_not_sampled_this_cycle, not_active_this_cycle, not_wired_to_decision_logic, runtime_data_not_ready",
+      "category": "profit_timing",
+      "downstream_stage": "profit_velocity",
+      "evidence_source": "state/unified_runtime_status.json#shared_order_flow.fast_money_intelligence.orderbook_probe_count",
+      "facet": "orderbook_pressure",
+      "fed_to_decision_logic": false,
+      "fresh": false,
+      "last_timestamp": "2026-05-22T18:20:47.022653+00:00",
+      "path": "aureon/analytics/aureon_whale_orderbook_analyzer.py",
+      "present": true,
+      "system": "OrderBookPressureRuntime",
+      "usable_for_decision": false,
+      "wire_path": "direct_live_signal"
+    },
+    {
+      "active_this_cycle": false,
+      "blocker": "repo_path_missing, not_wired_to_decision_logic, runtime_data_not_ready",
+      "category": "live_market_intelligence",
+      "downstream_stage": "market_feed",
+      "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.model_coverage/top_candidates",
+      "facet": "signal_fusion",
+      "fed_to_decision_logic": false,
+      "fresh": false,
+      "last_timestamp": "2026-05-22T18:20:47.022653+00:00",
+      "path": "state/unified_runtime_status.json",
+      "present": false,
+      "system": "ModelSignalFeed",
+      "usable_for_decision": false,
+      "wire_path": "direct_live_signal"
+    },
+    {
+      "active_this_cycle": false,
+      "blocker": "repo_path_missing, not_wired_to_decision_logic, runtime_data_not_ready",
+      "category": "hnc_auris_cognition",
+      "downstream_stage": "auris_state",
+      "evidence_source": "state/unified_runtime_status.json#hnc_cognitive_proof.auris_nodes",
+      "facet": "sensory_market_texture",
+      "fed_to_decision_logic": false,
+      "fresh": false,
+      "last_timestamp": "2026-05-22T18:20:47.022653+00:00",
+      "path": "aureon/utils/aureon_queen_hive_mind.py",
+      "present": false,
+      "system": "AurisNodes",
+      "usable_for_decision": false,
+      "wire_path": "hnc_proof"
+    },
+    {
+      "active_this_cycle": false,
+      "blocker": "missing_cycle_step:who, missing_cycle_step:what, missing_cycle_step:where, missing_cycle_step:when, missing_cycle_step:how, missing_cycle_step:act, repo_path_missing, not_wired_to_decision_logic, runtime_data_not_ready",
+      "category": "hnc_auris_cognition",
+      "downstream_stage": "hnc_proof",
+      "evidence_source": "state/unified_runtime_status.json#hnc_operating_cycle",
+      "facet": "who_what_where_when_how_act",
+      "fed_to_decision_logic": false,
+      "fresh": false,
+      "last_timestamp": "2026-05-22T18:20:47.022653+00:00",
+      "path": "state/aureon_hnc_operating_cycle.json",
+      "present": false,
+      "system": "HNCOperatingCycle",
+      "usable_for_decision": false,
+      "wire_path": "hnc_proof"
+    },
+    {
+      "active_this_cycle": false,
+      "blocker": "repo_path_missing, runtime_data_not_ready",
+      "category": "counter_intelligence_validation",
+      "downstream_stage": "exchange_action_plan",
+      "evidence_source": "state/unified_runtime_status.json#runtime_watchdog",
+      "facet": "freshness_truth",
+      "fed_to_decision_logic": true,
+      "fresh": false,
+      "last_timestamp": "2026-05-22T18:20:47.022653+00:00",
+      "path": "state/unified_runtime_status.json",
+      "present": false,
+      "system": "RuntimeWatchdog",
+      "usable_for_decision": false,
+      "wire_path": "runtime_watchdog"
+    },
+    {
+      "active_this_cycle": false,
+      "blocker": "repo_path_missing, not_wired_to_decision_logic, runtime_data_not_ready",
+      "category": "counter_intelligence_validation",
+      "downstream_stage": "exchange_action_plan",
+      "evidence_source": "state/unified_runtime_status.json#api_governor",
+      "facet": "api_rate_counter_intelligence",
+      "fed_to_decision_logic": false,
+      "fresh": false,
+      "last_timestamp": "2026-05-22T18:20:47.022653+00:00",
+      "path": "state/unified_runtime_status.json",
+      "present": false,
+      "system": "APIGovernor",
+      "usable_for_decision": false,
+      "wire_path": "exchange_action_plan"
+    },
+    {
+      "active_this_cycle": false,
+      "blocker": "no_ready_venues, repo_path_missing, not_wired_to_decision_logic, runtime_data_not_ready",
+      "category": "counter_intelligence_validation",
+      "downstream_stage": "exchange_action_plan",
+      "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.venues",
+      "facet": "route_validation",
+      "fed_to_decision_logic": false,
+      "fresh": false,
+      "last_timestamp": "2026-05-22T18:20:47.022653+00:00",
+      "path": "state/unified_runtime_status.json",
+      "present": false,
+      "system": "ExchangeRouteClearance",
+      "usable_for_decision": false,
+      "wire_path": "exchange_action_plan"
+    },
+    {
+      "active_this_cycle": false,
+      "blocker": "repo_path_missing, not_wired_to_decision_logic, runtime_data_not_ready",
+      "category": "profit_timing",
+      "downstream_stage": "profit_velocity",
+      "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.selection_process/top_candidates",
+      "facet": "fast_profit_eta",
+      "fed_to_decision_logic": false,
+      "fresh": false,
+      "last_timestamp": "2026-05-22T18:20:47.022653+00:00",
+      "path": "aureon/exchanges/unified_market_trader.py",
+      "present": false,
+      "system": "ProfitVelocityRanker",
+      "usable_for_decision": false,
+      "wire_path": "profit_context"
+    },
+    {
+      "active_this_cycle": false,
+      "blocker": "repo_path_missing, not_wired_to_decision_logic, runtime_data_not_ready",
+      "category": "counter_intelligence_validation",
+      "downstream_stage": "shadow_validation",
+      "evidence_source": "state/unified_runtime_status.json#shadow_trading",
+      "facet": "self_validation",
+      "fed_to_decision_logic": false,
+      "fresh": false,
+      "last_timestamp": "2026-05-22T18:20:47.022653+00:00",
+      "path": "state/unified_shadow_trade_report.json",
+      "present": false,
+      "system": "ShadowTradeSelfMeasurement",
+      "usable_for_decision": false,
+      "wire_path": "direct_live_signal"
+    },
+    {
+      "active_this_cycle": false,
+      "blocker": "configured_registry_not_fully_mapped, coverage_below_configured_threshold, configured_sources_not_all_usable_for_mapping, not_active_this_cycle, runtime_data_not_ready",
+      "category": "metacognitive_data_context",
+      "downstream_stage": "metacognitive_context",
+      "evidence_source": "state/aureon_data_ocean_status.json#summary",
+      "facet": "metacognitive_data_context",
+      "fed_to_decision_logic": true,
+      "fresh": false,
+      "last_timestamp": "2026-05-22T18:20:47.022653+00:00",
+      "path": "state/aureon_data_ocean_status.json",
+      "present": true,
+      "system": "DataOceanCognitiveContext",
+      "usable_for_decision": false,
+      "wire_path": "hnc_proof"
+    },
+    {
+      "active_this_cycle": false,
+      "blocker": "configured_registry_not_fully_mapped, coverage_below_configured_threshold, configured_sources_not_all_usable_for_mapping, not_active_this_cycle, runtime_data_not_ready",
+      "category": "metacognitive_data_context",
+      "downstream_stage": "metacognitive_context",
+      "evidence_source": "docs/audits/aureon_global_financial_coverage_map.json#summary",
+      "facet": "planetary_financial_ocean",
+      "fed_to_decision_logic": true,
+      "fresh": false,
+      "last_timestamp": "2026-05-22T18:20:47.022653+00:00",
+      "path": "docs/audits/aureon_global_financial_coverage_map.json",
+      "present": true,
+      "system": "PlanetaryCoverageMap",
+      "usable_for_decision": false,
+      "wire_path": "hnc_proof"
+    },
+    {
+      "active_this_cycle": true,
+      "blocker": "configured_registry_not_fully_mapped, coverage_below_configured_threshold, configured_sources_not_all_usable_for_mapping, runtime_data_not_ready",
+      "category": "metacognitive_data_context",
+      "downstream_stage": "metacognitive_context",
+      "evidence_source": "docs/audits/aureon_exchange_monitoring_checklist.json#summary",
+      "facet": "exchange_waveform_memory",
+      "fed_to_decision_logic": true,
+      "fresh": false,
+      "last_timestamp": "2026-05-22T18:20:47.022653+00:00",
+      "path": "docs/audits/aureon_exchange_monitoring_checklist.json",
+      "present": true,
+      "system": "ExchangeWaveformMemory",
+      "usable_for_decision": false,
+      "wire_path": "hnc_proof"
+    }
+  ],
+  "runtime_source": "state/unified_runtime_status.json",
+  "schema_version": "aureon-trading-intelligence-checklist-v1",
+  "status": "runtime_data_not_ready",
+  "summary": {
+    "active_count": 1,
+    "category_counts": {
+      "counter_intelligence_validation": {
+        "fed": 1,
+        "total": 4,
+        "usable": 0
+      },
+      "hnc_auris_cognition": {
+        "fed": 0,
+        "total": 2,
+        "usable": 0
+      },
+      "live_market_intelligence": {
+        "fed": 0,
+        "total": 2,
+        "usable": 0
+      },
+      "metacognitive_data_context": {
+        "fed": 3,
+        "total": 3,
+        "usable": 0
+      },
+      "profit_timing": {
+        "fed": 0,
+        "total": 3,
+        "usable": 0
+      },
+      "research_context_mesh": {
+        "fed": 0,
+        "total": 0,
+        "usable": 0
+      }
+    },
+    "counter_intelligence_passing": 0,
+    "data_ready": false,
+    "decision_fed_count": 4,
+    "decision_posture": "wait_for_live_data",
+    "decision_self_trust_score": 0.06245,
+    "direct_live_systems_passing": 0,
+    "evidence_self_trust_score": 0.178429,
+    "fast_money_intelligence": {
+      "candidate_count": 0,
+      "high_volatility_count": 0,
+      "orderbook_aligned_count": 0,
+      "orderbook_probe_count": 0,
+      "top_fast_money_score": 0.0,
+      "top_momentum_tier": "",
+      "top_side": "",
+      "top_symbol": ""
+    },
+    "fresh_usable_count": 0,
+    "hnc_auris_passing": 0,
+    "hnc_operating_cycle": {
+      "action_state": "",
+      "cycle_order": [],
+      "fed_to_decision_logic": false,
+      "passed": false,
+      "present": false,
+      "question_count": 0,
+      "status": ""
+    },
+    "live_stream_cache": {
+      "fresh": false,
+      "max_age_sec": 0.0,
+      "raw_ticker_count": 0,
+      "reason": "",
+      "symbol_count": 0,
+      "top_symbol": "",
+      "usable_for_decision": false
+    },
+    "metacognitive_context_passing": 0,
+    "metacognitive_data_context": {
+      "active_live_source_count": 4,
+      "cognitive_cleanliness_score": 0.828571,
+      "configured_reachable_source_count": 10,
+      "coverage_percent": 90.0,
+      "decision_blocker": "configured_registry_not_fully_mapped, coverage_below_configured_threshold, configured_sources_not_all_usable_for_mapping",
+      "decision_usable_source_count": 5,
+      "evidence_sources": [
+        "state/aureon_data_ocean_status.json",
+        "docs/audits/aureon_global_financial_coverage_map.json",
+        "docs/audits/aureon_exchange_monitoring_checklist.json"
+      ],
+      "exchange_waveform_ready": true,
+      "fresh_domain_count": 5,
+      "fresh_exchange_count": 4,
+      "history_rows": 222639,
+      "live_ticker_count": 3034,
+      "mapping_complete": false,
+      "planetary_context_ready": false,
+      "present": true,
+      "state_phrase": "Planetary data ocean is partially visible; Aureon can learn from it but must keep filling gaps.",
+      "usable_domain_count": 3,
+      "usable_for_live_decision": false,
+      "usable_for_metacognition": false,
+      "usable_source_count": 9,
+      "waveform_history_exchange_count": 4
+    },
+    "present_count": 5,
+    "profit_timing_passing": 0,
+    "research_context_passing": 0,
+    "runtime_fresh": false,
+    "runtime_stale": false,
+    "stale_or_blocked_count": 14,
+    "stale_reason": "",
+    "status": "runtime_data_not_ready",
+    "system_count": 14,
+    "top_blockers": [
+      {
+        "blocker": "stream_cache_not_fresh, repo_path_missing, not_wired_to_decision_logic, runtime_data_not_ready",
+        "category": "live_market_intelligence",
+        "evidence_source": "state/unified_runtime_status.json#live_stream_cache",
+        "system": "LiveStreamCacheRuntime"
+      },
+      {
+        "blocker": "fast_money_report_missing, not_active_this_cycle, not_wired_to_decision_logic, runtime_data_not_ready",
+        "category": "profit_timing",
+        "evidence_source": "state/unified_runtime_status.json#shared_order_flow.fast_money_intelligence",
+        "system": "FastMoneySelectorRuntime"
+      },
+      {
+        "blocker": "orderbook_pressure_not_sampled_this_cycle, not_active_this_cycle, not_wired_to_decision_logic, runtime_data_not_ready",
+        "category": "profit_timing",
+        "evidence_source": "state/unified_runtime_status.json#shared_order_flow.fast_money_intelligence.orderbook_probe_count",
+        "system": "OrderBookPressureRuntime"
+      },
+      {
+        "blocker": "repo_path_missing, not_wired_to_decision_logic, runtime_data_not_ready",
+        "category": "live_market_intelligence",
+        "evidence_source": "state/unified_runtime_status.json#exchange_action_plan.model_coverage/top_candidates",
+        "system": "ModelSignalFeed"
+      },
+      {
+        "blocker": "repo_path_missing, not_wired_to_decision_logic, runtime_data_not_ready",
+        "category": "hnc_auris_cognition",
+        "evidence_source": "state/unified_runtime_status.json#hnc_cognitive_proof.auris_nodes",
+        "system": "AurisNodes"
+      },
+      {
+        "blocker": "missing_cycle_step:who, missing_cycle_step:what, missing_cycle_step:where, missing_cycle_step:when, missing_cycle_step:how, missing_cycle_step:act, repo_path_missing, not_wired_to_decision_logic, runtime_data_not_ready",
+        "category": "hnc_auris_cognition",
+        "evidence_source": "state/unified_runtime_status.json#hnc_operating_cycle",
+        "system": "HNCOperatingCycle"
+      },
+      {
+        "blocker": "repo_path_missing, runtime_data_not_ready",
+        "category": "counter_intelligence_validation",
+        "evidence_source": "state/unified_runtime_status.json#runtime_watchdog",
+        "system": "RuntimeWatchdog"
+      },
+      {
+        "blocker": "repo_path_missing, not_wired_to_decision_logic, runtime_data_not_ready",
+        "category": "counter_intelligence_validation",
+        "evidence_source": "state/unified_runtime_status.json#api_governor",
+        "system": "APIGovernor"
+      }
+    ],
+    "trading_ready": false,
+    "trust_to_act": false,
+    "trust_to_decide": false,
+    "trust_to_shadow": false
+  }
+}

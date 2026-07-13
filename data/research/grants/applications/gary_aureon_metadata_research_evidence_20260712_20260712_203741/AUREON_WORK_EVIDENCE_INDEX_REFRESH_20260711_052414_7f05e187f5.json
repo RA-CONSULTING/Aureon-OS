@@ -1,0 +1,329 @@
+{
+  "run_id": "aureon-grant-operator-continuous-funding-monitor-20260711_052414",
+  "generated_at": "2026-07-11T05:24:14+01:00",
+  "public_and_local_evidence_index": {
+    "local_corpus": {
+      "status": "Retained as the authoritative local work corpus and grant-ready metadata source.",
+      "sources": [
+        "data/research/grants/AUREON_UNIFIED_WORK_CORPUS_20260709.json",
+        "data/research/grants/AUREON_UNIFIED_WORK_CORPUS_20260709.md",
+        "data/research/grants/PUBLIC_WORK_SOURCE_REGISTRY_20260705.md",
+        "data/research/grants/grant_ready_metadata_20260705.json",
+        "data/research/grants/grant_ready_metadata_expanded_20260705.json"
+      ]
+    },
+    "drive_derived_artifacts": {
+      "status": "Latest Drive unlock readback found no confirmed partner, budget, permit, export-control, or route-eligibility unlock evidence.",
+      "source": "applications/IFS_OPEN_PAGE_DRIVE_UNLOCK_READBACK_20260710_235352.json",
+      "fetched_candidates": [
+        {
+          "title": "Aureon Grant War Room - 2026-07-04",
+          "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+          "classification": "Structured grant operating source. It records that Gary remains approval authority, company compliance was a blocker, partners were not clear and budget evidence was not started. It does not unlock an IFS submission.",
+          "sensitive_values_copied": false
+        },
+        {
+          "title": "03_Academic_Validation_Sprint_Email_Pack.pdf",
+          "url": "https://drive.google.com/file/d/1Gwy7fl-jo8Mc5HD4lRopWuhocVuf7V3S",
+          "classification": "Draft academic outreach pack. It requests an academic partner and says no email was sent. It is not a partner acceptance or lead commitment.",
+          "sensitive_values_copied": false
+        },
+        {
+          "title": "AUREON_WHITE_PAPER_RESEARCH_HUB.md",
+          "url": "https://drive.google.com/file/d/1Fe8YaOtUiYB8ThdT-o9GrzHN_T1n-o7C",
+          "classification": "Research narrative source only. It contains broad technical claims that require claim control and does not provide IFS partner, cost, permit or export-control evidence.",
+          "sensitive_values_copied": false
+        },
+        {
+          "title": "RA_Grant_War_Room_Package.md",
+          "url": "https://drive.google.com/file/d/1_V8v6tYCL-LsMxrju_emMQcikxl_ZNly",
+          "classification": "Historic grant package and answer library. It contains sensitive finance identifiers and informal/internal language; those values were not copied and the content is not safe for direct IFS import without sanitation and current-route verification.",
+          "sensitive_values_copied": false
+        },
+        {
+          "title": "SCEMDA_HNC_LSC_Academic_White_Paper.pdf",
+          "url": "https://drive.google.com/file/d/1R3zY9UOC6imgLRszXkcNy34ya3dE2NR6",
+          "classification": "Draft academic review white paper. It supports research-method narrative and claim discipline, but it is not a partner, budget, permit, export-control or route eligibility unlock.",
+          "sensitive_values_copied": false
+        }
+      ],
+      "route_unlock_evidence_found": 0
+    },
+    "grant_packs_and_receipts": {
+      "status": "Submission receipts and evidence bundles remain preserved locally; no new receipt or screenshot was generated this run.",
+      "latest_files": {
+        "local_grant_pack_files_latest": [
+          {
+            "path": "data/research/grants/applications/IFS_PORTAL_EVIDENCE_BUNDLE_20260709_1545.zip",
+            "bytes": 4923508,
+            "last_modified_local": "2026-07-09T15:45:54.782115+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/ifs_portal_evidence_20260709_1545/10210045_cfi_sen_print.png",
+            "bytes": 1299983,
+            "last_modified_local": "2026-07-09T15:45:03.675804+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/ifs_portal_evidence_20260709_1545/10210045_cfi_sen_track.png",
+            "bytes": 183024,
+            "last_modified_local": "2026-07-09T15:44:59.348208+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/ifs_portal_evidence_20260709_1545/10210032_consumer_led_flexibility_print.png",
+            "bytes": 1201770,
+            "last_modified_local": "2026-07-09T15:44:56.714861+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/ifs_portal_evidence_20260709_1545/10210032_consumer_led_flexibility_track.png",
+            "bytes": 255625,
+            "last_modified_local": "2026-07-09T15:44:51.018977+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/ifs_portal_evidence_20260709_1545/10209992_future_leaders_r11_print.png",
+            "bytes": 1162675,
+            "last_modified_local": "2026-07-09T15:44:48.533883+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/ifs_portal_evidence_20260709_1545/10209992_future_leaders_r11_track.png",
+            "bytes": 259172,
+            "last_modified_local": "2026-07-09T15:44:43.230874+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/ifs_portal_evidence_20260709_1545/10209601_next_wave_print.png",
+            "bytes": 1318451,
+            "last_modified_local": "2026-07-09T15:44:36.659814+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/ifs_portal_evidence_20260709_1545/10209601_next_wave_track.png",
+            "bytes": 247839,
+            "last_modified_local": "2026-07-09T15:44:29.576844+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/rendered/airr_rapid_access_submitted_20260709.png",
+            "bytes": 201769,
+            "last_modified_local": "2026-07-09T15:04:02.679213+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/AIRR_RAPID_ACCESS_PROJECT_DETAILS_COMPLETED_20260709.docx",
+            "bytes": 79102,
+            "last_modified_local": "2026-07-09T15:00:18.518708+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/AIRR_RAPID_ACCESS_ASSESSMENT_COMPLETED_20260709.docx",
+            "bytes": 68461,
+            "last_modified_local": "2026-07-09T15:00:18.462626+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/airr_rapid_official_forms_20260709/AIRR_Project_Details_Form_2026-07-03.docx",
+            "bytes": 86830,
+            "last_modified_local": "2026-07-09T14:57:14.316833+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/airr_rapid_official_forms_20260709/AIRR_Rapid_Access_-_Guidance.docx",
+            "bytes": 75196,
+            "last_modified_local": "2026-07-09T14:57:14.085554+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/airr_rapid_official_forms_20260709/AIRR_Rapid_Access_-_Guidance.pdf",
+            "bytes": 121731,
+            "last_modified_local": "2026-07-09T14:57:13.836090+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/airr_rapid_official_forms_20260709/AIRR_Rapid_Access_-_Assessment.docx",
+            "bytes": 72457,
+            "last_modified_local": "2026-07-09T14:57:13.298555+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/rendered/cfi_sen_2511/q6_tech-2.png",
+            "bytes": 95900,
+            "last_modified_local": "2026-07-09T13:57:21.895741+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/rendered/cfi_sen_2511/q9_gantt-1.png",
+            "bytes": 207982,
+            "last_modified_local": "2026-07-09T13:57:21.698961+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/rendered/cfi_sen_2511/q11_costs-1.png",
+            "bytes": 163411,
+            "last_modified_local": "2026-07-09T13:57:21.641961+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/rendered/cfi_sen_2511/q6_tech-1.png",
+            "bytes": 156134,
+            "last_modified_local": "2026-07-09T13:57:21.604959+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/IFS_CFI_SEN_2511_Q11_COSTS_APPENDIX_20260709.pdf",
+            "bytes": 3313,
+            "last_modified_local": "2026-07-09T13:57:08.028150+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/IFS_CFI_SEN_2511_Q9_PROJECT_PLAN_GANTT_20260709.pdf",
+            "bytes": 4487,
+            "last_modified_local": "2026-07-09T13:57:08.012947+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/IFS_CFI_SEN_2511_Q6_TECH_APPENDIX_20260709.pdf",
+            "bytes": 4881,
+            "last_modified_local": "2026-07-09T13:57:07.928636+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/rendered/clf_10210032/IFS_CLF_10210032_Q10_PROJECT_PLAN_RISK_APPENDIX_20260709-1.png",
+            "bytes": 175148,
+            "last_modified_local": "2026-07-09T13:19:41.377308+01:00"
+          }
+        ],
+        "output_pack_files_latest": [
+          {
+            "path": "output/pdf/ifs/IFS_REMAINING_ROUTE_OUTREACH_PACK_20260710_120126.pdf",
+            "bytes": 13999,
+            "last_modified_local": "2026-07-10T12:01:27.458390+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_P2_OUTREACH_PAYLOAD_PACK_20260710_115748.pdf",
+            "bytes": 12457,
+            "last_modified_local": "2026-07-10T11:57:48.562990+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_P1_OUTREACH_PAYLOAD_PACK_20260710_115030.pdf",
+            "bytes": 18752,
+            "last_modified_local": "2026-07-10T11:50:31.085748+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_P1_OUTREACH_PAYLOAD_PACK_20260710_114739.pdf",
+            "bytes": 19222,
+            "last_modified_local": "2026-07-10T11:47:39.733804+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_PACK_20260710_101202.pdf",
+            "bytes": 11878,
+            "last_modified_local": "2026-07-10T10:12:02.383033+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_MARITIME_PARTNER_EVIDENCE_REQUEST_PACK_20260710_101119.pdf",
+            "bytes": 11163,
+            "last_modified_local": "2026-07-10T10:11:19.485434+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_PACK_20260710_101119.pdf",
+            "bytes": 11878,
+            "last_modified_local": "2026-07-10T10:11:19.473281+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_MARITIME_PARTNER_EVIDENCE_REQUEST_PACK_20260710_100929.pdf",
+            "bytes": 11170,
+            "last_modified_local": "2026-07-10T10:09:29.798858+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_PACK_20260710_100929.pdf",
+            "bytes": 11949,
+            "last_modified_local": "2026-07-10T10:09:29.794869+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_NON_MARITIME_LEAD_EVIDENCE_REQUEST_PACK_20260710_100731.pdf",
+            "bytes": 20719,
+            "last_modified_local": "2026-07-10T10:07:31.416993+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_MARITIME_PARTNER_EVIDENCE_REQUEST_PACK_20260710_100031.pdf",
+            "bytes": 11248,
+            "last_modified_local": "2026-07-10T10:00:31.279107+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_PACK_20260710_095539.pdf",
+            "bytes": 12767,
+            "last_modified_local": "2026-07-10T09:55:39.247496+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_PACK_20260710_095415.pdf",
+            "bytes": 12769,
+            "last_modified_local": "2026-07-10T09:54:15.644504+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_PACK_20260710_095255.pdf",
+            "bytes": 12792,
+            "last_modified_local": "2026-07-10T09:52:55.705970+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_Q15_RISK_REGISTER_APPENDIX_20260710.pdf",
+            "bytes": 3065,
+            "last_modified_local": "2026-07-10T06:39:26.998451+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_Q14_PROJECT_PLAN_APPENDIX_20260710.pdf",
+            "bytes": 2880,
+            "last_modified_local": "2026-07-10T06:39:26.991276+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_Q10_TEAM_RESOURCES_APPENDIX_20260710.pdf",
+            "bytes": 2783,
+            "last_modified_local": "2026-07-10T06:39:26.984088+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_Q9_APPROACH_APPENDIX_20260710.pdf",
+            "bytes": 2817,
+            "last_modified_local": "2026-07-10T06:39:26.976789+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_PORTAL_READY_EVIDENCE_PACK_20260709.pdf",
+            "bytes": 43320,
+            "last_modified_local": "2026-07-09T22:08:12.339414+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_PORTAL_READY_PDF_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_DEPLOYMENT_TRIALS_20260709.pdf",
+            "bytes": 5556,
+            "last_modified_local": "2026-07-09T22:08:11.849059+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_PORTAL_READY_PDF_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_FEASIBILITY_STUDIES_20260709.pdf",
+            "bytes": 5563,
+            "last_modified_local": "2026-07-09T22:08:11.785316+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_PORTAL_READY_PDF_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_PRE_DEPLOYMENT_TRIALS_20260709.pdf",
+            "bytes": 5555,
+            "last_modified_local": "2026-07-09T22:08:11.724740+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_PORTAL_READY_PDF_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ALTERNATIVE_FUELS_20260709.pdf",
+            "bytes": 5641,
+            "last_modified_local": "2026-07-09T22:08:11.619824+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_PORTAL_READY_PDF_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ELECTRIC_POWER_20260709.pdf",
+            "bytes": 5639,
+            "last_modified_local": "2026-07-09T22:08:11.470426+01:00"
+          }
+        ]
+      }
+    },
+    "official_company_evidence": {
+      "status": "Companies House still shows R&A Consulting and Brokerage Services Ltd active, but confirmation statement overdue.",
+      "sources": [
+        "https://find-and-update.company-information.service.gov.uk/company/NI696693",
+        "https://find-and-update.company-information.service.gov.uk/company/NI696693/persons-with-significant-control",
+        "https://find-and-update.company-information.service.gov.uk/company/NI696693/officers"
+      ],
+      "grant_use": "Use active company and Gary Leckey officer/PSC evidence as official applicant/control evidence; disclose or resolve the overdue confirmation-statement risk before new live submissions."
+    },
+    "public_profile_pointers": {
+      "status": "ResearchGate, Academia, and ORCID remain profile/dissemination evidence only unless refreshed by browser/API readback before quoting details in a live application.",
+      "sources": [
+        "https://www.researchgate.net/profile/Gary-Leckey",
+        "https://gleckey.academia.edu/",
+        "https://orcid.org/0009-0004-2792-4649"
+      ]
+    },
+    "evidence_index_artifact": "applications/AUREON_WORK_EVIDENCE_INDEX_REFRESH_20260711_052414.json"
+  },
+  "official_route_sources": [
+    "https://apply-for-innovation-funding.service.gov.uk/competition/search",
+    "https://apply-for-innovation-funding.service.gov.uk/competition/2512/overview/2f0a03c4-44b7-42dc-8845-70751b6bc531",
+    "https://www.eurekanetwork.org/programmes-and-calls/eurostars/eurostars-call-for-projects-september-2026/",
+    "https://myeurekaproject.org/competition/29/overview",
+    "https://www.ukri.org/opportunity/japan-uk-joint-call-for-collaborations-in-advanced-connectivity-technologies-full/",
+    "https://intertradeireland.com/funding/seedcorn/2026-timetable",
+    "https://find-and-update.company-information.service.gov.uk/company/NI696693"
+  ]
+}

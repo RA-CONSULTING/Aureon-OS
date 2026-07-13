@@ -1,0 +1,83 @@
+﻿{
+    "schema_version":  "aureon-ifs-submitted-track-status-refresh-v1",
+    "generated_at":  "2026-07-10T09:11:29+01:00",
+    "operator":  "Aureon",
+    "applicant":  "R\u0026A Consulting and Brokerage Services Ltd",
+    "contact_email":  "gaxlec@gmail.com",
+    "mode":  "IFS_ONLY",
+    "source":  "Innovation Funding Service live track pages via existing signed-in Chrome session",
+    "result":  "ALL_SUBMITTED_IFS_TRACK_PAGES_STILL_APPLICATION_SUBMITTED",
+    "submitted_application_count":  4,
+    "portal_status_counts":  {
+                                 "APPLICATION_SUBMITTED":  4
+                             },
+    "applications":  [
+                         {
+                             "id":  "APP-IFS-NEXT-WAVE-10209601",
+                             "portal_application_number":  "10209601",
+                             "title":  "Aureon Evidence Studio for Createch AI Workflows",
+                             "competition":  "Next Wave: Breakthrough Wave 1",
+                             "track_url":  "https://apply-for-innovation-funding.service.gov.uk/application/10209601/track",
+                             "final_url":  "https://apply-for-innovation-funding.service.gov.uk/application/10209601/track",
+                             "portal_status":  "Application submitted",
+                             "status_code":  "APPLICATION_SUBMITTED",
+                             "submitted_at_display":  "7 Jul 2026 at 1:47pm",
+                             "decision_notification_display":  "1 Oct 2026",
+                             "application_feedback_display":  "1 Oct 2026",
+                             "page_title":  "Application Status - Aureon Evidence Studio for Createch AI Workflows - Innovation Funding Service",
+                             "readback":  "Application number 10209601. Application submitted for Next Wave: Breakthrough Wave 1. Submitted on 7 Jul 2026 at 1:47pm. Decision notification and application feedback shown as 1 Oct 2026."
+                         },
+                         {
+                             "id":  "APP-IFS-FLF-R11-2499-20260709",
+                             "portal_application_number":  "10209992",
+                             "title":  "Aureon Evidence OS for AI-Driven Scientific Discovery and Auditable SME Automation",
+                             "competition":  "Future Leaders Fellowships: Round 11, business and non-academic",
+                             "track_url":  "https://apply-for-innovation-funding.service.gov.uk/application/10209992/track",
+                             "final_url":  "https://apply-for-innovation-funding.service.gov.uk/application/10209992/track",
+                             "portal_status":  "Application submitted",
+                             "status_code":  "APPLICATION_SUBMITTED",
+                             "submitted_at_display":  "9 Jul 2026 at 11:07am",
+                             "decision_notification_display":  "31 Jul 2027",
+                             "application_feedback_display":  "31 Jul 2027",
+                             "page_title":  "Application Status - Aureon Evidence OS for AI-Driven Scientific Discovery and Auditable SME Automation - Innovation Funding Service",
+                             "readback":  "Application number 10209992. Application submitted for Future Leaders Fellowships: Round 11, business and non-academic. Submitted on 9 Jul 2026 at 11:07am. Decision notification and application feedback shown as 31 Jul 2027."
+                         },
+                         {
+                             "id":  "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+                             "portal_application_number":  "10210032",
+                             "title":  "Aureon Flex Evidence OS: AI Assurance for Consumer-Led Flexibility",
+                             "competition":  "Consumer Led Flexibility for the Clean Energy Superpower Mission",
+                             "track_url":  "https://apply-for-innovation-funding.service.gov.uk/application/10210032/track",
+                             "final_url":  "https://apply-for-innovation-funding.service.gov.uk/application/10210032/track",
+                             "portal_status":  "Application submitted",
+                             "status_code":  "APPLICATION_SUBMITTED",
+                             "submitted_at_display":  "9 Jul 2026 at 1:45pm",
+                             "decision_notification_display":  "28 Oct 2026",
+                             "application_feedback_display":  "28 Oct 2026",
+                             "page_title":  "Application Status - Aureon Flex Evidence OS: AI Assurance for Consumer-Led Flexibility - Innovation Funding Service",
+                             "readback":  "Application number 10210032. Application submitted for Consumer Led Flexibility for the Clean Energy Superpower Mission. Submitted on 9 Jul 2026 at 1:45pm. Decision notification and application feedback shown as 28 Oct 2026."
+                         },
+                         {
+                             "id":  "APP-IFS-CFI-SEN-2511-20260709",
+                             "portal_application_number":  "10210045",
+                             "title":  "Aureon SEN Evidence OS: Fair Early Identification Support",
+                             "competition":  "CfI: Earlier identification of UK children with SEN",
+                             "track_url":  "https://apply-for-innovation-funding.service.gov.uk/application/10210045/track",
+                             "final_url":  "https://apply-for-innovation-funding.service.gov.uk/application/10210045/track",
+                             "portal_status":  "Application submitted",
+                             "status_code":  "APPLICATION_SUBMITTED",
+                             "submitted_at_display":  "9 Jul 2026 at 2:31pm",
+                             "decision_notification_display":  "in due course",
+                             "application_feedback_display":  null,
+                             "page_title":  "Application Status - Aureon SEN Evidence OS: Fair Early Identification Support - Innovation Funding Service",
+                             "readback":  "Application number 10210045. Application submitted for CfI: Earlier identification of UK children with SEN. Submitted on 9 Jul 2026 at 2:31pm. Decision notification shown as in due course."
+                         }
+                     ],
+    "controls":  [
+                     "Read-only status refresh only",
+                     "No IFS application reopened",
+                     "No form fields changed",
+                     "No partner invitation, email, upload, award terms, Project Impact submit, payment, or final submission attempted",
+                     "Submitted IFS routes remain monitor-only pending funder eligibility checks and assessment"
+                 ]
+}

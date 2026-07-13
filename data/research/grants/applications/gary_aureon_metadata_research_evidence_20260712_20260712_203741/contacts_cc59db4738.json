@@ -1,0 +1,112 @@
+[
+  {
+    "id": "CONT-001",
+    "organisation": "UKRI",
+    "name": "Funding Enquiries",
+    "role": "General Enquiries",
+    "email": "funding@ukri.org",
+    "phone": null,
+    "notes": "General UKRI funding questions.",
+    "last_contact": null,
+    "created_at": "2026-07-03T00:00:00"
+  },
+  {
+    "id": "CONT-002",
+    "organisation": "Innovate UK",
+    "name": "Customer Support",
+    "role": "Support",
+    "email": "",
+    "phone": "0300 321 4357",
+    "notes": "Smart Grant applications.",
+    "last_contact": null,
+    "created_at": "2026-07-03T00:00:00"
+  },
+  {
+    "id": "CONT-003",
+    "organisation": "UK Space Agency",
+    "name": "Innovation Team",
+    "role": "Innovation",
+    "email": "innovation@spaceagency.gov.uk",
+    "phone": null,
+    "notes": "NSIP and space innovation enquiries.",
+    "last_contact": null,
+    "created_at": "2026-07-03T00:00:00"
+  },
+  {
+    "id": "CONT-004",
+    "organisation": "Invest NI",
+    "name": "Belfast Office",
+    "role": "Local Support",
+    "email": "",
+    "phone": "028 9069 8131",
+    "notes": "Northern Ireland innovation funding.",
+    "last_contact": null,
+    "created_at": "2026-07-03T00:00:00"
+  },
+  {
+    "id": "CONT-005",
+    "organisation": "Queen's University Belfast",
+    "name": "Research Office",
+    "role": "Research Support",
+    "email": "research@qub.ac.uk",
+    "phone": null,
+    "notes": "Affiliation and partnership enquiries.",
+    "last_contact": null,
+    "created_at": "2026-07-03T00:00:00"
+  },
+  {
+    "id": "CONT-006",
+    "organisation": "Ulster University",
+    "name": "ISRC",
+    "role": "Research Centre",
+    "email": "isrc@ulster.ac.uk",
+    "phone": null,
+    "notes": "AI/neuroscience collaboration.",
+    "last_contact": null,
+    "created_at": "2026-07-03T00:00:00"
+  },
+  {
+    "id": "CONT-007",
+    "organisation": "Wellcome Trust",
+    "name": "Discovery Research",
+    "role": "Programme Manager",
+    "email": "discovery@wellcome.org",
+    "phone": null,
+    "notes": "Discovery Research enquiries.",
+    "last_contact": null,
+    "created_at": "2026-07-03T00:00:00"
+  },
+  {
+    "id": "CONT-008",
+    "organisation": "Leverhulme Trust",
+    "name": "Enquiries",
+    "role": "General",
+    "email": "enquiries@leverhulme.ac.uk",
+    "phone": null,
+    "notes": "Research Project Grants.",
+    "last_contact": null,
+    "created_at": "2026-07-03T00:00:00"
+  },
+  {
+    "id": "CONT-009",
+    "organisation": "Templeton Foundation",
+    "name": "Science & Big Questions",
+    "role": "Programme Officer",
+    "email": "",
+    "phone": null,
+    "notes": "Consciousness and fundamental science.",
+    "last_contact": null,
+    "created_at": "2026-07-03T00:00:00"
+  },
+  {
+    "id": "CONT-010",
+    "organisation": "Schmidt Sciences",
+    "name": "Fellowships",
+    "role": "Programme Manager",
+    "email": "",
+    "phone": null,
+    "notes": "Interdisciplinary research.",
+    "last_contact": null,
+    "created_at": "2026-07-03T00:00:00"
+  }
+]

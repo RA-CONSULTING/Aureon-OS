@@ -11,10 +11,10 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.confirm-trade]
-verify_jwt = false
+verify_jwt = true
 
 [functions.poll-trade-confirmations]
-verify_jwt = false
+verify_jwt = true
 
 # AUREON AI Chat - public for unauthenticated access
 [functions.aureon-chat]
@@ -226,7 +226,7 @@ verify_jwt = false
 
 # Force Validated Trade - ignition button
 [functions.force-validated-trade]
-verify_jwt = false
+verify_jwt = true
 
 # Update user exchange credentials
 [functions.update-user-credentials]
@@ -234,7 +234,7 @@ verify_jwt = true
 
 # Test exchange connection - public for credential verification
 [functions.test-exchange-connection]
-verify_jwt = false
+verify_jwt = true
 
 # Backend health check (public for monitoring)
 [functions.backend-health-check]
@@ -279,12 +279,12 @@ verify_jwt = true
 
 # Ingest trades from Python terminal (public for easy integration)
 [functions.ingest-trades]
-verify_jwt = false
+verify_jwt = true
 
 # Comprehensive terminal state ingestion from Python
 [functions.ingest-terminal-state]
-verify_jwt = false
+verify_jwt = true
 
-# Brain cognitive state ingestion from Python (public for easy integration)
+# Brain cognitive state ingestion from Python
 [functions.ingest-brain-state]
-verify_jwt = false
+verify_jwt = true

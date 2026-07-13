@@ -1,0 +1,766 @@
+{
+  "schema_version": "aureon-continuous-funding-monitor-v3",
+  "run_id": "aureon-grant-operator-continuous-funding-monitor-20260711_052414",
+  "generated_at": "2026-07-11T05:24:14+01:00",
+  "operator": "Aureon",
+  "lead_contact": "Gary Anthony Leckey",
+  "applicant": "R&A Consulting and Brokerage Services Ltd",
+  "result": "CONTINUOUS_MONITOR_RECONCILED_NO_NEW_SUBMIT_READY_ROUTE",
+  "ledger_reconciliation": {
+    "opportunities_total": 46,
+    "opportunity_status_counts": {
+      "ACADEMIC_HOST_REQUIRED": 1,
+      "ADVISOR_OR_CLIENT_ROUTE_REQUIRED": 1,
+      "CLOSED": 1,
+      "EVIDENCE_GATED": 1,
+      "OPEN": 36,
+      "PARTNER_REQUIRED": 1,
+      "PENDING": 2,
+      "RESEARCH_ORG_EPSRC_ROUTE_REQUIRED": 1,
+      "RESEARCH_ORG_STFC_ROUTE_REQUIRED": 1,
+      "SHORTLIST_UPLOAD_ONLY": 1
+    },
+    "applications_total": 29,
+    "application_status_counts": {
+      "ACADEMIC_HOST_REQUIRED": 1,
+      "ACCOUNT_CREATED_EMAIL_VERIFICATION_REQUIRED": 1,
+      "ACTASAP_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY": 1,
+      "ADOPT_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY": 2,
+      "AKT6_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY": 1,
+      "CKAF_PUBLIC_SECTOR_RESEARCH_ORG_AND_KNOWLEDGE_ASSET_EVIDENCE_REQUIRED": 1,
+      "CMDC7_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY": 3,
+      "DRIVE35_COLLAB3_ZEV_PARTNER_MATCH_FUNDING_AND_TIER1_EVIDENCE_REQUIRED": 1,
+      "DRIVE35_SCALEUP_ZEV_MANUFACTURING_FACILITY_AND_COINVESTMENT_EVIDENCE_REQUIRED": 1,
+      "EVIDENCE_GATED": 1,
+      "IFS_DRAFT_36_PERCENT_CURRENT_LIVE_OVERVIEW_PARTNER_EVIDENCE_REQUIRED_NO_SAFE_PORTAL_ACTION": 1,
+      "INNOVATION_LOANS_REPAYABLE_FINANCE_CAPACITY_AND_ACTION_APPROVAL_REQUIRED": 1,
+      "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK": 3,
+      "PARTNER_OUTREACH_DRAFT": 1,
+      "PARTNER_REQUIRED": 1,
+      "QUANTUM_HARDWARE_LEAD_ACCESS_CONSORTIUM_AND_BUDGET_EVIDENCE_REQUIRED": 1,
+      "RESEARCH_ORG_LEAD_AND_JAPAN_PARTNER_REQUIRED": 1,
+      "SHORTLIST_REQUIRED": 1,
+      "SUBMITTED": 6
+    },
+    "ifs_applications_total": 20,
+    "submitted_ifs_application_count": 4,
+    "submitted_ifs_application_ids": [
+      "APP-IFS-NEXT-WAVE-10209601",
+      "APP-IFS-FLF-R11-2499-20260709",
+      "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+      "APP-IFS-CFI-SEN-2511-20260709"
+    ],
+    "submitted_airr_application_count": 2,
+    "submitted_airr_application_ids": [
+      "APP-AIRR-001",
+      "APP-AIRR-RAPID-ACCESS-20260709"
+    ],
+    "active_or_gated_application_count": 23,
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0
+  },
+  "latest_ifs_board": {
+    "source": "applications/IFS_CURRENT_GRANT_BOARD_20260710_235400.json",
+    "result": "IFS_CURRENT_GRANT_BOARD_READY_NO_NEW_SUBMIT_READY_ROUTE",
+    "generated_at": "2026-07-10T23:54:00+01:00",
+    "summary": {
+      "ifs_applications_total": 20,
+      "submitted_monitor_only": 4,
+      "active_not_submitted": 16,
+      "route_family_counts": {
+        "SUBMITTED_MONITOR": 4,
+        "P1_NEAREST_DEADLINE": 4,
+        "P2_NEXT_DEADLINE": 3,
+        "LIVE_DRAFT_UK_SWISS": 1,
+        "REMAINING_EVIDENCE_GATED": 7,
+        "REPAYABLE_FINANCE_HELD_OUTSIDE_GRANT_QUEUE": 1
+      },
+      "direct_submit_ready_routes": 0,
+      "new_browser_submissions_available": 0,
+      "portal_changed": false,
+      "external_submission_performed": false,
+      "email_sent": false,
+      "contact_route_submitted": false
+    },
+    "active_route_count": 16,
+    "next_unlock_sequence": [
+      "Use P1 packs and the P1 partner-acquisition register to acquire AKT6 academic/knowledge-base lead and CMDC7 maritime lead/asset/budget evidence.",
+      "Use the non-P1 evidence-acquisition register to acquire ACTASAP academic/TTO lead evidence and ADOPT farmer/facilitator evidence.",
+      "Use the non-P1 evidence-acquisition register to acquire CKAF public-sector research organisation, DRIVE35 automotive lead, ZEVI2 maritime demonstration and Quantum hardware lead evidence.",
+      "Re-run targeted local/Drive/Gmail evidence search after any reply, receipt, upload or partner document appears.",
+      "Only resume IFS portal editing when the route-specific missing evidence is present and classed in the board."
+    ],
+    "nearest_gates": [
+      {
+        "application_id": "APP-IFS-AKT6-2473-20260709",
+        "name": "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+        "deadline": "2026-07-15T11:00:00+01:00",
+        "status": "AKT6_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+        "route_family": "P1_NEAREST_DEADLINE",
+        "missing_evidence": [
+          "eligible UK knowledge-base lead",
+          "TTO or authorised lead contact",
+          "UK business four-FTE evidence",
+          "work package, budget and signed role confirmation"
+        ],
+        "direct_submit_ready": false,
+        "safe_portal_action_now": false
+      },
+      {
+        "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+        "name": "Clean Maritime Demonstration Competition 7: Deployment trials",
+        "deadline": "2026-07-15T11:00:00+01:00",
+        "status": "CMDC7_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+        "route_family": "P1_NEAREST_DEADLINE",
+        "missing_evidence": [
+          "UK maritime deployment lead",
+          "deployment asset or site",
+          "permissions and safety case",
+          "partner budget and deployment schedule"
+        ],
+        "direct_submit_ready": false,
+        "safe_portal_action_now": false
+      },
+      {
+        "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+        "name": "Clean Maritime Demonstration Competition 7: Feasibility studies",
+        "deadline": "2026-07-15T11:00:00+01:00",
+        "status": "CMDC7_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+        "route_family": "P1_NEAREST_DEADLINE",
+        "missing_evidence": [
+          "UK maritime lead",
+          "feasibility partner and asset context",
+          "scope, budget and work package",
+          "partner commitment evidence"
+        ],
+        "direct_submit_ready": false,
+        "safe_portal_action_now": false
+      },
+      {
+        "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+        "name": "Clean Maritime Demonstration Competition 7: Pre-deployment trials",
+        "deadline": "2026-07-15T11:00:00+01:00",
+        "status": "CMDC7_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+        "route_family": "P1_NEAREST_DEADLINE",
+        "missing_evidence": [
+          "UK maritime lead",
+          "vessel or port/shipyard asset",
+          "trial site permissions",
+          "safety case, permits and insurance basis",
+          "eligible budget and deployment plan"
+        ],
+        "direct_submit_ready": false,
+        "safe_portal_action_now": false
+      },
+      {
+        "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+        "name": "ACTASAP Pilot Phase 1",
+        "deadline": "2026-07-28T11:00:00+01:00",
+        "status": "ACTASAP_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+        "route_family": "P2_NEXT_DEADLINE",
+        "missing_evidence": [
+          "eligible UK academic institution lead",
+          "TTO or authorised research-office contact",
+          "scope and validation work package",
+          "budget and commitment evidence"
+        ],
+        "direct_submit_ready": false,
+        "safe_portal_action_now": false
+      },
+      {
+        "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "name": "Full ADOPT Grant: Round 8",
+        "deadline": "2026-07-29T11:00:00+01:00",
+        "status": "ADOPT_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+        "route_family": "P2_NEXT_DEADLINE",
+        "missing_evidence": [
+          "England farming, growing or forestry lead",
+          "collaborating farm business",
+          "farm problem statement",
+          "facilitator or support role evidence"
+        ],
+        "direct_submit_ready": false,
+        "safe_portal_action_now": false
+      },
+      {
+        "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+        "name": "ADOPT Facilitator Support Grant: Round 10",
+        "deadline": "2026-08-12T11:00:00+01:00",
+        "status": "ADOPT_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+        "route_family": "P2_NEXT_DEADLINE",
+        "missing_evidence": [
+          "England farm business context",
+          "registered facilitator evidence",
+          "role and procurement evidence"
+        ],
+        "direct_submit_ready": false,
+        "safe_portal_action_now": false
+      },
+      {
+        "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+        "name": "UK-Switzerland CR&D Round 3",
+        "deadline": "2026-09-03T11:00:00+01:00",
+        "status": "IFS_DRAFT_36_PERCENT_CURRENT_LIVE_OVERVIEW_PARTNER_EVIDENCE_REQUIRED_NO_SAFE_PORTAL_ACTION",
+        "route_family": "LIVE_DRAFT_UK_SWISS",
+        "missing_evidence": [
+          "Swiss implementation partner",
+          "research institute or waiver evidence",
+          "partner commitment letter",
+          "partner budget and eligible-cost split",
+          "permit/licence position",
+          "export-control position",
+          "project finances and Project Impact"
+        ],
+        "direct_submit_ready": false,
+        "safe_portal_action_now": false
+      }
+    ]
+  },
+  "latest_ifs_board_validation": {
+    "source": "applications/IFS_FULL_BOARD_COVERAGE_VALIDATION_20260710_235407.json",
+    "result": "IFS_FULL_BOARD_COVERAGE_VALIDATION_PASSED",
+    "generated_at": "2026-07-10T23:54:07+01:00",
+    "validation_passed": true,
+    "route_family_counts": {}
+  },
+  "uk_swiss_draft_10210100": {
+    "source": "applications/IFS_UK_SWISS_LIVE_OVERVIEW_READBACK_20260710_234506.json",
+    "result": "LIVE_IFS_OVERVIEW_READBACK_36_PERCENT_NO_SAFE_PORTAL_ACTION",
+    "portal_application_number": "10210100",
+    "application_progress": "36%",
+    "incomplete_sections": [
+      "Application team",
+      "Q1 Themes",
+      "Q4 Permits and licences",
+      "Q5 International collaboration",
+      "Q6 Export licence",
+      "Q7 Trusted Research and Innovation",
+      "Q8 Need or challenge",
+      "Q9 Approach and innovation",
+      "Q10 Team and resources",
+      "Q11 Market awareness",
+      "Q12 Outcomes and route to market",
+      "Q13 Wider impacts",
+      "Q14 Project management",
+      "Q15 Risks",
+      "Q16 Added value",
+      "Q17 Costs and value for money",
+      "Your project finances",
+      "Finances overview",
+      "Project impact",
+      "Award terms and conditions"
+    ],
+    "safe_portal_action_now": false
+  },
+  "official_route_refresh": {
+    "checked_at": "2026-07-11T05:24:14+01:00",
+    "sources": [
+      "https://apply-for-innovation-funding.service.gov.uk/competition/search",
+      "https://apply-for-innovation-funding.service.gov.uk/competition/2512/overview/2f0a03c4-44b7-42dc-8845-70751b6bc531",
+      "https://www.eurekanetwork.org/programmes-and-calls/eurostars/eurostars-call-for-projects-september-2026/",
+      "https://myeurekaproject.org/competition/29/overview",
+      "https://www.ukri.org/opportunity/japan-uk-joint-call-for-collaborations-in-advanced-connectivity-technologies-full/",
+      "https://intertradeireland.com/funding/seedcorn/2026-timetable",
+      "https://find-and-update.company-information.service.gov.uk/company/NI696693"
+    ],
+    "summary": [
+      "IFS public listing still has the known 20-route board covered locally; UK-Switzerland CR&D Round 3 remains open and partner/evidence gated.",
+      "Eurostars Call 11 remains open to 10 September 2026 at 14:00 CEST/CET-equivalent project-platform deadline, but requires an innovative SME-led international consortium.",
+      "UKRI Japan-UK Advanced Connectivity full route is open with 6 October 2026 close, but requires an EPSRC-eligible UK research organisation and NICT-eligible Japanese collaborator.",
+      "InterTradeIreland Seedcorn Phase 2 upload closes 7 August 2026 at 13:00, but is available only to shortlisted companies.",
+      "Companies House active-company evidence is usable, but confirmation statement remains overdue and is a due-diligence blocker for new live applications."
+    ],
+    "new_routes_added": 0,
+    "new_direct_submit_ready_routes": 0
+  },
+  "public_and_local_evidence_index": {
+    "local_corpus": {
+      "status": "Retained as the authoritative local work corpus and grant-ready metadata source.",
+      "sources": [
+        "data/research/grants/AUREON_UNIFIED_WORK_CORPUS_20260709.json",
+        "data/research/grants/AUREON_UNIFIED_WORK_CORPUS_20260709.md",
+        "data/research/grants/PUBLIC_WORK_SOURCE_REGISTRY_20260705.md",
+        "data/research/grants/grant_ready_metadata_20260705.json",
+        "data/research/grants/grant_ready_metadata_expanded_20260705.json"
+      ]
+    },
+    "drive_derived_artifacts": {
+      "status": "Latest Drive unlock readback found no confirmed partner, budget, permit, export-control, or route-eligibility unlock evidence.",
+      "source": "applications/IFS_OPEN_PAGE_DRIVE_UNLOCK_READBACK_20260710_235352.json",
+      "fetched_candidates": [
+        {
+          "title": "Aureon Grant War Room - 2026-07-04",
+          "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+          "classification": "Structured grant operating source. It records that Gary remains approval authority, company compliance was a blocker, partners were not clear and budget evidence was not started. It does not unlock an IFS submission.",
+          "sensitive_values_copied": false
+        },
+        {
+          "title": "03_Academic_Validation_Sprint_Email_Pack.pdf",
+          "url": "https://drive.google.com/file/d/1Gwy7fl-jo8Mc5HD4lRopWuhocVuf7V3S",
+          "classification": "Draft academic outreach pack. It requests an academic partner and says no email was sent. It is not a partner acceptance or lead commitment.",
+          "sensitive_values_copied": false
+        },
+        {
+          "title": "AUREON_WHITE_PAPER_RESEARCH_HUB.md",
+          "url": "https://drive.google.com/file/d/1Fe8YaOtUiYB8ThdT-o9GrzHN_T1n-o7C",
+          "classification": "Research narrative source only. It contains broad technical claims that require claim control and does not provide IFS partner, cost, permit or export-control evidence.",
+          "sensitive_values_copied": false
+        },
+        {
+          "title": "RA_Grant_War_Room_Package.md",
+          "url": "https://drive.google.com/file/d/1_V8v6tYCL-LsMxrju_emMQcikxl_ZNly",
+          "classification": "Historic grant package and answer library. It contains sensitive finance identifiers and informal/internal language; those values were not copied and the content is not safe for direct IFS import without sanitation and current-route verification.",
+          "sensitive_values_copied": false
+        },
+        {
+          "title": "SCEMDA_HNC_LSC_Academic_White_Paper.pdf",
+          "url": "https://drive.google.com/file/d/1R3zY9UOC6imgLRszXkcNy34ya3dE2NR6",
+          "classification": "Draft academic review white paper. It supports research-method narrative and claim discipline, but it is not a partner, budget, permit, export-control or route eligibility unlock.",
+          "sensitive_values_copied": false
+        }
+      ],
+      "route_unlock_evidence_found": 0
+    },
+    "grant_packs_and_receipts": {
+      "status": "Submission receipts and evidence bundles remain preserved locally; no new receipt or screenshot was generated this run.",
+      "latest_files": {
+        "local_grant_pack_files_latest": [
+          {
+            "path": "data/research/grants/applications/IFS_PORTAL_EVIDENCE_BUNDLE_20260709_1545.zip",
+            "bytes": 4923508,
+            "last_modified_local": "2026-07-09T15:45:54.782115+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/ifs_portal_evidence_20260709_1545/10210045_cfi_sen_print.png",
+            "bytes": 1299983,
+            "last_modified_local": "2026-07-09T15:45:03.675804+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/ifs_portal_evidence_20260709_1545/10210045_cfi_sen_track.png",
+            "bytes": 183024,
+            "last_modified_local": "2026-07-09T15:44:59.348208+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/ifs_portal_evidence_20260709_1545/10210032_consumer_led_flexibility_print.png",
+            "bytes": 1201770,
+            "last_modified_local": "2026-07-09T15:44:56.714861+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/ifs_portal_evidence_20260709_1545/10210032_consumer_led_flexibility_track.png",
+            "bytes": 255625,
+            "last_modified_local": "2026-07-09T15:44:51.018977+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/ifs_portal_evidence_20260709_1545/10209992_future_leaders_r11_print.png",
+            "bytes": 1162675,
+            "last_modified_local": "2026-07-09T15:44:48.533883+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/ifs_portal_evidence_20260709_1545/10209992_future_leaders_r11_track.png",
+            "bytes": 259172,
+            "last_modified_local": "2026-07-09T15:44:43.230874+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/ifs_portal_evidence_20260709_1545/10209601_next_wave_print.png",
+            "bytes": 1318451,
+            "last_modified_local": "2026-07-09T15:44:36.659814+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/ifs_portal_evidence_20260709_1545/10209601_next_wave_track.png",
+            "bytes": 247839,
+            "last_modified_local": "2026-07-09T15:44:29.576844+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/rendered/airr_rapid_access_submitted_20260709.png",
+            "bytes": 201769,
+            "last_modified_local": "2026-07-09T15:04:02.679213+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/AIRR_RAPID_ACCESS_PROJECT_DETAILS_COMPLETED_20260709.docx",
+            "bytes": 79102,
+            "last_modified_local": "2026-07-09T15:00:18.518708+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/AIRR_RAPID_ACCESS_ASSESSMENT_COMPLETED_20260709.docx",
+            "bytes": 68461,
+            "last_modified_local": "2026-07-09T15:00:18.462626+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/airr_rapid_official_forms_20260709/AIRR_Project_Details_Form_2026-07-03.docx",
+            "bytes": 86830,
+            "last_modified_local": "2026-07-09T14:57:14.316833+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/airr_rapid_official_forms_20260709/AIRR_Rapid_Access_-_Guidance.docx",
+            "bytes": 75196,
+            "last_modified_local": "2026-07-09T14:57:14.085554+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/airr_rapid_official_forms_20260709/AIRR_Rapid_Access_-_Guidance.pdf",
+            "bytes": 121731,
+            "last_modified_local": "2026-07-09T14:57:13.836090+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/airr_rapid_official_forms_20260709/AIRR_Rapid_Access_-_Assessment.docx",
+            "bytes": 72457,
+            "last_modified_local": "2026-07-09T14:57:13.298555+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/rendered/cfi_sen_2511/q6_tech-2.png",
+            "bytes": 95900,
+            "last_modified_local": "2026-07-09T13:57:21.895741+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/rendered/cfi_sen_2511/q9_gantt-1.png",
+            "bytes": 207982,
+            "last_modified_local": "2026-07-09T13:57:21.698961+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/rendered/cfi_sen_2511/q11_costs-1.png",
+            "bytes": 163411,
+            "last_modified_local": "2026-07-09T13:57:21.641961+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/rendered/cfi_sen_2511/q6_tech-1.png",
+            "bytes": 156134,
+            "last_modified_local": "2026-07-09T13:57:21.604959+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/IFS_CFI_SEN_2511_Q11_COSTS_APPENDIX_20260709.pdf",
+            "bytes": 3313,
+            "last_modified_local": "2026-07-09T13:57:08.028150+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/IFS_CFI_SEN_2511_Q9_PROJECT_PLAN_GANTT_20260709.pdf",
+            "bytes": 4487,
+            "last_modified_local": "2026-07-09T13:57:08.012947+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/IFS_CFI_SEN_2511_Q6_TECH_APPENDIX_20260709.pdf",
+            "bytes": 4881,
+            "last_modified_local": "2026-07-09T13:57:07.928636+01:00"
+          },
+          {
+            "path": "data/research/grants/applications/rendered/clf_10210032/IFS_CLF_10210032_Q10_PROJECT_PLAN_RISK_APPENDIX_20260709-1.png",
+            "bytes": 175148,
+            "last_modified_local": "2026-07-09T13:19:41.377308+01:00"
+          }
+        ],
+        "output_pack_files_latest": [
+          {
+            "path": "output/pdf/ifs/IFS_REMAINING_ROUTE_OUTREACH_PACK_20260710_120126.pdf",
+            "bytes": 13999,
+            "last_modified_local": "2026-07-10T12:01:27.458390+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_P2_OUTREACH_PAYLOAD_PACK_20260710_115748.pdf",
+            "bytes": 12457,
+            "last_modified_local": "2026-07-10T11:57:48.562990+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_P1_OUTREACH_PAYLOAD_PACK_20260710_115030.pdf",
+            "bytes": 18752,
+            "last_modified_local": "2026-07-10T11:50:31.085748+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_P1_OUTREACH_PAYLOAD_PACK_20260710_114739.pdf",
+            "bytes": 19222,
+            "last_modified_local": "2026-07-10T11:47:39.733804+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_PACK_20260710_101202.pdf",
+            "bytes": 11878,
+            "last_modified_local": "2026-07-10T10:12:02.383033+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_MARITIME_PARTNER_EVIDENCE_REQUEST_PACK_20260710_101119.pdf",
+            "bytes": 11163,
+            "last_modified_local": "2026-07-10T10:11:19.485434+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_PACK_20260710_101119.pdf",
+            "bytes": 11878,
+            "last_modified_local": "2026-07-10T10:11:19.473281+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_MARITIME_PARTNER_EVIDENCE_REQUEST_PACK_20260710_100929.pdf",
+            "bytes": 11170,
+            "last_modified_local": "2026-07-10T10:09:29.798858+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_PACK_20260710_100929.pdf",
+            "bytes": 11949,
+            "last_modified_local": "2026-07-10T10:09:29.794869+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_NON_MARITIME_LEAD_EVIDENCE_REQUEST_PACK_20260710_100731.pdf",
+            "bytes": 20719,
+            "last_modified_local": "2026-07-10T10:07:31.416993+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_MARITIME_PARTNER_EVIDENCE_REQUEST_PACK_20260710_100031.pdf",
+            "bytes": 11248,
+            "last_modified_local": "2026-07-10T10:00:31.279107+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_PACK_20260710_095539.pdf",
+            "bytes": 12767,
+            "last_modified_local": "2026-07-10T09:55:39.247496+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_PACK_20260710_095415.pdf",
+            "bytes": 12769,
+            "last_modified_local": "2026-07-10T09:54:15.644504+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_PACK_20260710_095255.pdf",
+            "bytes": 12792,
+            "last_modified_local": "2026-07-10T09:52:55.705970+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_Q15_RISK_REGISTER_APPENDIX_20260710.pdf",
+            "bytes": 3065,
+            "last_modified_local": "2026-07-10T06:39:26.998451+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_Q14_PROJECT_PLAN_APPENDIX_20260710.pdf",
+            "bytes": 2880,
+            "last_modified_local": "2026-07-10T06:39:26.991276+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_Q10_TEAM_RESOURCES_APPENDIX_20260710.pdf",
+            "bytes": 2783,
+            "last_modified_local": "2026-07-10T06:39:26.984088+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_Q9_APPROACH_APPENDIX_20260710.pdf",
+            "bytes": 2817,
+            "last_modified_local": "2026-07-10T06:39:26.976789+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_PORTAL_READY_EVIDENCE_PACK_20260709.pdf",
+            "bytes": 43320,
+            "last_modified_local": "2026-07-09T22:08:12.339414+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_PORTAL_READY_PDF_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_DEPLOYMENT_TRIALS_20260709.pdf",
+            "bytes": 5556,
+            "last_modified_local": "2026-07-09T22:08:11.849059+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_PORTAL_READY_PDF_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_FEASIBILITY_STUDIES_20260709.pdf",
+            "bytes": 5563,
+            "last_modified_local": "2026-07-09T22:08:11.785316+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_PORTAL_READY_PDF_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_PRE_DEPLOYMENT_TRIALS_20260709.pdf",
+            "bytes": 5555,
+            "last_modified_local": "2026-07-09T22:08:11.724740+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_PORTAL_READY_PDF_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ALTERNATIVE_FUELS_20260709.pdf",
+            "bytes": 5641,
+            "last_modified_local": "2026-07-09T22:08:11.619824+01:00"
+          },
+          {
+            "path": "output/pdf/ifs/IFS_PORTAL_READY_PDF_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ELECTRIC_POWER_20260709.pdf",
+            "bytes": 5639,
+            "last_modified_local": "2026-07-09T22:08:11.470426+01:00"
+          }
+        ]
+      }
+    },
+    "official_company_evidence": {
+      "status": "Companies House still shows R&A Consulting and Brokerage Services Ltd active, but confirmation statement overdue.",
+      "sources": [
+        "https://find-and-update.company-information.service.gov.uk/company/NI696693",
+        "https://find-and-update.company-information.service.gov.uk/company/NI696693/persons-with-significant-control",
+        "https://find-and-update.company-information.service.gov.uk/company/NI696693/officers"
+      ],
+      "grant_use": "Use active company and Gary Leckey officer/PSC evidence as official applicant/control evidence; disclose or resolve the overdue confirmation-statement risk before new live submissions."
+    },
+    "public_profile_pointers": {
+      "status": "ResearchGate, Academia, and ORCID remain profile/dissemination evidence only unless refreshed by browser/API readback before quoting details in a live application.",
+      "sources": [
+        "https://www.researchgate.net/profile/Gary-Leckey",
+        "https://gleckey.academia.edu/",
+        "https://orcid.org/0009-0004-2792-4649"
+      ]
+    },
+    "evidence_index_artifact": "applications/AUREON_WORK_EVIDENCE_INDEX_REFRESH_20260711_052414.json"
+  },
+  "active_or_gated_applications": [
+    {
+      "id": "APP-QUB-001",
+      "name": "QUB Honorary Research Fellow Application",
+      "status": "PARTNER_OUTREACH_DRAFT",
+      "deadline": "2026-07-31",
+      "next_action": "QUB route is partner/research-affiliation outreach, not a grant submission. Use only as a partner-development route."
+    },
+    {
+      "id": "APP-EIC-ACCELERATOR-STEP1-20260706",
+      "name": "Aureon Evidence Studio - EIC Accelerator Step 1 Draft",
+      "status": "EVIDENCE_GATED",
+      "deadline": "open-continuous-step-1-confirm-in-portal",
+      "next_action": "EIC Step 1 pack exists as a preparation route. Customer discovery notes, LOIs or pilot interest, competitor map, prototype or demo evidence, FTO/IP note, finance plan, and privacy policy are required before external submission."
+    },
+    {
+      "id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+      "name": "Innovation Loans Expression of Interest",
+      "status": "INNOVATION_LOANS_REPAYABLE_FINANCE_CAPACITY_AND_ACTION_APPROVAL_REQUIRED",
+      "deadline": "open-no-submission-deadline",
+      "next_action": "Keep outside grant submission queue until repayable-finance action-time approval and complete cash-flow, repayment-capacity, financial plan, ROI/growth and Windsor Framework evidence are available."
+    },
+    {
+      "id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "name": "UK-Switzerland CR&D Round 3",
+      "status": "IFS_DRAFT_36_PERCENT_CURRENT_LIVE_OVERVIEW_PARTNER_EVIDENCE_REQUIRED_NO_SAFE_PORTAL_ACTION",
+      "deadline": "2026-09-03T11:00:00+01:00",
+      "next_action": "Use the formal partner evidence request PDF pack to obtain Swiss implementation partner, research institute or waiver, budget, permits/licences, export-control and Project Impact evidence before completing remaining IFS sections or final submission."
+    },
+    {
+      "id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "name": "Scaling performance of quantum computing hardware: CR&D",
+      "status": "QUANTUM_HARDWARE_LEAD_ACCESS_CONSORTIUM_AND_BUDGET_EVIDENCE_REQUIRED",
+      "deadline": "2026-09-18T11:00:00+01:00",
+      "next_action": "Use the existing remaining-route outreach payloads to obtain route-specific lead, partner, asset, facility, budget, co-investment or access evidence. Re-run this delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+    },
+    {
+      "id": "APP-EUREKA-EUROSTARS-CALL11-20260709",
+      "name": "Aureon Eurostars International R&D Collaboration Route",
+      "status": "PARTNER_REQUIRED",
+      "deadline": "2026-09-10T14:00:00+02:00",
+      "next_action": "Stage only. Build a cross-border SME/research partner shortlist, confirm UK national funding body rules, then prepare a Eurostars consortium abstract. No portal submission without partner confirmation."
+    },
+    {
+      "id": "APP-UKRI-CHERI-IKC-PARTNER-20260709",
+      "name": "Aureon CHERI IKC Academic Partner Evidence Route",
+      "status": "ACADEMIC_HOST_REQUIRED",
+      "deadline": "2026-09-17T16:00:00+01:00",
+      "next_action": "Not directly eligible as lead. Stage a partner note for QUB/Ulster/EPSRC-eligible host discussions."
+    },
+    {
+      "id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+      "name": "ADOPT Facilitator Support Grant: Round 10",
+      "status": "ADOPT_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+      "deadline": "2026-08-12T11:00:00+01:00",
+      "next_action": "Use the existing ADOPT outreach payloads to obtain an England farm lead, facilitator route or referral, trial problem statement and budget evidence. Re-run this delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+    },
+    {
+      "id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+      "name": "DRIVE35 Innovation Fund: Collaborate 3",
+      "status": "DRIVE35_COLLAB3_ZEV_PARTNER_MATCH_FUNDING_AND_TIER1_EVIDENCE_REQUIRED",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "next_action": "Use the existing remaining-route outreach payloads to obtain route-specific lead, partner, asset, facility, budget, co-investment or access evidence. Re-run this delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+    },
+    {
+      "id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+      "name": "DRIVE35: Scale Up Fund",
+      "status": "DRIVE35_SCALEUP_ZEV_MANUFACTURING_FACILITY_AND_COINVESTMENT_EVIDENCE_REQUIRED",
+      "deadline": "open-no-submission-deadline",
+      "next_action": "Use the existing remaining-route outreach payloads to obtain route-specific lead, partner, asset, facility, budget, co-investment or access evidence. Re-run this delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+    },
+    {
+      "id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+      "name": "Full ADOPT Grant: Round 8",
+      "status": "ADOPT_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+      "deadline": "2026-07-29T11:00:00+01:00",
+      "next_action": "Use the existing ADOPT outreach payloads to obtain an England farm lead, facilitator route or referral, trial problem statement and budget evidence. Re-run this delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+    },
+    {
+      "id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+      "name": "ACTASAP Pilot Phase 1",
+      "status": "ACTASAP_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+      "deadline": "2026-07-28T11:00:00+01:00",
+      "next_action": "Use the existing ACTASAP outreach payloads to obtain an eligible academic lead or referral and the route evidence. Re-run this delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+    },
+    {
+      "id": "APP-IFS-AKT6-2473-20260709",
+      "name": "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+      "status": "AKT6_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "next_action": "Use the existing AKT6 outreach payloads to obtain an eligible knowledge-base lead and route evidence. Re-run this evidence delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+    },
+    {
+      "id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+      "name": "Commercialising Knowledge Assets Fund (CKAF) Autumn",
+      "status": "CKAF_PUBLIC_SECTOR_RESEARCH_ORG_AND_KNOWLEDGE_ASSET_EVIDENCE_REQUIRED",
+      "deadline": "2026-09-01T11:00:00+01:00",
+      "next_action": "Use the existing remaining-route outreach payloads to obtain route-specific lead, partner, asset, facility, budget, co-investment or access evidence. Re-run this delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+    },
+    {
+      "id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+      "name": "Zero Emission Vessels and Infrastructure 2: Energy Efficiency",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "next_action": "Use the existing remaining-route outreach payloads to obtain route-specific lead, partner, asset, facility, budget, co-investment or access evidence. Re-run this delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+    },
+    {
+      "id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+      "name": "Zero Emission Vessels and Infrastructure 2: Electric Power",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "next_action": "Use the existing remaining-route outreach payloads to obtain route-specific lead, partner, asset, facility, budget, co-investment or access evidence. Re-run this delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+    },
+    {
+      "id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+      "name": "Zero Emission Vessels and Infrastructure 2: Alternative Fuels",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "next_action": "Use the existing remaining-route outreach payloads to obtain route-specific lead, partner, asset, facility, budget, co-investment or access evidence. Re-run this delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+    },
+    {
+      "id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "name": "Clean Maritime Demonstration Competition 7: Pre-deployment trials",
+      "status": "CMDC7_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "next_action": "Use the current CMDC7 outreach payloads to obtain a committed maritime lead or referral, asset/site context, permissions and budget evidence. Re-run this delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+    },
+    {
+      "id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "name": "Clean Maritime Demonstration Competition 7: Feasibility studies",
+      "status": "CMDC7_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "next_action": "Use the current CMDC7 outreach payloads to obtain a committed maritime lead or referral, asset/site context, permissions and budget evidence. Re-run this delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+    },
+    {
+      "id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "name": "Clean Maritime Demonstration Competition 7: Deployment trials",
+      "status": "CMDC7_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "next_action": "Use the current CMDC7 outreach payloads to obtain a committed maritime lead or referral, asset/site context, permissions and budget evidence. Re-run this delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+    },
+    {
+      "id": "APP-INTERTRADEIRELAND-BUSINESS-EXPLORER-EXPLORE-20260709",
+      "name": "Aureon Evidence OS - Business Explorer Explore",
+      "status": "ACCOUNT_CREATED_EMAIL_VERIFICATION_REQUIRED",
+      "deadline": "open-current-route-confirm-in-portal",
+      "next_action": "Paused by user IFS-only instruction; no InterTradeIreland actions until non-IFS scope is explicitly reopened."
+    },
+    {
+      "id": "APP-INTERTRADEIRELAND-SEEDCORN-MONITOR-20260710",
+      "name": "Aureon Evidence OS - Seedcorn Investor Readiness Monitor",
+      "status": "SHORTLIST_REQUIRED",
+      "deadline": "2026-08-07T13:00:00+01:00",
+      "next_action": "Check whether any Seedcorn shortlist email or portal evidence exists before drafting/uploading a deck or business plan."
+    },
+    {
+      "id": "APP-UKRI-JAPAN-UK-ADVANCED-CONNECTIVITY-PARTNER-20260710",
+      "name": "Aureon Evidence OS - Japan-UK Advanced Connectivity Partner Route",
+      "status": "RESEARCH_ORG_LEAD_AND_JAPAN_PARTNER_REQUIRED",
+      "deadline": "2026-10-06T16:00:00+01:00",
+      "next_action": "Identify eligible UK research-organisation lead and Japanese NICT-eligible collaborator before drafting any formal application material."
+    }
+  ],
+  "provider_controls": [
+    "No plaintext password or secret was printed or written.",
+    "No CAPTCHA, MFA, JavaScript/provider control, email-verification, or account-control bypass was attempted.",
+    "No live portal mutation, final submission, partner invite, upload, email send, award terms acceptance, Project Impact submission, or Drive upload was performed."
+  ],
+  "next_actions": [
+    "Resolve or consciously disclose the Companies House confirmation-statement overdue risk before any new live submission.",
+    "Use the prepared evidence request packs and outbound payloads to obtain AKT6 knowledge-base/FTE evidence and CMDC7 maritime lead/asset/budget evidence before the 15 July 2026 IFS deadlines.",
+    "For UK-Switzerland draft 10210100, obtain a named Swiss implementation partner, research institute or waiver evidence, budget, permits/licences, export-control, finance, and Project Impact inputs before further portal completion.",
+    "Keep Eurostars Call 11, Japan-UK Advanced Connectivity, and Seedcorn as partner/eligibility/shortlist-gated monitor routes until unlock evidence lands."
+  ]
+}

@@ -1,0 +1,156 @@
+{
+  "schema_version": "aureon-ifs-p2-submission-unlock-control-packet-v1",
+  "generated_at": "2026-07-10T13:30:12+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_p2_submission_unlock_control_packet",
+  "source_refs": {
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_132636.json",
+    "official_current_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_131758.json",
+    "drive_p2_targeted_evidence_readback": "applications/IFS_DRIVE_P2_TARGETED_EVIDENCE_READBACK_20260710_130238.json",
+    "p2_outreach_payloads": "applications/IFS_P2_OUTREACH_PAYLOADS_20260710_115624.json",
+    "p2_outreach_pdf_pack": "applications/IFS_P2_OUTREACH_PDF_PACK_20260710_115748.json",
+    "outbound_evidence_acquisition_send_queue": "applications/IFS_OUTBOUND_EVIDENCE_ACQUISITION_SEND_QUEUE_20260710_121201.json",
+    "public_contact_route_verification": "applications/IFS_PUBLIC_CONTACT_ROUTE_VERIFICATION_20260710_123016.json"
+  },
+  "summary": {
+    "p2_applications_reviewed": 3,
+    "unlock_contacts_total": 6,
+    "email_draft_routes": 5,
+    "contact_route_payloads": 1,
+    "confirmed_unlock_evidence_count": 0,
+    "direct_ifs_submissions_unlocked": 0,
+    "new_browser_submissions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false
+  },
+  "control_items": [
+    {
+      "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+      "name": "ACTASAP Pilot Phase 1",
+      "deadline": "2026-07-28T11:00:00+01:00",
+      "current_state": "ACTASAP_ACADEMIC_LEAD_AND_TTO_EVIDENCE_REQUIRED",
+      "route": "ACTASAP",
+      "unlock_contacts": [
+        {
+          "queue_id": "P2:P2-ACTASAP-QUB-INNOVATION",
+          "target": "Queen's University Belfast Innovation Programmes",
+          "channel_state": "EXACT_PUBLIC_EMAIL_SET_VERIFIED_READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+          "destination": "c.hegarty@qub.ac.uk, p.nawa@qub.ac.uk",
+          "payload": "applications/IFS_P2_ACTASAP_QUB_INNOVATION_OUTREACH_DRAFT_20260710_115624.eml",
+          "sha256": "6f59d2d239778e1a2e77dbd5fa95cfd137ac61ec2d65f1607c80ce659ed7277b",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT"
+        },
+        {
+          "queue_id": "P2:P2-ACTASAP-ULSTER-INNOVATION",
+          "target": "Ulster University Innovation Services",
+          "channel_state": "PUBLIC_CONTACT_ROUTE_VERIFIED_NO_GENERIC_EMAIL_SELECTED",
+          "payload": "applications/IFS_P2_ACTASAP_ULSTER_INNOVATION_CONTACT_ROUTE_PAYLOAD_20260710_115624.txt",
+          "sha256": "c2989a6d1d4a75bf66d7126509b15d6756605540e2e26a5b7f7a94e1e0817d79",
+          "external_action_state": "DRAFT_ONLY_NOT_SUBMITTED"
+        }
+      ],
+      "evidence_required_to_unlock": [
+        "A UK registered academic institution confirms it will lead or apply as the eligible ACTASAP applicant.",
+        "A TTO, commercialisation office, research office, or authorised academic lead confirms support.",
+        "The academic lead confirms an ACT-related idea, scope ownership, and no-subsidy/no selective commercial advantage position.",
+        "Aureon/R&A role is confirmed as non-funded collaborator, validation support, subcontract route where allowed, or another compliant role.",
+        "Project scope, validation work package, eligible cost basis, dates, and budget owner are evidenced."
+      ],
+      "portal_action_after_unlock": "Only after every evidence item above is present: create or complete the ACTASAP IFS application under the eligible academic institution lead, with Aureon/R&A only in the evidenced permitted role.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+      "name": "Full ADOPT Grant: Round 8",
+      "deadline": "2026-07-29T11:00:00+01:00",
+      "current_state": "ADOPT_FULL_FARMING_LEAD_AND_PARTNER_EVIDENCE_REQUIRED",
+      "route": "FULL_ADOPT_ROUND_8",
+      "unlock_contacts": [
+        {
+          "queue_id": "P2:P2-ADOPT-SUPPORT-HUB",
+          "target": "ADOPT Support Hub",
+          "channel_state": "EXACT_PUBLIC_EMAIL_VERIFIED_READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+          "destination": "adoptsupport@adas.co.uk",
+          "payload": "applications/IFS_P2_ADOPT_SUPPORT_HUB_OUTREACH_DRAFT_20260710_115624.eml",
+          "sha256": "4d3b84b6760b44cde823cde5213effb50bdef2553ddfc4d1ab470f222866666c",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT"
+        },
+        {
+          "queue_id": "P2:P2-ADOPT-FACILITATOR-IUKBC",
+          "target": "Innovate UK Business Connect ADOPT facilitator route",
+          "channel_state": "EXACT_PUBLIC_EMAIL_VERIFIED_READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+          "destination": "ADOPTfacilitator@iukbc.org.uk",
+          "payload": "applications/IFS_P2_ADOPT_FACILITATOR_IUKBC_OUTREACH_DRAFT_20260710_115624.eml",
+          "sha256": "309593be7b2f01d64b48c31bc3b6ddcdcfeac3da437ac42e0ea418f0de5e0d9c",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT"
+        }
+      ],
+      "evidence_required_to_unlock": [
+        "An active farming, growing, or forestry business based in England confirms it will lead the Full ADOPT application.",
+        "At least one other UK farming, growing, or forestry business confirms collaboration and grant-claiming or project role as required.",
+        "A registered ADOPT Project Facilitator is identified and confirms role, or the support route confirms how to appoint one.",
+        "The farm problem statement, trial site, trial method, and practical adoption objective are evidenced.",
+        "Eligible project budget, cost split, partner roles, and permitted Aureon/R&A role are confirmed."
+      ],
+      "portal_action_after_unlock": "Only after every evidence item above is present: create or complete the Full ADOPT IFS application with the England farming lead and collaborator/facilitator evidence.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+      "name": "ADOPT Facilitator Support Grant: Round 10",
+      "deadline": "2026-08-12T11:00:00+01:00",
+      "current_state": "ADOPT_FACILITATOR_ENGLAND_FARM_BUSINESS_AND_REGISTERED_FACILITATOR_EVIDENCE_REQUIRED",
+      "route": "ADOPT_FACILITATOR_ROUND_10",
+      "unlock_contacts": [
+        {
+          "queue_id": "P2:P2-ADOPT-SUPPORT-HUB",
+          "target": "ADOPT Support Hub",
+          "channel_state": "EXACT_PUBLIC_EMAIL_VERIFIED_READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+          "destination": "adoptsupport@adas.co.uk",
+          "payload": "applications/IFS_P2_ADOPT_SUPPORT_HUB_OUTREACH_DRAFT_20260710_115624.eml",
+          "sha256": "4d3b84b6760b44cde823cde5213effb50bdef2553ddfc4d1ab470f222866666c",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT"
+        },
+        {
+          "queue_id": "P2:P2-ADOPT-FACILITATOR-IUKBC",
+          "target": "Innovate UK Business Connect ADOPT facilitator route",
+          "channel_state": "EXACT_PUBLIC_EMAIL_VERIFIED_READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+          "destination": "ADOPTfacilitator@iukbc.org.uk",
+          "payload": "applications/IFS_P2_ADOPT_FACILITATOR_IUKBC_OUTREACH_DRAFT_20260710_115624.eml",
+          "sha256": "309593be7b2f01d64b48c31bc3b6ddcdcfeac3da437ac42e0ea418f0de5e0d9c",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT"
+        }
+      ],
+      "evidence_required_to_unlock": [
+        "An active farming, growing, or forestry business based in England confirms it is the single applicant or route owner.",
+        "A registered ADOPT Project Facilitator is identified, eligible, and available for the application-development work.",
+        "Facilitator scope, procurement/engagement route, price, role, and applicant authority are evidenced.",
+        "The role for Aureon/R&A is confirmed as permitted support only, not unsupported direct applicant status."
+      ],
+      "portal_action_after_unlock": "Only after every evidence item above is present: proceed only under the eligible England farm business/facilitator route and do not apply as R&A direct applicant.",
+      "direct_submit_ready": false
+    }
+  ],
+  "readiness_rule": {
+    "do_not_mark_submit_ready_until": [
+      "Every required route-specific evidence item is present in an auditable local or Drive/Gmail-derived artifact.",
+      "The evidence identifies authorised legal entities, named contacts, roles, budgets, applicant authority, and permitted Aureon/R&A role.",
+      "The IFS portal answers can be completed without guessing academic lead, farm lead, facilitator, role, finance, farm site, scope, or budget facts.",
+      "The final portal submission receives exact action-time approval for the destination application and payload."
+    ],
+    "current_readiness": "NO_P2_ROUTE_DIRECT_SUBMIT_READY"
+  },
+  "controls": [
+    "No external email was sent.",
+    "No contact route was submitted.",
+    "No IFS portal field was changed.",
+    "No partner invitation, upload, award terms acceptance, or final submission was performed.",
+    "This packet is an internal Aureon submission control artifact, not a representation that evidence exists."
+  ],
+  "result": "P2_SUBMISSION_UNLOCK_CONTROL_PACKET_READY_NO_EXTERNAL_ACTION"
+}

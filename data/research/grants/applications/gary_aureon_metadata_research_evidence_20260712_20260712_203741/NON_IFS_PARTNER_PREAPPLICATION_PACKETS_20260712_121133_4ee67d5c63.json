@@ -1,0 +1,74 @@
+{
+  "schema_version": "aureon-non-ifs-partner-preapplication-packets-v1",
+  "generated_at": "2026-07-12T12:11:33+01:00",
+  "operator": "Aureon",
+  "event": "non_ifs_partner_preapplication_packets",
+  "result": "NON_IFS_PARTNER_PREAPPLICATION_PACKETS_READY",
+  "source_public_data_cost_basis": "applications/IFS_PUBLIC_DATA_PROJECT_COST_BASIS_20260712_115116.json",
+  "summary": {
+    "packets_created": 4,
+    "direct_submit_ready_routes": 0,
+    "external_sends": 0,
+    "portal_changes": 0
+  },
+  "packets": [
+    {
+      "application_id": "APP-UKRI-ADVANCING-SUSTAINABLE-AI-TECH-20260712",
+      "route_name": "Advancing Sustainable AI Technology",
+      "packet_type": "pre_application",
+      "status": "PRE_APPLICATION_EVIDENCE_PACK_READY_MONITOR_OPENING",
+      "markdown": "applications/UKRI_SUSTAINABLE_AI_PRE_APPLICATION_PACK_20260712_121133.md",
+      "source_url": "https://www.ukri.org/apply-for-funding/future-research-and-innovation-funding-opportunities/",
+      "deadline": "upcoming-2026-08",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-HORIZON-CHIPS-JU-2026-20260712",
+      "route_name": "Horizon Europe Chips Joint Undertaking 2026",
+      "packet_type": "consortium_partner_role",
+      "status": "HORIZON_CHIPS_PARTNER_ROLE_PACK_READY_CONSORTIUM_REQUIRED",
+      "markdown": "applications/HORIZON_CHIPS_JU_PARTNER_ROLE_PACK_20260712_121133.md",
+      "source_url": "https://iuk-business-connect.org.uk/opportunities/horizon-europe-chips-joint-undertaking-2026/",
+      "deadline": "2026-09-16T17:00:00+02:00",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-EUREKA-EUROSTARS-CALL11-20260709",
+      "route_name": "Eurostars Call 11 for projects - September 2026",
+      "packet_type": "international_partner_brief",
+      "status": "EUROSTARS_PARTNER_BRIEF_READY_PARTNER_REQUIRED",
+      "markdown": "applications/EUROSTARS_CALL11_PARTNER_BRIEF_20260712_121133.md",
+      "source_url": "https://www.eurekanetwork.org/programmes-and-calls/eurostars/eurostars-call-for-projects-september-2026/",
+      "deadline": "2026-09-10T14:00:00+02:00",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-EIT-HEALTH-INNOVATION-UPTAKE-2026-20260712",
+      "route_name": "EIT Health Innovation Uptake Call 2026",
+      "packet_type": "evidence_gate_note",
+      "status": "EIT_HEALTH_GATE_NOTE_READY_CONSORTIUM_REQUIRED",
+      "markdown": "applications/EIT_HEALTH_INNOVATION_UPTAKE_GATE_NOTE_20260712_121133.md",
+      "source_url": "https://iuk-business-connect.org.uk/opportunities/eit-health-innovation-uptake-call-2026/",
+      "deadline": "2026-09-16T15:00:00+01:00",
+      "direct_submit_ready": false
+    }
+  ],
+  "controls": [
+    "No external form was submitted.",
+    "No email was sent.",
+    "Partner, consortium, clinical or not-yet-open gates remain active until evidence changes."
+  ],
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false,
+  "outputs": {
+    "json": "applications/NON_IFS_PARTNER_PREAPPLICATION_PACKETS_20260712_121133.json",
+    "markdown": "applications/NON_IFS_PARTNER_PREAPPLICATION_PACKETS_20260712_121133.md",
+    "pipeline_report": "pipelines/pipeline_report_20260712_121133_non_ifs_partner_preapplication_packets.json"
+  },
+  "backups": {
+    "applications": "backups/applications_pre_non_ifs_partner_preapp_packets_20260712_121133.json",
+    "autopilot": "backups/autopilot_status_pre_non_ifs_partner_preapp_packets_20260712_121133.json",
+    "pipeline": "backups/pipeline_pre_non_ifs_partner_preapp_packets_20260712_121133.json"
+  }
+}

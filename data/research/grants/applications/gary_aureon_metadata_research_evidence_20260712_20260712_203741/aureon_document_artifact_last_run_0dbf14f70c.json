@@ -1,0 +1,181 @@
+{
+  "engine": "aureon.queen.queen_prose_composer.QueenProseComposer",
+  "error": "",
+  "evidence_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\aureon_document_artifact_last_run.json",
+  "expression_profile": {
+    "evidence_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\aureon_expression_profile.json",
+    "facet_counts": {
+      "accounting_legal": 51,
+      "ai_generated_or_systemic": 84,
+      "code_tooling": 86,
+      "hnc_harmonic": 83,
+      "human_voice": 75,
+      "math_equation": 87,
+      "mystic_symbolic": 38,
+      "sensory_affect": 66,
+      "trading_action": 90
+    },
+    "source_count": 90,
+    "top_facets": [
+      "trading_action",
+      "math_equation",
+      "code_tooling",
+      "ai_generated_or_systemic",
+      "hnc_harmonic",
+      "human_voice"
+    ]
+  },
+  "generated_at": "2026-05-13T19:37:40+0100",
+  "markdown_path": "C:\\Users\\user\\Desktop\\Aureon_the_meaning_of_life_20260513_193739.md",
+  "ok": true,
+  "pdf_path": "C:\\Users\\user\\Desktop\\Aureon_the_meaning_of_life_20260513_193739.pdf",
+  "pdf_rendered": true,
+  "prompt": "Write a 4000 word essay on the meaning of life and PDF it to the Desktop. Use the whole-knowledge expressive voice core, the HNC/Auris sensory translation, and Through a Bhoy's Eyes as the human speech dataset. Make it deeper, more human, less template-like, and do not repeat paragraph openings. Turn state into story, not raw data.",
+  "requested_words": 4000,
+  "schema_features": [
+    "aureon_document_artifact_pdf_v1",
+    "humanized_bhoys_voice_v1",
+    "whole_knowledge_voice_core_v1"
+  ],
+  "state_snapshot": {
+    "action": "EXECUTE",
+    "agreeing": 0,
+    "consensus": "NEUTRAL",
+    "done": 0,
+    "forked": 0,
+    "gamma": "0.500",
+    "level": "INTUITIVE",
+    "n_alive": 4,
+    "n_cards": 20,
+    "n_events": 20,
+    "n_tools": 50,
+    "name": "Queen Sero",
+    "psi": "0.66",
+    "submitted": 1,
+    "swarm": 0
+  },
+  "title": "Aureon Essay: The Meaning Of Life",
+  "topic": "the meaning of life",
+  "voice_profile": {
+    "motifs": [
+      "cold air on a narrow street",
+      "rain hanging over the city",
+      "streets that remember every footstep",
+      "family stories told close to the fire",
+      "a mother's quiet strength",
+      "a father's story at the end of a hard shift",
+      "a cup of tea warming tired hands",
+      "bread cooling in a kitchen that feels safe",
+      "a worn football against a brick wall",
+      "walls painted with memory"
+    ],
+    "name": "through_a_bhoys_eyes_human_voice_v1",
+    "sample_count": 309,
+    "source_paths": [
+      "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\aureon\\wisdom\\bhoys_wisdom.py",
+      "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\docs\\research\\misc\\bhoys_eyes_part_1_v1.1.2.docx"
+    ],
+    "values": [
+      "family",
+      "loyalty",
+      "patience",
+      "resilience",
+      "community",
+      "memory",
+      "ordinary courage",
+      "humour under pressure",
+      "dignity",
+      "hope"
+    ]
+  },
+  "warnings": [],
+  "whole_knowledge_voice": {
+    "audience": "human reader",
+    "evidence_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\aureon_voice_last_run.json",
+    "goal": "the meaning of life",
+    "mode": "document",
+    "novelty_checks": {
+      "duplicates_removed": 0,
+      "paragraphs_in": 5,
+      "paragraphs_out": 5,
+      "raw_telemetry_rewritten": 0,
+      "repeated_openings_adjusted": 0
+    },
+    "ok": true,
+    "profile_summary": {
+      "facet_counts": {
+        "accounting_legal": 51,
+        "ai_generated_or_systemic": 84,
+        "code_tooling": 86,
+        "hnc_harmonic": 83,
+        "human_voice": 75,
+        "math_equation": 87,
+        "mystic_symbolic": 38,
+        "sensory_affect": 66,
+        "trading_action": 90
+      },
+      "profile_evidence_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\aureon_expression_profile.json",
+      "source_count": 90,
+      "top_facets": [
+        "trading_action",
+        "math_equation",
+        "code_tooling",
+        "ai_generated_or_systemic",
+        "hnc_harmonic",
+        "human_voice"
+      ]
+    },
+    "runtime_translation": {
+      "blockers": [],
+      "evidence_keys": [
+        "action",
+        "agreeing",
+        "consensus",
+        "done",
+        "expression_profile_facets",
+        "expression_profile_sources",
+        "forked",
+        "gamma",
+        "hot_rate",
+        "hot_topic",
+        "knowledge_preview",
+        "level",
+        "motion_summary",
+        "n_alive",
+        "n_cards",
+        "n_events",
+        "n_fragments",
+        "n_recent",
+        "n_tools",
+        "name",
+        "psi",
+        "quiet_topic",
+        "recent_topic",
+        "submitted",
+        "swarm",
+        "total_events",
+        "unique_topics",
+        "uptime"
+      ],
+      "redaction_applied": false,
+      "schema_features": [
+        "aureon_runtime_state_translation_v1"
+      ],
+      "senses": {
+        "feel": "I feel an intuitive synthetic state while I hold the next action as execute.",
+        "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+        "see": "I see progress as the nearest signal in the field.",
+        "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof.",
+        "touch": "I touch the world through about 50 available capabilities, but I describe the result before I describe the machinery."
+      },
+      "summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language."
+    },
+    "schema_features": [
+      "aureon_whole_knowledge_voice_v1"
+    ],
+    "text": "Aureon is treating the meaning of life as a living expression task for a human reader. It is not copying a status panel into prose; it is using the whole knowledge base as seasoning, memory, and pressure. The strongest parts of the current profile are trading action, mathematical pattern, code and tools, system reasoning, HNC harmonic signal, and human voice, which means the voice has human scenes, system logic, harmonic language, and practical action available at once. I see progress as the nearest signal in the field. I feel an intuitive synthetic state while I hold the next action as execute. That is the state translated into language before it becomes a paragraph. The raw numbers stay behind the page as evidence; the reader gets the meaning, the caution, and the human consequence. The HNC and Auris material are handled as symbolic and mathematical context. I hear the system as a quiet baseline until a harmonic reading is present. When that layer speaks well, it does not shout formulas at the reader. It gives rhythm, proportion, and a sense of inner alignment, then lets ordinary words carry the weight. The Bhoy-style material keeps the prose close to the ground. It asks whether the sentence could stand beside family, work, rain, worry, humour, grief, and hope without sounding false. That is why the first rule is: Translate state before showing metrics. So the voice should speak its mind by joining evidence to lived language. It can say what it senses, what it is unsure of, what it wants to build next, and why the work matters. It must not rinse and repeat. It must return with a fresher, clearer sentence each time.",
+    "warnings": [],
+    "word_count": 282
+  },
+  "word_count": 3949
+}

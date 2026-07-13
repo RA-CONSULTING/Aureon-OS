@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-07-10T14:53:45+01:00",
+  "operator": "Aureon",
+  "event": "ifs_uk_swiss_stop_go_validation",
+  "artifact": "applications/IFS_UK_SWISS_STOP_GO_VALIDATION_20260710_145345.json",
+  "markdown": "applications/IFS_UK_SWISS_STOP_GO_VALIDATION_20260710_145345.md",
+  "result": "IFS_UK_SWISS_STOP_GO_VALIDATION_PASSED",
+  "validation_passed": true,
+  "source_uk_swiss_stop_go_audit": "applications/IFS_UK_SWISS_STOP_GO_AUDIT_20260710_145126.json",
+  "source_current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_145204.json",
+  "source_current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_145212.json",
+  "direct_submit_ready_routes": 0,
+  "new_browser_submissions_available": 0,
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false
+}

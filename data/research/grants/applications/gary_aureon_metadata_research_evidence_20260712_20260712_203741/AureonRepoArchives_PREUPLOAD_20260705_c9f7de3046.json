@@ -1,0 +1,18 @@
+﻿[
+    {
+        "name":  "AureonLocalGitHistoryBundles_RAW_20260705.tar",
+        "path":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\drive_publish_full\\AureonLocalGitHistoryBundles_RAW_20260705.tar",
+        "bytes":  1241515520,
+        "sha256":  "99E332CE7E1CDBEBF9FA3128052913402C08F5F97FD96888B23FD1E19810E9F1",
+        "tar_entries":  6,
+        "created_or_found_at":  "2026-07-05T08:55:20.8282370Z"
+    },
+    {
+        "name":  "AureonGitHubMirrorBundles_ALLREFS_20260705.tar",
+        "path":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\drive_publish_full\\AureonGitHubMirrorBundles_ALLREFS_20260705.tar",
+        "bytes":  366811648,
+        "sha256":  "061BD20D27779451FC8E6C04EDCB875D55F720508BB324201BA4A7770C6697A7",
+        "tar_entries":  4,
+        "created_or_found_at":  "2026-07-05T08:55:23.6481875Z"
+    }
+]

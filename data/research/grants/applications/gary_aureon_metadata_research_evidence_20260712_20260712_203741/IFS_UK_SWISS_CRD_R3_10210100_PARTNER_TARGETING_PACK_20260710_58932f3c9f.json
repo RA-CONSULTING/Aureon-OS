@@ -1,0 +1,147 @@
+{
+  "schema_version": "aureon-ifs-uk-swiss-partner-targeting-v1",
+  "generated_at": "2026-07-10T06:46:20+01:00",
+  "operator": "Aureon",
+  "scope": "IFS_ONLY",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "sources": [
+    {
+      "name": "IFS UK-Switzerland CR&D Round 3",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2512/overview/2f0a03c4-44b7-42dc-8845-70751b6bc531",
+      "use": "official route, themes, timing, partner rules"
+    },
+    {
+      "name": "Innosuisse innovation projects with implementation partner",
+      "url": "https://www.innosuisse.admin.ch/en/innovation-project-with-implementation-partner",
+      "use": "Swiss implementation-partner and research-partner structure"
+    },
+    {
+      "name": "SwissChips research, ETH Zurich",
+      "url": "https://swisschips.ethz.ch/research.html",
+      "use": "Swiss semiconductor research ecosystem and CSEM/EPFL/ETH research route"
+    },
+    {
+      "name": "Deep Tech Nation Switzerland future of compute",
+      "url": "https://deeptechnation.ch/focus-sectors/future-of-compute/",
+      "use": "Swiss compute, sensor, interconnect, and AI hardware ecosystem examples"
+    },
+    {
+      "name": "Innovate UK Business Connect engineering biology in Switzerland report",
+      "url": "https://iuk-business-connect.org.uk/wp-content/uploads/2026/03/Engineering-Biology-in-Switzerland-PUBLIC-FINAL.pdf",
+      "use": "Swiss engineering biology collaboration themes and ecosystem routes"
+    }
+  ],
+  "targets": [
+    {
+      "rank": 1,
+      "target": "SwissChips / ETH Zurich semiconductor ecosystem",
+      "target_type": "research-institute route",
+      "theme": "Semiconductors",
+      "public_rationale": "SwissChips states that its research fosters the Swiss semiconductor ecosystem and that technical work packages are defined with CSEM, EPFL, and ETH researchers.",
+      "aureon_angle": "Aureon can provide evidence automation, reproducibility records, milestone evidence, and audit trails for semiconductor R&D work packages.",
+      "evidence_needed": [
+        "named research contact",
+        "research institute eligibility confirmation",
+        "scope fit to semiconductors",
+        "work-package role",
+        "IP and data/evidence plan"
+      ],
+      "source": "https://swisschips.ethz.ch/research.html",
+      "contact_status": "TARGET_ONLY_NO_RELATIONSHIP_CLAIMED",
+      "evidence_request_file": "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_REQUEST_SWISSCHIPS_ETH_ZURICH_SEMICONDUCTOR_ECOSYSTEM_20260710.md",
+      "outreach_draft_file": "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_SWISSCHIPS_ETH_ZURICH_SEMICONDUCTOR_ECOSYSTEM_20260710.eml"
+    },
+    {
+      "rank": 2,
+      "target": "Kandou",
+      "target_type": "Swiss implementation partner candidate",
+      "theme": "Semiconductors",
+      "public_rationale": "Deep Tech Nation Switzerland describes Kandou as an EPFL-origin company and IP licensor for AI chip interconnects.",
+      "aureon_angle": "Aureon can support evidence traceability and benchmark reporting around AI chip interconnect R&D claims if Kandou has an eligible Innosuisse project scope.",
+      "evidence_needed": [
+        "legal organisation details",
+        "Innosuisse application intent",
+        "separate non-linked entity confirmation",
+        "technical scope",
+        "person-month and budget split"
+      ],
+      "source": "https://deeptechnation.ch/focus-sectors/future-of-compute/",
+      "contact_status": "TARGET_ONLY_NO_RELATIONSHIP_CLAIMED",
+      "evidence_request_file": "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_REQUEST_KANDOU_20260710.md",
+      "outreach_draft_file": "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_KANDOU_20260710.eml"
+    },
+    {
+      "rank": 3,
+      "target": "Sensirion",
+      "target_type": "Swiss implementation partner candidate",
+      "theme": "Semiconductors",
+      "public_rationale": "Deep Tech Nation Switzerland describes Sensirion as an ETH Zurich spin-off and major digital humidity and temperature sensor manufacturer.",
+      "aureon_angle": "Aureon can support traceable sensor evidence, source registers, test-report assurance, and funder-ready audit trails if a qualified sensor R&D scope is confirmed.",
+      "evidence_needed": [
+        "legal organisation details",
+        "Innosuisse application intent",
+        "sensor R&D scope",
+        "research-institute partner",
+        "cost and person-month balance"
+      ],
+      "source": "https://deeptechnation.ch/focus-sectors/future-of-compute/",
+      "contact_status": "TARGET_ONLY_NO_RELATIONSHIP_CLAIMED",
+      "evidence_request_file": "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_REQUEST_SENSIRION_20260710.md",
+      "outreach_draft_file": "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_SENSIRION_20260710.eml"
+    },
+    {
+      "rank": 4,
+      "target": "Corintis",
+      "target_type": "Swiss implementation partner candidate",
+      "theme": "Semiconductors",
+      "public_rationale": "Deep Tech Nation Switzerland describes Corintis as bringing ETH-developed microfluidic liquid cooling for high-power AI chips toward mass production.",
+      "aureon_angle": "Aureon can support evidence automation and project assurance for AI-chip thermal-management R&D, including test-evidence records and risk traceability.",
+      "evidence_needed": [
+        "legal organisation details",
+        "Innosuisse application intent",
+        "technology scope",
+        "research-institute partner or waiver condition",
+        "budget and milestones"
+      ],
+      "source": "https://deeptechnation.ch/focus-sectors/future-of-compute/",
+      "contact_status": "TARGET_ONLY_NO_RELATIONSHIP_CLAIMED",
+      "evidence_request_file": "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_REQUEST_CORINTIS_20260710.md",
+      "outreach_draft_file": "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_CORINTIS_20260710.eml"
+    },
+    {
+      "rank": 5,
+      "target": "Engineering biology Swiss ecosystem via BaseLaunch, The Cultured Hub, Buhler Protein Application Center, MassChallenge",
+      "target_type": "ecosystem-route candidate",
+      "theme": "Engineering Biology",
+      "public_rationale": "Innovate UK Business Connect identified Swiss engineering-biology collaboration opportunities, including green chemistry, agrifood, circular processing, and scale-up support routes.",
+      "aureon_angle": "Aureon can support evidence governance, reproducibility records, risk tagging, and audit trails for a partner-led engineering-biology project without claiming biological-system access.",
+      "evidence_needed": [
+        "named Swiss implementation partner",
+        "research institute or waiver evidence",
+        "engineering biology technical scope",
+        "regulatory, permit, and ethics position",
+        "IP, data, budget, and work-package split"
+      ],
+      "source": "https://iuk-business-connect.org.uk/wp-content/uploads/2026/03/Engineering-Biology-in-Switzerland-PUBLIC-FINAL.pdf",
+      "contact_status": "TARGET_ONLY_NO_RELATIONSHIP_CLAIMED",
+      "evidence_request_file": "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_REQUEST_ENGINEERING_BIOLOGY_SWISS_ECOSYSTEM_VIA_BASELAUNCH_THE_CULTURED_HUB_BUHL_20260710.md",
+      "outreach_draft_file": "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_ENGINEERING_BIOLOGY_SWISS_ECOSYSTEM_VIA_BASELAUNCH_THE_CULTURED_HUB_BUHL_20260710.eml"
+    }
+  ],
+  "artifacts": [
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_TARGETING_PACK_20260710.md",
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_TARGETING_PACK_20260710.json",
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_REQUEST_SWISSCHIPS_ETH_ZURICH_SEMICONDUCTOR_ECOSYSTEM_20260710.md",
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_SWISSCHIPS_ETH_ZURICH_SEMICONDUCTOR_ECOSYSTEM_20260710.eml",
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_REQUEST_KANDOU_20260710.md",
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_KANDOU_20260710.eml",
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_REQUEST_SENSIRION_20260710.md",
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_SENSIRION_20260710.eml",
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_REQUEST_CORINTIS_20260710.md",
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_CORINTIS_20260710.eml",
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_REQUEST_ENGINEERING_BIOLOGY_SWISS_ECOSYSTEM_VIA_BASELAUNCH_THE_CULTURED_HUB_BUHL_20260710.md",
+    "applications/IFS_UK_SWISS_CRD_R3_10210100_OUTREACH_DRAFT_ENGINEERING_BIOLOGY_SWISS_ECOSYSTEM_VIA_BASELAUNCH_THE_CULTURED_HUB_BUHL_20260710.eml"
+  ],
+  "status": "PARTNER_TARGETING_PACK_READY_NO_PARTNER_COMMITMENT_CLAIMED"
+}

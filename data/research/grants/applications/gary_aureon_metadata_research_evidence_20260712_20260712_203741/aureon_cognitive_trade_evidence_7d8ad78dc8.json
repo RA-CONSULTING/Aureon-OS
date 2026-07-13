@@ -1,0 +1,50 @@
+{
+  "contract": {
+    "loop": [
+      "who",
+      "what",
+      "where",
+      "when",
+      "why",
+      "how",
+      "act",
+      "verify",
+      "record",
+      "repeat"
+    ],
+    "operational_affect": "gratitude/happiness labels are reinforcement signals, not sentience claims",
+    "profit_is_not_enough": "profit counts strongest when runtime is fresh, fees are controlled, and risk gates stayed intact",
+    "trade_as_cognition": "closed-loop evidence: signal -> action -> outcome -> reward -> next signal"
+  },
+  "generated_at": "2026-05-22T18:20:42.749445+00:00",
+  "recent_evidence": [],
+  "runtime_watchdog": {
+    "file_heartbeat_is_not_market_freshness": true,
+    "heartbeat_alive": true,
+    "heartbeat_at": "2026-05-22T19:20:38.729464",
+    "last_tick_age_sec": 488.874,
+    "last_tick_running_sec": 486.746,
+    "tick_active": true,
+    "tick_long_running": true,
+    "tick_phase": "build_combined_payload:decision_feed",
+    "tick_phase_running_sec": 25.922,
+    "tick_running_stale_after_sec": 600.0,
+    "tick_stale": true,
+    "tick_stale_after_sec": 45.0,
+    "tick_stale_reason": "tick_in_progress_stalled"
+  },
+  "schema_version": "aureon-cognitive-trade-evidence-v1",
+  "status": "cognitive_trade_evidence_ready",
+  "summary": {
+    "action_mode": "learn_and_recover",
+    "average_learning_reward": 0.0,
+    "evidence_count": 0,
+    "losses": 0,
+    "net_pnl": 0,
+    "open_positions": 2,
+    "runtime_stale": true,
+    "signal_quality": 0.0,
+    "win_rate": 0.0,
+    "wins": 0
+  }
+}

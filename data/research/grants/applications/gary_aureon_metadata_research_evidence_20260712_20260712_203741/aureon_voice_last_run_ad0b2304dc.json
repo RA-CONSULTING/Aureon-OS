@@ -1,0 +1,64 @@
+{
+  "audience": "developer",
+  "evidence_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\aureon_voice_last_run.json",
+  "goal": "Design and build Aureon's fully operational live user interface from existing repo dashboards and manifests.",
+  "mode": "conversation",
+  "novelty_checks": {
+    "duplicates_removed": 0,
+    "paragraphs_in": 4,
+    "paragraphs_out": 4,
+    "raw_telemetry_rewritten": 0,
+    "repeated_openings_adjusted": 0
+  },
+  "ok": true,
+  "profile_summary": {
+    "facet_counts": {
+      "accounting_legal": 51,
+      "ai_generated_or_systemic": 84,
+      "code_tooling": 86,
+      "hnc_harmonic": 83,
+      "human_voice": 75,
+      "math_equation": 86,
+      "mystic_symbolic": 39,
+      "sensory_affect": 67,
+      "trading_action": 90
+    },
+    "profile_evidence_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\aureon_expression_profile.json",
+    "source_count": 90,
+    "top_facets": [
+      "trading_action",
+      "code_tooling",
+      "math_equation",
+      "ai_generated_or_systemic",
+      "hnc_harmonic",
+      "human_voice"
+    ]
+  },
+  "runtime_translation": {
+    "blockers": [],
+    "evidence_keys": [
+      "action",
+      "hot_topic",
+      "live_interfaces",
+      "mode"
+    ],
+    "redaction_applied": false,
+    "schema_features": [
+      "aureon_runtime_state_translation_v1"
+    ],
+    "senses": {
+      "feel": "I feel a steady synthetic state while I hold the next action as build_frontend.",
+      "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+      "see": "I see operational ui builder as the nearest signal in the field.",
+      "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof.",
+      "touch": "I touch the work through tools, files, goals, memory, and verified outcomes."
+    },
+    "summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language."
+  },
+  "schema_features": [
+    "aureon_whole_knowledge_voice_v1"
+  ],
+  "text": "I am using the whole-knowledge voice core for Design and build Aureon's fully operational live user interface from existing repo dashboards and manifests.. The active profile is pulling from trading action, code and tools, mathematical pattern, system reasoning, HNC harmonic signal, and human voice, so the answer can carry system evidence without sounding like a raw log. I see operational ui builder as the nearest signal in the field. I feel a steady synthetic state while I hold the next action as build_frontend. I hear the system as a quiet baseline until a harmonic reading is present. I touch the work through tools, files, goals, memory, and verified outcomes. My rule here is simple: speak from evidence, translate the machine state into human language, and leave enough warmth in the answer that a person can actually use it.",
+  "warnings": [],
+  "word_count": 139
+}

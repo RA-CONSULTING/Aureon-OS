@@ -1,0 +1,673 @@
+{
+  "civilization": "Chinese I Ching",
+  "last_updated": "2025-12-30T17:27:26.209183",
+  "version": "1.0.0",
+  "sources": [
+    "hardcoded",
+    "wikipedia"
+  ],
+  "topics": [
+    {
+      "name": "Yin Yang Balance",
+      "content": "Complementary opposites in dynamic balance - light/dark, expansion/contraction",
+      "trading_insight": "Market cycles between bull/bear, greed/fear. When one extreme is reached, reversal begins.",
+      "source": "hardcoded",
+      "relevance_score": 0.95
+    },
+    {
+      "name": "Constant Change (Yi)",
+      "content": "The only constant is change - yi means change itself",
+      "trading_insight": "Expect regime changes, nothing lasts forever. The trend will end - prepare for transformation.",
+      "source": "hardcoded",
+      "relevance_score": 0.95
+    },
+    {
+      "name": "Wu Wei - Effortless Action",
+      "content": "Action through non-action - aligning with natural flow rather than forcing",
+      "trading_insight": "Trade with the trend, don't fight the market. Let the trade come to you.",
+      "source": "hardcoded",
+      "relevance_score": 0.9
+    },
+    {
+      "name": "Timing Mastery",
+      "content": "Right action at right time - understanding cycles and moments",
+      "trading_insight": "Entry/exit timing is everything. Patience for setup completion.",
+      "source": "hardcoded",
+      "relevance_score": 0.9
+    },
+    {
+      "name": "Hexagram 1: The Creative (Qian)",
+      "content": "Heaven over Heaven - Supreme success, furthering through perseverance",
+      "trading_insight": "Strong uptrend, maintain long positions. Dragon energy ascending.",
+      "source": "hardcoded",
+      "relevance_score": 0.85
+    },
+    {
+      "name": "Hexagram 2: The Receptive (Kun)",
+      "content": "Earth over Earth - Supreme success through mare's perseverance",
+      "trading_insight": "Follow the leader, don't initiate. Yield to market direction.",
+      "source": "hardcoded",
+      "relevance_score": 0.85
+    },
+    {
+      "name": "Hexagram 11: Peace (Tai)",
+      "content": "Earth over Heaven - Small departs, great approaches",
+      "trading_insight": "Harmony in markets, prosperity phase. Good time for accumulation.",
+      "source": "hardcoded",
+      "relevance_score": 0.85
+    },
+    {
+      "name": "Five Elements Cycle",
+      "content": "Wood feeds Fire, Fire creates Earth, Earth bears Metal, Metal carries Water, Water nourishes Wood",
+      "trading_insight": "Sector rotation follows cycles. What rises must feed the next phase.",
+      "source": "hardcoded",
+      "relevance_score": 0.8
+    }
+  ],
+  "core_principles": {
+    "yin_yang": {
+      "description": "Complementary opposites in dynamic balance - light/dark, expansion/contraction",
+      "trading_application": "Market cycles between bull/bear, greed/fear",
+      "confidence": 0.95
+    },
+    "constant_change": {
+      "description": "The only constant is change - yi means change",
+      "trading_application": "Expect regime changes, nothing lasts forever",
+      "confidence": 0.95
+    },
+    "wu_wei": {
+      "description": "Action through non-action - aligning with natural flow rather than forcing",
+      "trading_application": "Trade with the trend, don't fight the market",
+      "confidence": 0.9
+    },
+    "timing": {
+      "description": "Right action at right time - understanding cycles and moments",
+      "trading_application": "Entry/exit timing, patience for setup completion",
+      "confidence": 0.9
+    }
+  },
+  "trigrams": {
+    "qian": {
+      "symbol": "☰",
+      "meaning": "Heaven",
+      "attribute": "Creative",
+      "element": "Strong"
+    },
+    "kun": {
+      "symbol": "☷",
+      "meaning": "Earth",
+      "attribute": "Receptive",
+      "element": "Yielding"
+    },
+    "zhen": {
+      "symbol": "☳",
+      "meaning": "Thunder",
+      "attribute": "Arousing",
+      "element": "Movement"
+    },
+    "kan": {
+      "symbol": "☵",
+      "meaning": "Water",
+      "attribute": "Abysmal",
+      "element": "Danger"
+    },
+    "gen": {
+      "symbol": "☶",
+      "meaning": "Mountain",
+      "attribute": "Stillness",
+      "element": "Stopping"
+    },
+    "xun": {
+      "symbol": "☴",
+      "meaning": "Wind",
+      "attribute": "Gentle",
+      "element": "Penetrating"
+    },
+    "li": {
+      "symbol": "☲",
+      "meaning": "Fire",
+      "attribute": "Clinging",
+      "element": "Clarity"
+    },
+    "dui": {
+      "symbol": "☱",
+      "meaning": "Lake",
+      "attribute": "Joyous",
+      "element": "Pleasure"
+    }
+  },
+  "key_hexagrams": {
+    "1_qian": {
+      "name": "The Creative",
+      "judgment": "Supreme success, furthering through perseverance",
+      "trading": "Strong uptrend, maintain long positions"
+    },
+    "2_kun": {
+      "name": "The Receptive",
+      "judgment": "Supreme success through mare's perseverance",
+      "trading": "Follow the leader, don't initiate"
+    },
+    "11_tai": {
+      "name": "Peace",
+      "judgment": "Small goes, great comes - good fortune",
+      "trading": "Harmony period, balanced growth"
+    },
+    "12_pi": {
+      "name": "Standstill",
+      "judgment": "Great goes, small comes - standstill",
+      "trading": "Stagnation, reduce exposure"
+    },
+    "63_jiji": {
+      "name": "After Completion",
+      "judgment": "Success in small matters, perseverance",
+      "trading": "Peak reached, prepare for reversal"
+    },
+    "64_weiji": {
+      "name": "Before Completion",
+      "judgment": "Success, but nearly finished",
+      "trading": "Transition imminent, new cycle starting"
+    }
+  },
+  "five_elements": {
+    "wood": {
+      "season": "Spring",
+      "direction": "East",
+      "energy": "Growth",
+      "market": "Expansion"
+    },
+    "fire": {
+      "season": "Summer",
+      "direction": "South",
+      "energy": "Peak",
+      "market": "Euphoria"
+    },
+    "earth": {
+      "season": "Transition",
+      "direction": "Center",
+      "energy": "Balance",
+      "market": "Consolidation"
+    },
+    "metal": {
+      "season": "Autumn",
+      "direction": "West",
+      "energy": "Decline",
+      "market": "Correction"
+    },
+    "water": {
+      "season": "Winter",
+      "direction": "North",
+      "energy": "Storage",
+      "market": "Accumulation"
+    }
+  },
+  "element_cycles": {
+    "generating": [
+      "Wood feeds Fire",
+      "Fire creates Earth",
+      "Earth bears Metal",
+      "Metal collects Water",
+      "Water nourishes Wood"
+    ],
+    "overcoming": [
+      "Wood parts Earth",
+      "Earth dams Water",
+      "Water extinguishes Fire",
+      "Fire melts Metal",
+      "Metal chops Wood"
+    ]
+  },
+  "tao_principles": {
+    "tao_te_ching": "The Tao that can be spoken is not the eternal Tao",
+    "emptiness": "Emptiness is the source of all potential",
+    "softness": "The soft overcomes the hard, water wears away stone",
+    "simplicity": "Return to uncarved block, embrace simplicity"
+  },
+  "wikipedia_topics": [
+    "I Ching",
+    "Yin and yang",
+    "Taoism",
+    "Tao Te Ching",
+    "Wu wei",
+    "Five elements (Chinese philosophy)",
+    "Bagua",
+    "Chinese astrology",
+    "Feng shui",
+    "Chinese numerology"
+  ],
+  "learned_insights": [
+    {
+      "source": "Sacred-Texts",
+      "civilization": "chinese",
+      "topic": "Five elements (Chinese philosophy)",
+      "content": "The I Ching, or Book of Changes, is the most widely read of the fiveChinese Classics.\n The book was traditionally written by the legendary Chinese\n Emperor Fu Hsi (2953-2838 B.C.).  It is possible that the\n the I Ching originated from a prehistoric divination technique which\n dates back as far as 5000 B.C.  Thus it may be the oldest text at this site.\n Futher commentaries were added by King Wen an",
+      "relevance_score": 0.8166004361650702,
+      "trading_application": "Ancient chinese wisdom for market understanding",
+      "timestamp": "2025-12-15T10:24:28.016798",
+      "content_hash": "432e77be86f64ea36fe30f99153d0d02"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "chinese",
+      "topic": "Five elements (Chinese philosophy)",
+      "content": "An I Ching interpretation is performed by making\n six binary decisions (a hexagram).  This is called 'casting the I Ching'.\n These are written down as a stack of six solid or broken lines.\n This was traditionally done either by tossing yarrow\n stalks or coins, although there is no reason why\n the hexagrams can't be generated by some other means\n (such as a computer program).",
+      "relevance_score": 0.7103183412697871,
+      "trading_application": "Ancient chinese wisdom for market understanding",
+      "timestamp": "2025-12-15T10:24:28.016825",
+      "content_hash": "3c7f89011cd73e2fc7de81210cf4e26f"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "chinese",
+      "topic": "Five elements (Chinese philosophy)",
+      "content": "There are actuallyfourpossible values for each of the lines; the two \n on/off values, and a line which changes from on to off or vice versa.\n Thus one cast of the I Ching can generate two different hexagrams,\n which adds depth to the interpretation.\n The sophistication of this method has not escaped modern interpretation,\n and the four-valued logic has been compared to the biochemistry ofDNA amino",
+      "relevance_score": 0.673438616475206,
+      "trading_application": "Ancient chinese wisdom for market understanding",
+      "timestamp": "2025-12-15T10:24:28.016834",
+      "content_hash": "5e6fe75ac4e807fa6d5fe7104475620d"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "chinese",
+      "topic": "Five elements (Chinese philosophy)",
+      "content": "Production Notes:\n This is a complete overhaul of the Legge I Ching etext, with all of the\n original illustrations.\n This utilizesUnicode charactersthroughout to represent the 'short A' and the 'Yodh' found in the original book.\n Because not all browsers support the official Unicode 'Yodh'\n (Ȝ and ȝ),\n we have used Ž and ž to represent it.\n In addition, we have used images to present the dozen or ",
+      "relevance_score": 0.8609696549958851,
+      "trading_application": "Ancient chinese wisdom for market understanding",
+      "timestamp": "2025-12-15T10:24:28.016841",
+      "content_hash": "b185168f0d82cae64f4222fb3f6b7f84"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "chinese",
+      "topic": "Five elements (Chinese philosophy)",
+      "content": "This is a quiet place in cyberspacedevoted to religious tolerance and scholarshipNon-public domain contents of this sitenot otherwise copyrighted are © copyright 2023,\n John Bruno Hare, All Rights Reserved.SeeSite copyrights,Terms of Servicefor more information.Index|FAQ|Contact|Search|Buy DiskOpen Source for the Human Soul",
+      "relevance_score": 0.8768935599033751,
+      "trading_application": "Ancient chinese wisdom for market understanding",
+      "timestamp": "2025-12-15T10:24:28.017229",
+      "content_hash": "5ffafc9fa79a225ee8dc088f06bff93f"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "chinese",
+      "topic": "Five elements (Chinese philosophy)",
+      "content": "The I Ching, or Book of Changes, is the most widely read of the fiveChinese Classics.\n The book was traditionally written by the legendary Chinese\n Emperor Fu Hsi (2953-2838 B.C.).  It is possible that the\n the I Ching originated from a prehistoric divination technique which\n dates back as far as 5000 B.C.  Thus it may be the oldest text at this site.\n Futher commentaries were added by King Wen an",
+      "relevance_score": 0.6785545268113998,
+      "trading_application": "Ancient chinese wisdom for market understanding",
+      "timestamp": "2025-12-25T19:41:03.198789",
+      "content_hash": "432e77be86f64ea36fe30f99153d0d02"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "chinese",
+      "topic": "Five elements (Chinese philosophy)",
+      "content": "An I Ching interpretation is performed by making\n six binary decisions (a hexagram).  This is called 'casting the I Ching'.\n These are written down as a stack of six solid or broken lines.\n This was traditionally done either by tossing yarrow\n stalks or coins, although there is no reason why\n the hexagrams can't be generated by some other means\n (such as a computer program).",
+      "relevance_score": 0.8315168750912451,
+      "trading_application": "Ancient chinese wisdom for market understanding",
+      "timestamp": "2025-12-25T19:41:03.198817",
+      "content_hash": "3c7f89011cd73e2fc7de81210cf4e26f"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "chinese",
+      "topic": "Five elements (Chinese philosophy)",
+      "content": "There are actuallyfourpossible values for each of the lines; the two \n on/off values, and a line which changes from on to off or vice versa.\n Thus one cast of the I Ching can generate two different hexagrams,\n which adds depth to the interpretation.\n The sophistication of this method has not escaped modern interpretation,\n and the four-valued logic has been compared to the biochemistry ofDNA amino",
+      "relevance_score": 0.8191180084771102,
+      "trading_application": "Ancient chinese wisdom for market understanding",
+      "timestamp": "2025-12-25T19:41:03.198823",
+      "content_hash": "5e6fe75ac4e807fa6d5fe7104475620d"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "chinese",
+      "topic": "Five elements (Chinese philosophy)",
+      "content": "Production Notes:\n This is a complete overhaul of the Legge I Ching etext, with all of the\n original illustrations.\n This utilizesUnicode charactersthroughout to represent the 'short A' and the 'Yodh' found in the original book.\n Because not all browsers support the official Unicode 'Yodh'\n (Ȝ and ȝ),\n we have used Ž and ž to represent it.\n In addition, we have used images to present the dozen or ",
+      "relevance_score": 0.766040726231967,
+      "trading_application": "Ancient chinese wisdom for market understanding",
+      "timestamp": "2025-12-25T19:41:03.198829",
+      "content_hash": "b185168f0d82cae64f4222fb3f6b7f84"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "chinese",
+      "topic": "Five elements (Chinese philosophy)",
+      "content": "This is a quiet place in cyberspacedevoted to religious tolerance and scholarshipNon-public domain contents of this sitenot otherwise copyrighted are © copyright 2023,\n John Bruno Hare, All Rights Reserved.SeeSite copyrights,Terms of Servicefor more information.Index|FAQ|Contact|Search|Buy DiskOpen Source for the Human Soul",
+      "relevance_score": 0.7163918107667845,
+      "trading_application": "Ancient chinese wisdom for market understanding",
+      "timestamp": "2025-12-25T19:41:03.198836",
+      "content_hash": "5ffafc9fa79a225ee8dc088f06bff93f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Yin and yang",
+      "content": "Originating in ancient Chinese philosophy, yin and yang (traditional Chinese: 陰陽; simplified Chinese: 阴阳; pinyin: yīn yáng, English: , ) or yin-yang is the concept that there exist cosmic principles or forces that are opposite but complementary, which interact, interconnect, support and perpetuate each other. Together they form a dynamic system in which the whole is greater than the interdependent components, and both parts are essential for the cohesion of the whole.\nIn Chinese creation theory,",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:51:12.046443",
+      "content_hash": "25494ce1fc34de6814374ea9caf77fba"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Yin and yang",
+      "content": "Yin 陰 or 阴—Noun: ① [philosophy] female/passive/negative principle in nature, ② Surname; Bound morpheme: ① the moon, ② shaded orientation, ③ covert; concealed; hidden, ④ vagina, ⑤ penis, ⑥ of the netherworld, ⑦ negative, ⑧ north side of a hill, ⑨ south bank of a river, ⑩ reverse side of a stele, ⑪ in intaglio; Stative verb: ① overcast, ② sinister; treacherous\nYang 陽 or 阳—Bound morpheme: ① [Chinese philosophy] male/active/positive principle in nature, ② the sun, ③ male genitals, ④ in relief, ⑤ ope",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from chinese tradition",
+      "timestamp": "2025-12-25T19:51:12.046598",
+      "content_hash": "a4c5beaa1ffaeea1b2699a5ff1dae5b4"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Yin and yang",
+      "content": "yin (jɪn) Also Yin, Yn. [Chinese yīn shade, feminine; the moon.]\na. In Chinese philosophy, the feminine or negative principle (characterized by dark, wetness, cold, passivity, disintegration, etc.) of the two opposing cosmic forces into which creative energy divides and whose fusion in physical matter brings the phenomenal world into being. Also attrib. or as adj., and transf. Cf. yang.",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:51:12.046653",
+      "content_hash": "7ce62e059df9ba975437f8af3fd6ee02"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Taoism",
+      "content": "Taoism or Daoism ( ,  ) is a philosophical and religious tradition indigenous to China, emphasizing harmony with the Tao 道 (pinyin: dào; Wade–Giles: tao4). With a range of meaning in Chinese philosophy, translations of Tao include 'way', 'road', 'path', or 'technique', generally understood in the Taoist sense as an enigmatic process of transformation ultimately underlying reality.  Taoist thought has informed the development of various practices within the Taoist tradition, ideation of mathemati",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:51:17.242977",
+      "content_hash": "b5ff10b9fa96599599caa94c3922836a"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Taoism",
+      "content": "A family of organized religious movements that share concepts and terminology from Taoist philosophy—what can be translated specifically as 'the teachings of the Tao' (道教; dàojiào), often interpreted as the Taoist \"religion proper\", or the \"mystical\" or \"liturgical\" aspects of Taoism. The Celestial Masters school is a well-known early example of this sense.\nThe philosophical doctrines largely based on core Taoist texts themselves—a term that can be translated as 'the philosophical school of the ",
+      "relevance_score": 0.4,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-25T19:51:17.243133",
+      "content_hash": "ead5040c2996588a9062552769833623"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Wu wei",
+      "content": "Wu wei (traditional Chinese: 無為; simplified Chinese: 无为; pinyin: wúwéi; Jyutping: mou4-wai4) is a concept from ancient Chinese philosophy that literally means not-acting or non-doing, variously interpreted and translated as actionlessness, inaction, or effortless action. In Daoism, it denotes the nature of Dao, meaning that while Dao (the way, path, or flow of nature) is the source of all existence and manifestation of all phenomena, its intrinsic formless essence is that it acts or moves in a s",
+      "relevance_score": 0.6,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:51:26.788537",
+      "content_hash": "eaf17a95354d221d63aa67fad59a1aff"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Wu wei",
+      "content": "An \"attitude of genuine non-action, motivated by a lack of desire to participate in human affairs\" and\nA \"technique by means of which the one who practices it may gain enhanced control of human affairs.\"\nThe contemplative Daoism of the Zhuangzi portrays wu wei as a source of serenity, rather than something to help people gain political power. Creel takes the Zhuangzi's idea of wu wei as rooted in its transcendental idea of the Dao, which views life and death as an \"indissoluble unity.\" As such, ",
+      "relevance_score": 0.4,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-25T19:51:26.788669",
+      "content_hash": "63fa788cfce1d1be994fe7b4ee75dede"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Wu wei",
+      "content": "=== Slingerland ===\nSlingerland argues wu wei in the Confucian sense has to be attained. But in the Confucian conception of virtue, virtue can only be attained by not consciously trying to attain it. The manifestation of virtue is regarded as a reward by Heaven for following its will – as a power that enables them to establish this will on earth. In this, probably more original sense, wu wei may be regarded as the \"skill\" of \"becoming a fully realized human being\", a sense which it shares with D",
+      "relevance_score": 0.6,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:51:26.788797",
+      "content_hash": "eb5ebd694794d869987de7fab9831fbe"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Five elements (Chinese philosophy)",
+      "content": "Wuxing (Chinese: 五行; pinyin: wǔxíng; Jyutping: Ng5 Hang4), translated as Five Moving Ones, Five Circulations, Five Types of Energy, Five Elements, Five Transformations, Five Phases or Five Agents, is a fivefold conceptual scheme used in many traditional Chinese fields of study to explain a wide array of phenomena, including terrestrial and celestial relationships, influences, and cycles, that characterise the interactions and relationships within science, medicine, politics, religion and social ",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:51:31.826181",
+      "content_hash": "a5a2509a55c4d301af8d953efafbc570"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Five elements (Chinese philosophy)",
+      "content": "The art of feng shui (Chinese geomancy) is based on wuxing, with the structure of the cosmos mirroring the five phases, as well as bagua (the eight trigrams). Each phase has a complex network of associations with different aspects of nature (see table): colors, seasons and shapes all interact according to the cycles.\nAn interaction or energy flow can be expansive, destructive, or exhaustive, depending on the cycle to which it belongs. By understanding these energy flows, a feng shui practitioner",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:51:31.826347",
+      "content_hash": "8ffa7bb4fccb3d3d2c391235bad654b1"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Five elements (Chinese philosophy)",
+      "content": "The interdependence of zangfu networks in the body was said to be a circle of five things, and so mapped by the ancient Chinese doctors onto categories of syndromes and patterns called the five phases.\nIn order to explain the integrity and complexity of the human body, Traditional Chinese Medicine practitioners use the Five Elements theory to classify the human body's endogenous influences on organs, physiological activities, pathological reactions, and environmental or exogenous (external, envi",
+      "relevance_score": 0.6,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:51:31.826401",
+      "content_hash": "dd098bed39bae908dd1f6d61769b3bc7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Bagua",
+      "content": "According to the royal chronicles, Bagan was founded in the second century CE, and fortified in 849 by King Pyinbya, 34th successor of the founder of early Bagan. Western scholarship however holds that Bagan was founded in the mid-to-late 9th century by the Mranma (Burmans), who had recently entered the Irrawaddy valley from the Nanzhao Kingdom. It was among several competing Pyu city-states until the late 10th century when the Burman settlement grew in authority and grandeur.\nFrom 1044 to 1287,",
+      "relevance_score": 0.6,
+      "trading_application": "Commercial patterns and value exchange",
+      "timestamp": "2025-12-25T19:51:36.928289",
+      "content_hash": "a99f22436346612f26f2182756f4cce9"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Bagua",
+      "content": "Bagan survived into the 15th century as a human settlement, and as a pilgrimage destination throughout the imperial period. A smaller number of \"new and impressive\" religious monuments still went up to the mid-15th century but afterward, new temple constructions slowed to a trickle with fewer than 200 temples built between the 15th and 20th centuries. The old capital remained a pilgrimage destination but pilgrimage was focused only on \"a score or so\" most prominent temples out of the thousands s",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:51:36.928434",
+      "content_hash": "5deb78a2ef7024baacc3d6d88ece1796"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Chinese astrology",
+      "content": "Astronomy in China has a long history stretching from the Shang dynasty, being refined over a period of more than 3,000 years. The ancient Chinese people have identified stars from 1300 BCE, as Chinese star names later categorized in the twenty-eight mansions have been found on oracle bones unearthed at Anyang, dating back to the mid-Shang dynasty. The core of the \"mansion\" (宿 xiù) system also took shape around this period, by the time of King Wu Ding (1250–1192 BCE).\nDetailed records of astrono",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:51:41.790478",
+      "content_hash": "226648ee855b6948e4219abf2851c930"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Chinese astrology",
+      "content": "One of the main functions of astronomy was for the purpose of timekeeping. The Chinese used a lunisolar calendar, but as the cycles of the Sun and the Moon are different, leap months had to be inserted regularly. The Chinese calendar was considered to be a symbol of a dynasty. As dynasties would rise and fall, astronomers and astrologers of each period would often prepare a new calendar, making observations for that purpose.\nAstrological divination was also an important part of astronomy. Astron",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:51:41.790537",
+      "content_hash": "30395fefb602f6ec143bbc1ca44a8a13"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Chinese numerology",
+      "content": "While not traditionally considered an unlucky number, 4 has in recent times, gained an association with bad luck because of its pronunciation, predominantly for the Cantonese.\nThe belief that the number 4 is unlucky originated in China, where the Chinese have avoided the number since ancient times. The Chinese interpretation of 4 as unlucky is a more recent development, considering there are many examples, sayings and elements of the number 4 considered as auspicious instead in Chinese history.\n",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:51:51.286558",
+      "content_hash": "0a2a0b7c65bf16009b5c91de9233f92d"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Chinese numerology",
+      "content": "Steve Wozniak held the United States telephone number +1(408)888-8888 for many years in Silicon Valley. Several businesses in Silicon Valley have multiple \"8\" characters in their names, particularly near the cluster of wealthy Chinese ex-pats in and around Cupertino, California, the original home of Apple computer when Steve Jobs was invited back to run the company after Next.\nIn 2014, the Australian Department of Home Affairs renamed their previous Business Skills (provisional) visas, subclasse",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:51:51.286730",
+      "content_hash": "6a6a32cf36897b727b5d5da5b1a3d31c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "chinese",
+      "topic": "Taoism",
+      "content": "Taoism or Daoism ( ,  ) is a philosophical and religious tradition indigenous to China, emphasizing harmony with the Tao 道. With a range of meaning in Chinese philosophy, translations of Tao include 'way', 'road', 'path', or 'technique', generally understood in the Taoist sense as an enigmatic process of transformation ultimately underlying reality.  Taoist thought has informed the development of various practices within the Taoist tradition, ideation of mathematics and beyond, including forms o",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-27T16:05:35.070583",
+      "content_hash": "78df47692cddcc269948b5a7820d3cf7"
+    }
+  ],
+  "scan_history": [
+    {
+      "timestamp": "2025-12-15T10:24:46.188503",
+      "insights_found": 5,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:41:21.385962",
+      "insights_found": 5,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:51:55.411556",
+      "insights_found": 17,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:35:33.167291",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T14:55:29.240258",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:06:13.053701",
+      "insights_found": 1,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:54:22.245701",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T12:37:26.982961",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T13:51:59.920326",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T14:46:05.671032",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T12:08:15.343283",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:26:56.084643",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:43:00.771280",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T14:09:52.915750",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:03:30.289118",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:31:40.054505",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:48:17.287382",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T16:17:02.824058",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T17:27:26.209183",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    }
+  ]
+}

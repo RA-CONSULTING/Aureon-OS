@@ -1,0 +1,9 @@
+﻿{
+    "status":  "pending",
+    "surface":  "market",
+    "requested_by":  "AUREON_WAKE_UP_FULL_AUTONOMOUS supervisor",
+    "reason":  "launcher_detected_pending_market_runtime_update_deferred_until_safe_downtime",
+    "change_id":  "unified_market_api_governor",
+    "requested_at":  "2026-05-15T15:27:45.2901360+01:00",
+    "policy":  "restart only when runtime is live, configured downtime window is active, and no open positions are reported"
+}

@@ -1,0 +1,233 @@
+{
+  "schema_version": "aureon-ifs-conversion-partner-packs-v1",
+  "timestamp": "2026-07-09T21:51:02+01:00",
+  "operator": "Aureon",
+  "applicant": "R&A Consulting and Brokerage Services Ltd",
+  "contact_email": "gaxlec@gmail.com",
+  "scope": "IFS_ONLY",
+  "official_sources": [
+    "https://apply-for-innovation-funding.service.gov.uk/competition/search",
+    "https://apply-for-innovation-funding.service.gov.uk/competition/search?page=1"
+  ],
+  "official_current_competition_count": 20,
+  "submitted_monitor_only": [
+    {
+      "application_id": "APP-IFS-NEXT-WAVE-10209601",
+      "competition": "Next Wave: Breakthrough Wave 1",
+      "portal_application_number": "10209601",
+      "status": "SUBMITTED_AWAITING_ASSESSMENT",
+      "next_action": "Monitor IFS track page and email. Do not duplicate."
+    },
+    {
+      "application_id": "APP-IFS-FLF-R11-2499-20260709",
+      "competition": "Future Leaders Fellowships: Round 11, business and non-academic",
+      "portal_application_number": "10209992",
+      "status": "SUBMITTED_AWAITING_ASSESSMENT",
+      "next_action": "Monitor IFS track page and email. Do not duplicate."
+    },
+    {
+      "application_id": "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+      "competition": "Consumer Led Flexibility for the Clean Energy Superpower Mission",
+      "portal_application_number": "10210032",
+      "status": "SUBMITTED_AWAITING_ASSESSMENT",
+      "next_action": "Monitor IFS track page and email. Do not duplicate."
+    },
+    {
+      "application_id": "APP-IFS-CFI-SEN-2511-20260709",
+      "competition": "CfI: Earlier identification of UK children with SEN",
+      "portal_application_number": "10210045",
+      "status": "SUBMITTED_AWAITING_ASSESSMENT",
+      "next_action": "Monitor IFS track page and email. Do not duplicate."
+    }
+  ],
+  "conversion_pack_count": 9,
+  "conversion_packs": [
+    {
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "competition": "UK-Switzerland CR&D Round 3",
+      "priority": 1,
+      "status": "PARTNER_REQUIRED",
+      "gate": "Swiss implementation partner and at least one research institute required",
+      "deadline": "2026-09-03T11:00:00+01:00",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2512/overview/2f0a03c4-44b7-42dc-8845-70751b6bc531",
+      "pack_file": "applications/IFS_CONVERSION_PACK_UK_SWITZERLAND_CR_D_ROUND_3_20260709.md",
+      "project_title": "Aureon Evidence OS for Cross-Border R&D Assurance",
+      "route_type": "Cross-border collaborative R&D",
+      "submission_boundary": "Evidence required before IFS submission",
+      "evidence_required_before_submission": [
+        "named Swiss implementation partner",
+        "named research institute",
+        "work package split",
+        "partner budget",
+        "partner confirmation or letter",
+        "IP and data plan"
+      ]
+    },
+    {
+      "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "competition": "Scaling performance of quantum computing hardware: CR&D",
+      "priority": 2,
+      "status": "HARDWARE_LEAD_PARTNER_REQUIRED",
+      "gate": "Collaboration and quantum hardware lead required",
+      "deadline": "2026-09-18T11:00:00+01:00",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2523/overview/780f14e7-b64d-4264-b206-b498304d03c5",
+      "pack_file": "applications/IFS_CONVERSION_PACK_SCALING_PERFORMANCE_OF_QUANTUM_COMPUTING_HARDWARE_CR_D_20260709.md",
+      "project_title": "Aureon Evidence OS for Quantum Benchmark Assurance",
+      "route_type": "Quantum hardware collaborative R&D",
+      "submission_boundary": "Evidence required before IFS submission",
+      "evidence_required_before_submission": [
+        "quantum hardware lead",
+        "device or runtime scope",
+        "hardware access",
+        "partner confirmation",
+        "technical work package",
+        "consortium budget"
+      ]
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+      "competition": "DRIVE35 Innovation Fund: Collaborate 3",
+      "priority": 3,
+      "status": "AUTOMOTIVE_ZEV_PARTNER_REQUIRED",
+      "gate": "Automotive zero-emission vehicle partner and late-stage deployment evidence required",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2522/overview/25a1cadb-ab0d-4d6d-a629-4f5d3ead5994",
+      "pack_file": "applications/IFS_CONVERSION_PACK_DRIVE35_INNOVATION_FUND_COLLABORATE_3_20260709.md",
+      "project_title": "Aureon Evidence OS for Zero Emission Vehicle Deployment Assurance",
+      "route_type": "Late-stage automotive collaborative R&D",
+      "submission_boundary": "Evidence required before IFS submission",
+      "evidence_required_before_submission": [
+        "ZEV supply-chain or vehicle partner",
+        "deployment site",
+        "project asset",
+        "test plan",
+        "partner budget",
+        "partner agreement"
+      ]
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+      "competition": "Zero Emission Vessels and Infrastructure 2: Energy Efficiency",
+      "priority": 4,
+      "status": "MARITIME_CONSORTIUM_REQUIRED",
+      "gate": "Maritime consortium and real-world deployment required",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2436/overview/97d03e1a-7760-4939-97b4-4f230c84a6aa",
+      "pack_file": "applications/IFS_CONVERSION_PACK_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ENERGY_EFFICIENCY_20260709.md",
+      "project_title": "Aureon Evidence OS for Maritime Energy Efficiency Evidence",
+      "route_type": "Clean maritime deployment collaboration",
+      "submission_boundary": "Evidence required before IFS submission",
+      "evidence_required_before_submission": [
+        "maritime lead",
+        "vessel or infrastructure asset",
+        "deployment site",
+        "three-year operating plan",
+        "budget",
+        "partner agreement"
+      ]
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+      "competition": "Zero Emission Vessels and Infrastructure 2: Electric Power",
+      "priority": 4,
+      "status": "MARITIME_CONSORTIUM_REQUIRED",
+      "gate": "Maritime consortium and real-world deployment required",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2435/overview/592ea5c1-f713-4654-bb5e-d6894cd06d86",
+      "pack_file": "applications/IFS_CONVERSION_PACK_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ELECTRIC_POWER_20260709.md",
+      "project_title": "Aureon Evidence OS for Maritime Electric Power Evidence",
+      "route_type": "Clean maritime deployment collaboration",
+      "submission_boundary": "Evidence required before IFS submission",
+      "evidence_required_before_submission": [
+        "maritime lead",
+        "vessel or infrastructure asset",
+        "deployment site",
+        "three-year operating plan",
+        "budget",
+        "partner agreement"
+      ]
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+      "competition": "Zero Emission Vessels and Infrastructure 2: Alternative Fuels",
+      "priority": 4,
+      "status": "MARITIME_CONSORTIUM_REQUIRED",
+      "gate": "Maritime consortium and real-world deployment required",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2434/overview/f4a8b70b-ff7f-4943-9c8a-76c212b445a8",
+      "pack_file": "applications/IFS_CONVERSION_PACK_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ALTERNATIVE_FUELS_20260709.md",
+      "project_title": "Aureon Evidence OS for Maritime Alternative Fuels Evidence",
+      "route_type": "Clean maritime deployment collaboration",
+      "submission_boundary": "Evidence required before IFS submission",
+      "evidence_required_before_submission": [
+        "maritime lead",
+        "vessel or infrastructure asset",
+        "deployment site",
+        "three-year operating plan",
+        "budget",
+        "partner agreement"
+      ]
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "competition": "Clean Maritime Demonstration Competition 7: Pre-deployment trials",
+      "priority": 5,
+      "status": "MARITIME_CONSORTIUM_REQUIRED",
+      "gate": "Maritime consortium and short deadline risk",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2415/overview/fa34afe8-b2e7-4cda-b77b-cf952d26a27a",
+      "pack_file": "applications/IFS_CONVERSION_PACK_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_PRE_DEPLOYMENT_TRIALS_20260709.md",
+      "project_title": "Aureon Evidence OS for Clean Maritime Pre-deployment Evidence",
+      "route_type": "Clean maritime trial collaboration",
+      "submission_boundary": "Evidence required before IFS submission",
+      "evidence_required_before_submission": [
+        "maritime lead",
+        "asset or site",
+        "signed consortium scope",
+        "budget",
+        "deadline-ready technical package"
+      ]
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "competition": "Clean Maritime Demonstration Competition 7: Feasibility studies",
+      "priority": 5,
+      "status": "MARITIME_CONSORTIUM_REQUIRED",
+      "gate": "Maritime consortium and short deadline risk",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2416/overview/f49610a2-5e82-4898-b357-10f80154a2b8",
+      "pack_file": "applications/IFS_CONVERSION_PACK_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_FEASIBILITY_STUDIES_20260709.md",
+      "project_title": "Aureon Evidence OS for Clean Maritime Feasibility Evidence",
+      "route_type": "Clean maritime feasibility collaboration",
+      "submission_boundary": "Evidence required before IFS submission",
+      "evidence_required_before_submission": [
+        "maritime lead",
+        "asset or site",
+        "signed consortium scope",
+        "budget",
+        "deadline-ready technical package"
+      ]
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "competition": "Clean Maritime Demonstration Competition 7: Deployment trials",
+      "priority": 5,
+      "status": "MARITIME_CONSORTIUM_REQUIRED",
+      "gate": "Maritime consortium and short deadline risk",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2414/overview/3409b968-a2b7-44e7-83a7-c2d3e8ad8f8e",
+      "pack_file": "applications/IFS_CONVERSION_PACK_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_DEPLOYMENT_TRIALS_20260709.md",
+      "project_title": "Aureon Evidence OS for Clean Maritime Deployment Evidence",
+      "route_type": "Clean maritime deployment trial collaboration",
+      "submission_boundary": "Evidence required before IFS submission",
+      "evidence_required_before_submission": [
+        "maritime lead",
+        "asset or site",
+        "signed consortium scope",
+        "budget",
+        "deadline-ready technical package"
+      ]
+    }
+  ],
+  "submission_rule": "Do not duplicate submitted IFS applications. Do not submit gated IFS routes without evidenced partners, eligibility facts, finance basis, facilities, staff count, host status, or deployment assets."
+}

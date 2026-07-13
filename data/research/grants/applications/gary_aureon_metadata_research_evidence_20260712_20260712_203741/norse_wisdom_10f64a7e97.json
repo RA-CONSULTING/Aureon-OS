@@ -1,0 +1,664 @@
+{
+  "civilization": "Norse",
+  "last_updated": "2025-12-30T17:30:54.485596",
+  "version": "1.0.0",
+  "sources": [
+    "hardcoded",
+    "wikipedia"
+  ],
+  "topics": [
+    {
+      "name": "Wyrd - Web of Fate",
+      "content": "Fate woven by the Norns - past actions shape present possibilities through the web of wyrd",
+      "trading_insight": "Historical patterns constrain future outcomes. Your past trades weave your trading fate.",
+      "source": "hardcoded",
+      "relevance_score": 0.9
+    },
+    {
+      "name": "Ragnarok - Twilight and Rebirth",
+      "content": "Inevitable destruction and renewal - twilight of gods preceding new creation",
+      "trading_insight": "Market cycles include crashes and rebirths. After Ragnarok comes new world. Buy the rebirth.",
+      "source": "hardcoded",
+      "relevance_score": 0.85
+    },
+    {
+      "name": "Nine Worlds of Yggdrasil",
+      "content": "Multiverse connected by the World Tree - different realms of existence interlinked",
+      "trading_insight": "Multiple markets interconnected. Stocks, crypto, forex - all branches of the same tree.",
+      "source": "hardcoded",
+      "relevance_score": 0.8
+    },
+    {
+      "name": "Fehu Rune - Wealth",
+      "content": "Cattle/Wealth - mobile wealth, prosperity that must be cared for",
+      "trading_insight": "Liquid assets need attention. Cash flow is your cattle. Protect and grow your herd.",
+      "source": "hardcoded",
+      "relevance_score": 0.85
+    },
+    {
+      "name": "Hagalaz Rune - Hail",
+      "content": "Destructive hail that transforms the landscape",
+      "trading_insight": "Black swan events. When Hagalaz appears, expect disruption. Have contingency plans.",
+      "source": "hardcoded",
+      "relevance_score": 0.9
+    },
+    {
+      "name": "Isa Rune - Ice",
+      "content": "Ice, stasis, waiting for the thaw",
+      "trading_insight": "Consolidation phase. Patience required. The ice will melt - wait for the thaw.",
+      "source": "hardcoded",
+      "relevance_score": 0.85
+    },
+    {
+      "name": "Jera Rune - Harvest",
+      "content": "Year/Harvest - cycles of sowing and reaping",
+      "trading_insight": "Annual cycles bring harvest. What you planted in Q1 you reap in Q4. Honor the cycle.",
+      "source": "hardcoded",
+      "relevance_score": 0.85
+    },
+    {
+      "name": "Odin's Sacrifice",
+      "content": "Odin hung on Yggdrasil for nine nights to gain the runes - sacrifice for wisdom",
+      "trading_insight": "Knowledge requires sacrifice. Losses teach. Odin paid the price - so must you.",
+      "source": "hardcoded",
+      "relevance_score": 0.8
+    }
+  ],
+  "core_principles": {
+    "wyrd": {
+      "description": "Fate woven by the Norns - past actions shape present possibilities",
+      "trading_application": "Historical patterns constrain future outcomes",
+      "confidence": 0.9
+    },
+    "ragnarok": {
+      "description": "Inevitable destruction and renewal - twilight of gods",
+      "trading_application": "Market cycles include crashes and rebirths",
+      "confidence": 0.85
+    },
+    "nine_worlds": {
+      "description": "Multiverse connected by Yggdrasil - different realms of existence",
+      "trading_application": "Multiple markets interconnected, correlation awareness",
+      "confidence": 0.8
+    },
+    "honor_glory": {
+      "description": "Actions live on in reputation - immortality through deeds",
+      "trading_application": "Track record matters, consistency over time",
+      "confidence": 0.85
+    }
+  },
+  "runes_elder_futhark": {
+    "fehu": {
+      "meaning": "Cattle/Wealth",
+      "symbolism": "Mobile wealth, prosperity",
+      "trading": "Liquid assets, cash flow"
+    },
+    "uruz": {
+      "meaning": "Aurochs",
+      "symbolism": "Strength, vitality",
+      "trading": "Strong momentum"
+    },
+    "thurisaz": {
+      "meaning": "Giant/Thorn",
+      "symbolism": "Defense, chaos",
+      "trading": "Volatility, protection"
+    },
+    "ansuz": {
+      "meaning": "God/Odin",
+      "symbolism": "Wisdom, communication",
+      "trading": "Information advantage"
+    },
+    "raido": {
+      "meaning": "Journey",
+      "symbolism": "Travel, rhythm",
+      "trading": "Trend following"
+    },
+    "kenaz": {
+      "meaning": "Torch",
+      "symbolism": "Knowledge, illumination",
+      "trading": "Clarity, insight"
+    },
+    "gebo": {
+      "meaning": "Gift",
+      "symbolism": "Exchange, balance",
+      "trading": "Fair value, reciprocity"
+    },
+    "wunjo": {
+      "meaning": "Joy",
+      "symbolism": "Success, harmony",
+      "trading": "Profitable period"
+    },
+    "hagalaz": {
+      "meaning": "Hail",
+      "symbolism": "Disruption, transformation",
+      "trading": "Black swan events"
+    },
+    "nauthiz": {
+      "meaning": "Need",
+      "symbolism": "Constraint, necessity",
+      "trading": "Scarcity, forced decisions"
+    },
+    "isa": {
+      "meaning": "Ice",
+      "symbolism": "Stasis, waiting",
+      "trading": "Consolidation, patience"
+    },
+    "jera": {
+      "meaning": "Year/Harvest",
+      "symbolism": "Cycles, reward",
+      "trading": "Annual cycles, harvest gains"
+    },
+    "eihwaz": {
+      "meaning": "Yew",
+      "symbolism": "Endurance, death/rebirth",
+      "trading": "Long-term holding"
+    },
+    "perthro": {
+      "meaning": "Dice Cup",
+      "symbolism": "Fate, chance",
+      "trading": "Probability, risk"
+    },
+    "algiz": {
+      "meaning": "Elk/Protection",
+      "symbolism": "Defense, sanctuary",
+      "trading": "Risk management"
+    },
+    "sowilo": {
+      "meaning": "Sun",
+      "symbolism": "Victory, energy",
+      "trading": "Bull market, success"
+    },
+    "tiwaz": {
+      "meaning": "Tyr/Victory",
+      "symbolism": "Justice, sacrifice",
+      "trading": "Discipline, cutting losses"
+    },
+    "berkano": {
+      "meaning": "Birch",
+      "symbolism": "Growth, beginnings",
+      "trading": "New positions, fresh starts"
+    },
+    "ehwaz": {
+      "meaning": "Horse",
+      "symbolism": "Movement, partnership",
+      "trading": "Velocity, teamwork"
+    },
+    "mannaz": {
+      "meaning": "Human",
+      "symbolism": "Self, humanity",
+      "trading": "Self-awareness, psychology"
+    },
+    "laguz": {
+      "meaning": "Water/Lake",
+      "symbolism": "Flow, intuition",
+      "trading": "Liquidity, gut feeling"
+    },
+    "ingwaz": {
+      "meaning": "Ing/Fertility",
+      "symbolism": "Potential, gestation",
+      "trading": "Accumulation phase"
+    },
+    "dagaz": {
+      "meaning": "Day",
+      "symbolism": "Breakthrough, dawn",
+      "trading": "Breakout, new trend"
+    },
+    "othala": {
+      "meaning": "Heritage",
+      "symbolism": "Inheritance, home",
+      "trading": "Legacy positions, core holdings"
+    }
+  },
+  "nine_worlds": {
+    "asgard": {
+      "realm": "Gods (Aesir)",
+      "market_analog": "Blue chips, institutional"
+    },
+    "midgard": {
+      "realm": "Humans",
+      "market_analog": "Retail, main markets"
+    },
+    "vanaheim": {
+      "realm": "Gods (Vanir)",
+      "market_analog": "Commodities, agriculture"
+    },
+    "alfheim": {
+      "realm": "Light Elves",
+      "market_analog": "Tech, innovation"
+    },
+    "svartalfheim": {
+      "realm": "Dark Elves/Dwarves",
+      "market_analog": "Manufacturing, crafts"
+    },
+    "jotunheim": {
+      "realm": "Giants",
+      "market_analog": "Large caps, macro forces"
+    },
+    "niflheim": {
+      "realm": "Ice/Mist",
+      "market_analog": "Frozen markets, no liquidity"
+    },
+    "muspelheim": {
+      "realm": "Fire",
+      "market_analog": "Hot sectors, speculation"
+    },
+    "helheim": {
+      "realm": "Dead",
+      "market_analog": "Delisted, bankruptcies"
+    }
+  },
+  "mythological_wisdom": {
+    "odin": {
+      "aspect": "Wisdom seeker, sacrificed eye for knowledge",
+      "trading_lesson": "Pay the price for superior information"
+    },
+    "thor": {
+      "aspect": "Protector, strength in chaos",
+      "trading_lesson": "Defend portfolio in volatile times"
+    },
+    "loki": {
+      "aspect": "Trickster, agent of change",
+      "trading_lesson": "Market deception, unexpected disruption"
+    },
+    "freya": {
+      "aspect": "Love, beauty, wealth",
+      "trading_lesson": "Value appreciation, desirable assets"
+    }
+  },
+  "norns_fate_weavers": {
+    "urd": {
+      "meaning": "What has been",
+      "time": "Past",
+      "trading": "Historical analysis"
+    },
+    "verdandi": {
+      "meaning": "What is becoming",
+      "time": "Present",
+      "trading": "Current conditions"
+    },
+    "skuld": {
+      "meaning": "What shall be",
+      "time": "Future",
+      "trading": "Projections, forecasts"
+    }
+  },
+  "wikipedia_topics": [
+    "Norse mythology",
+    "Runes",
+    "Elder Futhark",
+    "Yggdrasil",
+    "Ragnarok",
+    "Odin",
+    "Norse cosmology",
+    "Poetic Edda",
+    "Prose Edda",
+    "Viking Age"
+  ],
+  "learned_insights": [
+    {
+      "source": "Sacred-Texts",
+      "civilization": "norse",
+      "topic": "Norse mythology",
+      "content": "This section of sacred-texts archives the rich literature of Sagas and Legends.\n These are mostly (but not all) from Northern Europe,\n and primarily based on legendary events and people from the Middle Ages.\n Many of these narratives are based on archetypal stories that date even\n further back in time.",
+      "relevance_score": 0.8510524535708675,
+      "trading_application": "Ancient norse wisdom for market understanding",
+      "timestamp": "2025-12-25T19:42:44.121923",
+      "content_hash": "efa0a7dc19fd3666385cfede4162315f"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "norse",
+      "topic": "Norse mythology",
+      "content": "The Myth of the Birth of the HerobyOtto Rank[1914]A groundbreaking application of psychoanalysis to comparative mythology.",
+      "relevance_score": 0.6457684765342533,
+      "trading_application": "Ancient norse wisdom for market understanding",
+      "timestamp": "2025-12-25T19:42:44.121946",
+      "content_hash": "c8a9d91f6fdbfab8e05b4c935c454425"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "norse",
+      "topic": "Norse mythology",
+      "content": "The Lang Fairy BooksbyAndrew Lang[1889-1910]Full text of the classic folk-lore series, written for children of all ages",
+      "relevance_score": 0.702790369660955,
+      "trading_application": "Ancient norse wisdom for market understanding",
+      "timestamp": "2025-12-25T19:42:44.121951",
+      "content_hash": "7d29ecb0a3d0104df4863876897c7132"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "norse",
+      "topic": "Norse mythology",
+      "content": "The Works of Lord DunsanybyEdward Plunkett, Lord Dunsany[1905-22]Lord Dunsany paved the way for Tolkien with his delightful internally consistent fantasy worlds.",
+      "relevance_score": 0.8302480226161233,
+      "trading_application": "Ancient norse wisdom for market understanding",
+      "timestamp": "2025-12-25T19:42:44.121956",
+      "content_hash": "a3f54c89745186805cd61a39a624a181"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "norse",
+      "topic": "Norse mythology",
+      "content": "Teutonic Myth and LegendbyDonald Mackenzie[1912]An able retelling of the Northern mythological cycle.",
+      "relevance_score": 0.8470395990757758,
+      "trading_application": "Ancient norse wisdom for market understanding",
+      "timestamp": "2025-12-25T19:42:44.121961",
+      "content_hash": "12da62d69acc027e322c8dab178d43a1"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Norse mythology",
+      "content": "The Prose Edda features layers of euhemerization, a process in which deities and supernatural beings are presented as having been either actual, magic-wielding human beings who have been deified in time or beings demonized by way of Christian mythology. Texts such as Heimskringla, composed in the 13th century by Snorri and Gesta Danorum, composed in Latin by Saxo Grammaticus in Denmark in the 12th century, are the results of heavy amounts of euhemerization.\nNumerous additional texts, such as the",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:53:34.561877",
+      "content_hash": "dce00e50a481a47457538ea5499d0c40"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Norse mythology",
+      "content": "Central to accounts of Norse mythology are the plights of the gods and their interaction with various other beings, such as with the jötnar, who may be friends, lovers, foes, or family members of the gods. Numerous gods are mentioned in the source texts. As evidenced by records of personal names and place names, the most popular god among the Scandinavians during the Viking Age was Thor the thunder god, who is portrayed as unrelentingly pursuing his foes, his mountain-crushing, thunderous hammer",
+      "relevance_score": 0.8,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-25T19:53:34.562100",
+      "content_hash": "e0e6954ad4aa6eeafed2f5bc94c6eced"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Elder Futhark",
+      "content": "The Elder Futhark (or Fuþark, ), also known as the Older Futhark, Old Futhark, or Germanic Futhark, is the oldest form of the runic alphabets. It was a writing system used by Germanic peoples  in the Migration Period. Inscriptions are found on artifacts including jewelry, amulets, plateware, tools, and weapons, as well as runestones, from the 2nd to the 8th centuries. \nIn Scandinavia, beginning in the late 8th century, the script was simplified to the Younger Futhark, while the Anglo-Saxons and ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:53:45.721106",
+      "content_hash": "050395796fe23a18d3c7e7949d3b22d5"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Elder Futhark",
+      "content": "== Description ==\nThe Elder Futhark is named after the initial phoneme of the first six rune names: /f/, /u/, /ð/, /ɑ/, /r/, and /k/ corresponding with ᚠ, ᚢ, ᚦ, ᚨ, ᚱ, and ᚲ respectively. It has 24 runes, often arranged in three groups of eight runes; each group is in modern times called an ætt (pl. ættir; meaning 'clan, group', although sometimes thought to mean eight). What the groups were originally called remains unknown. In the following table, each rune is given with its common transliterat",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:53:45.721148",
+      "content_hash": "5af6ad29adb49224eb9a7396bc556569"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Elder Futhark",
+      "content": "The Elder Futhark runes are commonly believed to originate in the Old Italic scripts: either a North Italic variant (Etruscan or Rhaetic alphabets), or the Latin alphabet itself. Derivation from the Greek alphabet via Gothic contact to Byzantine Greek culture was a popular theory in the 19th century, but has been ruled out since the dating of the Vimose inscriptions to the 2nd century (whereas the Goths were in contact with Greek culture only from the early 3rd century). Conversely, the Greek-de",
+      "relevance_score": 0.4,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-25T19:53:45.721298",
+      "content_hash": "ade16b6b763eb0f9f72963b2866fa093"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Elder Futhark",
+      "content": "== Rune names ==\nEach rune most probably had a name, chosen to represent the sound of the rune itself according to the principle of acrophony.\nThe Old English names of all 24 runes of the Elder Futhark, along with five names of runes unique to the Anglo-Saxon runes, are preserved in the Old English rune poem, compiled in the 7th century. These names are in good agreement with medieval Scandinavian records of the names of the 16 Younger Futhark runes, and to some extent also with those of the let",
+      "relevance_score": 0.6,
+      "trading_application": "Wisdom integration from norse tradition",
+      "timestamp": "2025-12-25T19:53:45.721455",
+      "content_hash": "72103a238c6b084ec58b65b7c36622b0"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Yggdrasil",
+      "content": "Yggdrasil is mentioned in two books in the Prose Edda; Gylfaginning and Skáldskaparmál. In Gylfaginning, Yggdrasil is introduced in chapter 15. In chapter 15, Gangleri (described as king Gylfi in disguise) asks where is the chief or holiest place of the gods. High replies \"It is the ash Yggdrasil. There the gods must hold their courts each day\". Gangleri asks what there is to tell about Yggdrasil. Just-As-High says that Yggdrasil is the biggest and best of all trees, that its branches extend out",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from norse tradition",
+      "timestamp": "2025-12-25T19:53:50.603329",
+      "content_hash": "8071df314b0ea5bd421544207cc4f352"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Norse cosmology",
+      "content": "Hel he threw into Niflheim and gave her authority over nine worlds, such that she has to administer board and lodging to those sent to her, and that is those who die of sickness or old age.\nThe Old Norse corpus does not clearly list the Nine Worlds, if it provides them at all. However, some scholars have proposed identifications for the nine. For example, Henry Adams Bellows (1923) says that the Nine Worlds consist of Ásgarðr, Vanaheimr, Álfheimr, Miðgarðr, Jötunheimr, Múspellsheimr, Svartálfahe",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:54:04.669952",
+      "content_hash": "6435cba1d86c2f2aa547b85f0f26817a"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Poetic Edda",
+      "content": "=== Date ===\nAccurate dating of the poems has long been a source of scholarly debate. Firm conclusions are difficult to reach; lines from the Eddic poems sometimes appear in poems by known poets. For example, Eyvindr skáldaspillir composed in the latter half of the 10th century, and he uses a couple of lines in his Hákonarmál that are also found in Hávamál. It is possible that he was quoting a known poem, but it is also possible that Hávamál, or at least the strophe in question, is the younger d",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:54:09.672799",
+      "content_hash": "d698d746e90fc222e338e41ad70de036"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Poetic Edda",
+      "content": "== Codex Regius ==\nThe Codex Regius is arguably the most important extant source on Norse mythology and Germanic heroic legends. Since the early 19th century, it has had a powerful influence on Scandinavian literature, not only through its stories, but also through the visionary force and the dramatic quality of many of the poems. It has also been an inspiration for later innovations in poetic meter, particularly in Nordic languages, with its use of terse, stress-based metrical schemes that lack",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:54:09.672923",
+      "content_hash": "e03a9312a44e1f8ba77c20622d3db021"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Poetic Edda",
+      "content": "==== Not in the Codex Regius ====\nBaldrs draumar (Baldr's Dreams)\nGróttasöngr (The Mill's Song, The Song of Grotti)\nRígsþula (The Song of Ríg, The Lay of Ríg, The List of Ríg)\nHyndluljóð (The Poem of Hyndla, The Lay of Hyndla, The Song of Hyndla)\nVöluspá hin skamma (The short Völuspá, The Short Seeress' Prophecy, Short Prophecy of the Seeress) - This poem, sometimes presented separately, is often included as an interpolation within Hyndluljóð.\nSvipdagsmál (The Ballad of Svipdag, The Lay of Svipd",
+      "relevance_score": 0.4,
+      "trading_application": "Pattern-based market forecasting",
+      "timestamp": "2025-12-25T19:54:09.673015",
+      "content_hash": "f78ada52b33abeef42fbcddc7a837c69"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Prose Edda",
+      "content": "The Prose Edda, also known as the Younger Edda, Snorri's Edda (Icelandic: Snorra Edda) or, historically, simply as Edda, is an Old Norse textbook written in Iceland during the early 13th century. The work is often considered to have been to some extent written, or at least compiled, by the Icelandic scholar, lawspeaker, and historian Snorri Sturluson c. 1220. It is considered the fullest and most detailed source for modern knowledge of Norse mythology, the body of myths of the North Germanic peo",
+      "relevance_score": 0.6,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:54:14.410798",
+      "content_hash": "7654603a92413a83b0e04335b6855209"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Prose Edda",
+      "content": "== Naming ==\nThe etymology of \"Edda\" remains uncertain; there are many hypotheses about its meaning and development, yet little agreement. Some argue that the word derives from the name of Oddi, a town in the south of Iceland where Snorri was raised. Edda could therefore mean \"book of Oddi.\" However, this assumption is generally rejected. Anthony Faulkes in his English translation of the Prose Edda comments that this is \"unlikely, both in terms of linguistics and history\" since Snorri was no lon",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:54:14.410935",
+      "content_hash": "66eae27e4eb556c418e61242414e03db"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Prose Edda",
+      "content": "Snorri's authorship of the Prose Edda was upheld by the renaissance scholar Arngrímur Jónsson (1568–1648), and since his time it has generally been accepted without question. But the surviving manuscripts, which were all written more than half a century after Snorri's death, differ from each other considerably and it is not likely that any of them preserves the work quite as he wrote it. A number of passages in Skáldskaparmál especially have been thought to be interpolations, and this section of",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:54:14.411055",
+      "content_hash": "b8befb779b5e2206c933a3ee1ba40ab6"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Viking Age",
+      "content": "The Viking Age (about 800–1050 CE) was the period during the Middle Ages when Norsemen known as Vikings undertook large-scale raiding, colonising, conquest, and trading throughout Europe and reached North America. The Viking Age applies not only to their homeland of Scandinavia but also to any place significantly settled by Scandinavians during the period. Although few of the Scandinavians of the Viking Age  were Vikings in the sense of being engaged in piracy, they are often referred to as Viki",
+      "relevance_score": 0.4,
+      "trading_application": "Commercial patterns and value exchange",
+      "timestamp": "2025-12-25T19:54:22.611792",
+      "content_hash": "8de8f32f1d3a4cae574061e0407b5559"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Viking Age",
+      "content": "=== Demographic models ===\nBarrett considers that prior scholarship having examined causes of the Viking Age in terms of demographic determinism, the resulting explanations have generated a \"wide variety of possible models\". While admitting that Scandinavia did share in the general European population and settlement expansion at the end of the first millennium, he dismisses 'population pressure' as a realistic cause of the Viking Age. Bagge alludes to the  evidence of demographic growth at the t",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:54:22.612021",
+      "content_hash": "465b024d10e8b1336d033b4d36281c70"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "norse",
+      "topic": "Viking Age",
+      "content": "=== Economic model ===\nThe economic model states that the Viking Age was the result of growing urbanism and trade throughout mainland Europe. As the Islamic world grew, so did its trade routes, and the wealth which moved along them was pushed further and further north. In Western Europe, proto-urban centres such as those with names ending in wich, the so-called -wich towns of Anglo-Saxon England, began to boom during the prosperous era known as the \"Long Eighth Century\". The Scandinavians, like ",
+      "relevance_score": 0.4,
+      "trading_application": "Commercial patterns and value exchange",
+      "timestamp": "2025-12-25T19:54:22.612068",
+      "content_hash": "f07d4d1780df90054e60a7a61b6096ce"
+    }
+  ],
+  "scan_history": [
+    {
+      "timestamp": "2025-12-25T19:43:22.290523",
+      "insights_found": 5,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:54:26.615981",
+      "insights_found": 17,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:37:33.424673",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T14:57:30.551052",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:08:47.947156",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:57:06.026709",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T12:41:05.974645",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T13:55:26.612794",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T14:49:28.178614",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T12:11:48.260481",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:30:33.335369",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:46:35.722710",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T14:13:26.730604",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:07:00.937105",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:35:11.734649",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:51:43.645539",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T16:20:26.557941",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T17:30:54.485596",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    }
+  ]
+}

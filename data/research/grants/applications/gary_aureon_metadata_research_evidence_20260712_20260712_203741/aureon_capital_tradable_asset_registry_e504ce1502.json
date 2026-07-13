@@ -1,0 +1,38 @@
+{
+  "assets": [],
+  "capital_client_enabled": true,
+  "catalogue_source": "CapitalClient.get_all_markets",
+  "errors": [],
+  "execution_contract": {
+    "buy": "CapitalClient.place_market_order(symbol, \"BUY\", size)",
+    "cancel_pending": "CapitalClient.delete_working_order(deal_id)",
+    "cancel_working_order_route": "DELETE /workingorders/{dealId}",
+    "client": "aureon.exchanges.capital_client.CapitalClient",
+    "close": "CapitalClient.close_position(deal_id)",
+    "close_route": "DELETE /positions/{dealId}",
+    "note": "Registry records tradability and route evidence only; live orders still pass through runtime gates.",
+    "order_route": "POST /positions",
+    "owner": "aureon.exchanges.capital_cfd_trader.CapitalCFDTrader",
+    "pending_buy": "CapitalClient.place_working_order(symbol, \"BUY\", size, level, profit_level=take_profit)",
+    "pending_sell": "CapitalClient.place_working_order(symbol, \"SELL\", size, level, profit_level=take_profit)",
+    "sell": "CapitalClient.place_market_order(symbol, \"SELL\", size)",
+    "working_order_route": "POST /workingorders"
+  },
+  "generated_at": "2026-05-21T14:21:52.432491+00:00",
+  "schema_version": "aureon-capital-tradable-asset-registry-v1",
+  "snapshot_source": "CapitalClient._get_market_snapshot",
+  "source": "aureon.exchanges.capital_asset_registry",
+  "summary": {
+    "asset_classes": {},
+    "cost_known_count": 0,
+    "crypto_guarded_count": 0,
+    "known_but_not_sampled_count": 0,
+    "margin_known_count": 0,
+    "snapshot_budget": 100,
+    "snapshot_enriched_count": 0,
+    "top_blockers": [],
+    "total_markets": 0,
+    "trade_ready_count": 0,
+    "trade_route_configured_count": 0
+  }
+}

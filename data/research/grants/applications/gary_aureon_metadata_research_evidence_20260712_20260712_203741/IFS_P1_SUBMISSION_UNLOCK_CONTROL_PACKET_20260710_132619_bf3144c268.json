@@ -1,0 +1,151 @@
+{
+  "schema_version": "aureon-ifs-p1-submission-unlock-control-packet-v1",
+  "generated_at": "2026-07-10T13:26:19+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_p1_submission_unlock_control_packet",
+  "source_refs": {
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_132234.json",
+    "official_current_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_131758.json",
+    "p1_local_delta_evidence_check": "applications/IFS_P1_LOCAL_DELTA_EVIDENCE_CHECK_20260710_132103.json",
+    "nearest_deadline_unlock_execution_brief": "applications/IFS_NEAREST_DEADLINE_UNLOCK_EXECUTION_BRIEF_20260710_124724.json",
+    "p1_outreach_pdf_pack": "applications/IFS_P1_OUTREACH_PDF_PACK_20260710_115030.json",
+    "outbound_evidence_acquisition_send_queue": "applications/IFS_OUTBOUND_EVIDENCE_ACQUISITION_SEND_QUEUE_20260710_121201.json",
+    "public_contact_route_verification": "applications/IFS_PUBLIC_CONTACT_ROUTE_VERIFICATION_20260710_123016.json"
+  },
+  "summary": {
+    "p1_applications_reviewed": 4,
+    "unlock_contacts_total": 17,
+    "exact_email_routes_verified": 5,
+    "public_contact_form_routes_verified": 1,
+    "public_route_verified_exact_mailbox_not_confirmed": 1,
+    "confirmed_unlock_evidence_count": 0,
+    "direct_ifs_submissions_unlocked": 0,
+    "new_browser_submissions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false
+  },
+  "control_items": [
+    {
+      "application_id": "APP-IFS-AKT6-2473-20260709",
+      "name": "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "current_state": "AKT6_KNOWLEDGE_BASE_LEAD_AND_4FTE_EVIDENCE_REQUIRED",
+      "route": "AKT6",
+      "unlock_contacts": [
+        {
+          "queue_id": "P1:P1-AKT6-QUB-KTP",
+          "target": "Queen's University Belfast KTP",
+          "channel_state": "PUBLIC_ROUTE_VERIFIED_EXACT_MAILBOX_NOT_CONFIRMED_USE_FORM_OR_REVERIFY",
+          "payload": "applications/IFS_P1_AKT6_QUB_KTP_OUTREACH_DRAFT_20260710_114411.eml",
+          "sha256": "9936a1701dd86bf67380f702dbcdcacf1520923fadfa974f5cef797f9fb6f010",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT"
+        },
+        {
+          "queue_id": "P1:P1-AKT6-ULSTER-KTP",
+          "target": "Ulster University KTP / Business Partnerships",
+          "channel_state": "EXACT_PUBLIC_EMAIL_VERIFIED_READY_FOR_ACTION_TIME_APPROVAL_NOT_SENT",
+          "destination": "a.fullerton@ulster.ac.uk, p.gilpin@ulster.ac.uk",
+          "payload": "applications/IFS_P1_AKT6_ULSTER_KTP_OUTREACH_DRAFT_20260710_114411.eml",
+          "sha256": "b1233f9ed55a8030a1c12cec2d2935e44b86e48098901e9686ba62c5c49b7b39",
+          "external_action_state": "DRAFT_ONLY_NOT_SENT"
+        }
+      ],
+      "evidence_required_to_unlock": [
+        "Named UK higher education/further education institution, RTO, or Catapult confirms it will lead the AKT6 application.",
+        "Authorised TTO, KTP, research-office, or equivalent lead contact confirms authority to proceed.",
+        "R&A Consulting and Brokerage Services Ltd can evidence four or more full-time employees for the business participant requirement, or an eligible alternative business partner is identified.",
+        "Written work-package, budget, business contribution, and role confirmation are received from the lead."
+      ],
+      "portal_action_after_unlock": "Only after every evidence item above is present: create or complete IFS AKT6 draft with the eligible knowledge-base organisation as lead and R&A/Aureon only in the evidenced role.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "name": "Clean Maritime Demonstration Competition 7: Feasibility studies",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "current_state": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route": "CMDC7_FEASIBILITY",
+      "unlock_contacts": [
+        "P1:P1-CMDC7-IUKBC-SUPPORT",
+        "P1:P1-CMDC7-BELFAST-HARBOUR",
+        "P1:P1-CMDC7-NI-MARITIME",
+        "P1:P1-CMDC7-NAVANTIA-UK",
+        "P1:P1-CMDC7-ARTEMIS-CONTACT-FORM"
+      ],
+      "evidence_required_to_unlock": [
+        "Named UK maritime lead or eligible collaborator confirms participation.",
+        "Feasibility partner and asset context are identified with permission to reference them.",
+        "Scope, work package, eligible-cost budget, and Aureon role are agreed in writing.",
+        "Partner commitment evidence is received from an authorised contact."
+      ],
+      "portal_action_after_unlock": "Only after the evidence items above are present: create or complete the CMDC7 feasibility draft using the named maritime lead/partner details and evidenced budget.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "name": "Clean Maritime Demonstration Competition 7: Pre-deployment trials",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "current_state": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route": "CMDC7_PREDEPLOYMENT",
+      "unlock_contacts": [
+        "P1:P1-CMDC7-IUKBC-SUPPORT",
+        "P1:P1-CMDC7-BELFAST-HARBOUR",
+        "P1:P1-CMDC7-NI-MARITIME",
+        "P1:P1-CMDC7-NAVANTIA-UK",
+        "P1:P1-CMDC7-ARTEMIS-CONTACT-FORM"
+      ],
+      "evidence_required_to_unlock": [
+        "Named UK maritime lead confirms role and eligibility.",
+        "Vessel, port, harbour, or shipyard asset/site is identified with permission to reference it.",
+        "Trial-site permissions, safety case owner, permits, and insurance basis are confirmed or assigned.",
+        "Eligible budget and deployment plan are agreed by the lead/partner."
+      ],
+      "portal_action_after_unlock": "Only after the evidence items above are present: create or complete the CMDC7 pre-deployment draft using named asset/site and budget evidence.",
+      "direct_submit_ready": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "name": "Clean Maritime Demonstration Competition 7: Deployment trials",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "current_state": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route": "CMDC7_DEPLOYMENT",
+      "unlock_contacts": [
+        "P1:P1-CMDC7-IUKBC-SUPPORT",
+        "P1:P1-CMDC7-BELFAST-HARBOUR",
+        "P1:P1-CMDC7-NI-MARITIME",
+        "P1:P1-CMDC7-NAVANTIA-UK",
+        "P1:P1-CMDC7-ARTEMIS-CONTACT-FORM"
+      ],
+      "evidence_required_to_unlock": [
+        "Named UK maritime deployment lead confirms role and eligibility.",
+        "Deployment asset or site is identified with permission to reference it.",
+        "Permissions, safety case, operating responsibility, and partner delivery schedule are evidenced.",
+        "Partner budget and deployment schedule are received from an authorised contact."
+      ],
+      "portal_action_after_unlock": "Only after the evidence items above are present: create or complete the CMDC7 deployment draft using named deployment lead, asset/site, permissions, and budget evidence.",
+      "direct_submit_ready": false
+    }
+  ],
+  "readiness_rule": {
+    "do_not_mark_submit_ready_until": [
+      "Every required route-specific evidence item is present in an auditable local or Drive/Gmail-derived artifact.",
+      "The evidence identifies authorised legal entities, named contacts, roles, budgets, and permissions where applicable.",
+      "The IFS portal answers can be completed without guessing eligibility, partner role, finance, asset/site, permit, or budget facts.",
+      "The final portal submission receives exact action-time approval for the destination application and payload."
+    ],
+    "current_readiness": "NO_P1_ROUTE_DIRECT_SUBMIT_READY"
+  },
+  "controls": [
+    "No external email was sent.",
+    "No contact form was submitted.",
+    "No IFS portal field was changed.",
+    "No partner invitation, upload, award terms acceptance, or final submission was performed.",
+    "This packet is an internal Aureon submission control artifact, not a representation that evidence exists."
+  ],
+  "result": "P1_SUBMISSION_UNLOCK_CONTROL_PACKET_READY_NO_EXTERNAL_ACTION"
+}

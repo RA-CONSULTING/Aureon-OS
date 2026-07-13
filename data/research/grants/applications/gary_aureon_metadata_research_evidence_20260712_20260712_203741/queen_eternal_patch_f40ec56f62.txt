@@ -1,0 +1,13 @@
+
+# 👑🐸 QUEEN ETERNAL MACHINE - Bloodless quantum leaps with fee-aware trading
+try:
+    from queen_eternal_machine import QueenEternalMachine, FeeStructure, LeapOpportunity, CycleStats
+    QUEEN_ETERNAL_MACHINE_AVAILABLE = True
+    _safe_print("👑🐸 Queen Eternal Machine: AVAILABLE (Bloodless Leaps!)")
+except ImportError:
+    QUEEN_ETERNAL_MACHINE_AVAILABLE = False
+    QueenEternalMachine = None
+    FeeStructure = None
+    LeapOpportunity = None
+    CycleStats = None
+

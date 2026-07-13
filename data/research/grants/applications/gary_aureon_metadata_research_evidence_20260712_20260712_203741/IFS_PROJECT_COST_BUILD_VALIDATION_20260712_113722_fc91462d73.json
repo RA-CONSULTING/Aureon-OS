@@ -1,0 +1,86 @@
+{
+  "schema_version": "aureon-ifs-project-cost-build-validation-v1",
+  "generated_at": "2026-07-12T11:37:22+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_project_cost_build_validation",
+  "result": "IFS_PROJECT_COST_BUILD_VALIDATED_OPEN_SOURCE_DATA",
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false,
+  "summary": {
+    "routes_reviewed": 20,
+    "individual_appendices_created": 15,
+    "staged_total_gbp": 2752500,
+    "source_backed_total_gbp": 2362930,
+    "other_direct_reserve_total_gbp": 389570,
+    "submitted_or_provider_preserved_routes": 4,
+    "live_draft_routes": 1,
+    "partner_gated_routes": 14
+  },
+  "official_source_readback": [
+    {
+      "name": "ONS ASHE Table 14 2025 provisional",
+      "url": "https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/datasets/occupation4digitsoc2010ashetable14",
+      "use_in_cost_model": "SOC20 1137 Information technology directors median gross annual pay GBP 90,081 converted to GBP 388.28 per working day using 232 working days.",
+      "licence": "Open Government Licence unless otherwise stated."
+    },
+    {
+      "name": "UKRI Innovate UK non-academic cost guidance",
+      "url": "https://www.ukri.org/councils/innovate-uk/guidance-for-applicants/costs-we-fund/costs-guidance-for-non-academic-organisations/",
+      "use_in_cost_model": "Actual-cost labour control, micro-company labour cap, and 20 percent of labour costs overhead option."
+    },
+    {
+      "name": "GOV.UK HMRC mileage rates",
+      "url": "https://www.gov.uk/government/publications/rates-and-allowances-travel-mileage-and-fuel-allowances/travel-mileage-and-fuel-rates-and-allowances",
+      "use_in_cost_model": "2026 to 2027 cars and vans mileage rate retained for later journey-backed travel calculations; current travel is GBP 0.",
+      "licence": "Open Government Licence unless otherwise stated."
+    }
+  ],
+  "pdf_validation": {
+    "master_pdf": "output/pdf/ifs/IFS_FUNDER_SAFE_PROJECT_COST_APPENDIX_PACK_20260712_113502.pdf",
+    "pages": 15,
+    "text_characters": 32144,
+    "rendered_pages_checked": [
+      "tmp/pdfs/ifs_cost_20260712_113502/page_01.png",
+      "tmp/pdfs/ifs_cost_20260712_113502/page_08.png"
+    ],
+    "visual_check": "Rendered pages 1 and 8 checked for legibility, margins, table alignment, headings, source-basis text and footers."
+  },
+  "language_validation": {
+    "terms_scanned": [
+      "do not submit",
+      "portal",
+      "browser",
+      "external_submission",
+      "email_sent",
+      "partner invite",
+      "direct submit",
+      "internal",
+      "operator",
+      "gated",
+      "block",
+      "not_source_strict",
+      "placeholder",
+      "no portal"
+    ],
+    "finding_count": 0,
+    "findings": []
+  },
+  "controls": [
+    "The cost build does not change live IFS portal finance fields.",
+    "Partner budgets, collaborator costs, hardware access, vessel costs, farm costs, match funding and facility costs remain excluded until evidenced.",
+    "Other-direct-cost reserve values are staging values only and must be replaced by eligible quotes, invoices or records before grant claim.",
+    "Travel is zero unless actual journeys are evidenced."
+  ],
+  "outputs": {
+    "cost_book_json": "applications/IFS_OPEN_SOURCE_PROJECT_COST_BOOK_20260712_113502.json",
+    "cost_book_csv": "applications/IFS_OPEN_SOURCE_PROJECT_COST_BOOK_20260712_113502.csv",
+    "appendix_pack_json": "applications/IFS_FUNDER_SAFE_PROJECT_COST_APPENDIX_PACK_20260712_113502.json",
+    "appendix_pack_csv": "applications/IFS_FUNDER_SAFE_PROJECT_COST_APPENDIX_PACK_20260712_113502.csv",
+    "master_pdf": "output/pdf/ifs/IFS_FUNDER_SAFE_PROJECT_COST_APPENDIX_PACK_20260712_113502.pdf",
+    "validation_json": "applications/IFS_PROJECT_COST_BUILD_VALIDATION_20260712_113722.json",
+    "validation_markdown": "applications/IFS_PROJECT_COST_BUILD_VALIDATION_20260712_113722.md",
+    "pipeline_report": "pipelines/pipeline_report_20260712_113722_ifs_project_cost_build_validation.json"
+  }
+}

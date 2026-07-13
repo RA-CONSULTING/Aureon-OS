@@ -1,0 +1,42 @@
+{
+  "schema_version": "aureon-external-action-email-package-validation-v1",
+  "generated_at": "2026-07-12T12:24:56+01:00",
+  "operator": "Aureon",
+  "event": "external_action_email_package_validation",
+  "result": "EXTERNAL_ACTION_EMAIL_PACKAGES_VALIDATED_READY_NOT_SENT",
+  "source_queue": "applications/AUREON_EXTERNAL_ACTION_QUEUE_20260712_122456_project_impact_after_finance_update.json",
+  "packages": [
+    {
+      "action_id": "ACTION-IFS-UK-SWISS-PROJECT-IMPACT-SUPPORT-20260712",
+      "package": "applications/IFS_UK_SWISS_PROJECT_IMPACT_SUPPORT_AFTER_FINANCE_UPDATE_20260712_122456.eml",
+      "exists": true,
+      "destination": "support@iuk.ukri.org",
+      "send_performed": false,
+      "external_submission_performed": false,
+      "bytes": 1015838,
+      "sha256": "a35e4c085553d3bab5c1ad26a550d45e369084ae741e898e7866764bc14813e0"
+    },
+    {
+      "action_id": "ACTION-OPENOCEAN-PITCH-SUBMISSION-20260712",
+      "package": "applications/OPENOCEAN_PITCH_SUBMISSION_EMAIL_PACKAGE_20260712_20260712_111305.eml",
+      "exists": true,
+      "destination": "info@openocean.vc",
+      "send_performed": false,
+      "external_submission_performed": false,
+      "bytes": 577362,
+      "sha256": "b85bf1ef11e9f51368bf7731f2c1c8e1d9ff3b3f32475a384b761cd31a139d58"
+    },
+    {
+      "action_id": "ACTION-INTERTRADEIRELAND-CLUSTER-TO-CLUSTER-CLARIFICATION-20260712",
+      "package": "applications/INTERTRADEIRELAND_CLUSTER_TO_CLUSTER_PARTNER_CLARIFICATION_DRAFT_20260712_120845.eml",
+      "exists": true,
+      "destination": "SIClusters@intertradeireland.com",
+      "send_performed": false,
+      "external_submission_performed": false,
+      "bytes": 5025,
+      "sha256": "242eedce9d56b470b62b34f46615ab1abd9a85ce590d94e736f2de83a99c31a9"
+    }
+  ],
+  "issue_count": 0,
+  "issues": []
+}

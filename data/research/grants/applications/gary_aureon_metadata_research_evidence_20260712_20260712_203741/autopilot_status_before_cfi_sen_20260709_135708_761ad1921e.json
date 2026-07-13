@@ -1,0 +1,315 @@
+{
+  "schema_version": "aureon-grant-autopilot-v1",
+  "generated_at": "2026-07-09T13:55:36+01:00",
+  "operator": "Aureon",
+  "mode": "automate_with_provider_and_legal_boundaries",
+  "applicant": {
+    "legal_entity": "R&A Consulting and Brokerage Services Ltd",
+    "company_number": "NI696693",
+    "lead_contact": "Gary Anthony Leckey",
+    "email": "gaxlec@gmail.com",
+    "registered_office": "1 Quadrant Place, Belfast, Northern Ireland, BT12 4HX"
+  },
+  "automation_policy": [
+    "Prepare, validate, package, upload, draft, and stage grant materials using the Aureon evidence base.",
+    "Respect CAPTCHA, MFA, phone verification, and provider account controls.",
+    "Final legal external submission buttons require exact action-time confirmation for the specific application.",
+    "Plaintext passwords, bank data, private keys, tokens, and tax files stay out of grant packs and Drive uploads.",
+    "Refresh and reconcile current IFS competition data before each application session.",
+    "Use the unified corpus as the evidence base and exclude private finance by default.",
+    "Use the existing IFS account/session for gaxlec@gmail.com."
+  ],
+  "queue": [
+    {
+      "id": "APP-IFS-NEXT-WAVE-10209601",
+      "funder": "Innovate UK",
+      "programme": "Next Wave: Breakthrough Wave 1",
+      "title": "Aureon Evidence Studio for Createch AI Workflows",
+      "status": "SUBMITTED",
+      "deadline": "2026-08-11T11:00:00+01:00",
+      "submitted_at": "2026-07-07T13:47:00+01:00",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/application/10209601/track",
+      "automation_next_action": "Monitor IFS, Gmail, and grant records for assessment or feedback updates due by 1 October 2026; reopening is reserved for a deliberate resubmission decision.",
+      "human_or_provider_gate": "Waiting for funder assessment decision and feedback.",
+      "value": {
+        "currency": "GBP",
+        "grant_request": 175000,
+        "eligible_costs": 250000
+      },
+      "receipt": {
+        "application_number": "10209601",
+        "submitted_at_display": "7 Jul 2026 at 1:47pm",
+        "screenshot": "applications/rendered/ifs_overview_20260709_latest.png"
+      },
+      "documents": [
+        "funder_ready/FORMAL_ATTACHMENT_INDEX_20260709.pdf",
+        "funder_ready/IFS_NEXT_WAVE_10209601_SUPPORTING_EVIDENCE_SUMMARY_20260709.pdf",
+        "funder_ready/AUREON_MASTER_SUPPORTING_EVIDENCE_20260709.pdf",
+        "IFS_NEXT_WAVE_Q14_PROJECT_PLAN_APPENDIX_20260705.pdf",
+        "IFS_NEXT_WAVE_Q15_RISK_REGISTER_APPENDIX_20260705.pdf"
+      ]
+    },
+    {
+      "id": "INTERTRADEIRELAND-INNOVATION-BOOST-ENQUIRY",
+      "funder": "InterTradeIreland",
+      "programme": "Innovation Boost",
+      "title": "Aureon Evidence Automation initial assessment",
+      "status": "SUBMITTED_ENQUIRY",
+      "submitted_at": "2026-07-05T16:12:34+01:00",
+      "confirmation_guid": "90e52212-2555-426e-a5bc-7ad9129389e3",
+      "url": "https://intertradeireland.com/contact/thank-you%20?submissionGuid=90e52212-2555-426e-a5bc-7ad9129389e3",
+      "automation_next_action": "Monitor for follow-up and convert response into full application pack.",
+      "human_or_provider_gate": "Waiting for funder response."
+    },
+    {
+      "id": "APP-AIRR-001",
+      "funder": "UKRI (EPSRC)",
+      "programme": "AIRR compute opportunity: AI open access",
+      "title": "Aureon Evidence OS for AI-Driven Scientific Discovery",
+      "status": "SUBMITTED",
+      "deadline": "2026-07-17T16:00:00+01:00",
+      "url": "https://portal-airr.isambard.ac.uk/proposals/5a87cac10a0044db903550fe12188b4a/",
+      "portal_proposal_id": "0261-8797-7601-1",
+      "automation_next_action": "Monitor AIRRPortal and Gmail for peer-review assignments, decision, or follow-up. Prepare distributed peer-review response material if assigned by AIRR.",
+      "human_or_provider_gate": "Waiting for funder review or peer-review assignment.",
+      "value": {
+        "currency": "GPU_HOURS",
+        "request": 500000,
+        "duration_days": 365
+      },
+      "documents": [
+        "funder_ready/FORMAL_ATTACHMENT_INDEX_20260709.pdf",
+        "funder_ready/AIRR_SUPPORTING_EVIDENCE_SUMMARY_20260709.pdf",
+        "funder_ready/AUREON_MASTER_SUPPORTING_EVIDENCE_20260709.pdf",
+        "AIRR_AI_OPEN_ACCESS_SUPPORTING_FORM_20260706.pdf"
+      ],
+      "submitted_at": "2026-07-09T06:57:00+01:00",
+      "receipt": {
+        "portal_proposal_id": "0261-8797-7601-1",
+        "submitted_at_display": "Jul 9, 2026, 6:57 AM",
+        "screenshot": "applications/rendered/airr_submitted_20260709.png"
+      }
+    },
+    {
+      "id": "INVEST-NI-IFAS",
+      "funder": "Invest Northern Ireland",
+      "programme": "Innovation Funding Advisory Service",
+      "title": "Aureon R&D funding advisory request",
+      "status": "STAGED_PROVIDER_CAPTCHA_REQUIRED",
+      "url": "https://www.investni.com/support-for-business/research-and-development-support/innovation-funding-advisory-service",
+      "automation_next_action": "Resume after the provider CAPTCHA step is completed in the browser session.",
+      "human_or_provider_gate": "CAPTCHA/provider control."
+    },
+    {
+      "id": "EIC-ACCELERATOR-STEP1",
+      "funder": "European Innovation Council",
+      "programme": "EIC Accelerator",
+      "title": "Aureon Evidence Studio commercial AI workflow assurance",
+      "status": "EVIDENCE_REQUIRED",
+      "url": "https://eic.ec.europa.eu/eic-funding-opportunities/eic-accelerator_en",
+      "automation_next_action": "Prepare customer discovery, LOIs, competitor map, demo/prototype, FTO/IP, finance plan, and privacy policy before external submission.",
+      "human_or_provider_gate": "Evidence-quality requirement; validation must be evidenced."
+    },
+    {
+      "id": "APP-IFS-FLF-R11-2499-20260709",
+      "funder": "UKRI / Innovate UK",
+      "programme": "Aureon AI Evidence OS - Future Leaders Fellowship Round 11 Pack",
+      "title": "Aureon AI Evidence OS - Future Leaders Fellowship Round 11 Pack",
+      "status": "SUBMITTED",
+      "deadline": "2026-11-04T11:00:00+00:00",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/application/10209992/track",
+      "portal_application_number": "10209992",
+      "portal_progress": "100%",
+      "automation_next_action": "Monitor IFS track page and gaxlec@gmail.com for eligibility checks, assessment updates, decision notification, or funder correspondence. Do not reopen unless deliberately resubmitting before the deadline.",
+      "human_or_provider_gate": "Waiting for funder assessment after competition deadline and eligibility checks.",
+      "documents": [
+        "funder_ready/FORMAL_ATTACHMENT_INDEX_20260709.pdf",
+        "funder_ready/IFS_FUTURE_LEADERS_R11_SUPPORTING_EVIDENCE_20260709.pdf",
+        "funder_ready/AUREON_MASTER_SUPPORTING_EVIDENCE_20260709.pdf",
+        "IFS_FUTURE_LEADERS_R11_10209992_ETHICS_RESPONSE_20260709.pdf",
+        "IFS_FUTURE_LEADERS_R11_10209992_DRAFT_STATUS_20260709.md",
+        "IFS_FUTURE_LEADERS_R11_10209992_FINANCE_WORKPAPER_20260709.md",
+        "CHROME_IFS_ACCESS_DIAGNOSTIC_20260709.md",
+        "IFS_FUTURE_LEADERS_R11_10209992_SUBSIDY_COMPLETED_20260709.md",
+        "IFS_FUTURE_LEADERS_R11_10209992_FINANCE_PORTAL_ENTRY_20260709.md",
+        "IFS_FUTURE_LEADERS_R11_10209992_PAYE_EVIDENCE_20260709.md",
+        "applications/evidence/HMRC_PAYE_APPLICATION_RECEIVED_RNA_CONSULTING_BRPY00000169269_20260709.jpg",
+        "IFS_FUTURE_LEADERS_R11_10209992_READY_FOR_FINAL_SUBMIT_20260709.md",
+        "applications/evidence/HMRC_PAYE_APPLICATION_RECEIVED_RNA_CONSULTING_BRPY00000169269_20260709_source2.jpg",
+        "IFS_FUTURE_LEADERS_R11_10209992_SUBMISSION_STATUS_20260709.md",
+        "IFS_FUTURE_LEADERS_R11_10209992_SUBMISSION_RECEIPT_20260709.json"
+      ],
+      "value": {
+        "currency": "GBP",
+        "grant_request": 175000,
+        "eligible_costs": 250000,
+        "company_contribution": 75000,
+        "other_public_funding": 0,
+        "funding_level_percent": 70
+      },
+      "paye_evidence": {
+        "received_at": "2026-07-09T09:27:00+01:00",
+        "source": "User-supplied GOV.UK / HM Revenue & Customs screenshot",
+        "applicant_organisation": "R&A Consulting and Brokerage Services Ltd",
+        "addressee": "Gary Leckey",
+        "status": "PAYE application received by HMRC; final employer PAYE reference not yet evidenced",
+        "application_reference": "BRPY00000169269",
+        "local_image": "applications/evidence/HMRC_PAYE_APPLICATION_RECEIVED_RNA_CONSULTING_BRPY00000169269_20260709.jpg",
+        "local_note": "IFS_FUTURE_LEADERS_R11_10209992_PAYE_EVIDENCE_20260709.md",
+        "additional_local_image": "applications/evidence/HMRC_PAYE_APPLICATION_RECEIVED_RNA_CONSULTING_BRPY00000169269_20260709_source2.jpg"
+      },
+      "submitted_at": "2026-07-09T11:07:00+01:00",
+      "receipt": {
+        "application_number": "10209992",
+        "submitted_at_display": "9 Jul 2026 at 11:07am",
+        "track_url": "https://apply-for-innovation-funding.service.gov.uk/application/10209992/track",
+        "status_text": "Application submitted"
+      }
+    },
+    {
+      "id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+      "funder": "Innovate UK",
+      "programme": "Aureon Evidence Studio - Innovation Loans EOI",
+      "title": "Aureon Evidence Studio - Innovation Loans EOI",
+      "status": "NOT_GRANT_FINANCE_RISK_GATED",
+      "deadline": "open-no-submission-deadline",
+      "automation_next_action": "Hold unless Gary explicitly approves loan finance after repayment/cashflow review.",
+      "human_or_provider_gate": "Loan, not grant; repayment/finance-risk declarations required.",
+      "documents": [
+        "IFS_CURRENT_FIT_MATRIX_20260709.md",
+        "AUREON_UNIFIED_WORK_CORPUS_20260709.json"
+      ]
+    },
+    {
+      "id": "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+      "funder": "Innovate UK / UKRI R&D Missions Accelerator",
+      "programme": "Consumer Led Flexibility for the Clean Energy Superpower Mission",
+      "title": "Aureon Flex Evidence OS: AI Assurance for Consumer-Led Flexibility",
+      "status": "SUBMITTED",
+      "deadline": "2026-08-26T11:00:00+01:00",
+      "automation_next_action": "Monitor IFS track page and gaxlec@gmail.com for eligibility checks, assessment updates, decision notification, or funder correspondence. Do not reopen unless deliberately resubmitting before the deadline.",
+      "human_or_provider_gate": "Waiting for funder eligibility checks and assessment after competition deadline.",
+      "documents": [
+        "IFS_CLF_10210032_PORTAL_DRAFT_20260709.md",
+        "IFS_CLF_10210032_Q9_TECHNICAL_COMMERCIAL_APPENDIX_20260709.pdf",
+        "IFS_CLF_10210032_Q10_PROJECT_PLAN_RISK_APPENDIX_20260709.pdf",
+        "IFS_CLF_10210032_Q13_THEORY_OF_CHANGE_APPENDIX_20260709.pdf",
+        "IFS_CLF_10210032_SUBMISSION_STATUS_20260709.md",
+        "IFS_CLF_10210032_SUBMISSION_RECEIPT_20260709.json"
+      ],
+      "submitted_at": "2026-07-09T13:45:00+01:00",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/application/10210032/track",
+      "portal_application_number": "10210032",
+      "portal_progress": "100%",
+      "value": {
+        "currency": "GBP",
+        "grant_request": 175000,
+        "eligible_costs": 250000,
+        "company_contribution": 75000,
+        "other_public_funding": 0,
+        "funding_level_percent": 70
+      },
+      "receipt": {
+        "application_number": "10210032",
+        "submitted_at_display": "9 Jul 2026 at 1:45pm",
+        "track_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210032/track",
+        "status_text": "Application submitted"
+      },
+      "amount_requested": 175000,
+      "currency": "GBP"
+    },
+    {
+      "id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "funder": "Innovate UK / Innosuisse",
+      "programme": "Aureon International Evidence Automation Collaboration Abstract",
+      "title": "Aureon International Evidence Automation Collaboration Abstract",
+      "status": "PARTNER_REQUIRED",
+      "deadline": "2026-09-03T11:00:00+01:00",
+      "automation_next_action": "Prepare Swiss partner shortlist and collaboration abstract; no standalone submission.",
+      "human_or_provider_gate": "Swiss implementation partner and collaboration requirements.",
+      "documents": [
+        "IFS_CURRENT_FIT_MATRIX_20260709.md"
+      ]
+    },
+    {
+      "id": "APP-IFS-CFI-SEN-2511-20260709",
+      "funder": "Innovate UK / UKRI",
+      "programme": "Contracts for Innovation",
+      "title": "Aureon Responsible AI Evidence Tooling for Earlier SEN Identification",
+      "status": "LOCAL_PACK_READY",
+      "deadline": "2026-08-05T11:00:00+01:00",
+      "automation_next_action": "Create or continue IFS portal application, upload appendices, complete finance and Project Impact, then submit after portal review confirms all sections complete.",
+      "human_or_provider_gate": "No fabricated education partner, safeguarding approval or child data. Portal controls, Project Impact and final review must be completed truthfully.",
+      "documents": [
+        "IFS_CFI_SEN_2511_PORTAL_DRAFT_20260709.md",
+        "IFS_CFI_SEN_2511_PORTAL_DRAFT_20260709.json",
+        "IFS_CFI_SEN_2511_Q6_TECH_APPENDIX_20260709.pdf",
+        "IFS_CFI_SEN_2511_Q9_PROJECT_PLAN_GANTT_20260709.pdf",
+        "IFS_CFI_SEN_2511_Q11_COSTS_APPENDIX_20260709.pdf",
+        "SELF_UPDATE_IFS_CFI_SEN_2511_READY_20260709.eml"
+      ],
+      "opportunity_id": "IFS-CFI-SEN-2511",
+      "name": "Aureon SEN Evidence OS: Fair Early Identification Support",
+      "contract_value_inclusive_vat_gbp": 250000,
+      "net_eligible_costs_gbp": 208333,
+      "vat_gbp": 41667,
+      "currency": "GBP",
+      "operator": "Aureon",
+      "notes": "Formal portal-ready pack generated. Framed as human-in-the-loop evidence workflow, not automated diagnosis. Uses VAT-registered procurement cost model.",
+      "updated_at": "2026-07-09T13:55:36+01:00"
+    },
+    {
+      "id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "funder": "Innovate UK",
+      "programme": "Aureon Scientific Compute Governance for Quantum Hardware Partner Route",
+      "title": "Aureon Scientific Compute Governance for Quantum Hardware Partner Route",
+      "status": "HARDWARE_LEAD_PARTNER_REQUIRED",
+      "deadline": "2026-09-18T11:00:00+01:00",
+      "automation_next_action": "Prepare quantum hardware partner approach; no standalone submission.",
+      "human_or_provider_gate": "Quantum hardware lead partner required.",
+      "documents": [
+        "IFS_CURRENT_FIT_MATRIX_20260709.md"
+      ]
+    },
+    {
+      "id": "APP-EUREKA-EUROSTARS-CALL11-20260709",
+      "funder": "Eureka Eurostars",
+      "programme": "Aureon Eurostars International R&D Collaboration Route",
+      "title": "Aureon Eurostars International R&D Collaboration Route",
+      "status": "PARTNER_REQUIRED",
+      "deadline": "2026-09-10T14:00:00+02:00",
+      "automation_next_action": "Stage only. Build a cross-border SME/research partner shortlist, confirm UK national funding body rules, then prepare a Eurostars consortium abstract. No portal submission without partner confirmation.",
+      "human_or_provider_gate": "Partner or academic host confirmation required before external submission.",
+      "documents": [
+        "applications/EUROSTARS_CALL11_PARTNER_ROUTE_BRIEF_20260709.md",
+        "AUREON_UNIFIED_WORK_CORPUS_20260709.json",
+        "IFS_CURRENT_FIT_MATRIX_20260709.md"
+      ]
+    },
+    {
+      "id": "APP-UKRI-CHERI-IKC-PARTNER-20260709",
+      "funder": "EPSRC / DSIT",
+      "programme": "Aureon CHERI IKC Academic Partner Evidence Route",
+      "title": "Aureon CHERI IKC Academic Partner Evidence Route",
+      "status": "ACADEMIC_HOST_REQUIRED",
+      "deadline": "2026-09-17T16:00:00+01:00",
+      "automation_next_action": "Not directly eligible as lead. Stage a partner note for QUB/Ulster/EPSRC-eligible host discussions.",
+      "human_or_provider_gate": "Partner or academic host confirmation required before external submission.",
+      "documents": [
+        "applications/UKRI_CHERI_IKC_PARTNER_ROUTE_BRIEF_20260709.md"
+      ]
+    }
+  ],
+  "last_incremental_monitor_run": {
+    "run_id": "aureon-grant-operator-20260709-incremental",
+    "generated_at": "2026-07-09T11:21:31+01:00",
+    "changes": [
+      "added opportunity EUREKA-EUROSTARS-CALL11-20260910",
+      "added opportunity UKRI-EPSRC-CHERI-IKC-20260917",
+      "added opportunity UKRI-EPSRC-OPTICAL-WIRELESS-FACILITY-20260915",
+      "added application APP-EUREKA-EUROSTARS-CALL11-20260709",
+      "added application APP-UKRI-CHERI-IKC-PARTNER-20260709"
+    ],
+    "provider_controls": "No provider controls encountered; no live provider submission attempted."
+  }
+}

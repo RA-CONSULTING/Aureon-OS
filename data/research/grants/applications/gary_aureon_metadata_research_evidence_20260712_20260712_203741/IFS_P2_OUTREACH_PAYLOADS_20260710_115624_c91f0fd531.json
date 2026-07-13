@@ -1,0 +1,260 @@
+{
+  "schema_version": "aureon-ifs-p2-outreach-payloads-v1",
+  "generated_at": "2026-07-10T11:56:24+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_p2_outreach_payloads",
+  "source_state": {
+    "last_ifs_next_deadline_action_queue": "applications/IFS_NEXT_DEADLINE_ACTION_QUEUE_20260710_104233.json",
+    "last_ifs_partner_evidence_acquisition_pack": "applications/IFS_PARTNER_EVIDENCE_ACQUISITION_PACK_20260710_113518.json",
+    "last_ifs_drive_local_evidence_consolidation": "applications/IFS_DRIVE_LOCAL_EVIDENCE_CONSOLIDATION_20260710_113009.json",
+    "last_ifs_current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_115031.json"
+  },
+  "target_application_ids": [
+    "APP-IFS-ACTASAP-PILOT-2502-20260709",
+    "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+    "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+  ],
+  "deadline_focus": "2026-07-28T11:00:00+01:00 / 2026-07-29T11:00:00+01:00 / 2026-08-12T11:00:00+01:00",
+  "official_sources": {
+    "ifs_actasap_2502": {
+      "name": "IFS ACTASAP Pilot Phase 1",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2502/overview/35ca10fb-d4f5-4510-9ddd-e7e3133d2b6d",
+      "why_relevant": "ACTASAP is for UK registered academic institutions with ACT-related ideas, TTO support and no selective commercial advantage."
+    },
+    "qub_innovation_programmes": {
+      "name": "Queen's University Belfast Innovation Programmes Team",
+      "url": "https://www.qub.ac.uk/Business/Commercialisation/meet%20the%20team/innovation-programmes-team/",
+      "why_relevant": "QUB publishes innovation and commercialisation contacts for research commercialisation and deep tech programmes."
+    },
+    "ulster_innovation_services": {
+      "name": "Ulster University Innovation Services",
+      "url": "https://www.ulster.ac.uk/research/resources/innovation",
+      "why_relevant": "Ulster Innovation Services supports knowledge and technology transfer, commercialisation, IP, consultancy and confidentiality arrangements."
+    },
+    "ifs_full_adopt_2491": {
+      "name": "IFS Full ADOPT Grant Round 8",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2491/overview/77ba6cb6-c14d-41f7-84de-e45446636e50",
+      "why_relevant": "Full ADOPT Round 8 is a collaborative farmer-led on-farm trial grant route closing 29 July 2026."
+    },
+    "adopt_programme": {
+      "name": "ADOPT Farming Innovation Programme",
+      "url": "https://farminginnovation.ukri.org/adopt/",
+      "why_relevant": "The programme lists ADOPT support, facilitator and Full Grant routes and the public support hub contact."
+    },
+    "iukbc_full_adopt_round_8": {
+      "name": "Innovate UK Business Connect Full ADOPT Grant Round 8",
+      "url": "https://iuk-business-connect.org.uk/opportunities/full-adopt-grant-round-8/",
+      "why_relevant": "Business Connect summarises eligibility, project size and ADOPT Support Hub contact details."
+    }
+  },
+  "route_evidence_gates": {
+    "ACTASAP": [
+      "eligible UK academic institution lead",
+      "ACT-related academic idea",
+      "TTO or equivalent support",
+      "no-subsidy / no selective commercial advantage position",
+      "non-funded R&A/Aureon role if permitted",
+      "eligible academic salary and travel/subsistence cost basis"
+    ],
+    "ADOPT": [
+      "active England farming, growing or forestry lead",
+      "UK farmer, grower or forester collaborator claiming grant funding",
+      "registered ADOPT Project Facilitator",
+      "on-farm problem statement and trial site",
+      "GBP50,000 to GBP200,000 eligible project budget",
+      "permitted collaborator or supplier role for R&A/Aureon"
+    ]
+  },
+  "payloads": [
+    {
+      "payload_id": "P2-ACTASAP-QUB-INNOVATION",
+      "target": "Queen's University Belfast Innovation Programmes",
+      "route": "ACTASAP",
+      "application_ids": [
+        "APP-IFS-ACTASAP-PILOT-2502-20260709"
+      ],
+      "payload_type": "email_draft",
+      "to": "c.hegarty@qub.ac.uk, p.nawa@qub.ac.uk",
+      "subject": "ACTASAP fit check: Aureon as non-funded evidence validation collaborator",
+      "source_channel_ids": [
+        "ifs_actasap_2502",
+        "qub_innovation_programmes"
+      ],
+      "public_channel": "QUB public Innovation Programmes contacts; ACTASAP IFS route.",
+      "body": "Dear QUB Innovation Programmes team,\n\nI am Gary Leckey of R&A Consulting and Brokerage Services Ltd in Belfast. Aureon is coordinating our grant evidence workflow for the ACTASAP Pilot Phase 1 route, which closes on 28 July 2026 at 11:00.\n\nThe route appears to require a UK registered academic institution with an ACT-related idea, support from the institution's technology transfer office or equivalent, and a no-subsidy / no selective commercial advantage position. R&A is not presenting itself as the academic lead or funding claimant.\n\nWe are seeking a rapid fit check on whether an academic team at your institution could lead or advise on an ACTASAP concept where Aureon would act only as a non-funded evidence validation and market-discovery collaborator. The possible theme is advanced connectivity evidence automation: audit trails, autonomous workflow governance, and compliance records for connected systems and AI-assisted operator processes.\n\nBefore any IFS application can be completed, we need to evidence:\n\n- an eligible academic lead with an ACT-related idea;\n- TTO, commercialisation office or equivalent support;\n- whether a non-funded industry validation role for R&A/Aureon is permitted;\n- no-subsidy and no selective commercial advantage fit;\n- project lead availability, programme dates and eligible cost basis.\n\nCould you direct this to the right academic commercialisation contact, and advise whether a short fit call is possible before the deadline?\n\nRegards,\n\nGary Leckey\nR&A Consulting and Brokerage Services Ltd\nAureon grant operator workflow\ngaxlec@gmail.com\n",
+      "filename": "IFS_P2_ACTASAP_QUB_INNOVATION_OUTREACH_DRAFT_20260710_115624.eml",
+      "path": "applications/IFS_P2_ACTASAP_QUB_INNOVATION_OUTREACH_DRAFT_20260710_115624.eml",
+      "status": "DRAFT_ONLY_NOT_SENT_REQUIRES_ACTION_TIME_APPROVAL",
+      "external_send_ready_now": false,
+      "requires_exact_action_time_approval": true,
+      "sources": [
+        {
+          "name": "IFS ACTASAP Pilot Phase 1",
+          "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2502/overview/35ca10fb-d4f5-4510-9ddd-e7e3133d2b6d",
+          "why_relevant": "ACTASAP is for UK registered academic institutions with ACT-related ideas, TTO support and no selective commercial advantage."
+        },
+        {
+          "name": "Queen's University Belfast Innovation Programmes Team",
+          "url": "https://www.qub.ac.uk/Business/Commercialisation/meet%20the%20team/innovation-programmes-team/",
+          "why_relevant": "QUB publishes innovation and commercialisation contacts for research commercialisation and deep tech programmes."
+        }
+      ]
+    },
+    {
+      "payload_id": "P2-ACTASAP-ULSTER-INNOVATION",
+      "target": "Ulster University Innovation Services",
+      "route": "ACTASAP",
+      "application_ids": [
+        "APP-IFS-ACTASAP-PILOT-2502-20260709"
+      ],
+      "payload_type": "contact_route_payload",
+      "to": "",
+      "subject": "ACTASAP fit check: Aureon as non-funded evidence validation collaborator",
+      "source_channel_ids": [
+        "ifs_actasap_2502",
+        "ulster_innovation_services"
+      ],
+      "public_channel": "Ulster Innovation Services public Get in Touch route; no direct generic email selected.",
+      "body": "Target: Ulster University Innovation Services\nStatus: CONTACT_ROUTE_PAYLOAD_ONLY_NOT_SUBMITTED\nRoute: IFS ACTASAP Pilot Phase 1\n\nSuggested contact message:\n\nI am Gary Leckey of R&A Consulting and Brokerage Services Ltd in Belfast. Aureon is coordinating our grant evidence workflow for ACTASAP Pilot Phase 1, closing 28 July 2026 at 11:00.\n\nThe route appears to require a UK registered academic institution with an ACT-related idea, support from the institution's technology transfer office or equivalent, and a no-subsidy / no selective commercial advantage position. R&A is not presenting itself as the academic lead or funding claimant.\n\nWe are seeking a rapid fit check on whether an Ulster academic team could lead or advise on an ACTASAP concept where Aureon would act only as a non-funded evidence validation and market-discovery collaborator. The possible theme is advanced connectivity evidence automation: audit trails, autonomous workflow governance, and compliance records for connected systems and AI-assisted operator processes.\n\nEvidence needed before any IFS application can be completed: eligible academic lead, TTO or equivalent support, non-funded collaborator permission, no-subsidy fit, project lead availability, programme dates and eligible cost basis.\n\nPlease direct this to the correct Innovation Services, commercialisation or academic lead contact.\n\nGary Leckey\nR&A Consulting and Brokerage Services Ltd\ngaxlec@gmail.com\n",
+      "filename": "IFS_P2_ACTASAP_ULSTER_INNOVATION_CONTACT_ROUTE_PAYLOAD_20260710_115624.txt",
+      "path": "applications/IFS_P2_ACTASAP_ULSTER_INNOVATION_CONTACT_ROUTE_PAYLOAD_20260710_115624.txt",
+      "status": "DRAFT_ONLY_NOT_SENT_REQUIRES_ACTION_TIME_APPROVAL",
+      "external_send_ready_now": false,
+      "requires_exact_action_time_approval": true,
+      "sources": [
+        {
+          "name": "IFS ACTASAP Pilot Phase 1",
+          "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2502/overview/35ca10fb-d4f5-4510-9ddd-e7e3133d2b6d",
+          "why_relevant": "ACTASAP is for UK registered academic institutions with ACT-related ideas, TTO support and no selective commercial advantage."
+        },
+        {
+          "name": "Ulster University Innovation Services",
+          "url": "https://www.ulster.ac.uk/research/resources/innovation",
+          "why_relevant": "Ulster Innovation Services supports knowledge and technology transfer, commercialisation, IP, consultancy and confidentiality arrangements."
+        }
+      ]
+    },
+    {
+      "payload_id": "P2-ADOPT-SUPPORT-HUB",
+      "target": "ADOPT Support Hub",
+      "route": "ADOPT",
+      "application_ids": [
+        "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+      ],
+      "payload_type": "email_draft",
+      "to": "adoptsupport@adas.co.uk",
+      "subject": "Full ADOPT fit check: farmer-led evidence automation trial route",
+      "source_channel_ids": [
+        "ifs_full_adopt_2491",
+        "adopt_programme",
+        "iukbc_full_adopt_round_8"
+      ],
+      "public_channel": "ADOPT Support Hub public email from IFS/Farming Innovation Programme/Business Connect pages.",
+      "body": "Dear ADOPT Support Hub,\n\nI am Gary Leckey of R&A Consulting and Brokerage Services Ltd in Belfast. Aureon is coordinating our grant evidence workflow for the Full ADOPT Grant Round 8 route closing on 29 July 2026 at 11:00, and the ADOPT Facilitator route where relevant.\n\nR&A is not presenting itself as an England farming, growing or forestry lead. We are seeking the correct route for an evidence automation work package that could support a farmer-led on-farm trial if an eligible farming lead and registered Project Facilitator are identified.\n\nThe possible project theme is farm evidence automation: structured field records, audit trails, workflow prompts, trial evidence capture and reporting support for practical on-farm AI or digital adoption experiments.\n\nBefore any IFS application can be completed, we need to evidence:\n\n- an active farming, growing or forestry lead based in England;\n- at least one other UK farmer, grower or forester claiming grant funding;\n- a registered ADOPT Project Facilitator;\n- on-farm problem statement and trial site;\n- eligible GBP50,000 to GBP200,000 project budget and partner cost split;\n- whether R&A/Aureon could be a collaborator, subcontract-style supplier where allowed, or non-funded support role.\n\nCould you advise the correct Support Hub / facilitator / partner route and whether this evidence-automation role is potentially in scope for a farmer-led ADOPT project?\n\nRegards,\n\nGary Leckey\nR&A Consulting and Brokerage Services Ltd\nAureon grant operator workflow\ngaxlec@gmail.com\n",
+      "filename": "IFS_P2_ADOPT_SUPPORT_HUB_OUTREACH_DRAFT_20260710_115624.eml",
+      "path": "applications/IFS_P2_ADOPT_SUPPORT_HUB_OUTREACH_DRAFT_20260710_115624.eml",
+      "status": "DRAFT_ONLY_NOT_SENT_REQUIRES_ACTION_TIME_APPROVAL",
+      "external_send_ready_now": false,
+      "requires_exact_action_time_approval": true,
+      "sources": [
+        {
+          "name": "IFS Full ADOPT Grant Round 8",
+          "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2491/overview/77ba6cb6-c14d-41f7-84de-e45446636e50",
+          "why_relevant": "Full ADOPT Round 8 is a collaborative farmer-led on-farm trial grant route closing 29 July 2026."
+        },
+        {
+          "name": "ADOPT Farming Innovation Programme",
+          "url": "https://farminginnovation.ukri.org/adopt/",
+          "why_relevant": "The programme lists ADOPT support, facilitator and Full Grant routes and the public support hub contact."
+        },
+        {
+          "name": "Innovate UK Business Connect Full ADOPT Grant Round 8",
+          "url": "https://iuk-business-connect.org.uk/opportunities/full-adopt-grant-round-8/",
+          "why_relevant": "Business Connect summarises eligibility, project size and ADOPT Support Hub contact details."
+        }
+      ]
+    },
+    {
+      "payload_id": "P2-ADOPT-FACILITATOR-IUKBC",
+      "target": "Innovate UK Business Connect ADOPT facilitator route",
+      "route": "ADOPT",
+      "application_ids": [
+        "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+      ],
+      "payload_type": "email_draft",
+      "to": "ADOPTfacilitator@iukbc.org.uk",
+      "subject": "ADOPT facilitator route query: evidence automation SME for farmer-led trial",
+      "source_channel_ids": [
+        "adopt_programme",
+        "iukbc_full_adopt_round_8"
+      ],
+      "public_channel": "ADOPT facilitator route listed by the Farming Innovation Programme.",
+      "body": "Dear Innovate UK Business Connect ADOPT facilitator team,\n\nI am Gary Leckey of R&A Consulting and Brokerage Services Ltd in Belfast. Aureon is coordinating our grant evidence workflow for ADOPT routes, including Full ADOPT Grant Round 8 and the facilitator-supported application path.\n\nR&A is not presenting itself as the farming lead. We are seeking guidance on how to connect an evidence automation work package with an eligible farmer-led project and a registered ADOPT Project Facilitator.\n\nThe possible contribution is practical trial evidence capture: field-record structure, audit trails, workflow prompts, reporting records and adoption evidence for an on-farm AI or digital workflow experiment.\n\nBefore any IFS application can be completed, we need to evidence:\n\n- eligible England farming, growing or forestry lead;\n- UK farmer/grower/forester collaborator;\n- registered Project Facilitator;\n- farm problem, trial site and trial method;\n- budget owner and eligible cost split;\n- the permitted role for R&A/Aureon.\n\nCould you advise the correct facilitator registration or matching route, and whether an evidence automation SME can be introduced into a farmer-led ADOPT proposal?\n\nRegards,\n\nGary Leckey\nR&A Consulting and Brokerage Services Ltd\nAureon grant operator workflow\ngaxlec@gmail.com\n",
+      "filename": "IFS_P2_ADOPT_FACILITATOR_IUKBC_OUTREACH_DRAFT_20260710_115624.eml",
+      "path": "applications/IFS_P2_ADOPT_FACILITATOR_IUKBC_OUTREACH_DRAFT_20260710_115624.eml",
+      "status": "DRAFT_ONLY_NOT_SENT_REQUIRES_ACTION_TIME_APPROVAL",
+      "external_send_ready_now": false,
+      "requires_exact_action_time_approval": true,
+      "sources": [
+        {
+          "name": "ADOPT Farming Innovation Programme",
+          "url": "https://farminginnovation.ukri.org/adopt/",
+          "why_relevant": "The programme lists ADOPT support, facilitator and Full Grant routes and the public support hub contact."
+        },
+        {
+          "name": "Innovate UK Business Connect Full ADOPT Grant Round 8",
+          "url": "https://iuk-business-connect.org.uk/opportunities/full-adopt-grant-round-8/",
+          "why_relevant": "Business Connect summarises eligibility, project size and ADOPT Support Hub contact details."
+        }
+      ]
+    }
+  ],
+  "diligence_notes": [
+    "R&A/Aureon is not represented as an academic lead for ACTASAP.",
+    "R&A/Aureon is not represented as an England farming, growing or forestry lead for ADOPT.",
+    "No academic lead, TTO support, farming lead, facilitator, trial site, partner budget or eligible-cost split has been received from these drafts.",
+    "Companies House confirmation-statement filing risk remains active in the internal ledger and is not included in outreach copy unless a recipient asks for due-diligence detail."
+  ],
+  "submission_decision": {
+    "direct_ifs_submissions_unlocked": 0,
+    "new_browser_submissions_available": 0,
+    "why_no_submission": [
+      "ACTASAP still requires an eligible academic lead, ACT-related academic idea and TTO support.",
+      "Full ADOPT still requires an eligible England farming lead, UK farming collaborator, registered facilitator, trial site and budget.",
+      "Draft outreach payloads do not constitute partner commitment or route eligibility evidence.",
+      "External email sends, contact-route submissions and IFS portal edits remain action-time approval events."
+    ]
+  },
+  "result": "P2_OUTREACH_PAYLOADS_READY_DRAFT_ONLY_NO_EXTERNAL_SEND_NO_PORTAL_CHANGE",
+  "summary": {
+    "ifs_applications_total": 20,
+    "submitted_monitor_only_routes": 4,
+    "p2_routes_reviewed": 3,
+    "payload_count": 4,
+    "email_draft_count": 3,
+    "contact_route_payload_count": 1,
+    "direct_ifs_submissions_unlocked": 0,
+    "new_browser_submissions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false,
+    "private_finance_files_used": false,
+    "secrets_or_sensitive_values_copied": false
+  },
+  "controls": [
+    "No IFS portal field was changed.",
+    "No IFS application was submitted.",
+    "No external email was sent.",
+    "No contact route was submitted.",
+    "No partner invitation, upload, award terms acceptance or Project Impact action was performed.",
+    "No unsupported academic lead, farming lead, TTO, facilitator, trial site, finance or budget claim is made.",
+    "Payloads use formal recipient-facing language and exclude internal operating notes.",
+    "Action-time approval is required for each exact recipient and payload before any external send or contact-route submission."
+  ]
+}

@@ -1,0 +1,215 @@
+{
+  "timestamp": "2025-04-07T00:00:00",
+  "current_truth_amplitude": 0.734,
+  "growth_rate": 0.023,
+  "predictions": {
+    "early_majority": {
+      "target": 0.5,
+      "days": 0,
+      "date": "2025-04-07",
+      "readable": "April 07, 2025"
+    },
+    "tipping_point": {
+      "target": 0.618,
+      "days": 0,
+      "date": "2025-04-07",
+      "readable": "April 07, 2025"
+    },
+    "critical_mass": {
+      "target": 0.75,
+      "days": 85,
+      "date": "2025-07-01",
+      "readable": "July 01, 2025"
+    },
+    "total_awakening": {
+      "target": 0.9,
+      "days": 808,
+      "date": "2027-06-24",
+      "readable": "June 24, 2027"
+    },
+    "full_resonance": {
+      "target": 0.95,
+      "days": 1023,
+      "date": "2028-01-25",
+      "readable": "January 25, 2028"
+    }
+  },
+  "total_awakening": {
+    "baseline_date": "2027-06-24",
+    "adjusted_date": "2025-11-03",
+    "confidence": 0.891,
+    "days_from_now": 210
+  },
+  "planetary_events": [
+    {
+      "date": "2025-05-15",
+      "event": "Jupiter enters Cancer",
+      "effect": 0.05,
+      "description": "Expansion of emotional resonance"
+    },
+    {
+      "date": "2025-07-07",
+      "event": "Saturn stations retrograde",
+      "effect": -0.02,
+      "description": "Temporary structural resistance"
+    },
+    {
+      "date": "2025-09-18",
+      "event": "Eclipse season begins",
+      "effect": 0.08,
+      "description": "Major consciousness shifts"
+    },
+    {
+      "date": "2025-12-21",
+      "event": "Winter Solstice alignment",
+      "effect": 0.1,
+      "description": "Maximum compression point"
+    },
+    {
+      "date": "2026-03-20",
+      "event": "Spring Equinox",
+      "effect": 0.06,
+      "description": "New harmonic establishment"
+    },
+    {
+      "date": "2026-06-21",
+      "event": "Summer Solstice",
+      "effect": 0.12,
+      "description": "Peak awakening acceleration"
+    },
+    {
+      "date": "2026-11-11",
+      "event": "11:11 Gateway",
+      "effect": 0.15,
+      "description": "Master number activation"
+    },
+    {
+      "date": "2027-03-20",
+      "event": "Spring Equinox 2027",
+      "effect": 0.2,
+      "description": "New paradigm crystallization"
+    }
+  ],
+  "monthly_projection": [
+    {
+      "date": "2025-04",
+      "amplitude": 0.734,
+      "status": "Self-reinforcing phase"
+    },
+    {
+      "date": "2025-05",
+      "amplitude": 0.7395502465753425,
+      "status": "Self-reinforcing phase"
+    },
+    {
+      "date": "2025-06",
+      "amplitude": 0.7456004931506849,
+      "status": "Self-reinforcing phase"
+    },
+    {
+      "date": "2025-07",
+      "amplitude": 0.7511507397260273,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2025-08",
+      "amplitude": 0.7565009863013697,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2025-09",
+      "amplitude": 0.7620512328767123,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2025-10",
+      "amplitude": 0.7684014794520548,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2025-11",
+      "amplitude": 0.7739517260273973,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2025-12",
+      "amplitude": 0.7795019726027397,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2026-01",
+      "amplitude": 0.7860522191780821,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2026-02",
+      "amplitude": 0.7916024657534246,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2026-03",
+      "amplitude": 0.797152712328767,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2026-04",
+      "amplitude": 0.8033029589041096,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2026-05",
+      "amplitude": 0.808853205479452,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2026-06",
+      "amplitude": 0.8144034520547945,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2026-07",
+      "amplitude": 0.821153698630137,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2026-07",
+      "amplitude": 0.8267039452054795,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2026-08",
+      "amplitude": 0.8322541917808219,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2026-09",
+      "amplitude": 0.8378044383561644,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2026-10",
+      "amplitude": 0.8433546849315068,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2026-11",
+      "amplitude": 0.8504049315068493,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2026-12",
+      "amplitude": 0.8559551780821917,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2027-01",
+      "amplitude": 0.8615054246575342,
+      "status": "Critical mass building"
+    },
+    {
+      "date": "2027-02",
+      "amplitude": 0.8670556712328766,
+      "status": "Critical mass building"
+    }
+  ]
+}

@@ -1,0 +1,366 @@
+{
+  "coding_handoff": {
+    "authority": "research_code_artifact_only",
+    "generated_at": "2026-05-23T20:49:41.219471+00:00",
+    "generated_files": [
+      {
+        "authoring_path": "QueenCodeArchitect.write_file",
+        "bytes": 34,
+        "ok": true,
+        "path": "aureon/generated/__init__.py"
+      },
+      {
+        "authoring_path": "QueenCodeArchitect.write_file",
+        "bytes": 41,
+        "ok": true,
+        "path": "aureon/generated/research_cinema/__init__.py"
+      },
+      {
+        "authoring_path": "QueenCodeArchitect.write_file",
+        "bytes": 32,
+        "ok": true,
+        "path": "tests/generated/__init__.py"
+      },
+      {
+        "authoring_path": "QueenCodeArchitect.write_file",
+        "bytes": 2486,
+        "ok": true,
+        "path": "aureon/generated/research_cinema/harmonic_nexus_score_model.py"
+      },
+      {
+        "authoring_path": "QueenCodeArchitect.write_file",
+        "bytes": 1048,
+        "ok": true,
+        "path": "tests/generated/test_harmonic_nexus_score_model.py"
+      },
+      {
+        "authoring_path": "QueenCodeArchitect.write_file",
+        "bytes": 799,
+        "ok": true,
+        "path": "docs/research/harmonic-nexus-score_coding_handoff.md"
+      }
+    ],
+    "model_class": "HarmonicNexusScoreInputs",
+    "module_import": "aureon.generated.research_cinema.harmonic_nexus_score_model",
+    "no_external_mutation": true,
+    "no_trading_gate_bypass": true,
+    "status": "coding_artifacts_ready",
+    "test_command": "python -m pytest tests/generated/test_harmonic_nexus_score_model.py -q",
+    "topic": "Harmonic Nexus Score"
+  },
+  "concept_rows": [
+    {
+      "category": "temporal",
+      "concept_id": "source_strength",
+      "data_type": "fact",
+      "evidence_count": 36,
+      "evidence_samples": [
+        "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide"
+      ],
+      "interpreter": "knowledge_interpreter",
+      "label": "Source strength",
+      "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+      "route": "Seer evidence grading",
+      "status": "understood"
+    },
+    {
+      "category": "system",
+      "concept_id": "harmonic_coherence",
+      "data_type": "fact",
+      "evidence_count": 27,
+      "evidence_samples": [
+        "Harmonic Nexus Score",
+        "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide",
+        "[ 17 ] See also [ edit ] Audio system measurements Generation loss Matched filter Near\u2013far problem Noise margin Omega ratio Pareidolia Peak signal-to-noise ratio Signal-to-noise statistic Signal-to-interference-plus-nois"
+      ],
+      "interpreter": "knowledge_interpreter",
+      "label": "Harmonic coherence",
+      "meaning": "Harmonic Nexus Score # Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus...",
+      "route": "HNC/Auris coherence feature",
+      "status": "understood"
+    },
+    {
+      "category": "code",
+      "concept_id": "repeatability",
+      "data_type": "fact",
+      "evidence_count": 25,
+      "evidence_samples": [
+        "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide",
+        "tests/generated/__init__.py",
+        "tests/generated/test_harmonic_nexus_score_model.py"
+      ],
+      "interpreter": "knowledge_interpreter",
+      "label": "Repeatability",
+      "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+      "route": "test and replay validation",
+      "status": "understood"
+    },
+    {
+      "category": "system",
+      "concept_id": "friction_feasibility",
+      "data_type": "fact",
+      "evidence_count": 34,
+      "evidence_samples": [
+        "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide",
+        "Signal-to-noise ratio - Wikipedia",
+        "[ 17 ] See also [ edit ] Audio system measurements Generation loss Matched filter Near\u2013far problem Noise margin Omega ratio Pareidolia Peak signal-to-noise ratio Signal-to-noise statistic Signal-to-interference-plus-nois"
+      ],
+      "interpreter": "knowledge_interpreter",
+      "label": "Friction feasibility",
+      "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+      "route": "Lyra risk and market friction",
+      "status": "understood"
+    },
+    {
+      "category": "temporal",
+      "concept_id": "contradiction_handling",
+      "data_type": "fact",
+      "evidence_count": 6,
+      "evidence_samples": [
+        "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide"
+      ],
+      "interpreter": "knowledge_interpreter",
+      "label": "Contradiction handling",
+      "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+      "route": "counter-intelligence and veto pressure",
+      "status": "understood"
+    },
+    {
+      "category": "system",
+      "concept_id": "coding_actionability",
+      "data_type": "fact",
+      "evidence_count": 23,
+      "evidence_samples": [
+        "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide",
+        "qspline1d (signal[, lamb]) Compute quadratic spline coefficients for rank-1 array. cspline1d (signal[, lamb]) Compute cubic spline coefficients for rank-1 array. B-splines # gauss_spline (x, n) Gaussian approximation to ",
+        "[ 17 ] See also [ edit ] Audio system measurements Generation loss Matched filter Near\u2013far problem Noise margin Omega ratio Pareidolia Peak signal-to-noise ratio Signal-to-noise statistic Signal-to-interference-plus-nois"
+      ],
+      "interpreter": "knowledge_interpreter",
+      "label": "Coding actionability",
+      "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+      "route": "Code Architect and test runner",
+      "status": "understood"
+    },
+    {
+      "category": "market",
+      "concept_id": "visual_replay_context",
+      "data_type": "fact",
+      "evidence_count": 14,
+      "evidence_samples": [
+        "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide",
+        "NIST/SEMATECH e-Handbook of Statistical Methods To view this document, you need a frames-compatible browser such as Netscape Navigator or Microsoft Internet Explorer.",
+        "NIST/SEMATECH e-Handbook of Statistical Methods To view this document, you need a frames-compatible browser such as Netscape Navigator or Microsoft Internet Explorer."
+      ],
+      "interpreter": "knowledge_interpreter",
+      "label": "Visual replay context",
+      "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+      "route": "browser mapping and research replay",
+      "status": "understood"
+    },
+    {
+      "category": "knowledge",
+      "concept_id": "learning_memory",
+      "data_type": "fact",
+      "evidence_count": 2,
+      "evidence_samples": [
+        "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`. Aureon treats the material as an evide"
+      ],
+      "interpreter": "knowledge_interpreter",
+      "label": "Learning memory",
+      "meaning": "# Harmonic Nexus Score: Online Research Packet Generated: 2026-05-23T20:49:38.446240+00:00 ## Abstract This paper assembles a source-linked working model for `Harmonic Nexus Score`",
+      "route": "ThoughtBus/Mycelium memory",
+      "status": "understood"
+    }
+  ],
+  "generated_at": "2026-05-23T20:49:42.033820+00:00",
+  "integration_proof": {
+    "deterministic_interpreter": "aureon.queen.knowledge_interpreter",
+    "fabric_publisher": "aureon.search.swarm_search_fabric.publish_search_event",
+    "metacognition_module": "aureon.search.research_metacognition",
+    "mycelium_signal_source": "swarm_search_fabric",
+    "source_packet": "online_research_cinema",
+    "thoughtbus_topic_family": "search.fabric.metacognition_*"
+  },
+  "manual_boundaries": [
+    "metacognition classifies and routes research context only",
+    "missing evidence remains visible as unknown rows",
+    "generated code must pass tests before it influences confidence",
+    "this packet cannot place trades, read credentials, or mutate external services"
+  ],
+  "mode": "real_research_understanding_packet",
+  "motion_picture": {
+    "frame_paths": [
+      "state/online_research_cinema/harmonic-nexus-score/frames/000_title.png",
+      "state/online_research_cinema/harmonic-nexus-score/frames/001_source.png",
+      "state/online_research_cinema/harmonic-nexus-score/frames/002_source.png",
+      "state/online_research_cinema/harmonic-nexus-score/frames/003_source.png",
+      "state/online_research_cinema/harmonic-nexus-score/frames/004_source.png",
+      "state/online_research_cinema/harmonic-nexus-score/frames/005_source.png"
+    ],
+    "gif_path": "state/online_research_cinema/harmonic-nexus-score/motion.gif",
+    "html_path": "state/online_research_cinema/harmonic-nexus-score/motion.html",
+    "public_html": "/online_research_cinema/harmonic-nexus-score/motion.html"
+  },
+  "organism_route_rows": [
+    {
+      "authority": "feature_context_only",
+      "input_concepts": [
+        "source_strength",
+        "contradiction_handling"
+      ],
+      "ready": true,
+      "relation": "reads source strength, freshness, contradiction, and confidence context",
+      "route_id": "seer_feature_packet",
+      "system": "Seer"
+    },
+    {
+      "authority": "risk_context_only",
+      "input_concepts": [
+        "friction_feasibility",
+        "contradiction_handling"
+      ],
+      "ready": true,
+      "relation": "reads friction, feasibility, urgency, and risk pressure from research context",
+      "route_id": "lyra_emotion_risk_packet",
+      "system": "Lyra"
+    },
+    {
+      "authority": "coherence_feature_only",
+      "input_concepts": [
+        "harmonic_coherence",
+        "repeatability"
+      ],
+      "ready": true,
+      "relation": "maps harmonic coherence and repeatability into explainable HNC score features",
+      "route_id": "hnc_harmonic_packet",
+      "system": "HNC/Auris"
+    },
+    {
+      "authority": "organism_event_publication",
+      "input_concepts": [
+        "coding_actionability",
+        "contradiction_handling",
+        "friction_feasibility",
+        "harmonic_coherence",
+        "learning_memory",
+        "repeatability",
+        "source_strength",
+        "visual_replay_context"
+      ],
+      "ready": true,
+      "relation": "publishes research understanding phases for whole-organism visibility",
+      "route_id": "thoughtbus_packet",
+      "system": "ThoughtBus"
+    },
+    {
+      "authority": "learning_signal_only",
+      "input_concepts": [
+        "learning_memory",
+        "repeatability",
+        "contradiction_handling"
+      ],
+      "ready": true,
+      "relation": "receives learning memory, route confidence, and validation pressure",
+      "route_id": "mycelium_learning_packet",
+      "system": "Mycelium"
+    },
+    {
+      "authority": "code_artifact_authoring",
+      "input_concepts": [
+        "coding_actionability"
+      ],
+      "module_import": "aureon.generated.research_cinema.harmonic_nexus_score_model",
+      "ready": true,
+      "relation": "tracks generated helper code and handoff files as authored research artifacts",
+      "route_id": "code_architect_packet",
+      "system": "Code Architect"
+    },
+    {
+      "authority": "validation_only",
+      "input_concepts": [
+        "repeatability",
+        "coding_actionability"
+      ],
+      "ready": true,
+      "relation": "validates the generated model before it influences confidence",
+      "route_id": "test_runner_packet",
+      "system": "Test Runner",
+      "test_command": "python -m pytest tests/generated/test_harmonic_nexus_score_model.py -q"
+    },
+    {
+      "authority": "no_trading_gate_bypass",
+      "input_concepts": [
+        "source_strength",
+        "harmonic_coherence",
+        "friction_feasibility"
+      ],
+      "ready": false,
+      "relation": "may consume calibrated features later, but this packet cannot place orders",
+      "route_id": "runtime_action_packet",
+      "system": "Runtime action layer"
+    }
+  ],
+  "query": "harmonic nexus score phi signal coherence validation",
+  "schema_version": "aureon-research-metacognition-v1",
+  "source_paths": {
+    "docs_json": "docs/audits/aureon_research_metacognition.json",
+    "docs_md": "docs/audits/aureon_research_metacognition.md",
+    "paper": "docs/research/harmonic-nexus-score_online_research_packet.md",
+    "public": "frontend/public/aureon_research_metacognition.json",
+    "state": "state/aureon_research_metacognition_latest.json",
+    "topic_state": "state/research_metacognition/harmonic-nexus-score/metacognition.json"
+  },
+  "status": "research_metacognition_active",
+  "summary": {
+    "coding_artifacts_present": true,
+    "concept_count": 8,
+    "knowledge_interpreter_used": true,
+    "motion_present": true,
+    "no_external_mutation": true,
+    "no_trading_gate_bypass": true,
+    "organism_route_count": 8,
+    "paper_present": true,
+    "ready_route_count": 7,
+    "source_count": 5,
+    "test_action_count": 3,
+    "thoughtbus_mycelium_publish_enabled": true,
+    "understood_concept_count": 8,
+    "unknown_count": 2
+  },
+  "test_action_rows": [
+    {
+      "action_id": "run_generated_tests",
+      "command": "python -m pytest tests/generated/test_harmonic_nexus_score_model.py -q",
+      "purpose": "prove the generated score helper is deterministic and bounded",
+      "state": "ready"
+    },
+    {
+      "action_id": "route_explainable_features",
+      "module_import": "aureon.generated.research_cinema.harmonic_nexus_score_model",
+      "purpose": "make Seer/Lyra/HNC consume the score as explainable context only",
+      "state": "ready"
+    },
+    {
+      "action_id": "calibrate_against_outcomes",
+      "purpose": "measure whether the score improves future decisions before promotion",
+      "state": "waiting_for_real_outcomes"
+    }
+  ],
+  "topic": "Harmonic Nexus Score",
+  "understanding_hash": "4e8fe53f1400908d665437860e3fab82ed0d868aad1ff4c598a0a695b94cee6f",
+  "understanding_summary": "Aureon understands Harmonic Nexus Score as a source-linked research packet with 8/8 concept rows and 7/8 organism routes ready. It is routed as evidence, learning, code, and validation context, not as direct trading authority.",
+  "unknown_rows": [
+    {
+      "area": "outcome calibration",
+      "next_action": "compare score changes against real outcome evidence before raising confidence",
+      "state": "requires_real_outcome_history",
+      "unknown_id": "outcome_calibration_missing"
+    },
+    {
+      "area": "source context",
+      "next_action": "re-fetch original URLs when deeper review is needed instead of storing public page bodies",
+      "state": "bounded_snippets_only",
+      "unknown_id": "full_source_context_not_stored"
+    }
+  ]
+}

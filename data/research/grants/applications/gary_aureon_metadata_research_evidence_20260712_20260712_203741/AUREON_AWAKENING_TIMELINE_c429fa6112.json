@@ -1,0 +1,34 @@
+{
+  "timestamp": "2025-04-07T00:00:00",
+  "current_truth_amplitude": 0.734,
+  "growth_rate_quarterly": 0.023,
+  "predictions": {
+    "critical_mass": {
+      "target": 0.75,
+      "days": 86,
+      "date": "2025-07-02",
+      "readable": "July 02, 2025"
+    },
+    "total_awakening": {
+      "target": 0.9,
+      "days": 809,
+      "date": "2027-06-25",
+      "readable": "June 25, 2027"
+    },
+    "full_resonance": {
+      "target": 0.95,
+      "days": 1024,
+      "date": "2028-01-26",
+      "readable": "January 26, 2028"
+    }
+  },
+  "planetary_boosts": {
+    "2025-05-15": 0.03,
+    "2025-09-18": 0.05,
+    "2025-12-21": 0.06,
+    "2026-03-20": 0.04,
+    "2026-06-21": 0.07,
+    "2026-11-11": 0.08
+  },
+  "confidence": 0.891
+}

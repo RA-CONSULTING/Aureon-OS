@@ -1,0 +1,82 @@
+{
+  "schema_version": "aureon-ifs-uk-swiss-partner-evidence-request-pdf-pack-v1",
+  "generated_at": "2026-07-10T10:09:29+01:00",
+  "operator": "Aureon",
+  "scope": "IFS_ONLY",
+  "event": "ifs_uk_swiss_partner_evidence_request_pdf_pack",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "result": "UK_SWISS_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_PORTAL_CHANGE_NO_EXTERNAL_SEND",
+  "source_targeting_pack": "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_TARGETING_PACK_20260710.json",
+  "pdf": "output/pdf/ifs/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_EVIDENCE_REQUEST_PACK_20260710_100929.pdf",
+  "candidate_targets": [
+    {
+      "rank": 1,
+      "target": "SwissChips / ETH Zurich semiconductor ecosystem",
+      "target_type": "research-institute route",
+      "theme": "Semiconductors",
+      "source": "https://swisschips.ethz.ch/research.html",
+      "contact_status": "TARGET_ONLY_NO_RELATIONSHIP_CLAIMED"
+    },
+    {
+      "rank": 2,
+      "target": "Kandou",
+      "target_type": "Swiss implementation partner candidate",
+      "theme": "Semiconductors",
+      "source": "https://deeptechnation.ch/focus-sectors/future-of-compute/",
+      "contact_status": "TARGET_ONLY_NO_RELATIONSHIP_CLAIMED"
+    },
+    {
+      "rank": 3,
+      "target": "Sensirion",
+      "target_type": "Swiss implementation partner candidate",
+      "theme": "Semiconductors",
+      "source": "https://deeptechnation.ch/focus-sectors/future-of-compute/",
+      "contact_status": "TARGET_ONLY_NO_RELATIONSHIP_CLAIMED"
+    },
+    {
+      "rank": 4,
+      "target": "Corintis",
+      "target_type": "Swiss implementation partner candidate",
+      "theme": "Semiconductors",
+      "source": "https://deeptechnation.ch/focus-sectors/future-of-compute/",
+      "contact_status": "TARGET_ONLY_NO_RELATIONSHIP_CLAIMED"
+    },
+    {
+      "rank": 5,
+      "target": "Engineering biology Swiss ecosystem via BaseLaunch, The Cultured Hub, Buhler Protein Application Center, MassChallenge",
+      "target_type": "ecosystem-route candidate",
+      "theme": "Engineering Biology",
+      "source": "https://iuk-business-connect.org.uk/wp-content/uploads/2026/03/Engineering-Biology-in-Switzerland-PUBLIC-FINAL.pdf",
+      "contact_status": "TARGET_ONLY_NO_RELATIONSHIP_CLAIMED"
+    }
+  ],
+  "required_unlock_evidence": [
+    "Named Swiss implementation partner",
+    "Research institute or documented waiver route",
+    "Partner commitment or letter of intent",
+    "Work-package split and partner roles",
+    "Partner budget, person-month basis, cost split and total eligible-cost basis",
+    "Permits/licences position",
+    "Export-control and Trusted Research and Innovation position",
+    "Project finances and Project Impact evidence",
+    "Award terms and final review evidence before final submission"
+  ],
+  "route_action": {
+    "portal_opened_or_changed": false,
+    "final_submission_attempted": false,
+    "partner_invite_sent": false,
+    "email_sent": false,
+    "upload_performed": false,
+    "reason": "This is a formal evidence request pack to unlock missing partner evidence for an existing IFS draft. It does not name any candidate as a committed partner."
+  },
+  "controls": [
+    "No partner commitment claimed",
+    "No IFS portal mutation performed",
+    "No email sent",
+    "No partner invite sent",
+    "No upload performed",
+    "No award terms accepted",
+    "No final submission attempted"
+  ]
+}

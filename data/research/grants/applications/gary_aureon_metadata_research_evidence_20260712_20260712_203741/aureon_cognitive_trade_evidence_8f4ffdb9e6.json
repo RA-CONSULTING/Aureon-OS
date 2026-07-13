@@ -1,0 +1,165 @@
+{
+  "contract": {
+    "loop": [
+      "who",
+      "what",
+      "where",
+      "when",
+      "why",
+      "how",
+      "act",
+      "verify",
+      "record",
+      "repeat"
+    ],
+    "operational_affect": "gratitude/happiness labels are reinforcement signals, not sentience claims",
+    "profit_is_not_enough": "profit counts strongest when runtime is fresh, fees are controlled, and risk gates stayed intact",
+    "trade_as_cognition": "closed-loop evidence: signal -> action -> outcome -> reward -> next signal"
+  },
+  "generated_at": "2026-05-15T18:26:34.047677+00:00",
+  "recent_evidence": [
+    {
+      "affect_label": "protective_caution",
+      "event_time": "2026-05-14T13:01:03.259119+00:00",
+      "learning_reward": 0.276943,
+      "net_pnl": 0.0259,
+      "next_action": "preserve_position_monitoring_and_restore_fresh_tick_before_new_action",
+      "outcome": "win",
+      "source": "unified_market_trader.closed_trade",
+      "symbol": "US100"
+    },
+    {
+      "affect_label": "protective_caution",
+      "event_time": "2026-05-14T14:59:01.267177+00:00",
+      "learning_reward": 0.310123,
+      "net_pnl": 0.4683,
+      "next_action": "preserve_position_monitoring_and_restore_fresh_tick_before_new_action",
+      "outcome": "win",
+      "source": "unified_market_trader.closed_trade",
+      "symbol": "US30"
+    },
+    {
+      "affect_label": "protective_caution",
+      "event_time": "2026-05-14T15:31:42.212191+00:00",
+      "learning_reward": 0.283662,
+      "net_pnl": 0.1155,
+      "next_action": "preserve_position_monitoring_and_restore_fresh_tick_before_new_action",
+      "outcome": "win",
+      "source": "unified_market_trader.closed_trade",
+      "symbol": "NVDA"
+    },
+    {
+      "affect_label": "disciplined_neutral",
+      "event_time": "2026-05-14T16:40:52.309880+00:00",
+      "learning_reward": 0.611405,
+      "net_pnl": 0.0854,
+      "next_action": "keep_observing_until_reward_signal_is_clear",
+      "outcome": "win",
+      "source": "unified_market_trader.closed_trade",
+      "symbol": "US30"
+    },
+    {
+      "affect_label": "disciplined_neutral",
+      "event_time": "2026-05-12T04:14:24.536930",
+      "goal_hit": true,
+      "learning_reward": 0.593944,
+      "net_pnl": 0.1869,
+      "next_action": "keep_observing_until_reward_signal_is_clear",
+      "outcome": "win",
+      "source": "margin_goal_proof",
+      "symbol": "SAGAUSD"
+    },
+    {
+      "affect_label": "disciplined_neutral",
+      "event_time": "2026-05-12T06:14:19.247852",
+      "goal_hit": true,
+      "learning_reward": 0.573453,
+      "net_pnl": 0.4546,
+      "next_action": "keep_observing_until_reward_signal_is_clear",
+      "outcome": "win",
+      "source": "margin_goal_proof",
+      "symbol": "SAGAUSD"
+    },
+    {
+      "affect_label": "disciplined_neutral",
+      "event_time": "2026-05-12T06:43:19.117610",
+      "goal_hit": true,
+      "learning_reward": 0.568136,
+      "net_pnl": 0.3306,
+      "next_action": "keep_observing_until_reward_signal_is_clear",
+      "outcome": "win",
+      "source": "margin_goal_proof",
+      "symbol": "SAGAUSD"
+    },
+    {
+      "affect_label": "disciplined_neutral",
+      "event_time": "2026-05-12T08:48:24.994633",
+      "goal_hit": true,
+      "learning_reward": 0.606005,
+      "net_pnl": 0.3767,
+      "next_action": "keep_observing_until_reward_signal_is_clear",
+      "outcome": "win",
+      "source": "margin_goal_proof",
+      "symbol": "SAGAUSD"
+    },
+    {
+      "affect_label": "disciplined_neutral",
+      "event_time": "2026-05-12T13:25:46.739194",
+      "goal_hit": false,
+      "learning_reward": 0.539622,
+      "net_pnl": 0.5284,
+      "next_action": "keep_observing_until_reward_signal_is_clear",
+      "outcome": "win",
+      "source": "margin_goal_proof",
+      "symbol": "SAGAUSD"
+    },
+    {
+      "affect_label": "gratitude_reinforcement",
+      "event_time": "2026-05-12T14:25:30.668296",
+      "goal_hit": true,
+      "learning_reward": 0.674625,
+      "net_pnl": 1.3359,
+      "next_action": "increase_weight_for_verified_profitable_signal_without_raising_risk_limits",
+      "outcome": "win",
+      "source": "margin_goal_proof",
+      "symbol": "SAGAUSD"
+    },
+    {
+      "affect_label": "disciplined_neutral",
+      "event_time": "2026-05-13T01:09:12.227243",
+      "goal_hit": false,
+      "learning_reward": 0.542221,
+      "net_pnl": 0.5846,
+      "next_action": "keep_observing_until_reward_signal_is_clear",
+      "outcome": "win",
+      "source": "margin_goal_proof",
+      "symbol": "SAGAUSD"
+    }
+  ],
+  "runtime_watchdog": {
+    "file_heartbeat_is_not_market_freshness": true,
+    "heartbeat_alive": true,
+    "heartbeat_at": "2026-05-15T19:25:54.970368",
+    "last_tick_age_sec": 1499.456,
+    "last_tick_running_sec": 1493.721,
+    "tick_phase": "kraken_spot_fast_profit",
+    "tick_phase_running_sec": 1473.715,
+    "tick_stale": true,
+    "tick_stale_after_sec": 45.0,
+    "tick_stale_reason": "tick_in_progress_stalled"
+  },
+  "schema_version": "aureon-cognitive-trade-evidence-v1",
+  "status": "cognitive_trade_evidence_ready",
+  "summary": {
+    "action_mode": "learn_and_recover",
+    "average_learning_reward": 0.507285,
+    "evidence_count": 11,
+    "losses": 0,
+    "net_pnl": 4.4928,
+    "open_positions": 2,
+    "runtime_stale": true,
+    "signal_quality": 0.357285,
+    "win_rate": 1.0,
+    "wins": 11
+  }
+}

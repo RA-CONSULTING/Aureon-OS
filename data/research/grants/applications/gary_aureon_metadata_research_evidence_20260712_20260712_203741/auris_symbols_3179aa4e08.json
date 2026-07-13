@@ -1,0 +1,76 @@
+{
+  "sacred_symbols": [
+    {
+      "symbol": "∞",
+      "frequency_hz": 432,
+      "state": "Active",
+      "amplification": "104%",
+      "meaning": "Infinite balance, grounding, prime field stabilizer",
+      "decay": 0.85,
+      "amplitude": 1.04
+    },
+    {
+      "symbol": "◊",
+      "frequency_hz": 528,
+      "state": "Active",
+      "amplification": "103%",
+      "meaning": "Diamond resonance, cellular repair, lattice harmonization",
+      "decay": 0.75,
+      "amplitude": 1.03
+    },
+    {
+      "symbol": "⚡",
+      "frequency_hz": 741,
+      "state": "Idle",
+      "amplification": "78%",
+      "meaning": "Lightning key, purification, breaking lattice distortion",
+      "decay": 0.95,
+      "amplitude": 0.78
+    },
+    {
+      "symbol": "🌀",
+      "frequency_hz": 852,
+      "state": "Idle",
+      "amplification": "91%",
+      "meaning": "Vortex spiral, awakening intuition, higher channel opening",
+      "decay": 0.88,
+      "amplitude": 0.91
+    },
+    {
+      "symbol": "⭐",
+      "frequency_hz": 963,
+      "state": "Active",
+      "amplification": "100%",
+      "meaning": "Starlight resonance, connection to Source, crown ignition",
+      "decay": 0.70,
+      "amplitude": 1.00
+    },
+    {
+      "symbol": "🔱",
+      "frequency_hz": 396,
+      "state": "Active",
+      "amplification": "98%",
+      "meaning": "Trident force, liberation from fear, root chakra clearing",
+      "decay": 0.82,
+      "amplitude": 0.98
+    },
+    {
+      "symbol": "🕉",
+      "frequency_hz": 417,
+      "state": "Active",
+      "amplification": "102%",
+      "meaning": "Om resonance, facilitating change, sacral chakra activation",
+      "decay": 0.77,
+      "amplitude": 1.02
+    },
+    {
+      "symbol": "🔯",
+      "frequency_hz": 639,
+      "state": "Active",
+      "amplification": "105%",
+      "meaning": "Star of David, harmonious relationships, heart chakra balance",
+      "decay": 0.73,
+      "amplitude": 1.05
+    }
+  ]
+}

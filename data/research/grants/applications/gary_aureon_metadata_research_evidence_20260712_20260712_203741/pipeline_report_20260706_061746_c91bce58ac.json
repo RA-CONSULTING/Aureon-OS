@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-07-06T06:17:45+01:00",
+  "operator": "AureonGrantOperator",
+  "summary": {
+    "total_opportunities_tracked": 19,
+    "open_opportunities": 17,
+    "total_applications": 3,
+    "active_applications": 2,
+    "pipeline_value_gbp": 0.0
+  },
+  "active_applications": [
+    {
+      "id": "APP-AIRR-001",
+      "opportunity_id": "AIRR-COMPUTE",
+      "name": "AIRR Compute: AI Open Access Application",
+      "funder": "UKRI (EPSRC)",
+      "amount_requested": 500000,
+      "currency": "GPU_HOURS",
+      "status": "DRAFT",
+      "deadline": "2026-12-31",
+      "submitted_at": null,
+      "documents": [
+        "AIRR_COMPUTE_APPLICATION.md"
+      ],
+      "assigned_to": "Aureon Operations",
+      "notes": "Application drafted. Ready to submit via UKRI portal.",
+      "created_at": "2026-07-03T00:00:00",
+      "updated_at": "2026-07-03T00:00:00"
+    },
+    {
+      "id": "APP-QUB-001",
+      "opportunity_id": "N/A",
+      "name": "QUB Honorary Research Fellow Application",
+      "funder": "Queen's University Belfast",
+      "amount_requested": 0,
+      "currency": "GBP",
+      "status": "DRAFT",
+      "deadline": "2026-07-31",
+      "submitted_at": null,
+      "documents": [
+        "QUB_OUTREACH_EMAIL.txt"
+      ],
+      "assigned_to": "Gary Leckey",
+      "notes": "Outreach email drafted. Gary to send.",
+      "created_at": "2026-07-03T00:00:00",
+      "updated_at": "2026-07-03T00:00:00"
+    }
+  ]
+}

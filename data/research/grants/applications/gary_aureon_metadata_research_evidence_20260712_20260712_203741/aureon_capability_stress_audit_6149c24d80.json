@@ -1,0 +1,248 @@
+{
+  "audit_contract": {
+    "authority_boundaries": [
+      "local-only",
+      "no live trading",
+      "no payment",
+      "no filing",
+      "no credential reveal"
+    ],
+    "goal": "Stress Aureon across task families and catch fake passes before client handover.",
+    "quality_rule": "Expected blockers are acceptable; hidden half-finished handovers are not."
+  },
+  "capability_scope": {
+    "correctly_blocked": [
+      "generic_unknown_tool_gate"
+    ],
+    "legacy_artifacts_to_ignore_or_regenerate": [
+      "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_a390ed39c350\\skill.json",
+      "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_b5884c33262e\\skill.json"
+    ],
+    "needs_repair": [
+      "short_video_preview"
+    ],
+    "proven_now": [
+      "barcode_label_tool",
+      "interactive_game"
+    ]
+  },
+  "cases": [
+    {
+      "actual_handover": true,
+      "artifact_kind": "barcode_label_generator",
+      "artifact_url": "/aureon_adaptive_skills/build_a_local_barcode_label_generator_tool_for_t_09c8258bd8ac/index.html",
+      "asset_exists": true,
+      "blocking_snag_count": 0,
+      "checks": [
+        {
+          "id": "domain_specific_barcode_logic",
+          "label": "Domain-specific barcode logic exists",
+          "ok": true
+        },
+        {
+          "id": "printable_label_preview",
+          "label": "Printable label preview is available",
+          "ok": true
+        }
+      ],
+      "expected_handover": true,
+      "fake_pass_detected": false,
+      "family": "adaptive_skill",
+      "handover_gate": {
+        "reason": "quality passed",
+        "state": "visible"
+      },
+      "id": "barcode_label_tool",
+      "ok": true,
+      "preview_exists": true,
+      "prompt": "Build a local barcode label generator tool for the warehouse team, with run instructions and proof.",
+      "quality_score": 0.96,
+      "quality_status": "artifact_quality_passed",
+      "report_job_id": "capability-forge-09c8258bd8ac",
+      "required_checks_ok": true,
+      "required_kind_ok": true,
+      "status": "capability_forge_ready",
+      "task_family": "coding",
+      "why": "proves unknown-tool requests can recruit a domain-specific local worker instead of a generic shell"
+    },
+    {
+      "actual_handover": true,
+      "artifact_kind": "html_game",
+      "artifact_url": "/aureon_generated_apps/make_me_a_game_where_a_man_walks_up_to_a_glowing_ecd9bf4b3ac7.html",
+      "asset_exists": true,
+      "blocking_snag_count": 0,
+      "checks": [
+        {
+          "id": "html_artifact_exists",
+          "label": "Playable HTML artifact exists",
+          "ok": true
+        },
+        {
+          "id": "keyboard_controls_visible",
+          "label": "Keyboard controls are documented on screen",
+          "ok": true
+        }
+      ],
+      "expected_handover": true,
+      "fake_pass_detected": false,
+      "family": "interactive_app",
+      "handover_gate": {
+        "reason": "quality passed",
+        "state": "visible"
+      },
+      "id": "interactive_game",
+      "ok": true,
+      "preview_exists": true,
+      "prompt": "Make me a game where a man walks up to a glowing door and tell the end user how to play from the keyboard.",
+      "quality_score": 0.94,
+      "quality_status": "artifact_quality_passed",
+      "report_job_id": "capability-forge-ecd9bf4b3ac7",
+      "required_checks_ok": true,
+      "required_kind_ok": true,
+      "status": "capability_forge_ready",
+      "task_family": "mixed",
+      "why": "proves local playable UI/game generation with visible controls"
+    },
+    {
+      "actual_handover": false,
+      "artifact_kind": "video",
+      "artifact_url": "/aureon_visual_artifacts/dog_running_across_the_screen_f038913b5292.mp4",
+      "asset_exists": false,
+      "blocking_snag_count": 4,
+      "checks": [
+        {
+          "id": "artifact_file_exists",
+          "label": "Artifact file exists",
+          "ok": false
+        },
+        {
+          "id": "preview_page_present",
+          "label": "HTML preview page present",
+          "ok": false
+        }
+      ],
+      "expected_handover": true,
+      "fake_pass_detected": false,
+      "family": "media",
+      "handover_gate": {
+        "reason": "quality gate or expected blocker held handover",
+        "state": "held"
+      },
+      "id": "short_video_preview",
+      "ok": false,
+      "preview_exists": true,
+      "prompt": "Make a 1 second video of a dog running across the screen and show a browser-playable preview.",
+      "quality_score": 0.429,
+      "quality_status": "artifact_quality_blocked",
+      "report_job_id": "capability-forge-9c99be0382c7",
+      "required_checks_ok": false,
+      "required_kind_ok": true,
+      "status": "capability_forge_quality_blocked",
+      "task_family": "video",
+      "why": "proves media handover requires playable browser preview, not only a file path"
+    },
+    {
+      "actual_handover": false,
+      "artifact_kind": "adaptive_skill_capsule",
+      "artifact_url": "/aureon_adaptive_skills/build_a_local_quantum_spline_inventory_generator_95e408c72e6e/index.html",
+      "asset_exists": true,
+      "blocking_snag_count": 1,
+      "checks": [
+        {
+          "id": "domain_specific_worker_present",
+          "label": "Finished domain-specific worker exists when a tool is requested",
+          "ok": false
+        }
+      ],
+      "expected_handover": false,
+      "fake_pass_detected": false,
+      "family": "adaptive_skill",
+      "handover_gate": {
+        "reason": "quality gate or expected blocker held handover",
+        "state": "held"
+      },
+      "id": "generic_unknown_tool_gate",
+      "ok": true,
+      "preview_exists": true,
+      "prompt": "Build a local quantum spline inventory generator tool with run instructions and proof.",
+      "quality_score": 0.68,
+      "quality_status": "artifact_quality_blocked",
+      "report_job_id": "capability-forge-95e408c72e6e",
+      "required_checks_ok": true,
+      "required_kind_ok": true,
+      "status": "capability_forge_quality_blocked",
+      "task_family": "coding",
+      "why": "proves Aureon does not fake-pass a finished tool when no domain worker exists yet"
+    }
+  ],
+  "fixes_applied": [
+    "barcode label prompts now recruit barcode_label_generator_skill instead of universal_adaptive_skill_forge",
+    "generic finished-tool prompts now hold handover when no domain-specific worker exists",
+    "stress audit publishes case-by-case capability scope for the cockpit"
+  ],
+  "generated_at": "2026-05-21T08:32:56.574332+00:00",
+  "legacy_findings": [
+    {
+      "fix_status": "new barcode_label_generator_skill now replaces this path on rerun",
+      "id": "legacy_generic_barcode_capsule",
+      "metadata_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_a390ed39c350\\skill.json",
+      "prompt": "Build a local barcode label generator tool for the warehouse team, with run instructions and proof.\n\nClient-approved scope answers:\n- goal: Build a local barcode label generator tool for the warehouse team.\n- deliverables: Adaptive local sk",
+      "severity": "high",
+      "title": "Old barcode tool artifact was a generic adaptive capsule",
+      "tool_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_a390ed39c350\\tool.py"
+    },
+    {
+      "fix_status": "new barcode_label_generator_skill now replaces this path on rerun",
+      "id": "legacy_generic_barcode_capsule",
+      "metadata_path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_b5884c33262e\\skill.json",
+      "prompt": "Build a local barcode label generator tool for the warehouse team, with run instructions and proof.\n\nClient-approved scope answers:\n- deliverables: Adaptive local skill capsule, browser preview, runbook, Python run contract, and proof.\n- ta",
+      "severity": "high",
+      "title": "Old barcode tool artifact was a generic adaptive capsule",
+      "tool_path": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\frontend\\public\\aureon_adaptive_skills\\build_a_local_barcode_label_generator_tool_for_t_b5884c33262e\\tool.py"
+    }
+  ],
+  "ok": false,
+  "output_files": [
+    "state/aureon_capability_stress_audit_last_run.json",
+    "docs/audits/aureon_capability_stress_audit.json",
+    "docs/audits/aureon_capability_stress_audit.md",
+    "frontend/public/aureon_capability_stress_audit.json"
+  ],
+  "schema_version": "aureon-capability-stress-audit-v1",
+  "status": "capability_stress_audit_needs_attention",
+  "summary": {
+    "case_count": 4,
+    "correctly_held_case_count": 1,
+    "expected_blocked_count": 1,
+    "fake_pass_count": 0,
+    "handover_ready_case_count": 2,
+    "legacy_finding_count": 2,
+    "passed_count": 3,
+    "unexpected_failure_count": 1
+  },
+  "write_info": {
+    "coding_bridge_evidence_writes": [],
+    "evidence_writes": [
+      {
+        "bytes": 9311,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\state\\aureon_capability_stress_audit_last_run.json"
+      },
+      {
+        "bytes": 9311,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_capability_stress_audit.json"
+      },
+      {
+        "bytes": 1309,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_capability_stress_audit.md"
+      },
+      {
+        "bytes": 9311,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_capability_stress_audit.json"
+      }
+    ]
+  }
+}

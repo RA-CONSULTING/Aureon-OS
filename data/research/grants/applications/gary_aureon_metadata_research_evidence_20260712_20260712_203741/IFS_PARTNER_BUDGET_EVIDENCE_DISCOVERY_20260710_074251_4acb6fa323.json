@@ -1,0 +1,132 @@
+﻿{
+    "schema_version":  "aureon-ifs-partner-budget-evidence-discovery-v1",
+    "generated_at":  "2026-07-10T07:42:51+01:00",
+    "operator":  "Aureon",
+    "scope":  "IFS_ONLY",
+    "application_id":  "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+    "portal_application_number":  "10210100",
+    "competition":  "UK-Switzerland CR\u0026D Round 3",
+    "discovery_result":  "NO_CONFIRMED_PARTNER_OR_BUDGET_EVIDENCE_FOUND",
+    "evidence_flags":  {
+                           "confirmed_swiss_implementation_partner":  false,
+                           "confirmed_research_institute_or_waiver":  false,
+                           "confirmed_partner_commitment_or_loi":  false,
+                           "confirmed_partner_budget_or_person_months":  false,
+                           "confirmed_total_eligible_project_costs":  false,
+                           "confirmed_export_control_tri_review":  false,
+                           "ready_for_final_ifs_submission":  false
+                       },
+    "drive_search":  {
+                         "account_context":  "gaxlec@gmail.com Drive connector",
+                         "searched_queries":  [
+                                                  {
+                                                      "query":  "Swiss",
+                                                      "topn":  5,
+                                                      "relevant_results":  [
+                                                                               "Aureon Grant War Room - 2026-07-04"
+                                                                           ],
+                                                      "finding":  "War-room sheet references UK-Switzerland as an opportunity and Swiss implementation partner as a needed target; no commitment evidence found."
+                                                  },
+                                                  {
+                                                      "query":  "Innosuisse",
+                                                      "topn":  5,
+                                                      "relevant_results":  [
+                                                                               "Aureon Grant War Room - 2026-07-04"
+                                                                           ],
+                                                      "finding":  "Only planning/status material found; no Innosuisse partner intent or application evidence found."
+                                                  },
+                                                  {
+                                                      "query":  "partner evidence",
+                                                      "topn":  5,
+                                                      "relevant_results":  [
+                                                                               "Aureon Grant War Room - 2026-07-04",
+                                                                               "EIC_ACCELERATOR_STEP1_SHORT_PROPOSAL_DRAFT_20260706.pdf"
+                                                                           ],
+                                                      "finding":  "Generic partner/LOI requirement material found; no UK-Swiss partner commitment found."
+                                                  },
+                                                  {
+                                                      "query":  "Aureon budget",
+                                                      "topn":  5,
+                                                      "relevant_results":  [
+                                                                               "Aureon Grant War Room - 2026-07-04",
+                                                                               "AUREON_WHITE_PAPER_RESEARCH_HUB.md"
+                                                                           ],
+                                                      "finding":  "War-room budget status is Not started; research hub is technical evidence, not an eligible-cost budget."
+                                                  },
+                                                  {
+                                                      "query":  "10210100",
+                                                      "topn":  5,
+                                                      "relevant_results":  [
+
+                                                                           ],
+                                                      "finding":  "No Drive result for the live IFS draft number."
+                                                  }
+                                              ],
+                         "fetched_files":  [
+                                               {
+                                                   "title":  "Aureon Grant War Room - 2026-07-04",
+                                                   "url":  "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+                                                   "classification":  "pipeline planning and evidence register",
+                                                   "finding":  "Lists UK-Switzerland CR\u0026D as an opportunity and Partner Map target categories. Validation checklist says Partners are Not clear and Budget is Not started."
+                                               },
+                                               {
+                                                   "title":  "AUREON_WHITE_PAPER_RESEARCH_HUB.md",
+                                                   "url":  "https://drive.google.com/file/d/1Fe8YaOtUiYB8ThdT-o9GrzHN_T1n-o7C",
+                                                   "classification":  "technical research evidence",
+                                                   "finding":  "Useful for technical narrative only. Does not evidence partner commitment or eligible-cost split."
+                                               },
+                                               {
+                                                   "title":  "EIC_ACCELERATOR_STEP1_SHORT_PROPOSAL_DRAFT_20260706.pdf",
+                                                   "url":  "https://drive.google.com/file/d/160YrpXBf7pJI2cMkk_4yhIxhll4kjYsG",
+                                                   "classification":  "non-IFS draft package",
+                                                   "finding":  "States LOIs, pilot evidence, finance plan and privacy/IP review are still required for EIC. Not UK-Swiss partner or budget evidence."
+                                               }
+                                           ]
+                     },
+    "local_search":  {
+                         "targeted_grant_workspace":  "C:\\Users\\user\\aureon-trading\\data\\research\\grants",
+                         "common_local_paths":  [
+                                                    "C:\\Users\\user\\Desktop",
+                                                    "C:\\Users\\user\\Documents",
+                                                    "C:\\Users\\user\\Downloads"
+                                                ],
+                         "onedrive_path":  "C:\\Users\\user\\OneDrive",
+                         "onedrive_result":  "PARTIAL_READ_ERRORS_CLOUD_PROVIDER_NOT_RUNNING; not treated as verified evidence.",
+                         "exact_text_search_result":  "No local Desktop/Documents/Downloads text matches for 10210100, Innosuisse, Kandou, Sensirion, Corintis, SwissChips, Swiss implementation, partner commitment, letter of intent, person-month, eligible costs, or cost split outside the grant workspace.",
+                         "classified_files":  [
+                                                  {
+                                                      "path":  "applications/IFS_UK_SWISS_CRD_R3_10210100_PARTNER_TARGETING_PACK_20260710.json",
+                                                      "classification":  "target list only",
+                                                      "finding":  "All targets are TARGET_ONLY_NO_RELATIONSHIP_CLAIMED."
+                                                  },
+                                                  {
+                                                      "path":  "applications/IFS_UK_SWISS_CRD_R3_10210100_COMPLETION_MANIFEST_20260710.json",
+                                                      "classification":  "completion manifest",
+                                                      "finding":  "Says final completion requires named Swiss implementation partner, research institute or waiver, partner work packages, consortium budget, IP/data plan, export-control and TR\u0026I review."
+                                                  },
+                                                  {
+                                                      "path":  "applications/IFS_UK_SWISS_CRD_R3_10210100_PORTAL_PROGRESS_20260710_072846.json",
+                                                      "classification":  "portal progress record",
+                                                      "finding":  "Portal draft has subsidy and finance profile complete, but application team, Q1, Q4-Q17, costs, finances overview, Project Impact forecasts/readiness, award terms and review/submit remain incomplete."
+                                                  }
+                                              ]
+                     },
+    "decision":  {
+                     "application_status_after_discovery":  "IFS_DRAFT_EVIDENCE_DISCOVERY_COMPLETE_PARTNER_BUDGET_EVIDENCE_REQUIRED",
+                     "rationale":  "Prepared target and draft text evidence does not satisfy IFS partner, application-team, budget, export-control, TR\u0026I, Project Impact readiness, award terms, or final review requirements.",
+                     "allowed_next_action":  "Continue evidence collection and partner outreach preparation; do not mark partner-dependent sections complete until confirmed evidence is recorded.",
+                     "disallowed_actions":  [
+                                                "No partner invitation without named confirmed organisation/contact and role evidence",
+                                                "No Q17 or finance costs without eligible-cost basis",
+                                                "No award terms acceptance",
+                                                "No Project Impact final submit",
+                                                "No review and submit",
+                                                "No email, Drive upload, account bypass, CAPTCHA/MFA bypass, or plaintext password storage"
+                                            ]
+                 },
+    "artifacts":  [
+                      "applications/IFS_PARTNER_BUDGET_EVIDENCE_DISCOVERY_20260710_074251.json",
+                      "applications/IFS_PARTNER_BUDGET_EVIDENCE_DISCOVERY_20260710_074251.md",
+                      "pipelines/pipeline_report_20260710_074251_ifs_partner_budget_evidence_discovery.json"
+                  ]
+}

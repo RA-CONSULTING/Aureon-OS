@@ -1,0 +1,372 @@
+{
+  "schema_version": "aureon-ifs-current-competitions-v4",
+  "generated_at": "2026-07-10T23:20:50+01:00",
+  "operator": "Aureon",
+  "source_urls": [
+    "https://apply-for-innovation-funding.service.gov.uk/competition/search",
+    "https://apply-for-innovation-funding.service.gov.uk/competition/search?page=1"
+  ],
+  "count": 20,
+  "competitions": [
+    {
+      "competition_id": "2520",
+      "name": "ADOPT Facilitator Support Grant: Round 10",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2520/overview/7b03dc59-645f-426d-a08f-6c6e6b6d6e0e",
+      "opened": "2 July 2026",
+      "closes": "12 August 2026",
+      "official_eligibility_signal": "Active farming, growing or forestry business based in England; single applicants only.",
+      "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+      "web_line_refs": [
+        "turn0view0 lines 58-75"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "EXPLICITLY_GATED_OR_INELIGIBLE",
+      "local_status": "ADOPT_FACILITATOR_ENGLAND_FARM_BUSINESS_AND_REGISTERED_FACILITATOR_EVIDENCE_REQUIRED",
+      "local_deadline": "2026-08-12T11:00:00+01:00",
+      "portal_application_number": null,
+      "local_gate": "England farming/growing/forestry applicant and registered Project Facilitator evidence required."
+    },
+    {
+      "competition_id": "2512",
+      "name": "UK-Switzerland CR&D Round 3",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2512/overview/2f0a03c4-44b7-42dc-8845-70751b6bc531",
+      "opened": "1 July 2026",
+      "closes": "3 September 2026",
+      "official_eligibility_signal": "UK and Swiss collaborations only; UK business lead must collaborate with a Swiss implementation partner and at least one research institute.",
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "web_line_refs": [
+        "turn0view0 lines 79-96"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "LIVE_DRAFT_GATED",
+      "local_status": "IFS_DRAFT_80_PERCENT_EVIDENCE_DELTA_NO_UNLOCK_Q4_Q6_Q17_FINANCE_IMPACT_TERMS_GATED",
+      "local_deadline": "2026-09-03T11:00:00+01:00",
+      "portal_application_number": "10210100",
+      "local_gate": "SWISS_PARTNER_RESEARCH_INSTITUTE_BUDGET_AND_FINANCE_EVIDENCE_REQUIRED"
+    },
+    {
+      "competition_id": "2523",
+      "name": "Scaling performance of quantum computing hardware: CR&D",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2523/overview/780f14e7-b64d-4264-b206-b498304d03c5",
+      "opened": "27 June 2026",
+      "closes": "18 September 2026",
+      "official_eligibility_signal": "Collaborations only; lead must be a UK registered business or RTO.",
+      "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "web_line_refs": [
+        "turn0view0 lines 100-111"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "EXPLICITLY_GATED_OR_INELIGIBLE",
+      "local_status": "QUANTUM_HARDWARE_LEAD_ACCESS_CONSORTIUM_AND_BUDGET_EVIDENCE_REQUIRED",
+      "local_deadline": "2026-09-18T11:00:00+01:00",
+      "portal_application_number": null,
+      "local_gate": "Quantum hardware lead, hardware access, consortium, budget and Project Impact evidence required."
+    },
+    {
+      "competition_id": "2522",
+      "name": "DRIVE35 Innovation Fund: Collaborate 3",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2522/overview/25a1cadb-ab0d-4d6d-a629-4f5d3ead5994",
+      "opened": "26 June 2026",
+      "closes": "16 September 2026",
+      "official_eligibility_signal": "Collaborations only; UK registered business can lead.",
+      "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+      "web_line_refs": [
+        "turn0view0 lines 115-129"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "EXPLICITLY_GATED_OR_INELIGIBLE",
+      "local_status": "DRIVE35_COLLAB3_ZEV_PARTNER_MATCH_FUNDING_AND_TIER1_EVIDENCE_REQUIRED",
+      "local_deadline": "2026-09-16T11:00:00+01:00",
+      "portal_application_number": null,
+      "local_gate": "Vehicle manufacturer or Tier 1 partner, SME claimant, match funding, late-stage R&D and budget evidence required."
+    },
+    {
+      "competition_id": "2517",
+      "name": "Next Wave: Breakthrough Wave 1",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2517/overview/6ff2066d-4639-44e6-bb4f-ce7099222739",
+      "opened": "23 June 2026",
+      "closes": "11 August 2026",
+      "official_eligibility_signal": "Single UK SME or UK SME lead for collaboration.",
+      "application_id": "APP-IFS-NEXT-WAVE-10209601",
+      "web_line_refs": [
+        "turn0view0 lines 133-148"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "SUBMITTED_MONITOR_ONLY",
+      "local_status": "SUBMITTED",
+      "local_deadline": "2026-08-11T11:00:00+01:00",
+      "portal_application_number": "10209601",
+      "local_gate": "Waiting for funder eligibility checks and assessment."
+    },
+    {
+      "competition_id": "2511",
+      "name": "CfI: Earlier identification of UK children with SEN",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2511/overview/cc9f4bb9-55a5-4b4c-9843-015c385e021f",
+      "opened": "23 June 2026",
+      "closes": "5 August 2026",
+      "official_eligibility_signal": "Single legal entity contract route; organisations of any size can lead.",
+      "application_id": "APP-IFS-CFI-SEN-2511-20260709",
+      "web_line_refs": [
+        "turn0view0 lines 152-168"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "SUBMITTED_MONITOR_ONLY",
+      "local_status": "SUBMITTED",
+      "local_deadline": "2026-08-05T11:00:00+01:00",
+      "portal_application_number": "10210045",
+      "local_gate": "Waiting for funder eligibility checks and assessment."
+    },
+    {
+      "competition_id": "2499",
+      "name": "Future Leaders Fellowships: Round 11, business and non-academic",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2499/overview/60da9000-d438-47fb-92aa-e8d9435a17ab",
+      "opened": "22 June 2026",
+      "closes": "4 November 2026",
+      "official_eligibility_signal": "Single applicants with supporting organisations; UK registered business may host.",
+      "application_id": "APP-IFS-FLF-R11-2499-20260709",
+      "web_line_refs": [
+        "turn0view0 lines 172-192"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "SUBMITTED_MONITOR_ONLY",
+      "local_status": "SUBMITTED",
+      "local_deadline": "2026-11-04T11:00:00+00:00",
+      "portal_application_number": "10209992",
+      "local_gate": "Waiting for funder eligibility checks and assessment."
+    },
+    {
+      "competition_id": "2445",
+      "name": "DRIVE35: Scale Up Fund",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2445/overview/a850ba04-f0b3-42c5-8dfa-03375731a884",
+      "opened": "17 June 2026",
+      "closes": "No submission deadline",
+      "official_eligibility_signal": "UK registered business can lead; project must create scale-up manufacturing facilities for zero emission vehicle technologies.",
+      "application_id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+      "web_line_refs": [
+        "turn0view0 lines 196-211"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "EXPLICITLY_GATED_OR_INELIGIBLE",
+      "local_status": "DRIVE35_SCALEUP_ZEV_MANUFACTURING_FACILITY_AND_COINVESTMENT_EVIDENCE_REQUIRED",
+      "local_deadline": "open-no-submission-deadline",
+      "portal_application_number": null,
+      "local_gate": "ZEV manufacturing facility, co-investment, eligible business lead, site and cost evidence required."
+    },
+    {
+      "competition_id": "2509",
+      "name": "Consumer Led Flexibility for the Clean Energy Superpower Mission",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2509/overview/c1794f5a-06bf-41bb-8a13-3e657dacef54",
+      "opened": "10 June 2026",
+      "closes": "26 August 2026",
+      "official_eligibility_signal": "Single applicants or collaborations; UK business, RTO, charity, not-for-profit, public sector organisation or academic institution can lead.",
+      "application_id": "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+      "web_line_refs": [
+        "turn0view0 lines 215-228"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "SUBMITTED_MONITOR_ONLY",
+      "local_status": "SUBMITTED",
+      "local_deadline": "2026-08-26T11:00:00+01:00",
+      "portal_application_number": "10210032",
+      "local_gate": "Waiting for funder eligibility checks and assessment."
+    },
+    {
+      "competition_id": "2505",
+      "name": "Innovation Loans Expression of Interest",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2505/overview/8ef63f10-ea07-4ffd-9812-e944542751b6",
+      "opened": "6 June 2026",
+      "closes": "No submission deadline",
+      "official_eligibility_signal": "Loan route for single UK registered SMEs only; not grant funding.",
+      "application_id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+      "web_line_refs": [
+        "turn0view0 lines 232-244"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "EXPLICITLY_GATED_OR_INELIGIBLE",
+      "local_status": "INNOVATION_LOANS_REPAYABLE_FINANCE_CAPACITY_AND_ACTION_APPROVAL_REQUIRED",
+      "local_deadline": "open-no-submission-deadline",
+      "portal_application_number": null,
+      "local_gate": "INNOVATION_LOANS_REPAYABLE_FINANCE_CAPACITY_AND_ACTION_APPROVAL_REQUIRED"
+    },
+    {
+      "competition_id": "2491",
+      "name": "Full ADOPT Grant: Round 8",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2491/overview/77ba6cb6-c14d-41f7-84de-e45446636e50",
+      "opened": "4 June 2026",
+      "closes": "29 July 2026",
+      "official_eligibility_signal": "Collaborations only; lead must be an active farming, growing or forestry business based in England.",
+      "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+      "web_line_refs": [
+        "turn1view0 lines 58-75"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "EXPLICITLY_GATED_OR_INELIGIBLE",
+      "local_status": "ADOPT_FULL_FARMING_LEAD_AND_PARTNER_EVIDENCE_REQUIRED",
+      "local_deadline": "2026-07-29T11:00:00+01:00",
+      "portal_application_number": null,
+      "local_gate": "England farming lead, UK farming collaborator, listed facilitator, site and budget evidence required."
+    },
+    {
+      "competition_id": "2502",
+      "name": "ACTASAP Pilot Phase 1",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2502/overview/35ca10fb-d4f5-4510-9ddd-e7e3133d2b6d",
+      "opened": "4 June 2026",
+      "closes": "28 July 2026",
+      "official_eligibility_signal": "UK registered academic institutions must work alone or lead.",
+      "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+      "web_line_refs": [
+        "turn1view0 lines 79-93"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "EXPLICITLY_GATED_OR_INELIGIBLE",
+      "local_status": "ACTASAP_ACADEMIC_LEAD_AND_TTO_EVIDENCE_REQUIRED",
+      "local_deadline": "2026-07-28T11:00:00+01:00",
+      "portal_application_number": null,
+      "local_gate": "Academic lead, TTO or equivalent support, ACT idea ownership and eligible cost basis required."
+    },
+    {
+      "competition_id": "2473",
+      "name": "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2473/overview/d9a164dd-2094-4590-baa7-a057279d80a3",
+      "opened": "26 May 2026",
+      "closes": "15 July 2026",
+      "official_eligibility_signal": "Lead must be UK higher education/further education institution, RTO or Catapult and collaborate with a UK business with four or more FTE.",
+      "application_id": "APP-IFS-AKT6-2473-20260709",
+      "web_line_refs": [
+        "turn1view0 lines 97-113"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "EXPLICITLY_GATED_OR_INELIGIBLE",
+      "local_status": "AKT6_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+      "local_deadline": "2026-07-15T11:00:00+01:00",
+      "portal_application_number": null,
+      "local_gate": "eligible UK knowledge-base lead; TTO or authorised lead contact; UK business four-FTE evidence; work package and budget basis; signed role confirmation"
+    },
+    {
+      "competition_id": "2478",
+      "name": "Commercialising Knowledge Assets Fund (CKAF) Autumn",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2478/overview/77f0cc95-dd1b-450f-a02d-e83046b464c1",
+      "opened": "18 May 2026",
+      "closes": "1 September 2026",
+      "official_eligibility_signal": "Single applicant route for UK registered government research organisations including PRSE, UKRI wholly owned institute, or eligible public sector body with research as a primary function.",
+      "application_id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+      "web_line_refs": [
+        "turn1view0 lines 117-136"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "EXPLICITLY_GATED_OR_INELIGIBLE",
+      "local_status": "CKAF_PUBLIC_SECTOR_RESEARCH_ORG_AND_KNOWLEDGE_ASSET_EVIDENCE_REQUIRED",
+      "local_deadline": "2026-09-01T11:00:00+01:00",
+      "portal_application_number": null,
+      "local_gate": "Eligible public sector research organisation, Knowledge Asset ownership and senior support evidence required."
+    },
+    {
+      "competition_id": "2436",
+      "name": "Zero Emission Vessels and Infrastructure 2: Energy Efficiency",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2436/overview/97d03e1a-7760-4939-97b4-4f230c84a6aa",
+      "opened": "26 March 2026",
+      "closes": "16 September 2026",
+      "official_eligibility_signal": "Collaborations only; UK registered business can lead and must collaborate with other UK registered organisations.",
+      "application_id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+      "web_line_refs": [
+        "turn1view0 lines 140-156"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+      "local_status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "local_deadline": "2026-09-16T11:00:00+01:00",
+      "portal_application_number": null,
+      "local_gate": "MARITIME_LEAD_ASSET_SITE_PERMIT_BUDGET_EVIDENCE_REQUIRED"
+    },
+    {
+      "competition_id": "2435",
+      "name": "Zero Emission Vessels and Infrastructure 2: Electric Power",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2435/overview/592ea5c1-f713-4654-bb5e-d6894cd06d86",
+      "opened": "26 March 2026",
+      "closes": "16 September 2026",
+      "official_eligibility_signal": "Collaborations only; UK registered business can lead and must collaborate with other UK registered organisations.",
+      "application_id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+      "web_line_refs": [
+        "turn1view0 lines 160-176"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+      "local_status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "local_deadline": "2026-09-16T11:00:00+01:00",
+      "portal_application_number": null,
+      "local_gate": "MARITIME_LEAD_ASSET_SITE_PERMIT_BUDGET_EVIDENCE_REQUIRED"
+    },
+    {
+      "competition_id": "2434",
+      "name": "Zero Emission Vessels and Infrastructure 2: Alternative Fuels",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2434/overview/7d0c5074-e01c-4556-8674-4b185136f0ea",
+      "opened": "26 March 2026",
+      "closes": "16 September 2026",
+      "official_eligibility_signal": "Collaborations only; UK registered business can lead and must collaborate with other UK registered organisations.",
+      "application_id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+      "web_line_refs": [
+        "turn1view0 lines 180-196"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+      "local_status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "local_deadline": "2026-09-16T11:00:00+01:00",
+      "portal_application_number": null,
+      "local_gate": "MARITIME_LEAD_ASSET_SITE_PERMIT_BUDGET_EVIDENCE_REQUIRED"
+    },
+    {
+      "competition_id": "2415",
+      "name": "Clean Maritime Demonstration Competition 7: Pre-deployment trials",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2415/overview/9c26afe6-1c43-4269-b626-982dc951e02b",
+      "opened": "11 March 2026",
+      "closes": "15 July 2026",
+      "official_eligibility_signal": "Collaborations only; UK registered business can lead and must collaborate with other UK registered organisations.",
+      "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "web_line_refs": [
+        "turn1view0 lines 200-216"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+      "local_status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "local_deadline": "2026-07-15T11:00:00+01:00",
+      "portal_application_number": null,
+      "local_gate": "MARITIME_LEAD_ASSET_SITE_PERMIT_BUDGET_EVIDENCE_REQUIRED"
+    },
+    {
+      "competition_id": "2416",
+      "name": "Clean Maritime Demonstration Competition 7: Feasibility studies",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2416/overview/13cb21d1-2c01-471a-bc46-b69ce77c5884",
+      "opened": "11 March 2026",
+      "closes": "15 July 2026",
+      "official_eligibility_signal": "Collaborations only; UK registered business can lead and must collaborate with other UK registered organisations.",
+      "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "web_line_refs": [
+        "turn1view0 lines 220-236"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+      "local_status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "local_deadline": "2026-07-15T11:00:00+01:00",
+      "portal_application_number": null,
+      "local_gate": "MARITIME_LEAD_ASSET_SITE_PERMIT_BUDGET_EVIDENCE_REQUIRED"
+    },
+    {
+      "competition_id": "2414",
+      "name": "Clean Maritime Demonstration Competition 7: Deployment trials",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2414/overview/c0566767-b837-47cf-b9a1-5ed348dcb86b",
+      "opened": "11 March 2026",
+      "closes": "15 July 2026",
+      "official_eligibility_signal": "Collaborations only; UK registered business can lead and must collaborate with other UK registered organisations.",
+      "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "web_line_refs": [
+        "turn1view0 lines 240-257"
+      ],
+      "coverage": "COVERED_IN_AUREON_QUEUE",
+      "route_class": "CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+      "local_status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "local_deadline": "2026-07-15T11:00:00+01:00",
+      "portal_application_number": null,
+      "local_gate": "MARITIME_LEAD_ASSET_SITE_PERMIT_BUDGET_EVIDENCE_REQUIRED"
+    }
+  ]
+}

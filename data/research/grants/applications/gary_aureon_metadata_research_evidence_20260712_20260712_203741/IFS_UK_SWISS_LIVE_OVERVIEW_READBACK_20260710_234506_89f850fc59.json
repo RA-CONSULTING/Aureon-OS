@@ -1,0 +1,88 @@
+{
+  "schema_version": "aureon-ifs-live-overview-readback-v1",
+  "generated_at": "2026-07-10T23:45:06+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_uk_swiss_live_overview_readback",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "portal_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210100",
+  "competition": "UK-Switzerland CR&D Round 3",
+  "application_deadline": "2026-09-03T11:00:00+01:00",
+  "days_left_reported_by_portal": 55,
+  "application_progress": "36%",
+  "complete_sections": [
+    "Subsidy basis",
+    "Application details",
+    "Research category",
+    "Project summary",
+    "Public description",
+    "Scope",
+    "Q2 Applicant location",
+    "Q3 Animal testing"
+  ],
+  "incomplete_sections": [
+    "Application team",
+    "Q1 Themes",
+    "Q4 Permits and licences",
+    "Q5 International collaboration",
+    "Q6 Export licence",
+    "Q7 Trusted Research and Innovation",
+    "Q8 Need or challenge",
+    "Q9 Approach and innovation",
+    "Q10 Team and resources",
+    "Q11 Market awareness",
+    "Q12 Outcomes and route to market",
+    "Q13 Wider impacts",
+    "Q14 Project management",
+    "Q15 Risks",
+    "Q16 Added value",
+    "Q17 Costs and value for money",
+    "Your project finances",
+    "Finances overview",
+    "Project impact",
+    "Award terms and conditions"
+  ],
+  "readback_context": {
+    "source": "Chrome live IFS application overview readback",
+    "page_title": "Application overview - Aureon Evidence OS for Cross-Border R&D Assurance - Innovation Funding Service",
+    "h1": "Aureon Evidence OS for Cross-Border R&D Assurance Application overview",
+    "timeout_messages_detected_in_dom": [
+      "Your application has timed out",
+      "Your application will time out soon"
+    ],
+    "older_local_readback_conflict": {
+      "older_artifact": "applications/IFS_UK_SWISS_LIVE_AUTHENTICATED_READBACK_20260710_230706.json",
+      "older_progress": "80%",
+      "current_progress": "36%",
+      "operator_treatment": "Treat the current live overview readback as the controlling current state until a fresh authenticated section-by-section readback proves otherwise."
+    }
+  },
+  "decision": {
+    "direct_submit_ready": false,
+    "safe_portal_action_now": false,
+    "new_browser_submission_available": false,
+    "why_not_now": "The current IFS overview marks the UK-Swiss draft 36% complete and missing partner, theme, legal, export-control, finance, project-impact and award-terms sections. The clean portal pack is not enough to complete these fields without partner and cost evidence.",
+    "next_operator_action": "Acquire or read back named Swiss partner, research institute or waiver, partner commitment, budget, permit/licence, export-control, finance and Project Impact evidence before editing the IFS draft again."
+  },
+  "portal_blockers": [
+    "Current live IFS overview reports 36% complete.",
+    "Application team and Q1 are incomplete on the current overview.",
+    "Q4 permits/licences, Q6 export licence and Q17 costs/value remain evidence-gated.",
+    "Q8 to Q16 show incomplete on the current overview even though older local readbacks recorded 80%.",
+    "Project finances, finances overview, Project Impact and award terms remain incomplete.",
+    "The portal cannot be treated as submit-ready and no field should be changed from assumptions."
+  ],
+  "controls": [
+    "Chrome and IFS were used for live overview readback only.",
+    "No IFS portal field was changed.",
+    "No IFS application was submitted.",
+    "No Q4 permit/licence declaration was made.",
+    "No Q6 export-control declaration was made.",
+    "No cost, finance, Project Impact or award-terms field was completed.",
+    "No final IFS submission was attempted.",
+    "No email, contact form, partner invite or upload action was performed.",
+    "No password or runtime secret was written to this artifact."
+  ],
+  "result": "LIVE_IFS_OVERVIEW_READBACK_36_PERCENT_NO_SAFE_PORTAL_ACTION"
+}

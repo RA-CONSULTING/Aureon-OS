@@ -1,0 +1,35 @@
+Gary,
+
+Aureon has submitted the UKRI AIRR Rapid Access proposal for R&A Consulting and Brokerage Services Ltd.
+
+Status: submitted.
+Funder: UKRI / AIRR.
+Programme: Isambard-AI and Dawn AIRR supercomputers: Rapid Access route.
+Portal proposal ID: 0261-1607-9572-1.
+Submitted: Jul 9, 2026, 3:02 PM.
+Portal URL: https://portal-airr.isambard.ac.uk/proposals/e65e370573b8456183e3221590bacff7/
+
+Project title:
+Aureon Rapid Evidence Evaluation Sprint
+
+Request:
+- 20,000 Isambard-AI GPU hours.
+- 90-day / three-month sprint.
+- Compute resource only; no cash grant.
+
+Official templates uploaded:
+- AIRR Rapid Access project details form.
+- AIRR Rapid Access assessment questions form.
+
+Local Aureon records:
+- C:\Users\user\aureon-trading\data\research\grants\applications\AIRR_RAPID_ACCESS_SUBMISSION_STATUS_20260709.md
+- C:\Users\user\aureon-trading\data\research\grants\applications\AIRR_RAPID_ACCESS_SUBMISSION_RECEIPT_20260709.json
+- C:\Users\user\aureon-trading\data\research\grants\applications\AIRR_RAPID_ACCESS_PROJECT_DETAILS_COMPLETED_20260709.docx
+- C:\Users\user\aureon-trading\data\research\grants\applications\AIRR_RAPID_ACCESS_ASSESSMENT_COMPLETED_20260709.docx
+- C:\Users\user\aureon-trading\data\research\grants\applications\rendered\airr_rapid_access_submitted_20260709.png
+
+Next action:
+Monitor AIRRPortal and this Gmail inbox for review outcome, award offer, equality monitoring, account provisioning, or follow-up questions.
+
+Generated: 2026-07-09T15:05:00+01:00
+Aureon

@@ -1,0 +1,290 @@
+{
+  "codex_audit_state": {
+    "allowed_states": [
+      "autonomous_safe",
+      "pending",
+      "passed",
+      "failed"
+    ],
+    "autonomous_safe_local": true,
+    "blocking_states": [
+      "failed"
+    ],
+    "policy": "Safe local fixes run autonomously; Codex/user audit is recorded after the fact and only a failed audit blocks handover.",
+    "reviewer": "Codex/user",
+    "state": "autonomous_safe"
+  },
+  "generated_at": "2026-05-22T18:17:44.244179+00:00",
+  "handover_ready": false,
+  "ok": false,
+  "operator_prompt": "",
+  "output_files": [
+    "state/aureon_autonomous_self_fix_director_last_run.json",
+    "docs/audits/aureon_autonomous_self_fix_director.json",
+    "docs/audits/aureon_autonomous_self_fix_director.md",
+    "frontend/public/aureon_autonomous_self_fix_director.json"
+  ],
+  "patch_apply_evidence": [
+    {
+      "allowlist": [
+        "aureon/autonomous/aureon_autonomous_self_fix_director.py",
+        "aureon/autonomous/aureon_capability_forge.py",
+        "aureon/autonomous/aureon_coding_organism_bridge.py",
+        "aureon/autonomous/aureon_complex_build_stress_audit.py",
+        "aureon/autonomous/aureon_safe_code_control.py",
+        "frontend/src/components/generated/AureonCodingOrganismConsole.tsx",
+        "frontend/tests/capability-forge.spec.ts",
+        "tests/test_aureon_autonomous_self_fix_director.py",
+        "tests/test_aureon_capability_forge.py",
+        "tests/test_aureon_coding_organism_bridge.py",
+        "tests/test_aureon_complex_build_stress_audit.py",
+        "tests/test_safe_code_control.py"
+      ],
+      "applied": false,
+      "blocked_reason": "not_unified_diff",
+      "checks": [
+        {
+          "detail": "patch text provided",
+          "id": "patch_text_present",
+          "ok": true
+        },
+        {
+          "detail": "requires ---/+++/@@ unified diff markers",
+          "id": "unified_diff_shape",
+          "ok": false
+        }
+      ],
+      "proposal_id": "Add logging to error handler",
+      "source": "local",
+      "status": "blocked",
+      "target_files": [
+        "server.mjs"
+      ],
+      "test_results": []
+    }
+  ],
+  "repair_backlog": [
+    {
+      "acceptance": "Allowlisted unified diffs pass git apply --check, secret scan, apply, and tests before handover.",
+      "id": "guarded_patch_applier",
+      "priority": "P0",
+      "source": "SWOT weakness proposal_only_apply",
+      "title": "Add guarded repo patch applier"
+    },
+    {
+      "acceptance": "Every failed/fake-pass case records a repair work order or a precise no-safe-patch blocker.",
+      "id": "stress_repair_work_orders",
+      "priority": "P0",
+      "source": "SWOT weakness stress_repair_depth",
+      "title": "Make complex stress failures become self-fix work orders"
+    },
+    {
+      "acceptance": "Human sees SWOT, selected repairs, patch evidence, tests, snags, and Codex audit state.",
+      "id": "cockpit_self_fix_panel",
+      "priority": "P1",
+      "source": "operator visibility",
+      "title": "Show Aureon Self-Fix SWOT in the coding cockpit"
+    },
+    {
+      "acceptance": "Aureon applies a safe local fix or publishes the exact blocker.",
+      "failure_reason": "handover expected True got False; required checks did not pass or were missing: artifact_file_exists, preview_page_present",
+      "id": "repair_case_sandbox_ten_second_video_preview",
+      "priority": "P0",
+      "source": "complex_build_stress_audit",
+      "title": "Repair failed stress case: sandbox_ten_second_video_preview"
+    }
+  ],
+  "safe_apply_policy": {
+    "allowlist": [
+      "aureon/autonomous/aureon_autonomous_self_fix_director.py",
+      "aureon/autonomous/aureon_capability_forge.py",
+      "aureon/autonomous/aureon_coding_organism_bridge.py",
+      "aureon/autonomous/aureon_complex_build_stress_audit.py",
+      "aureon/autonomous/aureon_safe_code_control.py",
+      "frontend/src/components/generated/AureonCodingOrganismConsole.tsx",
+      "frontend/tests/capability-forge.spec.ts",
+      "tests/test_aureon_autonomous_self_fix_director.py",
+      "tests/test_aureon_capability_forge.py",
+      "tests/test_aureon_coding_organism_bridge.py",
+      "tests/test_aureon_complex_build_stress_audit.py",
+      "tests/test_safe_code_control.py"
+    ],
+    "audit_policy": "codex_user_audit_is_post_hoc_for_safe_local_repairs",
+    "blocked_authority": [
+      "live_trading",
+      "payments",
+      "filings",
+      "credential_reveal",
+      "destructive_os_actions"
+    ],
+    "diff_source": "SafeCodeControl/QueenCodeBridge unified diffs only",
+    "repair_authority": "auto_apply_safe_local_fixes",
+    "requires": [
+      "unified_diff",
+      "target_allowlist",
+      "secret_scan",
+      "git_apply_check",
+      "git_apply",
+      "tests"
+    ]
+  },
+  "schema_version": "aureon-autonomous-self-fix-director-v1",
+  "selected_repairs": [
+    {
+      "acceptance": "Allowlisted unified diffs pass git apply --check, secret scan, apply, and tests before handover.",
+      "id": "guarded_patch_applier",
+      "priority": "P0",
+      "source": "SWOT weakness proposal_only_apply",
+      "title": "Add guarded repo patch applier"
+    },
+    {
+      "acceptance": "Every failed/fake-pass case records a repair work order or a precise no-safe-patch blocker.",
+      "id": "stress_repair_work_orders",
+      "priority": "P0",
+      "source": "SWOT weakness stress_repair_depth",
+      "title": "Make complex stress failures become self-fix work orders"
+    },
+    {
+      "acceptance": "Human sees SWOT, selected repairs, patch evidence, tests, snags, and Codex audit state.",
+      "id": "cockpit_self_fix_panel",
+      "priority": "P1",
+      "source": "operator visibility",
+      "title": "Show Aureon Self-Fix SWOT in the coding cockpit"
+    }
+  ],
+  "snags": [
+    {
+      "blocking": true,
+      "id": "patch_Add logging to error handler_blocked",
+      "next_action": "not_unified_diff",
+      "source": "guarded_patch_applier",
+      "title": "Patch proposal Add logging to error handler did not safely apply"
+    }
+  ],
+  "status": "self_fix_blocked",
+  "summary": {
+    "audit_gate_ok": true,
+    "blocking_snag_count": 1,
+    "codex_audit_state": "autonomous_safe",
+    "evidence_file_count": 7,
+    "patch_applied_count": 0,
+    "patch_candidate_count": 1,
+    "repair_backlog_count": 4,
+    "selected_repair_count": 3
+  },
+  "swot": {
+    "opportunities": [
+      {
+        "id": "guarded_patch_apply",
+        "present": true,
+        "text": "Use allowlisted diffs with git apply checks and tests."
+      },
+      {
+        "id": "self_fix_backlog",
+        "present": true,
+        "text": "Convert failed stress cases into repair jobs Aureon owns."
+      },
+      {
+        "id": "source_packets",
+        "present": true,
+        "text": "Use local/GitHub/docs research as source packets before coding."
+      }
+    ],
+    "strengths": [
+      {
+        "id": "capability_forge",
+        "present": true,
+        "text": "Capability forge exists and can create local artifacts."
+      },
+      {
+        "id": "complex_stress",
+        "present": true,
+        "text": "Complex build stress certification exists."
+      },
+      {
+        "id": "coding_unblocker",
+        "present": true,
+        "text": "Coding unblocker maps coding blockers into autonomous gates."
+      },
+      {
+        "id": "quality_gate",
+        "present": true,
+        "text": "Artifact quality gate and public evidence are wired."
+      },
+      {
+        "id": "unique_artifacts",
+        "present": true,
+        "text": "Generated build IDs prevent stale artifact reuse."
+      }
+    ],
+    "threats": [
+      {
+        "id": "authority_leakage",
+        "present": true,
+        "text": "Live trading, payments, filings, secrets, and destructive OS actions must stay blocked."
+      },
+      {
+        "id": "fake_passes",
+        "present": false,
+        "text": "Fake passes must block handover."
+      },
+      {
+        "id": "license_or_copy_risk",
+        "present": true,
+        "text": "Open-source references need license notes and must not be copied blindly."
+      },
+      {
+        "id": "stale_evidence",
+        "present": true,
+        "text": "Stale public evidence can make the cockpit look healthier than it is."
+      }
+    ],
+    "weaknesses": [
+      {
+        "id": "proposal_only_apply",
+        "present": true,
+        "text": "SafeCodeControl records proposals but needs a guarded patch applier."
+      },
+      {
+        "id": "stress_repair_depth",
+        "present": true,
+        "text": "Stress repairs must create work orders and apply safe fixes, not only rerun proof."
+      },
+      {
+        "id": "repo_integration_depth",
+        "present": true,
+        "text": "Generated artifacts can pass while live repo integration remains shallow."
+      }
+    ]
+  },
+  "test_evidence": {
+    "command_count": 0,
+    "ok": false,
+    "results": [],
+    "status": "tests_not_run_or_attention"
+  },
+  "write_info": {
+    "evidence_writes": [
+      {
+        "bytes": 9194,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\state\\aureon_autonomous_self_fix_director_last_run.json"
+      },
+      {
+        "bytes": 9194,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_autonomous_self_fix_director.json"
+      },
+      {
+        "bytes": 2071,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_autonomous_self_fix_director.md"
+      },
+      {
+        "bytes": 9194,
+        "ok": true,
+        "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_autonomous_self_fix_director.json"
+      }
+    ]
+  }
+}

@@ -1,0 +1,662 @@
+{
+  "civilization": "Plantagenet",
+  "last_updated": "2025-12-30T18:31:28.782154",
+  "version": "1.0.0",
+  "sources": [
+    "hardcoded",
+    "wikipedia"
+  ],
+  "core_principles": {
+    "feudal_hierarchy": {
+      "description": "Structured power relationships with clear chains of authority and obligation",
+      "trading_application": "Understanding market power structures, institutional flows",
+      "confidence": 0.85
+    },
+    "magna_carta": {
+      "description": "Rule of law constraining even sovereign power - foundational constitutional principles",
+      "trading_application": "Regulatory frameworks, compliance as market structure",
+      "confidence": 0.9
+    },
+    "crusader_logistics": {
+      "description": "Complex supply chains and resource management across vast distances",
+      "trading_application": "Global market connectivity, supply chain analysis",
+      "confidence": 0.8
+    },
+    "dynastic_succession": {
+      "description": "Power transfer through bloodlines, legitimacy, and strategic marriage",
+      "trading_application": "Leadership transitions, corporate succession events",
+      "confidence": 0.75
+    }
+  },
+  "economic_wisdom": {
+    "guild_system": {
+      "description": "Craft guilds controlling quality, training, and market access",
+      "trading_insight": "Professional networks, barriers to entry, quality control"
+    },
+    "fair_courts": {
+      "description": "Merchant courts at fairs resolving disputes quickly for trade continuity",
+      "trading_insight": "Dispute resolution mechanisms, market integrity"
+    },
+    "wool_trade": {
+      "description": "English wool as medieval Europe's most valuable commodity",
+      "trading_insight": "Commodity cycles, export dependencies"
+    },
+    "coinage": {
+      "description": "Sterling silver standard establishing trusted currency",
+      "trading_insight": "Currency stability, monetary policy importance"
+    }
+  },
+  "military_strategy": {
+    "longbow_doctrine": {
+      "description": "English longbow dominance through training, discipline, massed fire",
+      "trading_application": "Concentrated force at key moments, range advantage"
+    },
+    "castle_defense": {
+      "description": "Concentric defenses, multiple fallback positions",
+      "trading_application": "Layered risk management, stop-loss levels"
+    },
+    "chevauchee": {
+      "description": "Rapid mounted raids destroying enemy economic capacity",
+      "trading_application": "Aggressive position-taking, exploiting weakness"
+    }
+  },
+  "governance_principles": {
+    "common_law": {
+      "description": "Precedent-based legal system evolving through judicial decisions",
+      "trading_insight": "Historical patterns as guides, case-based reasoning"
+    },
+    "parliament": {
+      "description": "Representative assembly constraining royal power, controlling taxation",
+      "trading_insight": "Collective decision-making, stakeholder management"
+    },
+    "exchequer": {
+      "description": "Sophisticated royal treasury and accounting system",
+      "trading_insight": "Financial tracking, audit trails, accountability"
+    }
+  },
+  "key_figures": {
+    "henry_ii": "Legal reformer, common law architect, Angevin Empire builder",
+    "richard_i": "Crusader king, chivalric ideal, military excellence",
+    "john_i": "Magna Carta catalyst, administrative innovation through crisis",
+    "edward_i": "Lawgiver, Welsh conquest, parliamentary development",
+    "edward_iii": "Hundred Years' War initiator, Order of the Garter"
+  },
+  "wikipedia_topics": [
+    "House of Plantagenet",
+    "Magna Carta",
+    "English common law",
+    "Crusades",
+    "Hundred Years War",
+    "English longbow",
+    "Medieval English wool trade",
+    "Parliament of England",
+    "Feudalism",
+    "Angevin Empire"
+  ],
+  "learned_insights": [
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "House of Plantagenet",
+      "content": "When Henry II was born in 1133, his maternal grandfather, Henry I, was reportedly delighted, saying that the boy was \"the heir to the kingdom\". The birth reduced the risk that the King's realm would pass to his son-in-law's family, which was possible if the marriage of Matilda and Geoffrey ended childless. The birth of a second son, also named Geoffrey, increased the likelihood of partible inheritance following French custom, in which Henry would receive the English maternal inheritance and Geof",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:30:45.366802",
+      "content_hash": "a14634731c7188ae34e47ded18b71218"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Magna Carta",
+      "content": "Magna Carta (Medieval Latin for \"Great Charter\"), sometimes spelled Magna Charta, is a royal charter of rights sealed by King John of England at Runnymede, near Windsor, on 15 June 1215. First drafted by the Archbishop of Canterbury, Cardinal Stephen Langton, to make peace between the unpopular king and a group of rebel barons who demanded that the King confirm the Charter of Liberties, it promised the protection of church rights, protection for the barons from illegal imprisonment, access to sw",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:50.266713",
+      "content_hash": "78c3558c543d7ef3ee11a9672a7f723f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Magna Carta",
+      "content": "Magna Carta originated as an unsuccessful attempt to achieve peace between royalist and rebel factions in 1215, as part of the events leading to the outbreak of the First Barons' War. England was ruled by King John, the third of the Angevin kings. Although the kingdom had a robust administrative system, the nature of government under the Angevin monarchs was ill-defined and uncertain. John and his predecessors had ruled using the principle of vis et voluntas, or \"force and will\", taking executiv",
+      "relevance_score": 0.4,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-15T10:30:50.266808",
+      "content_hash": "3f2aa04c5e7a7b22453cf1f40f9da142"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Magna Carta",
+      "content": "John held a council in London in January 1215 to discuss potential reforms, and sponsored discussions in Oxford between his agents and the rebels during the spring. Both sides appealed to Pope Innocent III for assistance in the dispute. During the negotiations, the rebellious barons produced an initial document, which historians have termed \"the Unknown Charter of Liberties\", which drew on Henry I's Charter of Liberties for much of its language; seven articles from that document later appeared i",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:50.266883",
+      "content_hash": "c7bc4cd3de9bbbe6219677d891c6d1c4"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "English common law",
+      "content": "== Principal elements ==\nAlthough the common law has, historically, been the foundation and prime source of English law, the most authoritative law is statutory legislation, which comprises Acts of Parliament, regulations and by-laws. In the absence of any statutory law, the common law with its principle of stare decisis forms the residual source of law, based on judicial decisions, custom, and usage.\nCommon law is made by sitting judges who apply both statutory law and established principles, w",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from plantagenet tradition",
+      "timestamp": "2025-12-15T10:30:55.253420",
+      "content_hash": "8e31214c57fbe3f44d36ac9197bec2cd"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "English common law",
+      "content": "Statutory instruments and ministerial orders\nBy-laws of metropolitan boroughs, county councils, and town councils\nStatutes are cited in this fashion: \"Short Title Year\", e.g. Theft Act 1968. This became the usual way to refer to Acts from 1840 onwards; previously Acts were cited by their long title with the regnal year of the parliamentary session when they received royal assent, and the chapter number. For example, the Pleading in English Act 1362 (which required pleadings to be in English and ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:55.253543",
+      "content_hash": "a4d38046a6746bba3291c77aec5004f9"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "English common law",
+      "content": "=== Early development ===\nIn 1276, the concept of \"time immemorial\" often applied in common law, was defined as being any time before 6 July 1189 (i.e. before Richard I's accession to the English throne). Since 1189, English law has been a common law, not a civil law system. In other words, no comprehensive codification of the law has taken place and judicial precedents are binding as opposed to persuasive. This may be a legacy of the Norman Conquest of England in 1066, when a number of legal co",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:55.253636",
+      "content_hash": "6ce12f1cfd54faa7de78ac4c9e63ab8d"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Crusades",
+      "content": "The Crusades were a series of military campaigns launched by the papacy between 1095 and 1291 against Muslim rulers for the recovery and defence of the Holy Land (Palestine), encouraged by promises of spiritual reward. The First Crusade was proclaimed by Pope Urban II at the Council of Clermont on 27 November 1095 in response to a Byzantine appeal for aid against the advancing Seljuk Turks. By this time, the papacy's position as head of the Catholic Church had strengthened, and earlier conflicts",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:31:00.207299",
+      "content_hash": "43667b15d801d1b18d4d53e00016eb2e"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Hundred Years War",
+      "content": "The Hundred Years' War (French: Guerre de Cent Ans; 1337–1453) was a conflict between the kingdoms of England and France and a civil war in France during the Late Middle Ages. It emerged from feudal disputes over the Duchy of Aquitaine and was triggered by a claim to the French throne made by Edward III of England. The war grew into a broader military, economic, and political struggle involving factions from across Western Europe, fuelled by emerging nationalism on both sides. The periodisation ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:31:05.158241",
+      "content_hash": "2050fbc33028b5aa04e1d13ebd598335"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Hundred Years War",
+      "content": "=== Related conflicts and after-effects ===\nLocal conflicts in neighbouring areas, which were contemporarily related to the war, including the War of the Breton Succession (1341–1364), the Castilian Civil War (1366–1369), the War of the Two Peters (1356–1369) in Aragon, and the 1383–1385 crisis in Portugal, were used by the parties to advance their agendas.\nBy the war's end, feudal armies had mainly been replaced by professional troops, and aristocratic dominance had yielded to a democratization",
+      "relevance_score": 0.8,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:31:05.158474",
+      "content_hash": "6ff52497be2234248e89a5b584ef727c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "English longbow",
+      "content": "The English longbow was a powerful medieval type of bow, about 6 ft (1.8 m) long. While it is debated whether it originated in England or in Wales from the Welsh bow, by the 14th century the longbow was being used by both the English and the Welsh as a weapon of war and for hunting. English longbows were effective against the French during the Hundred Years' War, particularly in the battles of Sluys (1340), Crécy (1346), Poitiers (1356), and Agincourt (1415). They were less successful later on, ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:31:11.491214",
+      "content_hash": "76b77121d831b34602345c520b7fc0c8"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "English longbow",
+      "content": "The preferred material to make the longbow was yew, although ash, elm, and other hardwoods were also used. Gerald of Wales speaking of the bows used by the Welsh men of Gwent, says: \"They are made neither of horn, ash nor yew, but of elm; ugly unfinished-looking weapons, but astonishingly stiff, large and strong, and equally capable of use for long or short shooting\". The traditional way of making a longbow requires drying the yew wood for 1 to 2 years, then slowly working it into shape, with th",
+      "relevance_score": 0.4,
+      "trading_application": "Commercial patterns and value exchange",
+      "timestamp": "2025-12-15T10:31:11.491400",
+      "content_hash": "d8008499f2c43a680a2a58d70c690f57"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Medieval English wool trade",
+      "content": "The medieval English wool trade was one of the most important factors in the medieval English economy. The medievalist John Munro notes that \"[n]o form of manufacturing had a greater impact upon the economy and society of medieval Britain than did those industries producing cloths from various kinds of wool.\" The trade's liveliest period, 1250–1350, was 'an era when trade in wool had been the backbone and driving force in the English medieval economy'.\nThe wool trade was a major driver of enclos",
+      "relevance_score": 0.4,
+      "trading_application": "Commercial patterns and value exchange",
+      "timestamp": "2025-12-15T10:31:16.289405",
+      "content_hash": "54acd21b1756468d2eb89a2f22350492"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Medieval English wool trade",
+      "content": "During the early Anglo-Saxon period (c. 450–650), archaeological evidence for weaving using warp-weighted looms is extensive, imply at least subsistence-level wool production. Tools and technologies of spinning and weaving were similar to those of the Roman period; it is likely that fine, white wool continued to be produced from sheep introduced from the Mediterranean region alongside coarser local wools. Dyes included woad for blue and less frequently madder and lichens for reds and purples. So",
+      "relevance_score": 0.8,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-15T10:31:16.289493",
+      "content_hash": "22842a5dbc0bffc6d50dd6f2bfe0c916"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Medieval English wool trade",
+      "content": "Subsistence-level production of wool continued, but was overshadowed by the rise of wool as a commodity, which in turn encouraged demand for other raw materials such as dyestuffs; the rise of manufacturing; the financial sector; urbanisation; and (since wool and related raw materials had a high value-to-weight ratio and were easily transported) regional, international, and even intercontinental trade.\nEnglish wools, particularly from the Welsh Marches, the South West and Lincolnshire, were the m",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:31:16.289627",
+      "content_hash": "839cb3960c656e6ed90b797c670ba6c2"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Parliament of England",
+      "content": "=== Early functions and powers ===\nParliament—or the High Court of Parliament as it became known—was England's highest court of justice. A large amount of its business involved judicial questions referred to it by ministers, judges, and other government officials. Many petitions were submitted to Parliament by individuals whose grievances were not satisfied through normal administrative or judicial channels. As the number of petitions increased, they came to be directed to particular departments",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:31:21.433686",
+      "content_hash": "8e35c734dce58fbf6769dc291c3f9424"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Angevin Empire",
+      "content": "== Terminology ==\nThe term Angevin Empire is a historiographic retronym defining the lands of the House of Plantagenet: Henry II and his sons Richard I and John. Another son, Geoffrey, ruled Brittany and established a separate line there. As far as historians know, there was no contemporary term for the region under Angevin control; however, descriptions such as \"our kingdom and everything subject to our rule whatever it may be\" were used. The term Angevin Empire was coined by Kate Norgate in he",
+      "relevance_score": 0.4,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-15T10:31:30.795282",
+      "content_hash": "fad58ffd2b5976186146ce9dbcf309f1"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Angevin Empire",
+      "content": "At its largest extent, the Angevin Empire consisted of the Kingdom of England, the Lordship of Ireland (which was considered illegitimate since Henry II broke the Treaty of Windsor), the Duchies of Normandy (which included the Channel Islands), Gascony and Aquitaine, as well as of the counties of Anjou, Poitou, Maine, Touraine, Saintonge, La Marche, Périgord, Limousin, Nantes and Quercy. While the duchies and counties were held with various levels of vassalage to the king of France, the Plantage",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:31:30.795375",
+      "content_hash": "27f23b20a110752ca1f1777b25b1f0cc"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "House of Plantagenet",
+      "content": "When Henry II was born in 1133, his maternal grandfather, Henry I, was reportedly delighted, saying that the boy was \"the heir to the kingdom\". The birth reduced the risk that the King's realm would pass to his son-in-law's family, which was possible if the marriage of Matilda and Geoffrey ended childless. The birth of a second son, also named Geoffrey, increased the likelihood of partible inheritance following French custom, in which Henry would receive the English maternal inheritance and Geof",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:48:32.310695",
+      "content_hash": "a14634731c7188ae34e47ded18b71218"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Magna Carta",
+      "content": "Magna Carta (Medieval Latin for \"Great Charter\"), sometimes spelled Magna Charta, is a royal charter of rights sealed by King John of England at Runnymede, near Windsor, on 15 June 1215. First drafted by the Archbishop of Canterbury, Cardinal Stephen Langton, to make peace between the unpopular king and a group of rebel barons who demanded that the King confirm the Charter of Liberties, it promised the protection of church rights, protection for the barons from illegal imprisonment, access to sw",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:37.259643",
+      "content_hash": "78c3558c543d7ef3ee11a9672a7f723f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Magna Carta",
+      "content": "Magna Carta originated as an unsuccessful attempt to achieve peace between royalist and rebel factions in 1215, as part of the events leading to the outbreak of the First Barons' War. England was ruled by King John, the third of the Angevin kings. Although the kingdom had a robust administrative system, the nature of government under the Angevin monarchs was ill-defined and uncertain. John and his predecessors had ruled using the principle of vis et voluntas, or \"force and will\", taking executiv",
+      "relevance_score": 0.4,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-25T19:48:37.259739",
+      "content_hash": "3f2aa04c5e7a7b22453cf1f40f9da142"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Magna Carta",
+      "content": "John held a council in London in January 1215 to discuss potential reforms, and sponsored discussions in Oxford between his agents and the rebels during the spring. Both sides appealed to Pope Innocent III for assistance in the dispute. During the negotiations, the rebellious barons produced an initial document, which historians have termed \"the Unknown Charter of Liberties\", which drew on Henry I's Charter of Liberties for much of its language; seven articles from that document later appeared i",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:37.259799",
+      "content_hash": "c7bc4cd3de9bbbe6219677d891c6d1c4"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "English common law",
+      "content": "== Principal elements ==\nAlthough the common law has, historically, been the foundation and prime source of English law, the most authoritative law is statutory legislation, which comprises Acts of Parliament, regulations and by-laws. In the absence of any statutory law, the common law with its principle of stare decisis forms the residual source of law, based on judicial decisions, custom, and usage.\nCommon law is made by sitting judges who apply both statutory law and established principles, w",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from plantagenet tradition",
+      "timestamp": "2025-12-25T19:48:42.210102",
+      "content_hash": "8e31214c57fbe3f44d36ac9197bec2cd"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "English common law",
+      "content": "Statutory instruments and ministerial orders\nBy-laws of metropolitan boroughs, county councils, and town councils\nStatutes are cited in this fashion: \"Short Title Year\", e.g. Theft Act 1968. This became the usual way to refer to Acts from 1840 onwards; previously Acts were cited by their long title with the regnal year of the parliamentary session when they received royal assent, and the chapter number. For example, the Pleading in English Act 1362 (which required pleadings to be in English and ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:42.210255",
+      "content_hash": "a4d38046a6746bba3291c77aec5004f9"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "English common law",
+      "content": "=== Early development ===\nIn 1276, the concept of \"time immemorial\" often applied in common law, was defined as being any time before 6 July 1189 (i.e. before Richard I's accession to the English throne). Since 1189, English law has been a common law, not a civil law system. In other words, no comprehensive codification of the law has taken place and judicial precedents are binding as opposed to persuasive. This may be a legacy of the Norman Conquest of England in 1066, when a number of legal co",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:42.210391",
+      "content_hash": "6ce12f1cfd54faa7de78ac4c9e63ab8d"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Crusades",
+      "content": "The Crusades were a series of military campaigns launched by the papacy between 1095 and 1291 against Muslim rulers for the recovery and defence of the Holy Land, encouraged by promises of spiritual reward. The First Crusade was proclaimed by Pope Urban II at the Council of Clermont in November 1095, a call to arms for Christians to reconquer Jerusalem from the Muslims. By this time, the papacy's position as head of the Catholic Church had strengthened, and earlier conflicts with secular rulers ",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:48:47.486361",
+      "content_hash": "317fe0911b8732a3d598c8d1a6ea5cf7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Hundred Years War",
+      "content": "The Hundred Years' War (French: Guerre de Cent Ans; 1337–1453) was a conflict between the kingdoms of England and France and a civil war in France during the Late Middle Ages. It emerged from feudal disputes over the Duchy of Aquitaine and was triggered by a claim to the French throne made by Edward III of England. The war grew into a broader military, economic, and political struggle involving factions from across Western Europe, fuelled by emerging nationalism on both sides. The periodisation ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:55.137052",
+      "content_hash": "2050fbc33028b5aa04e1d13ebd598335"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Hundred Years War",
+      "content": "=== Related conflicts and after-effects ===\nLocal conflicts in neighbouring areas, which were contemporarily related to the war, including the War of the Breton Succession (1341–1364), the Castilian Civil War (1366–1369), the War of the Two Peters (1356–1369) in Aragon, and the 1383–1385 crisis in Portugal, were used by the parties to advance their agendas.\nBy the war's end, feudal armies had mainly been replaced by professional troops, and aristocratic dominance had yielded to a democratization",
+      "relevance_score": 0.8,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:48:55.137267",
+      "content_hash": "6ff52497be2234248e89a5b584ef727c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "English longbow",
+      "content": "The English longbow was a powerful medieval type of bow, about 6 ft (1.8 m) long. While it is debated whether it originated in England or in Wales from the Welsh bow, by the 14th century the longbow was being used by both the English and the Welsh as a weapon of war and for hunting. English longbows were effective against the French during the Hundred Years' War, particularly in the battles of Sluys (1340), Crécy (1346), Poitiers (1356), and Agincourt (1415). They were less successful later on, ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:49:00.489507",
+      "content_hash": "76b77121d831b34602345c520b7fc0c8"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "English longbow",
+      "content": "The preferred material to make the longbow was yew, although ash, elm, and other hardwoods were also used. Gerald of Wales speaking of the bows used by the Welsh men of Gwent, says: \"They are made neither of horn, ash nor yew, but of elm; ugly unfinished-looking weapons, but astonishingly stiff, large and strong, and equally capable of use for long or short shooting\". The traditional way of making a longbow requires drying the yew wood for 1 to 2 years, then slowly working it into shape, with th",
+      "relevance_score": 0.4,
+      "trading_application": "Commercial patterns and value exchange",
+      "timestamp": "2025-12-25T19:49:00.489692",
+      "content_hash": "d8008499f2c43a680a2a58d70c690f57"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Medieval English wool trade",
+      "content": "The medieval English wool trade was one of the most important factors in the medieval English economy. The medievalist John Munro notes that \"[n]o form of manufacturing had a greater impact upon the economy and society of medieval Britain than did those industries producing cloths from various kinds of wool.\" The trade's liveliest period, 1250–1350, was 'an era when trade in wool had been the backbone and driving force in the English medieval economy'.\nThe wool trade was a major driver of enclos",
+      "relevance_score": 0.4,
+      "trading_application": "Commercial patterns and value exchange",
+      "timestamp": "2025-12-25T19:49:05.287379",
+      "content_hash": "54acd21b1756468d2eb89a2f22350492"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Medieval English wool trade",
+      "content": "During the early Anglo-Saxon period (c. 450–650), archaeological evidence for weaving using warp-weighted looms is extensive, imply at least subsistence-level wool production. Tools and technologies of spinning and weaving were similar to those of the Roman period; it is likely that fine, white wool continued to be produced from sheep introduced from the Mediterranean region alongside coarser local wools. Dyes included woad for blue and less frequently madder and lichens for reds and purples. So",
+      "relevance_score": 0.8,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-25T19:49:05.287453",
+      "content_hash": "22842a5dbc0bffc6d50dd6f2bfe0c916"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Medieval English wool trade",
+      "content": "Subsistence-level production of wool continued, but was overshadowed by the rise of wool as a commodity, which in turn encouraged demand for other raw materials such as dyestuffs; the rise of manufacturing; the financial sector; urbanisation; and (since wool and related raw materials had a high value-to-weight ratio and were easily transported) regional, international, and even intercontinental trade.\nEnglish wools, particularly from the Welsh Marches, the South West and Lincolnshire, were the m",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:49:05.287562",
+      "content_hash": "839cb3960c656e6ed90b797c670ba6c2"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Parliament of England",
+      "content": "=== Early functions and powers ===\nParliament—or the High Court of Parliament as it became known—was England's highest court of justice. A large amount of its business involved judicial questions referred to it by ministers, judges, and other government officials. Many petitions were submitted to Parliament by individuals whose grievances were not satisfied through normal administrative or judicial channels. As the number of petitions increased, they came to be directed to particular departments",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:49:11.626635",
+      "content_hash": "8e35c734dce58fbf6769dc291c3f9424"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Angevin Empire",
+      "content": "== Terminology ==\nThe term Angevin Empire is a historiographic retronym defining the lands of the House of Plantagenet: Henry II and his sons Richard I and John. Another son, Geoffrey, ruled Brittany and established a separate line there. As far as historians know, there was no contemporary term for the region under Angevin control; however, descriptions such as \"our kingdom and everything subject to our rule whatever it may be\" were used. The term Angevin Empire was coined by Kate Norgate in he",
+      "relevance_score": 0.4,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-25T19:49:21.029499",
+      "content_hash": "fad58ffd2b5976186146ce9dbcf309f1"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Angevin Empire",
+      "content": "At its largest extent, the Angevin Empire consisted of the Kingdom of England, the Lordship of Ireland (which was considered illegitimate since Henry II broke the Treaty of Windsor), the Duchies of Normandy (which included the Channel Islands), Gascony and Aquitaine, as well as of the counties of Anjou, Poitou, Maine, Touraine, Saintonge, La Marche, Périgord, Limousin, Nantes and Quercy. While the duchies and counties were held with various levels of vassalage to the king of France, the Plantage",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:49:21.029593",
+      "content_hash": "27f23b20a110752ca1f1777b25b1f0cc"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "plantagenet",
+      "topic": "Crusades",
+      "content": "The Crusades were a series of military campaigns launched by the papacy between 1095 and 1291 against Muslim rulers for the recovery and defence of the Holy Land, encouraged by promises of spiritual reward. The First Crusade was proclaimed by Pope Urban II at the Council of Clermont in November 1095—a call to arms for Christians to reconquer Jerusalem from the Muslims. By this time, the papacy's position as head of the Catholic Church had strengthened, and earlier conflicts with secular rulers a",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-27T16:03:00.999350",
+      "content_hash": "42a439254391173357f1bee215894971"
+    }
+  ],
+  "scan_history": [
+    {
+      "timestamp": "2025-12-15T10:22:45.833290",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-15T10:31:34.800006",
+      "insights_found": 18,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:39:20.910364",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:49:25.034338",
+      "insights_found": 18,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:13:47.890496",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:28:39.546667",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:33:32.996154",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T14:53:28.551506",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:03:40.165032",
+      "insights_found": 1,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:51:54.099079",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T12:34:04.385285",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T13:48:41.233680",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T14:42:47.932223",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T11:29:52.430563",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T12:04:55.247380",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:23:24.412728",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:39:33.993375",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T14:06:22.922048",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:00:04.846552",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:28:17.831662",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:44:58.353740",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T16:13:45.000659",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T17:24:05.833966",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T18:31:28.782154",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    }
+  ]
+}

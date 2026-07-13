@@ -1,0 +1,23 @@
+{
+  "auris_codex_version": "3.0",
+  "description": "Expanded Emotion ↔ Frequency Map (36 States) with Harmonic Tiers",
+  "prime_frequencies": {
+    "love": { "hz": 528, "tier": "Heart Prime", "attribute": "Creation/Healing", "effect": "DNA repair, coherence stabilizer" },
+    "peace": { "hz": 432, "tier": "Gaia Tier", "attribute": "Harmony/Grounding", "effect": "Nervous system calm, lattice grounding" },
+    "joy": { "hz": 639, "tier": "Social Prime", "attribute": "Expansion/Connection", "effect": "Oxytocin, collective synchronization" },
+    "hope": { "hz": 741, "tier": "Visionary Tier", "attribute": "Awakening/Clarity", "effect": "Opens future potentials, clears fog" },
+    "compassion": { "hz": 285, "tier": "Root Harmonic", "attribute": "Stabilization/Safety", "effect": "Cellular renewal, aura lattice repair" },
+    "gratitude": { "hz": 963, "tier": "Crown Prime", "attribute": "Unity/Transcendence", "effect": "Anchors 10-9-1 nexus, higher states" },
+    "courage": { "hz": 396, "tier": "Root Prime", "attribute": "Liberation/Action", "effect": "Releases fear, increases HRV stability" },
+    "forgiveness": { "hz": 417, "tier": "Sacral Tier", "attribute": "Transformation/Flow", "effect": "Trauma release, resets symbolic locks" },
+    "ecstasy": { "hz": 852, "tier": "Third-Eye Prime", "attribute": "Vision/Multiversal Unity", "effect": "Deep coherence, transdimensional resonance" },
+    "bliss": { "hz": 963, "tier": "Crown Prime", "attribute": "Unity/Ecstatic Presence", "effect": "Peak coherence, luminous aura field" }
+  },
+  "shadow_frequencies": {
+    "fear": { "hz": 125, "tier": "Root Shadow", "attribute": "Survival/Alarm", "effect": "Disrupts coherence, narrows HRV" },
+    "anger": { "hz": 275, "tier": "Sacral Shadow", "attribute": "Fire/Disruption", "effect": "Breaks lattice, increases GSR" },
+    "grief": { "hz": 175, "tier": "Heart Shadow", "attribute": "Loss/Fragmentation", "effect": "Aura collapse, weakens HRV" },
+    "shame": { "hz": 35, "tier": "Root Collapse", "attribute": "Suppression/Blockage", "effect": "Heavy field, blocks prime resonance" },
+    "guilt": { "hz": 75, "tier": "Sacral Collapse", "attribute": "Regression/Entropy", "effect": "Locks symbolic patterns, reduces coherence" }
+  }
+}

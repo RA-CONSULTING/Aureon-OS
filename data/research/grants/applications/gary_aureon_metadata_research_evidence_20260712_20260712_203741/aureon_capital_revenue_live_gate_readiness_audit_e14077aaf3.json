@@ -1,0 +1,356 @@
+{
+  "blockers": [],
+  "broker_requirement_baseline": {
+    "alpaca": {
+      "readiness_rule": "Confirmation-only in this pass; statuses may inform confidence but cannot submit external orders.",
+      "required_identifiers": [
+        "client_order_id",
+        "broker_order_id"
+      ],
+      "status_sources": [
+        "order query",
+        "trade/activity event stream"
+      ]
+    },
+    "binance": {
+      "readiness_rule": "Confirmation-only; 5XX/timeout remains unknown until stream or query proof resolves it.",
+      "required_identifiers": [
+        "newClientOrderId",
+        "orderId"
+      ],
+      "status_sources": [
+        "executionReport",
+        "order query",
+        "test order response"
+      ]
+    },
+    "capital": {
+      "readiness_rule": "Capital is the only live-capable execution venue; broker position absence is required before close completion.",
+      "required_identifiers": [
+        "dealReference",
+        "dealId",
+        "route_key",
+        "lifecycle_id"
+      ],
+      "status_sources": [
+        "GET /confirms/{dealReference}",
+        "GET /positions",
+        "DELETE /positions/{dealId} acknowledgement"
+      ]
+    },
+    "kraken": {
+      "readiness_rule": "Confirmation-only; no Kraken placement authority in this pass.",
+      "required_identifiers": [
+        "cl_ord_id",
+        "broker_order_id"
+      ],
+      "status_sources": [
+        "openOrders stream/query",
+        "avg_price",
+        "fee",
+        "vol_exec"
+      ]
+    }
+  },
+  "candidate_readiness_rows": [],
+  "close_first_exit_proof": {
+    "close_first_positions_covered": true,
+    "recovered_close_chain_status": "",
+    "recovered_exit_clear": true,
+    "recovered_position_count": 0
+  },
+  "current_live_gate_readiness": {
+    "blocked_candidate_count": 0,
+    "gate_count": 15,
+    "gate_status": [
+      {
+        "blocked_candidate_count": 0,
+        "description": "Capital candidate snapshot is fresh enough for live use.",
+        "id": "fresh_capital_snapshot",
+        "passed_for_all_net_positive_candidates": false
+      },
+      {
+        "blocked_candidate_count": 0,
+        "description": "Capital market status is TRADEABLE.",
+        "id": "tradeable_market",
+        "passed_for_all_net_positive_candidates": false
+      },
+      {
+        "blocked_candidate_count": 0,
+        "description": "Candidate side is BUY or SELL.",
+        "id": "buy_or_sell_side",
+        "passed_for_all_net_positive_candidates": false
+      },
+      {
+        "blocked_candidate_count": 0,
+        "description": "Expected net revenue is positive after costs and buffers.",
+        "id": "positive_expected_net_revenue",
+        "passed_for_all_net_positive_candidates": false
+      },
+      {
+        "blocked_candidate_count": 0,
+        "description": "No submitted/open lifecycle already owns the same route.",
+        "id": "no_duplicate_active_route",
+        "passed_for_all_net_positive_candidates": false
+      },
+      {
+        "blocked_candidate_count": 0,
+        "description": "Recovered/open Capital positions are covered by close-first rows.",
+        "id": "close_first_positions_covered",
+        "passed_for_all_net_positive_candidates": false
+      },
+      {
+        "blocked_candidate_count": 0,
+        "description": "Recovered positions are absent, closed, or outcome-recorded before new entries.",
+        "id": "recovered_exit_readiness_clear",
+        "passed_for_all_net_positive_candidates": false
+      },
+      {
+        "blocked_candidate_count": 0,
+        "description": "Broker correlation fields are complete for active lifecycle proof.",
+        "id": "broker_correlation_complete",
+        "passed_for_all_net_positive_candidates": false
+      },
+      {
+        "blocked_candidate_count": 0,
+        "description": "Lifecycle continuity is complete or recovered context is explicitly resolved.",
+        "id": "lifecycle_continuity_resolved",
+        "passed_for_all_net_positive_candidates": false
+      },
+      {
+        "blocked_candidate_count": 0,
+        "description": "Runtime allows order-intent publication.",
+        "id": "order_intent_publishing_enabled",
+        "passed_for_all_net_positive_candidates": false
+      },
+      {
+        "blocked_candidate_count": 0,
+        "description": "Unified order executor is enabled.",
+        "id": "executor_enabled",
+        "passed_for_all_net_positive_candidates": false
+      },
+      {
+        "blocked_candidate_count": 0,
+        "description": "Live-trading mode is enabled by runtime.",
+        "id": "live_trading_enabled",
+        "passed_for_all_net_positive_candidates": false
+      },
+      {
+        "blocked_candidate_count": 0,
+        "description": "Runtime allows real orders.",
+        "id": "real_orders_allowed",
+        "passed_for_all_net_positive_candidates": false
+      },
+      {
+        "blocked_candidate_count": 0,
+        "description": "Exchange mutations are enabled by runtime.",
+        "id": "exchange_mutations_allowed",
+        "passed_for_all_net_positive_candidates": false
+      },
+      {
+        "blocked_candidate_count": 0,
+        "description": "Operator and runtime risk clearances are clear.",
+        "id": "operator_risk_clear",
+        "passed_for_all_net_positive_candidates": false
+      }
+    ],
+    "missing_gate_count": 0,
+    "missing_gate_ids": [],
+    "ready_now_candidate_count": 0
+  },
+  "external_confirmation_proof": {
+    "blockers": [],
+    "exchange_matrix_rows": 4,
+    "external_live_order_intent_count": 0,
+    "external_shadow_only": true,
+    "leak_rows": [],
+    "shadow_confirmation_count": 0
+  },
+  "gate_clear_stress_cases": [
+    {
+      "actual_missing_gate_ids": [
+        "fresh_capital_snapshot"
+      ],
+      "expected_missing_gate_ids": [
+        "fresh_capital_snapshot"
+      ],
+      "id": "stale_snapshot_blocks",
+      "label": "Stale Capital snapshot blocks a net-positive candidate",
+      "passed": true,
+      "proof_mode": "fixture_only_no_broker_mutation",
+      "readiness_state": "blocked_by_live_gates",
+      "ready_now": false
+    },
+    {
+      "actual_missing_gate_ids": [],
+      "expected_missing_gate_ids": [],
+      "id": "fresh_snapshot_unblocks_snapshot_gate",
+      "label": "Fresh Capital snapshot clears the snapshot gate",
+      "passed": true,
+      "proof_mode": "fixture_only_no_broker_mutation",
+      "readiness_state": "ready_for_existing_executor_intent",
+      "ready_now": true
+    },
+    {
+      "actual_missing_gate_ids": [
+        "no_duplicate_active_route"
+      ],
+      "expected_missing_gate_ids": [
+        "no_duplicate_active_route"
+      ],
+      "id": "duplicate_route_blocks",
+      "label": "Duplicate active route blocks new Capital submission",
+      "passed": true,
+      "proof_mode": "fixture_only_no_broker_mutation",
+      "readiness_state": "blocked_by_live_gates",
+      "ready_now": false
+    },
+    {
+      "actual_missing_gate_ids": [],
+      "expected_missing_gate_ids": [],
+      "id": "closed_route_unblocks_duplicate_gate",
+      "label": "Recovered or closed route clears duplicate-route gate",
+      "passed": true,
+      "proof_mode": "fixture_only_no_broker_mutation",
+      "readiness_state": "ready_for_existing_executor_intent",
+      "ready_now": true
+    },
+    {
+      "actual_missing_gate_ids": [
+        "recovered_exit_readiness_clear"
+      ],
+      "expected_missing_gate_ids": [
+        "recovered_exit_readiness_clear"
+      ],
+      "id": "recovered_exit_held_blocks",
+      "label": "Recovered exit readiness blocks new entries until close/outcome proof",
+      "passed": true,
+      "proof_mode": "fixture_only_no_broker_mutation",
+      "readiness_state": "blocked_by_live_gates",
+      "ready_now": false
+    },
+    {
+      "actual_missing_gate_ids": [],
+      "expected_missing_gate_ids": [],
+      "id": "recovered_outcome_unblocks_exit_gate",
+      "label": "Recovered outcome proof clears exit readiness",
+      "passed": true,
+      "proof_mode": "fixture_only_no_broker_mutation",
+      "readiness_state": "ready_for_existing_executor_intent",
+      "ready_now": true
+    },
+    {
+      "actual_missing_gate_ids": [
+        "order_intent_publishing_enabled",
+        "executor_enabled",
+        "live_trading_enabled",
+        "real_orders_allowed",
+        "exchange_mutations_allowed",
+        "operator_risk_clear"
+      ],
+      "expected_missing_gate_ids": [
+        "order_intent_publishing_enabled",
+        "executor_enabled",
+        "live_trading_enabled",
+        "real_orders_allowed",
+        "exchange_mutations_allowed",
+        "operator_risk_clear"
+      ],
+      "id": "runtime_gates_disabled_block",
+      "label": "Disabled runtime gates block executor intent readiness",
+      "passed": true,
+      "proof_mode": "fixture_only_no_broker_mutation",
+      "readiness_state": "blocked_by_live_gates",
+      "ready_now": false
+    },
+    {
+      "actual_missing_gate_ids": [],
+      "expected_missing_gate_ids": [],
+      "id": "all_gates_clear_ready_for_existing_executor",
+      "label": "All gates clear before existing executor intent publication",
+      "passed": true,
+      "proof_mode": "fixture_only_no_broker_mutation",
+      "readiness_state": "ready_for_existing_executor_intent",
+      "ready_now": true
+    }
+  ],
+  "generated_at": "2026-05-21T15:09:49.990441+00:00",
+  "lifecycle_gate_proof": {
+    "lifecycle_blockers": [
+      "lifecycle_continuity_missing"
+    ],
+    "lifecycle_continuity_resolved": false,
+    "lifecycle_stress_certified": true
+  },
+  "manual_boundaries": [
+    "read-only live-gate readiness certification",
+    "no live order submission",
+    "no live close request",
+    "no cancel request",
+    "no external hedge order",
+    "no credential read or reveal",
+    "existing runtime, operator, risk, lifecycle, real-order, and exchange-mutation gates remain authoritative"
+  ],
+  "mode": "read_only_capital_revenue_live_gate_readiness",
+  "ok": false,
+  "output_files": [
+    "state/aureon_capital_revenue_live_gate_readiness_audit_last_run.json",
+    "docs/audits/aureon_capital_revenue_live_gate_readiness_audit.json",
+    "docs/audits/aureon_capital_revenue_live_gate_readiness_audit.md",
+    "frontend/public/aureon_capital_revenue_live_gate_readiness_audit.json"
+  ],
+  "runtime_gate_proof": {
+    "order_intent_packet_present": true,
+    "order_intent_packet_status": "",
+    "runtime_clearances": [
+      "tick_in_progress_stalled"
+    ],
+    "runtime_gate_ids": [],
+    "runtime_gates_clear": false,
+    "runtime_status_present": true
+  },
+  "schema_version": "aureon-capital-revenue-live-gate-readiness-audit-v1",
+  "source_paths": {
+    "capital_ecosystem": "frontend/public/aureon_capital_ecosystem_intelligence_company.json",
+    "capital_live_dry_stress": "frontend/public/aureon_capital_ecosystem_live_dry_stress_audit.json",
+    "capital_revenue_logic": "frontend/public/aureon_capital_revenue_logic_stress_audit.json",
+    "exchange_matrix": "frontend/public/aureon_exchange_data_capability_matrix.json",
+    "order_intents": "state/unified_exchange_order_intents.json",
+    "order_lifecycle": "state/unified_order_lifecycle_latest.json",
+    "order_lifecycle_stress": "frontend/public/aureon_order_lifecycle_stress_audit.json",
+    "runtime_status": "state/unified_runtime_status.json"
+  },
+  "status": "no_net_positive_candidates",
+  "summary": {
+    "blocked_candidate_count": 0,
+    "broker_correlation_complete": false,
+    "duplicate_routes_blocked": false,
+    "external_shadow_only": true,
+    "missing_gate_count": 0,
+    "net_positive_candidate_count": 0,
+    "no_live_mutation": true,
+    "ready_now_candidate_count": 0,
+    "recovered_exit_clear": true,
+    "runtime_gates_clear": false
+  },
+  "write_info": {
+    "evidence_writes": [
+      {
+        "bytes": 11692,
+        "path": "C:\\Users\\user\\aureon-trading\\state\\aureon_capital_revenue_live_gate_readiness_audit_last_run.json"
+      },
+      {
+        "bytes": 11692,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_capital_revenue_live_gate_readiness_audit.json"
+      },
+      {
+        "bytes": 375,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_capital_revenue_live_gate_readiness_audit.md"
+      },
+      {
+        "bytes": 11692,
+        "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_capital_revenue_live_gate_readiness_audit.json"
+      }
+    ]
+  }
+}

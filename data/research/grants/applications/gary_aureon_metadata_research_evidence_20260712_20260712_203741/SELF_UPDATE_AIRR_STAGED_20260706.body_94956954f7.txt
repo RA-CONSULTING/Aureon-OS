@@ -1,0 +1,35 @@
+﻿Gary,
+
+Aureon has staged the AIRR AI Open Access grant/compute application for R&A Consulting and Brokerage Services Ltd.
+
+Status: portal draft staged, not finally submitted.
+Portal proposal ID: 0261-8797-7601-1
+Title: Aureon Evidence OS for AI-Driven Scientific Discovery
+Deadline: 17 July 2026 at 16:00 UK time
+Request: 500,000 Isambard-AI GPU hours over 365 days
+Portal URL: https://portal-airr.isambard.ac.uk/proposals/5a87cac10a0044db903550fe12188b4a/
+
+Completed by Aureon:
+- AIRRPortal account verified for gaxlec@gmail.com.
+- Proposal draft created under AI Open Access.
+- Public summary and private description entered.
+- 365-day duration entered.
+- Supporting PDF attached: AIRR_AI_OPEN_ACCESS_SUPPORTING_FORM_20260706.pdf.
+- Isambard-AI / Isambard-AI Open Access / Default resource request selected and saved.
+- Portal confirmation observed: Resource requests has been updated.
+- Drive synced the AIRR archive, manifest, and receipt into the Aureon Grant War Room folder.
+
+Final gates before pressing Submit:
+- Confirm subsidy history/declarations.
+- Confirm acceptance of AIRR distributed peer-review obligations.
+- Check or consciously disclose the Companies House confirmation-statement position.
+- Give exact action-time confirmation for final AIRR Submit.
+
+Local Aureon records:
+- C:\Users\user\aureon-trading\data\research\grants\applications\AIRR_PORTAL_LIVE_STATUS_20260706.md
+- C:\Users\user\aureon-trading\data\research\grants\autopilot_status.json
+- C:\Users\user\Aureon_Work_Hub_20260705\04_GRANT_WORKING_PACKS\LIVE_GRANT_SUBMISSION_STATUS_20260705.md
+
+Generated: 2026-07-06T07:06:53+01:00
+Aureon
+

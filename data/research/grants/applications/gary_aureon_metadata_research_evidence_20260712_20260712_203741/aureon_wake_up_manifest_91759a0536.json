@@ -1,0 +1,251 @@
+﻿{
+    "generated_at":  "2026-05-22T19:21:21.0277282+01:00",
+    "repo_root":  "C:\\Users\\user\\aureon-trading",
+    "mode":  "LIVE_TRADING_OPERATOR_CONFIRMED + COGNITIVE_ORDER_INTENT_AUTHORITY + PRODUCTION_SUPERVISOR",
+    "frontend_url":  "http://127.0.0.1:8081/",
+    "mind_hub_url":  "http://127.0.0.1:13002/",
+    "runtime_feed_url":  "http://127.0.0.1:8791/api/terminal-state",
+    "runtime_flight_test_url":  "http://127.0.0.1:8791/api/flight-test",
+    "runtime_reboot_advice_url":  "http://127.0.0.1:8791/api/reboot-advice",
+    "logs":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up",
+    "supervisor_lock":  {
+                            "path":  "C:\\Users\\user\\aureon-trading\\state\\aureon_supervisor_lock.json",
+                            "pid":  13120,
+                            "active":  true,
+                            "process":  {
+                                            "pid":  13120,
+                                            "parent_pid":  9588,
+                                            "name":  "powershell.exe",
+                                            "command_line":  "powershell.exe  -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\user\\aureon-trading\\AUREON_WAKE_UP_FULL_AUTONOMOUS.ps1\" -Production -LiveTrading -ConfirmLiveTrading -FullCognitiveOrderCapability -WaitForRefresh -MarketStatusPort 8791 -FrontendPort 8081"
+                                        }
+                        },
+    "port_owners":  [
+                        {
+                            "port":  8081,
+                            "listening":  true,
+                            "pid":  19200,
+                            "name":  "node.exe",
+                            "parent_pid":  11480,
+                            "command_line":  "\"node\"   \"C:\\Users\\user\\aureon-trading\\frontend\\node_modules\\.bin\\\\..\\vite\\bin\\vite.js\" --host 0.0.0.0 --port 8081"
+                        },
+                        {
+                            "port":  8791,
+                            "listening":  true,
+                            "pid":  21320,
+                            "name":  "python.exe",
+                            "parent_pid":  18792,
+                            "command_line":  "\"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\python.exe\" -m aureon.exchanges.unified_market_status_server --port 8791 "
+                        },
+                        {
+                            "port":  8790,
+                            "listening":  false,
+                            "pid":  null,
+                            "name":  null,
+                            "parent_pid":  null,
+                            "command_line":  null
+                        },
+                        {
+                            "port":  13002,
+                            "listening":  true,
+                            "pid":  13628,
+                            "name":  "python.exe",
+                            "parent_pid":  176,
+                            "command_line":  "\"C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python312\\python.exe\" -m aureon.autonomous.aureon_mind_thought_action_hub "
+                        }
+                    ],
+    "live_safety_flags":  {
+                              "live_trading":  "1",
+                              "live":  "1",
+                              "dry_run":  "0",
+                              "aureon_dry_run":  "0",
+                              "disable_real_orders":  "0",
+                              "disable_exchange_mutations":  "0",
+                              "allow_sim_fallback":  "0",
+                              "order_authority_mode":  "intent_only_runtime_gated",
+                              "order_intent_publish":  "1",
+                              "unified_order_executor":  "1"
+                          },
+    "safety":  {
+                   "llm_live_capabilities":  "1",
+                   "cognitive_live_mode":  "1",
+                   "llm_order_authority":  "0",
+                   "cognitive_order_authority":  "0",
+                   "llm_order_intent_authority":  "1",
+                   "cognitive_order_intent_authority":  "1",
+                   "order_authority_mode":  "intent_only_runtime_gated",
+                   "order_intent_publish":  "1",
+                   "order_ticket_requires_executor":  "1",
+                   "unified_order_executor":  "1",
+                   "live_trading":  "1",
+                   "disable_real_orders":  "0",
+                   "disable_exchange_mutations":  "0",
+                   "allow_sim_fallback":  "0",
+                   "official_filing_disabled":  "1",
+                   "payments_disabled":  "1",
+                   "external_attacks_disabled":  "1"
+               },
+    "api_governor":  {
+                         "market_interval_sec":  1,
+                         "central_beat_refresh_sec":  "2",
+                         "stream_cache_path":  "ws_cache/ws_prices.json",
+                         "stream_cache_write_interval_sec":  "1.0",
+                         "stream_price_max_age_sec":  "5",
+                         "stream_cache_max_symbols":  "96",
+                         "fast_money_min_volatility_pct":  "0.34",
+                         "fast_money_break_even_move_pct":  "0.34",
+                         "fast_money_volume_usd_target":  "25000000",
+                         "fast_money_min_score":  "0.55",
+                         "orderbook_probe_max_per_tick":  "4",
+                         "orderbook_probe_min_interval_sec":  "12",
+                         "orderbook_probe_stale_ttl_sec":  "30",
+                         "capital_fast_profit_capture_enabled":  "1",
+                         "capital_fast_profit_min_gbp":  "0.03",
+                         "capital_fast_profit_min_pct":  "0.02",
+                         "capital_fast_profit_min_hold_sec":  "2",
+                         "capital_fast_profit_market_status_ttl_sec":  "10",
+                         "kraken_fast_profit_capture_enabled":  "1",
+                         "kraken_fast_profit_min_usd":  "0.01",
+                         "kraken_fast_profit_min_hold_sec":  "1",
+                         "kraken_spot_fast_profit_capture_enabled":  "1",
+                         "kraken_spot_fast_profit_min_usd":  "0.01",
+                         "kraken_spot_fast_profit_min_hold_sec":  "1",
+                         "kraken_spot_taker_fee_rate":  "0.004",
+                         "kraken_spot_collateral_reserve_usd":  "5",
+                         "probe_symbol_min_interval_sec":  "5",
+                         "probe_symbol_stale_ttl_sec":  "30",
+                         "kraken_calls_per_min":  "60",
+                         "capital_calls_per_min":  "45",
+                         "alpaca_calls_per_min":  "120",
+                         "binance_calls_per_min":  "240",
+                         "rate_backoff_sec":  "30",
+                         "order_intent_min_interval_sec":  "8",
+                         "order_intent_min_confidence":  "0.35",
+                         "order_executor_min_interval_sec":  "10",
+                         "order_executor_symbol_cooldown_sec":  "60",
+                         "order_executor_quote_usd":  "5",
+                         "order_executor_max_per_tick":  "4",
+                         "kraken_spot_quote_usd":  "65",
+                         "binance_margin_leverage":  "2"
+                     },
+    "processes":  [
+                      {
+                          "name":  "Live market stream cache",
+                          "pids":  [
+                                       14400
+                                   ],
+                          "command":  "C:\\Users\\user\\aureon-trading\\.venv\\Scripts\\python.exe -m aureon.data_feeds.ws_market_data_feeder --binance --kraken --alpaca --capital --history-recording --quiet --out \"ws_cache/ws_prices.json\" --write-interval-s 1.0",
+                          "stderr":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\live_market_stream_cache.err.log",
+                          "status":  "started_no_stop",
+                          "stdout":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\live_market_stream_cache.out.log"
+                      },
+                      {
+                          "name":  "Ignition organism core",
+                          "pids":  [
+                                       5256
+                                   ],
+                          "command":  "C:\\Users\\user\\aureon-trading\\.venv\\Scripts\\python.exe scripts/aureon_ignition.py --live --no-trade --accounts-status --accounts-autonomous",
+                          "stderr":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\ignition_organism_core.err.log",
+                          "status":  "started",
+                          "stdout":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\ignition_organism_core.out.log"
+                      },
+                      {
+                          "name":  "Unified market status server",
+                          "pids":  [
+                                       19184
+                                   ],
+                          "command":  "C:\\Users\\user\\aureon-trading\\.venv\\Scripts\\python.exe -m aureon.exchanges.unified_market_status_server --port 8791",
+                          "stderr":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\unified_market_status_server.err.log",
+                          "status":  "started",
+                          "stdout":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\unified_market_status_server.out.log"
+                      },
+                      {
+                          "name":  "Unified market telemetry",
+                          "pids":  [
+                                       16356
+                                   ],
+                          "command":  "C:\\Users\\user\\aureon-trading\\.venv\\Scripts\\python.exe -m aureon.exchanges.unified_market_trader --interval 1",
+                          "stderr":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\unified_market_telemetry.err.log",
+                          "status":  "started",
+                          "stdout":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\unified_market_telemetry.out.log"
+                      },
+                      {
+                          "name":  "Mind thought action hub",
+                          "pids":  [
+                                       176
+                                   ],
+                          "command":  "C:\\Users\\user\\aureon-trading\\.venv\\Scripts\\python.exe -m aureon.autonomous.aureon_mind_thought_action_hub",
+                          "stderr":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\mind_thought_action_hub.err.log",
+                          "status":  "started",
+                          "stdout":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\mind_thought_action_hub.out.log"
+                      },
+                      {
+                          "name":  "Self-questioning AI loop",
+                          "pids":  [
+                                       1632
+                                   ],
+                          "command":  "C:\\Users\\user\\aureon-trading\\.venv\\Scripts\\python.exe -m aureon.autonomous.aureon_self_questioning_ai --loop --interval 300",
+                          "stderr":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\self-questioning_ai_loop.err.log",
+                          "status":  "started",
+                          "stdout":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\self-questioning_ai_loop.out.log"
+                      },
+                      {
+                          "name":  "Organism runtime observer",
+                          "pids":  [
+                                       2528
+                                   ],
+                          "command":  "C:\\Users\\user\\aureon-trading\\.venv\\Scripts\\python.exe -m aureon.autonomous.aureon_organism_runtime_observer --watch --interval 30 --refresh-core",
+                          "stderr":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\organism_runtime_observer.err.log",
+                          "status":  "started",
+                          "stdout":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\organism_runtime_observer.out.log"
+                      },
+                      {
+                          "name":  "Autonomous self-run coding loop",
+                          "pids":  [
+                                       13520
+                                   ],
+                          "command":  "C:\\Users\\user\\aureon-trading\\.venv\\Scripts\\python.exe -m aureon.autonomous.aureon_autonomous_self_run_loop --forever --interval-seconds 300 --max-stress-attempts 2",
+                          "stderr":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\autonomous_self-run_coding_loop.err.log",
+                          "status":  "started",
+                          "stdout":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\autonomous_self-run_coding_loop.out.log"
+                      },
+                      {
+                          "name":  "Unified frontend console",
+                          "pids":  [
+                                       19104
+                                   ],
+                          "command":  "cmd.exe /c npm run dev -- --host 0.0.0.0 --port 8081",
+                          "stderr":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\unified_frontend_console.err.log",
+                          "status":  "started",
+                          "stdout":  "C:\\Users\\user\\aureon-trading\\logs\\wake_up\\unified_frontend_console.out.log"
+                      }
+                  ],
+    "endpoints":  [
+                      {
+                          "ok":  true,
+                          "url":  "http://127.0.0.1:8081/",
+                          "error":  "",
+                          "status":  200,
+                          "length":  1338
+                      },
+                      {
+                          "ok":  true,
+                          "url":  "http://127.0.0.1:8791/api/terminal-state",
+                          "error":  "",
+                          "status":  200,
+                          "length":  881628
+                      },
+                      {
+                          "ok":  true,
+                          "url":  "http://127.0.0.1:13002/api/thoughts",
+                          "error":  "",
+                          "status":  200,
+                          "length":  5569
+                      }
+                  ],
+    "supervisor":  {
+                       "keep_alive":  true,
+                       "production_mode":  true,
+                       "interval_sec":  20,
+                       "last_check":  "2026-05-22T19:21:25.6407724+01:00"
+                   }
+}

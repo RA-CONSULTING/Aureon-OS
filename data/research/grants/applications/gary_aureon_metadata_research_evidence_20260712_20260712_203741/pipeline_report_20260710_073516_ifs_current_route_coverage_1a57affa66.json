@@ -1,0 +1,24 @@
+﻿{
+    "generated_at":  "2026-07-10T07:35:16+01:00",
+    "operator":  "Aureon",
+    "scope":  "IFS_ONLY",
+    "event":  "ifs_current_route_coverage_audit",
+    "status":  "IFS_CURRENT_ROUTES_COVERED_NO_UNCLASSIFIED_SUBMIT_READY_ROUTE",
+    "summary":  {
+                    "total_ifs_routes":  20,
+                    "submitted":  4,
+                    "live_drafts":  1,
+                    "conversion_pack_ready":  6,
+                    "explicitly_gated_or_ineligible":  8,
+                    "unclassified":  1
+                },
+    "artifact":  "applications/IFS_CURRENT_ROUTE_COVERAGE_AUDIT_20260710_073516.json",
+    "markdown":  "applications/IFS_CURRENT_ROUTE_COVERAGE_AUDIT_20260710_073516.md",
+    "controls":  [
+                     "Submitted IFS routes remain monitor-only",
+                     "Live UK-Swiss draft remains partner and budget gated",
+                     "No new IFS draft created in this audit",
+                     "No partner invitation, upload, email, award terms acceptance, Project Impact submit, or final IFS submission attempted",
+                     "No unsupported partner, asset, budget, permit, vessel, facility, public-sector, farming, academic, or hardware-lead claim entered"
+                 ]
+}

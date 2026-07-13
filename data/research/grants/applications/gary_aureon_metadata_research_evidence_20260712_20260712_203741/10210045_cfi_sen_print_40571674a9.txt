@@ -1,0 +1,208 @@
+Skip to main content
+Print your application
+You can print your application by pressing CTRL+P (Windows) or CMD+P (mac)
+Project details
+Application team
+R&A CONSULTING AND BROKERAGE SERVICES LTD
+Organisation details	
+Type	Business
+Team members
+Full name	Email	EDI survey
+gary leckey	gaxlec@gmail.com	Complete
+Application details
+Competition name
+CfI: Earlier identification of UK children with SEN
+Application name
+Aureon SEN Evidence OS: Fair Early Identification Support
+When do you wish to start your project?
+1 October 2026
+Project duration in months
+12 months
+Who made you aware of the competition?
+GOV.UK
+How long has the company been established for?
+Established 1 to 5 years
+What is your organisation's primary area of focus?
+Technology: hardware, software and services
+Project and scope summary
+Provide a short summary of your project.
+
+R&A Consulting and Brokerage Services Ltd will develop Aureon SEN Evidence OS, a human-in-the-loop evidence and workflow tool to support earlier, fairer and more reliable identification of special educational needs. The project is not a diagnostic product and will not replace teacher, SENCO, healthcare or local authority judgement. It will create an auditable support layer that helps professionals and families gather, structure and review the evidence already used around strengths and needs assessment.
+
+The current Aureon capability is a local-first evidence operating system: source inventory, claim classification, risk tagging, workflow logs, validation gates and human review states. Phase 1 will adapt that capability for SEN contexts where evidence is fragmented across observations, learning records, parent/carer input, professional notes and assessment pathways. The demonstrator will use synthetic and de-identified examples first, then run structured co-design and usability testing with relevant users and beneficiaries.
+
+The innovation is the evidence layer, not a black-box prediction engine. It will make visible what evidence has been considered, what is missing, where confidence is weak, what safeguarding or data-protection controls apply, and what requires professional review. This can help reduce inconsistency in early identification and strengths and needs assessment without creating automated eligibility decisions.
+
+Phase 1 will deliver a SEN evidence taxonomy, prototype workflow, professional review interface, safeguarding and data-protection pack, co-design findings, validation report, route-to-adoption plan and commercialisation pathway. R&A will work as a single legal entity and use specialist subcontracted input only where required for SEN practice, safeguarding, data protection, user research and accessibility. The project is UK based and will benefit UK children and families directly or indirectly by improving the quality, consistency and reviewability of evidence used in earlier support decisions.
+
+Public description
+Public description
+
+Aureon SEN Evidence OS will develop a human-in-the-loop evidence and workflow tool to support earlier, fairer and more reliable identification of special educational needs. The project will help teachers, SENCOs, parents, carers and related professionals organise and review evidence about a child's strengths and needs.
+
+The tool will not diagnose children or make automated eligibility decisions. It will provide an auditable record of what evidence has been considered, what is missing, where further review is needed and what safeguarding or data-protection controls apply.
+
+Phase 1 will build a prototype, SEN evidence taxonomy, co-design findings, validation report and adoption plan. The work will use synthetic and de-identified material first and will include appropriate parent/carer, teacher and SENCO engagement before any real-world adoption route is pursued.
+
+Applicant location
+Applicant location
+
+Lead applicant: R&A Consulting and Brokerage Services Ltd, 1 Quadrant Place, Belfast, Northern Ireland, BT12 4HX. Company number NI696693. The project will be led from Northern Ireland with UK-based user research, advisory and subcontracted specialist input where required.
+
+Potential subcontractors are not yet appointed. Anticipated specialist inputs are SEN practice review, safeguarding and data-protection review, accessibility and user research facilitation. Any subcontractor will be named, contracted and located before project start if the application is successful.
+
+Application questions
+1. Animal testing (not scored)
+Will your project involve any trials with animals or animal testing?
+
+No
+
+2. Permits and licences (not scored)
+Will you have the correct permits and licences in place to carry out your project?
+
+Not applicable
+
+3. International Collaboration (not scored)
+Does your proposed work involve any international collaboration or engagement?
+
+The proposed work does not involve international collaboration or engagement. The lead applicant is R&A Consulting and Brokerage Services Ltd in the UK. No international project co-leads, partners, visiting researchers or collaborators are included. Any specialist subcontracted services will be UK based unless Innovate UK approves otherwise.
+
+4. Export licence (not scored)
+Export licence
+
+No
+
+5. Trusted Research and Innovation (not scored)
+Trusted Research and Innovation
+
+The project does not have military, dual-use or national-security applications as proposed. It is a UK-based civilian software and evidence workflow project for earlier SEN identification and strengths and needs assessment. No export control licence is expected to be required and no items or substances on the UK Strategic Export Control List are included.
+
+The work relates to sensitive data and AI governance rather than NSI Act dual-use categories. R&A will manage trusted research risks through local-first processing, data minimisation, synthetic and de-identified examples, audit logs, role-based access, safeguarding review, UK GDPR and Data Protection Act 2018 compliance, and explicit human review gates. The system will not make automated diagnostic or statutory eligibility decisions.
+
+6. Proposed idea or technology
+How does the project meet the challenge described in the competition scope?
+
+Aureon SEN Evidence OS is a human-in-the-loop evidence operating layer for earlier SEN identification and strengths and needs assessment. It addresses the challenge by improving how evidence is gathered, structured, reviewed and explained in contexts where existing tools underperform, do not operate, or are not trusted by all parties.
+
+The tool will convert fragmented inputs into reviewable evidence records: classroom observations, parent/carer concerns, learner strengths, professional notes, reasonable adjustment history, speech and language indicators, assessment prompts and referral-pathway evidence. Each record will carry source, date, context, confidence, sensitivity, missing-information and review-status metadata. The interface will show what evidence supports a concern, what evidence is weak or absent, and what should be reviewed by a teacher, SENCO, relevant professional or family member.
+
+The project is not a diagnostic engine. It will not automatically label a child, rank entitlement, or replace professional judgement. Its purpose is to make the evidence route clearer, fairer and more consistent so that professionals and families can make better-informed decisions earlier.
+
+The current state of development is a working local Aureon evidence automation capability outside the SEN domain: source inventory, claim classification, risk tagging, workflow logs, validation gates and human review states. The SEN-specific taxonomy, safeguarding pattern, co-design workflow and assessment support interface will be developed and tested in phase 1. The project will begin with synthetic and de-identified examples, then involve appropriate child, parent/carer, teacher and SENCO engagement through consented, safeguarded co-design and usability testing.
+
+The tangible output will be a prototype platform, SEN evidence taxonomy, safeguarding and data-protection pack, usability and validity findings, adoption playbook, commercialisation plan and phase 2 route.
+
+IFS_CFI_SEN_2511_Q6_TECH_APPENDIX_20260709.pdf (opens in a new window).
+
+7. Technical project summary
+What are the main technical challenges you are addressing?
+
+The main technical challenge is building a useful evidence workflow without creating unsafe automated decisions. R&A will address this by separating evidence organisation from decision-making: the system will structure, explain and flag evidence, while human professionals and families remain responsible for interpretation and action.
+
+The innovation is a local-first, auditable evidence layer for SEN practice. It combines source mapping, evidence taxonomy, missing-evidence detection, sensitivity classification, review-status tracking, fairness checks, explainable prompts and professional handoff in one workflow. Current tools tend to focus on assessment content, case management or generic forms. Aureon focuses on proof, gaps, provenance and reviewability.
+
+Technical deliverables are: SEN evidence schema, synthetic/de-identified benchmark set, ingestion and annotation prototype, review interface, safeguarding and DPIA workflow, co-design toolkit, validation report and adoption playbook. R&D will test whether the workflow improves completeness, consistency, transparency and user confidence compared with baseline manual evidence collection. Environmental impact is low and will be managed through local-first processing and limited data retention. Commercial merit will be tested through user research, public-sector adoption analysis and service-backed pilot planning.
+
+8. Current state of the art and intellectual property
+Are similar products currently available in the market?
+
+Similar products exist in assessment, case management, education records and AI-supported administration, but the project is differentiated by focusing on auditable evidence provenance and human review rather than automated diagnosis or generic workflow storage.
+
+The existing Aureon IP is R&A's local-first evidence automation and workflow assurance capability: source inventory, claim classification, risk tagging, validation gates, reviewer status, generated evidence packs and grant-ready metadata controls. The project will adapt that background IP into a SEN-specific evidence taxonomy, data-protection pattern, professional handoff model and usability-tested interface.
+
+Novel concepts include structured evidence gap detection for earlier SEN support, confidence and sensitivity metadata attached to each evidence item, explicit separation of evidence support from statutory or clinical decision-making, and a review workflow that can grow with the child across age, geography and setting.
+
+Freedom to operate will be managed through open-source licence review, dependency register, documentation of background and foreground IP, and separation of generic Aureon tooling from project-specific outputs. If specialist subcontractors are used, contracts will require assignment or appropriate licence of deliverables so R&A can fulfil the CfI contract while retaining and commercialising foreground IP as permitted.
+
+9. Project plan and methodology
+Describe your project plan and identify the main milestones.
+
+Phase 1 runs for 12 months from 1 October 2026 to 30 September 2027. M1 sets up governance, safeguarding, DPIA planning, evidence taxonomy and success metrics. M2 designs user engagement and recruitment materials. M3 builds the synthetic/de-identified benchmark corpus. M4 develops ingestion and workflow logging. M5 builds evidence gap, sensitivity and confidence scoring. M6 delivers the human review and explanation interface. M7 runs co-design with parents/carers, teachers and SENCOs. M8 tests usability and validity across age, setting and geographic scenarios. M9 produces compliance, accessibility and integration evidence. M10 completes pilot simulation and adoption playbook. M11 completes commercial and phase 2 planning. M12 delivers the final report and funder-ready phase 2 package.
+
+Management controls are monthly milestones, weekly build reviews, issue log, risk register, change control, spend tracking and evidence ledger. Success criteria are a working prototype, no automated diagnostic decisioning, completed safeguarding and data-protection pack, user-tested evidence taxonomy, measurable improvement in evidence completeness and review clarity, and a credible adoption route. Main risks are weak user access, sensitive data handling, over-claiming AI outputs and small-team delivery load. Mitigations are funded user research, synthetic/de-identified data first, professional review gates, specialist advice and bounded work packages.
+
+The project plan appendix gives the Gantt chart, milestone deliverables and monthly payment schedule.
+
+IFS_CFI_SEN_2511_Q9_PROJECT_PLAN_GANTT_20260709.pdf (opens in a new window).
+
+10. Technical team and expertise
+Who is in the technical team?
+
+Gary Anthony Leckey will lead the project through R&A Consulting and Brokerage Services Ltd. R&A brings the existing Aureon software and evidence automation capability: local-first workflow control, source ledgers, human review patterns, generated evidence packs, validation records and responsible AI boundaries. The lead will provide product direction, architecture, prototype development, evidence model design, project management, reporting and commercial planning.
+
+The project budget includes specialist input because SEN practice, safeguarding, data protection and user engagement require domain review beyond software engineering. Anticipated specialist roles are: SEN practice adviser or SENCO reviewer, safeguarding and data-protection reviewer, accessibility and user research facilitator, and technical validation support. These roles will be subcontracted for specialist skills only and will not replace the applicant as the main delivery body.
+
+R&A will spend the majority of project time on delivery, including design, build, testing, documentation, engagement coordination and reporting. Specialist contributors will be used at defined milestones for review, co-design facilitation, compliance assurance and adoption feedback. This team structure is proportionate for phase 1: a focused applicant with existing evidence automation capability, supported by targeted SEN and safeguarding expertise where needed.
+
+11. Costs and value for money
+How much will the project cost for phase 1?
+
+The phase 1 contract value requested is GBP250,000 inclusive of VAT. R&A is VAT registered, so the IFS finance section should use GBP208,333 net eligible costs and allow IFS to add GBP41,667 VAT. All costs are actual project delivery costs at fair market value and include no profit margin.
+
+The net budget is: R&A technical labour and project management GBP96,000; SEN/user research specialist input GBP35,000; safeguarding, data-protection and ethics review GBP18,000; software, data, evaluation and accessibility work GBP28,333; overhead, secure storage, administration and reporting GBP18,000; travel, workshops and dissemination GBP8,000; participant materials and vouchers GBP5,000. At least 50% of the contract value is direct R&D through prototype development, solution exploration, user testing, validation and technical evaluation.
+
+Value for money comes from converting an existing Aureon evidence automation base into a focused SEN prototype rather than funding open-ended research. The taxpayer gets a tangible product demonstrator, compliance pack, validation evidence and adoption plan for a high-priority public service challenge. The monthly milestone payments match the finance summary and are paid in arrears only when deliverables are complete. Potential phase 2 costs are expected to be higher because they would involve real-world implementation and testing with education settings or public-sector adoption partners.
+
+IFS_CFI_SEN_2511_Q11_COSTS_APPENDIX_20260709.pdf (opens in a new window).
+
+12. Commercial impacts
+What is the commercial potential of your project?
+
+The proposed customers are education settings, multi-academy trusts, local authorities, inclusion services, charities, parent support organisations and education technology providers that need earlier, fairer and more consistent evidence around SEN identification and strengths and needs assessment.
+
+The route to market is staged. Phase 1 produces a safeguarded prototype, user evidence, validation report and adoption playbook. After phase 1, R&A will pursue paid pilots or phase 2 implementation with schools, local authorities, trusts, charities or public-sector innovation partners. Commercial delivery can be a supported software service, implementation package, evidence workflow licence, or integration layer for existing education and case-management systems.
+
+The competitive advantage is auditability. Many alternatives focus on assessment content, records or AI output. Aureon focuses on evidence provenance, missing evidence, confidence, sensitivity, human review status and defensible handoff. This supports professional judgement instead of replacing it, which is important in a sensitive market involving children and families.
+
+R&A has no existing commercial relationship that guarantees adoption for this project. That is why phase 1 includes co-design, user engagement and route-to-adoption work. The wider market includes public and private education, health-adjacent support pathways and international systems facing similar early identification challenges, but UK children and families are the direct or indirect beneficiaries of this phase.
+
+Project cost breakdown
+R&A CONSULTING AND BROKERAGE SERVICES LTD  
+£250,000
+Organisation
+View finances
+Labour	£96,000
+Overheads	£18,000
+Materials	£5,000
+Capital usage	£0
+Subcontracting	£53,000
+Travel and subsistence	£8,000
+Other costs	£28,333
+Total VAT	£41,667
+Totals  
+£250,000
+Labour	£96,000
+Overheads	£18,000
+Materials	£5,000
+Capital usage	£0
+Subcontracting	£53,000
+Travel and subsistence	£8,000
+Other costs	£28,333
+Total VAT	£41,667
+Payment milestones
+Month	Milestone	% of project costs	Payment request
+1	Governance and SEN evidence taxonomy	7.20%	£18,000
+2	User engagement design	7.20%	£18,000
+3	Benchmark corpus and baseline	8.16%	£20,400
+4	Prototype ingestion and workflow logging	8.64%	£21,600
+5	Evidence gap and confidence prototype	9.12%	£22,800
+6	Human review interface	9.12%	£22,800
+7	Co-design iteration	8.64%	£21,600
+8	Usability and validity testing	8.64%	£21,600
+9	Compliance and integration pack	8.64%	£21,600
+10	Pilot simulation and adoption playbook	8.64%	£21,600
+11	Commercialisation and phase 2 plan	8.16%	£20,400
+12	Final report and handover	7.84%	£19,600
+Total payment requested	100.00%	£250,000
+Supporting information
+Project impact
+Understanding the benefits of the projects Innovate UK supports
+Partner	Status
+R&A CONSULTING AND BROKERAGE SERVICES LTD (Lead)	
+
+Complete
+
+Terms and conditions
+Award terms and conditions
+Partner	Terms and conditions
+R&A CONSULTING AND BROKERAGE SERVICES LTD (Lead)	Procurement

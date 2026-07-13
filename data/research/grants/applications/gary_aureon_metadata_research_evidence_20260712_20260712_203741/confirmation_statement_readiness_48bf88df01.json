@@ -1,0 +1,29 @@
+{
+  "company_name": "R&A CONSULTING AND BROKERAGE SERVICES LTD",
+  "company_number": "NI696693",
+  "generated_fields": {
+    "company_name": "R&A CONSULTING AND BROKERAGE SERVICES LTD",
+    "company_number": "NI696693"
+  },
+  "manual_fields_required": [
+    "confirmation_date",
+    "registered_office_address_confirmation",
+    "officers_and_pscs_confirmation",
+    "share_capital_and_shareholders_confirmation",
+    "sic_codes_confirmation",
+    "lawful_purpose_statement",
+    "presenter_authentication_or_authorised_filer_credentials"
+  ],
+  "official_sources": {
+    "confirmation_statement": "https://www.gov.uk/file-your-confirmation-statement-with-companies-house",
+    "identity_verification": "https://www.gov.uk/guidance/identity-verification-for-companies-house"
+  },
+  "period_context": "2024-05-01 to 2025-04-30",
+  "safety": {
+    "filed_with_companies_house": false,
+    "payment_made": false,
+    "requires_human_approval": true
+  },
+  "schema_version": "companies-house-confirmation-statement-readiness-v1",
+  "status": "manual_filing_required"
+}

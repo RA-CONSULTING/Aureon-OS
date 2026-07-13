@@ -1,0 +1,76 @@
+# Aureon Parallel Strategy Unity Stress Audit
+
+- Status: `parallel_strategy_runtime_process_attention`
+- Workers: `0` / `7` healthy
+- Intents: `28` total, `14` executable
+- API budget gaps: `0`
+- Mutation leaks: `0`
+- Ghost Dance enabled: `True`
+- Ghost phase collisions: `0`
+- Ghost missing phase rows: `0`
+- Harmonic API Piano enabled: `True`
+- Harmonic tempo multiplier: `0.58657`
+- Piano keys: `7`
+- Piano missing proof rows: `0`
+- Song-stop risks: `0`
+- Rainbow ladder enabled: `True`
+- Rainbow missing proof rows: `0`
+- Power Station request governor enabled: `True`
+- Power Station missing proof rows: `0`
+- Audit self-validation passed: `True`
+- Audit self-validation failed rows: `0`
+- Audit proof basis: `real_runtime_artifacts`
+- Audit replay validation passed: `True`
+- Audit replay validation failed rows: `0`
+- Audit integrity validation passed: `True`
+- Audit integrity validation failed rows: `0`
+- Audit validation quorum passed: `True`
+- Audit validation quorum failed rows: `0`
+- Audit artifact provenance passed: `True`
+- Audit artifact provenance failed rows: `0`
+- Audit public contract passed: `True`
+- Audit public contract failed rows: `0`
+- Audit served artifact passed: `True`
+- Audit served artifact failed rows: `0`
+- Audit freshness SLA passed: `True`
+- Audit freshness SLA age seconds: `7.06`
+- Audit freshness SLA failed rows: `0`
+- Audit operator surface passed: `True`
+- Audit operator surface failed rows: `0`
+- Audit test coverage passed: `True`
+- Audit test coverage failed rows: `0`
+- Audit repair coverage passed: `True`
+- Audit repair coverage failed rows: `0`
+- Audit runtime repair readiness passed: `True`
+- Audit runtime repair readiness failed rows: `0`
+- Audit repair acceptance passed: `True`
+- Audit repair acceptance failed rows: `0`
+- Audit consistency matrix passed: `True`
+- Audit consistency matrix failed rows: `0`
+- Audit evidence lineage passed: `True`
+- Audit evidence lineage failed rows: `0`
+- Audit validator closure passed: `True`
+- Audit validator closure failed rows: `0`
+- Audit validation chain passed: `True`
+- Audit validation chain failed rows: `0`
+- Runtime aligned: `True`
+- Runtime reload required: `False`
+- Unified trader processes: `2`
+- Parallel supervisor processes: `0`
+- Wrong Python processes: `1`
+- Single-owner repair ready: `True`
+- Guarded repair command ready: `True`
+- Restart stop targets: `2`
+- Fabric visible: `True`
+
+## Blockers
+- `parallel_strategy_worker_stale_or_missing`
+- `parallel_strategy_runtime_process_duplicate`
+- `parallel_strategy_runtime_wrong_python`
+- `parallel_strategy_supervisor_process_missing`
+
+## Next Repair Actions
+- `parallel_strategy_unity`: Restart the parallel supervisor or inspect worker heartbeat logs.
+- `runtime_supervisor`: Stop duplicate unified_market_trader processes and restart the single venv-owned production runtime.
+- `runtime_supervisor`: Restart unified_market_trader from the repo .venv Python so one interpreter owns terminal-state.
+- `parallel_strategy_unity`: Start the parallel_strategy_unity watch process through AUREON_PRODUCTION_LIVE.cmd so worker heartbeats stay fresh.

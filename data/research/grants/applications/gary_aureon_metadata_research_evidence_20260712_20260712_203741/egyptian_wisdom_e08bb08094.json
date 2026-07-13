@@ -1,0 +1,1106 @@
+{
+  "civilization": "Egyptian",
+  "last_updated": "2025-12-30T18:28:53.470041",
+  "version": "1.0.0",
+  "sources": [
+    "hardcoded",
+    "wikipedia"
+  ],
+  "core_principles": {
+    "maat": {
+      "description": "Cosmic order, truth, justice, and balance - the foundation of existence",
+      "trading_application": "Market equilibrium seeking, mean reversion",
+      "confidence": 0.9
+    },
+    "isfet": {
+      "description": "Chaos, disorder, the opposite of Ma'at requiring constant vigilance",
+      "trading_application": "Volatility recognition, risk management",
+      "confidence": 0.85
+    },
+    "ka_ba_akh": {
+      "description": "Multiple soul components - Ka (vital essence), Ba (personality), Akh (immortal)",
+      "trading_application": "Multi-dimensional analysis (fundamental, technical, sentiment)",
+      "confidence": 0.8
+    },
+    "nile_cycles": {
+      "description": "Annual inundation bringing life - predictable cycles of abundance and scarcity",
+      "trading_application": "Seasonal market patterns, liquidity flows",
+      "confidence": 0.9
+    }
+  },
+  "sacred_mathematics": {
+    "phi": {
+      "value": 1.618033988749,
+      "description": "Golden ratio found in pyramids and temples",
+      "trading_use": "Fibonacci retracements and extensions"
+    },
+    "sacred_geometry": {
+      "description": "Geometric principles encoding cosmic truths",
+      "shapes": [
+        "pyramid",
+        "obelisk",
+        "ankh",
+        "djed"
+      ]
+    },
+    "numerology": {
+      "3": "Divine trinity (Osiris, Isis, Horus)",
+      "4": "Completeness (cardinal directions, canopic jars)",
+      "7": "Sacred number (7 Hathors, 7 gates of Duat)",
+      "9": "Ennead of Heliopolis",
+      "42": "Principles of Ma'at, nomes of Egypt"
+    }
+  },
+  "calendar_system": {
+    "civil_calendar": {
+      "months": 12,
+      "days_per_month": 30,
+      "epagomenal_days": 5,
+      "total": 365
+    },
+    "seasons": {
+      "akhet": {
+        "meaning": "Inundation",
+        "months": "July-October",
+        "market_insight": "High liquidity period"
+      },
+      "peret": {
+        "meaning": "Emergence",
+        "months": "November-February",
+        "market_insight": "Growth and planting phase"
+      },
+      "shemu": {
+        "meaning": "Harvest",
+        "months": "March-June",
+        "market_insight": "Profit taking, completion"
+      }
+    },
+    "sothic_cycle": {
+      "years": 1461,
+      "description": "Time for civil calendar to realign with Sirius rising"
+    }
+  },
+  "divine_principles": {
+    "osiris": "Death and rebirth, eternal cycles, continuity",
+    "isis": "Magic, wisdom, protective motherhood",
+    "horus": "Divine kingship, victory, vision",
+    "thoth": "Writing, mathematics, time, wisdom",
+    "anubis": "Transitions, judgment, guidance through darkness",
+    "ra": "Solar power, creation, daily renewal"
+  },
+  "symbols": {
+    "ankh": "Life, vitality, eternal existence",
+    "djed": "Stability, endurance, Osiris's spine",
+    "was_scepter": "Power, dominion, authority",
+    "eye_of_horus": "Protection, healing, wholeness",
+    "scarab": "Transformation, renewal, solar cycle"
+  },
+  "wikipedia_topics": [
+    "Ancient Egyptian religion",
+    "Maat",
+    "Egyptian calendar",
+    "Egyptian mathematics",
+    "Thoth",
+    "Book of the Dead",
+    "Egyptian astronomy",
+    "Pyramid Texts",
+    "Eye of Horus",
+    "Nile flood"
+  ],
+  "learned_insights": [
+    {
+      "source": "Sacred-Texts",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "The civilization of Ancient Egypt lasted longer than the entire\n span of what we have come to accept as 'recorded history': over\n three thousand years.\n During these millenia the Egyptians developed a multitude of\n gods and goddesses, as well as esoteric practices that we are still\n unravelling the meaning of.\n Besides this, Egypt was the source of the first true monothestic religion,\n under the p",
+      "relevance_score": 0.7698721336968808,
+      "trading_application": "Ancient egyptian wisdom for market understanding",
+      "timestamp": "2025-12-15T10:20:46.749976",
+      "content_hash": "928c5eea913c9cd1c9e77ff2fc87058a"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "TextsThe Pyramid TextsSamuel A. B. Mercer, translator [1952].The oldest sacred text in the world that we know of, dating back to 3100 B.C.E.The Pyramid Texts are funerary inscriptions from the early pyramids.\n This was the first translation of the Pyramid Texts into English,\n and this etext is the first time it has appeared on the Internet.Development of Religion and Thought in Ancient EgyptbyJame",
+      "relevance_score": 0.6629268341098636,
+      "trading_application": "Ancient egyptian wisdom for market understanding",
+      "timestamp": "2025-12-15T10:20:46.749999",
+      "content_hash": "18f30c4049a6c46ee93658457264684e"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "The Pyramid TextsSamuel A. B. Mercer, translator [1952].The oldest sacred text in the world that we know of, dating back to 3100 B.C.E.The Pyramid Texts are funerary inscriptions from the early pyramids.\n This was the first translation of the Pyramid Texts into English,\n and this etext is the first time it has appeared on the Internet.",
+      "relevance_score": 0.7846544707389419,
+      "trading_application": "Ancient egyptian wisdom for market understanding",
+      "timestamp": "2025-12-15T10:20:46.750009",
+      "content_hash": "91d28853c567ace6de50aa01250a9e21"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "Development of Religion and Thought in Ancient EgyptbyJames Henry Breasted[1912].Millennia of Egyptian religious evolution as seen through their literature, including extensive quotes from the Pyramid Texts.",
+      "relevance_score": 0.8878398451471681,
+      "trading_application": "Ancient egyptian wisdom for market understanding",
+      "timestamp": "2025-12-15T10:20:46.750014",
+      "content_hash": "6274465e3fcf1c1bc1ddb59e4271b9d8"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "The Egyptian Book of the DeadE. A. Wallis Budge, translator [1895].The best known Ancient Egyptian sacred text, which describes the journey into the afterlife.",
+      "relevance_score": 0.8817461585380203,
+      "trading_application": "Ancient egyptian wisdom for market understanding",
+      "timestamp": "2025-12-15T10:20:46.750018",
+      "content_hash": "f0a0548ea307b25f77402c134a0bcf00"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "Ancient Egyptian religion was a complex system of polytheistic beliefs and rituals that formed an integral part of ancient Egyptian culture. It centered on the Egyptians' interactions with many deities believed to be present and in control of the world. About 1,500 deities are known. Rituals such as prayer and offerings were provided to the gods to gain their favor. Formal religious practice centered on the pharaohs, the rulers of Egypt, believed to possess divine powers by virtue of their posit",
+      "relevance_score": 0.6,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:29:05.719366",
+      "content_hash": "33d050e52ca3a3a2c928258388b9d71f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "The Ancient Egyptians regarded the sun as a powerful life force. The sun god Ra had been worshipped from the Early Dynastic period (3100–2686 BCE), but it was not until the Old Kingdom (2686–2181 BCE), when Ra became the dominant figure in the Egyptian pantheon, that the Sun Cult took power. Early in the Old Kingdom, Ra grew in influence, and his cult center at Heliopolis became the nation's most important religious site. By the Fifth Dynasty, Ra was the most prominent god in Egypt and had devel",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:29:05.719541",
+      "content_hash": "33d360570c0c6aa80767fb9d62352ecb"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "The civilization of Ancient Egypt lasted longer than the entire\n span of what we have come to accept as 'recorded history': over\n three thousand years.\n During these millenia the Egyptians developed a multitude of\n gods and goddesses, as well as esoteric practices that we are still\n unravelling the meaning of.\n Besides this, Egypt was the source of the first true monothestic religion,\n under the p",
+      "relevance_score": 0.709822614775463,
+      "trading_application": "Ancient egyptian wisdom for market understanding",
+      "timestamp": "2025-12-15T10:29:07.811466",
+      "content_hash": "928c5eea913c9cd1c9e77ff2fc87058a"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "TextsThe Pyramid TextsSamuel A. B. Mercer, translator [1952].The oldest sacred text in the world that we know of, dating back to 3100 B.C.E.The Pyramid Texts are funerary inscriptions from the early pyramids.\n This was the first translation of the Pyramid Texts into English,\n and this etext is the first time it has appeared on the Internet.Development of Religion and Thought in Ancient EgyptbyJame",
+      "relevance_score": 0.8892860099883374,
+      "trading_application": "Ancient egyptian wisdom for market understanding",
+      "timestamp": "2025-12-15T10:29:07.811488",
+      "content_hash": "18f30c4049a6c46ee93658457264684e"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "The Pyramid TextsSamuel A. B. Mercer, translator [1952].The oldest sacred text in the world that we know of, dating back to 3100 B.C.E.The Pyramid Texts are funerary inscriptions from the early pyramids.\n This was the first translation of the Pyramid Texts into English,\n and this etext is the first time it has appeared on the Internet.",
+      "relevance_score": 0.8386452162197201,
+      "trading_application": "Ancient egyptian wisdom for market understanding",
+      "timestamp": "2025-12-15T10:29:07.811498",
+      "content_hash": "91d28853c567ace6de50aa01250a9e21"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "Development of Religion and Thought in Ancient EgyptbyJames Henry Breasted[1912].Millennia of Egyptian religious evolution as seen through their literature, including extensive quotes from the Pyramid Texts.",
+      "relevance_score": 0.8421475312561242,
+      "trading_application": "Ancient egyptian wisdom for market understanding",
+      "timestamp": "2025-12-15T10:29:07.811503",
+      "content_hash": "6274465e3fcf1c1bc1ddb59e4271b9d8"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "The Egyptian Book of the DeadE. A. Wallis Budge, translator [1895].The best known Ancient Egyptian sacred text, which describes the journey into the afterlife.",
+      "relevance_score": 0.8324620452879985,
+      "trading_application": "Ancient egyptian wisdom for market understanding",
+      "timestamp": "2025-12-15T10:29:07.811507",
+      "content_hash": "f0a0548ea307b25f77402c134a0bcf00"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Maat",
+      "content": "=== Anti-fatigue mats ===\n\"Anti-fatigue mats\" are designed to help a person who is working in a standing position for prolonged periods of time. Most anti-fatigue matting is a combination of an ergonomic pattern and a cushioning underlay. The cushioning causes constant subconscious balance checks and micro movements that stimulate blood flow through the legs and lower extremities. This results in better circulation and less fatigue. The cushioning underlay insulates the feet from the hard surfac",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:29:10.531189",
+      "content_hash": "d3bc30409552b2339c964c9d3cd67b2f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Maat",
+      "content": "One-piece mats are usually used on the permanent basis. One-piece mats can be handcrafted or factory-made. The standard shapes of one-piece mat are rectangular, square, round and elliptic. One-piece mats are produced in the huge variety of sizes and colors. Real and synthetic materials are used for one-piece mats production.\nLinear length mats are manufactured as rolls that can extend 20 meters up to 40 meters for long production lines, assembly lines and packing lines. Mats are manufactured in ",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:29:10.531323",
+      "content_hash": "e7e49819ff0b55ce90c211007b111c93"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian calendar",
+      "content": "The ancient Egyptian calendar – a civil calendar – was a solar calendar with a 365-day year. The year consisted of three seasons of 120 days each, plus an intercalary month of five epagomenal days treated as outside of the year proper. Each season was divided into four months of 30 days. These twelve months were initially numbered within each season but came to also be known by the names of their principal festivals. Each month was divided into three 10-day periods known as decans or decades. It",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:29:15.271112",
+      "content_hash": "8ea0197874c79076f08ecf8f31bb0c26"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian calendar",
+      "content": "Current understanding of the earliest development of the Egyptian calendar remains speculative. A tablet from the reign of the First Dynasty pharaoh Djer (c. 3000 BC) was once thought to indicate that the Egyptians had already established a link between the heliacal rising of Sirius (Ancient Egyptian: Spdt or Sopdet, \"Triangle\"; Ancient Greek: Σῶθις, Sôthis) and the beginning of their year, but more recent analysis has questioned whether the tablet's picture refers to Sirius at all. Similarly, b",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:29:15.271170",
+      "content_hash": "5497284e1f202f7964409f9971eb8615"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian calendar",
+      "content": "Inundation or Flood (Ancient Egyptian: Ꜣḫt, sometimes anglicized as Akhet): roughly from September to January.\nEmergence or Winter (Prt, sometimes anglicized as Peret): roughly from January to May.\nLow Water or Harvest or Summer (Šmw, sometimes anglicized as Shemu): roughly from May to September.\nAs early as the reign of Djer (c. 3000 BC, Dynasty I), yearly records were being kept of the flood's high-water mark. Otto E. Neugebauer noted that a 365-day year can be established by averaging a few d",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:29:15.271215",
+      "content_hash": "4ca30bcc7b2cc2e5d43f57c7c8682396"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian calendar",
+      "content": "The Egyptians appear to have used a purely lunar calendar prior to the establishment of the solar civil calendar in which each month began on the morning when the waning crescent moon could no longer be seen. Until the closing of Egypt's polytheist temples under the Byzantines, the lunar calendar continued to be used as the liturgical year of various cults. The lunar calendar divided the month into four weeks, reflecting each quarter of the lunar phases. Because the exact time of morning conside",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:29:15.271268",
+      "content_hash": "77bee2f015e773b79fb60bffc9b51489"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian calendar",
+      "content": "A second lunar calendar is attested by a demotic astronomical papyrus dating to sometime after 144 AD which outlines a lunisolar calendar operating in accordance with the Egyptian civil calendar according to a 25 year cycle. The calendar seems to show its month beginning with the first visibility of the waxing crescent moon, but Parker displayed an error in the cycle of about a day in 500 years, using it to show the cycle was developed to correspond with the new moon around 357 BC. This date pla",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:29:15.271308",
+      "content_hash": "33c82a1f909d69cd540c4c53df5e702f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian calendar",
+      "content": "The civil calendar was established at some early date in or before the Old Kingdom, with probable evidence of its use early in the reign of Shepseskaf (c. 2510 BC, Dynasty IV) and certain attestation during the reign of Neferirkare (mid-25th century BC, Dynasty V). It was probably based upon astronomical observations of Sirius whose reappearance in the sky closely corresponded to the average onset of the Nile flood through the 5th and 4th millennium BC. A recent development is the discovery that",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:29:15.271364",
+      "content_hash": "a907f761dbae3d05e43ad6106a2ccccd"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian calendar",
+      "content": "The importance of the calendar to Egyptian religion is reflected in the use of the title \"Lord of Years\" (Nb Rnpt) for its various creator gods. Time was also considered an integral aspect of Maat, the cosmic order which opposed chaos, lies, and violence.\nThe civil calendar was apparently established in a year when Sirius rose on its New Year (I Akhet 1) but, because of its lack of leap years, it began to slowly cycle backwards through the solar year. Sirius itself, about 40° below the ecliptic,",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:29:15.271405",
+      "content_hash": "2de288752394ab4111ad76e832d2ba31"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "Ancient Egyptian mathematics is the mathematics that was developed and used in Ancient Egypt c. 3000 to c. 300 BCE, from the Old Kingdom of Egypt until roughly the beginning of Hellenistic Egypt. The ancient Egyptians utilized a numeral system for counting and solving written mathematical problems, often involving multiplication and fractions. Evidence for Egyptian mathematics is limited to a scarce amount of surviving sources written on papyrus. From these texts it is known that ancient Egyptia",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:29:20.270603",
+      "content_hash": "57260e691a82c7965eb192da4bb07e9c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "== Overview ==\nWritten evidence of the use of mathematics dates back to at least 3200 BC with the ivory labels found in Tomb U-j at Abydos. These labels appear to have been used as tags for grave goods and some are inscribed with numbers. Further evidence of the use of the base 10 number system can be found on the Narmer Macehead which depicts offerings of 400,000 oxen, 1,422,000 goats and 120,000 prisoners. Archaeological evidence has suggested that the Ancient Egyptian counting system had orig",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:29:20.270706",
+      "content_hash": "3da01902bb83913abe605e406c7de420"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "The Papyrus Anastasi I, a literary text written as a (fictional) letter written by a scribe named Hori and addressed to a scribe named Amenemope. A segment of the letter describes several mathematical problems.\nOstracon Senmut 153, a text written in hieratic\nOstracon Turin 57170, a text written in hieratic\nOstraca from Deir el-Medina contain computations. Ostracon IFAO 1206 for instance shows the calculation of volumes, presumably related to the quarrying of a tomb.\nAccording to Étienne Gilson, ",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from egyptian tradition",
+      "timestamp": "2025-12-15T10:29:20.270771",
+      "content_hash": "c2b60d8ef3f0912e7e548b302eec1b46"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "Ancient Egyptian texts could be written in either hieroglyphs or in hieratic. In either representation the number system was always given in base 10. The number 1 was depicted by a simple stroke, the number 2 was represented by two strokes, etc. The numbers 10, 100, 1000, 10,000 and 100,000 had their own hieroglyphs. Number 10 is a hobble for cattle, number 100 is represented by a coiled rope, the number 1000 is represented by a lotus flower, the number 10,000 is represented by a finger, the num",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:29:20.270796",
+      "content_hash": "726fe9616964468363a04f4497be5b19"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "Egyptian numerals date back to the Predynastic period. Ivory labels from Abydos record the use of this number system. It is also common to see the numerals in offering scenes to indicate the number of items offered. The king's daughter Neferetiabet is shown with an offering of 1000 oxen, bread, beer, etc.\nThe Egyptian number system was additive. Large numbers were represented by collections of the glyphs and the value was obtained by simply adding the individual numbers together.",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:29:20.270815",
+      "content_hash": "929a976ee8f0b9de007af0038ee43df8"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "== Notation ==\nSteps of calculations were written in sentences in Egyptian languages. (e.g. \"Multiply 10 times 100; it becomes 1000.\")",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from egyptian tradition",
+      "timestamp": "2025-12-15T10:29:20.270845",
+      "content_hash": "3fbab0a275f0346d9de509fb9ecf5606"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "Egyptian multiplication was done by a repeated doubling of the number to be multiplied (the multiplicand), and choosing which of the doublings to add together (essentially a form of binary arithmetic), a method that links to the Old Kingdom. The multiplicand was written next to figure 1; the multiplicand was then added to itself, and the result written next to the number 2. The process was continued until the doublings gave a number greater than half of the multiplier.  Then the doubled numbers ",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:29:20.270895",
+      "content_hash": "4f87da942d27855c0ed2e3bdf8b997f6"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "First the scribe would double 365 repeatedly until the largest possible multiple of 365 is reached, which is smaller than 3200. In this case 8 times 365 is 2920 and further addition of multiples of 365 would clearly give a value greater than 3200. Next it is noted that ⁠2/3⁠ + ⁠1/10⁠ + ⁠1/2190⁠ times 365 gives us the value of 280 we need. Hence we find that 3200 divided by 365 must equal 8 + ⁠2/3⁠ + ⁠1/10⁠ + ⁠1/2190⁠.",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from egyptian tradition",
+      "timestamp": "2025-12-15T10:29:20.270933",
+      "content_hash": "0805ddbd0e0b9b4f375df3a4cdd70e6d"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "Solving these Aha problems involves a technique called method of false position. The technique is also called the method of false assumption. The scribe would substitute an initial guess of the answer into the problem. The solution using the false assumption would be proportional to the actual answer, and the scribe would find the answer by using this ratio.\nThe mathematical writings show that the",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:29:20.270975",
+      "content_hash": "a14090ebf0b1871cdbae39d03b6d41ff"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Thoth",
+      "content": "A tooth (pl.: teeth) is a hard, calcified structure found in the jaws (or mouths) of many vertebrates and used to break down food. Some animals, particularly carnivores and omnivores, also use teeth to help with capturing or wounding prey, tearing food, for defensive purposes, to intimidate other animals often including their own, or to carry prey or their young. The roots of teeth are covered by gums. Teeth are not made of bone, but rather of multiple tissues of varying density and hardness tha",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:29:25.415485",
+      "content_hash": "79a0c0f60277cdffa836bbe893a7bb17"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Thoth",
+      "content": "An adult horse has between 36 and 44 teeth. The enamel and dentin layers of horse teeth are intertwined. All horses have 12 premolars, 12 molars, and 12 incisors. Generally, all male equines also have four canine teeth (called tushes) between the molars and incisors. However, few female horses (less than 28%) have canines, and those that do usually have only one or two, which many times are only partially erupted. A few horses have one to four wolf teeth, which are vestigial premolars, with most",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from egyptian tradition",
+      "timestamp": "2025-12-15T10:29:25.415755",
+      "content_hash": "bcd856bd0369e1d4fd18ecaa3e5e1615"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian astronomy",
+      "content": "Egyptian astronomy started in prehistoric times, in the Predynastic Period. In the 5th millennium BCE, the stone circles at Nabta Playa may have made use of astronomical alignments. By the time the historical Dynastic Period began in the 3rd millennium BCE, the 365 day period of the Egyptian calendar was already in use, and the observation of stars was important in determining the annual flooding of the Nile.\nThe Egyptian pyramids were carefully aligned towards the pole star, and the temple of A",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:29:35.182929",
+      "content_hash": "5f03ceb6628936b182ed19f910b3cae3"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian astronomy",
+      "content": "Egyptian astronomy dates back to prehistoric times. The presence of stone circles at Nabta Playa in Upper Egypt from the 5th millennium BCE show the importance of astronomy to the religious life of ancient Egypt, even in the prehistoric period. The annual flooding of the Nile meant that the heliacal risings, or first visible appearances of stars at dawn, were of special interest in determining when this might occur. The 365 day period of the Egyptian calendar was already in use at the beginning ",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:29:35.183004",
+      "content_hash": "32400d577076665593d35777059b3f9d"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian astronomy",
+      "content": "Following Alexander the Great's conquests and the foundation of Ptolemaic Egypt, the native Egyptian tradition of astronomy had merged with Greek astronomy as well as Babylonian astronomy. The city of Alexandria in Lower Egypt became the centre of scientific activity throughout the Hellenistic civilization. The greatest Alexandrian astronomer of this era was the Greek, Eratosthenes (c. 276–195 BCE), who calculated the size of the Earth, providing an estimate for the circumference of the Earth.\nF",
+      "relevance_score": 0.4,
+      "trading_application": "Pattern-based market forecasting",
+      "timestamp": "2025-12-15T10:29:35.183144",
+      "content_hash": "9f70d074dc5359a2dd66eb64c909f27c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Pyramid Texts",
+      "content": "The spells, or utterances, of the Pyramid Texts were primarily concerned with enabling the transformation of the deceased into an akh (where those judged worthy could mix with the gods). The spells of the Pyramid Texts are divided into two broad categories: Sacerdotal texts and Personal texts.\nThe sacerdotal texts are ritual in nature, and were conducted by the lector priest addressing the deceased in the second person. They consist of offering spells, short spells recited in the presentation of",
+      "relevance_score": 0.4,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-15T10:29:40.069740",
+      "content_hash": "b9f1f60c9d1133bde0eb303e06a92990"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Pyramid Texts",
+      "content": "The west gable of the burial chamber is inscribed with protective spells; in later pyramids the gable was used for texts commending the king to Nut, and, from Pepi I onwards, also for Sakhu, or 'glorifications', for the transformation into an Akh. The other walls of the burial chamber are primarily dedicated to ritual texts. The north wall, along with the northern part of the east wall and passage, is dedicated to the Offering Ritual. Spatial considerations required that part of the ritual be in",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:29:40.069835",
+      "content_hash": "95d0a85f36f55f31a4928e0ae850faab"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Nile flood",
+      "content": "The flooding of the Nile (commonly referred to as the Inundation) and its silt deposition was a natural cycle first attested in Ancient Egypt. It was of singular importance in the history and culture of Egypt. Governments and administrators of Egypt began constructing infrastructure to control the flooding in the 19th century, and these projects continued into the 20th. The annual flooding cycle in Egypt came to an end in 1970 with the completion of the Aswan High Dam.\n.\nThe river's predictabili",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:29:49.326514",
+      "content_hash": "0809e4edc643aeeb250cf3fd8eb9b043"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Nile flood",
+      "content": "== Cultural significance in Ancient Egypt ==\nThe flooding of the Nile held a primary importance to the people of Ancient Egypt, reflected in their founding myths, their calendar, and in their very name for their land. In the Ancient Egyptian religion, the floodwaters were Isis's tears of sorrow for the murdered Osiris, killed by his own brother Set. During inundation festivals, Egyptians planted mud figures of Osiris with barley.\nThe Egyptian calendar year was divided into three seasons: Akhet (",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:29:49.326580",
+      "content_hash": "1000573abbc1105b02b38470f69271b6"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Nile flood",
+      "content": "The flooding of the Nile is an effect of the yearly monsoon between May and August, which entails peak rainfall on the Ethiopian Highlands, the summits of which reach heights of up to 4,550 m (14,930 ft). Most of this runoff flows into the Blue Nile and, by the Atbarah River, into the main Nile; a smaller amount flows through the Sobat and the White Nile into the Nile. During this short period, the Atbarah and Sobat contribute up to 90% of Nile's flow and most of its transported sediment. After ",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:29:49.326629",
+      "content_hash": "0bd867ba349af20b75a90475ac927502"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Nile flood",
+      "content": "=== Perennial irrigation ===\nMuhammad Ali Pasha, Khedive of Egypt (r. 1805–1848), attempted to modernize various aspects of Egypt. He endeavoured to extend arable land and achieve additional revenue by introducing cotton cultivation, a crop with a longer growing season and requiring sufficient water at all times. To this end, the Delta Barrages and wide systems of new canals were built, changing the irrigation system from the traditional basin irrigation to perennial irrigation whereby farmland ",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:29:49.326694",
+      "content_hash": "10f02a10065d889c60bcda5b3bfb98d3"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Nile flood",
+      "content": "The British, during their first period in Egypt, attempted to improve and expand the Egyptians' basin irrigation system, however the new infrastructure was not sufficiently capacious to fully retain the annual flooding. To remedy this, William Willcocks, in his role as director general of reservoirs for British Egypt, planned and supervised the construction of the Aswan Low Dam, the first true storage reservoir, and the Assiut Barrage, both completed in 1902. However, they were still not able to",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-15T10:29:49.326768",
+      "content_hash": "e1b6d67226d1a6ba2293b7613ef7ff32"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "The civilization of Ancient Egypt lasted longer than the entire\n span of what we have come to accept as 'recorded history': over\n three thousand years.\n During these millenia the Egyptians developed a multitude of\n gods and goddesses, as well as esoteric practices that we are still\n unravelling the meaning of.\n Besides this, Egypt was the source of the first true monothestic religion,\n under the p",
+      "relevance_score": 0.6533805550678553,
+      "trading_application": "Ancient egyptian wisdom for market understanding",
+      "timestamp": "2025-12-25T19:37:21.879578",
+      "content_hash": "928c5eea913c9cd1c9e77ff2fc87058a"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "TextsThe Pyramid TextsSamuel A. B. Mercer, translator [1952].The oldest sacred text in the world that we know of, dating back to 3100 B.C.E.The Pyramid Texts are funerary inscriptions from the early pyramids.\n This was the first translation of the Pyramid Texts into English,\n and this etext is the first time it has appeared on the Internet.Development of Religion and Thought in Ancient EgyptbyJame",
+      "relevance_score": 0.8588048181439544,
+      "trading_application": "Ancient egyptian wisdom for market understanding",
+      "timestamp": "2025-12-25T19:37:21.879603",
+      "content_hash": "18f30c4049a6c46ee93658457264684e"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "The Pyramid TextsSamuel A. B. Mercer, translator [1952].The oldest sacred text in the world that we know of, dating back to 3100 B.C.E.The Pyramid Texts are funerary inscriptions from the early pyramids.\n This was the first translation of the Pyramid Texts into English,\n and this etext is the first time it has appeared on the Internet.",
+      "relevance_score": 0.6734237065643579,
+      "trading_application": "Ancient egyptian wisdom for market understanding",
+      "timestamp": "2025-12-25T19:37:21.879614",
+      "content_hash": "91d28853c567ace6de50aa01250a9e21"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "Development of Religion and Thought in Ancient EgyptbyJames Henry Breasted[1912].Millennia of Egyptian religious evolution as seen through their literature, including extensive quotes from the Pyramid Texts.",
+      "relevance_score": 0.737187323188476,
+      "trading_application": "Ancient egyptian wisdom for market understanding",
+      "timestamp": "2025-12-25T19:37:21.879620",
+      "content_hash": "6274465e3fcf1c1bc1ddb59e4271b9d8"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "The Egyptian Book of the DeadE. A. Wallis Budge, translator [1895].The best known Ancient Egyptian sacred text, which describes the journey into the afterlife.",
+      "relevance_score": 0.7782422244994526,
+      "trading_application": "Ancient egyptian wisdom for market understanding",
+      "timestamp": "2025-12-25T19:37:21.879625",
+      "content_hash": "f0a0548ea307b25f77402c134a0bcf00"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "Ancient Egyptian religion was a complex system of polytheistic beliefs and rituals that formed an integral part of ancient Egyptian culture. It centered on the Egyptians' interactions with many deities believed to be present and in control of the world. About 1,500 deities are known. Rituals such as prayer and offerings were provided to the gods to gain their favor. Formal religious practice centered on the pharaohs, the rulers of Egypt, believed to possess divine powers by virtue of their posit",
+      "relevance_score": 0.6,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:46:54.168650",
+      "content_hash": "33d050e52ca3a3a2c928258388b9d71f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Ancient Egyptian religion",
+      "content": "The Ancient Egyptians regarded the sun as a powerful life force. The sun god Ra had been worshipped from the Early Dynastic period (3100–2686 BCE), but it was not until the Old Kingdom (2686–2181 BCE), when Ra became the dominant figure in the Egyptian pantheon, that the Sun Cult took power. Early in the Old Kingdom, Ra grew in influence, and his cult center at Heliopolis became the nation's most important religious site. By the Fifth Dynasty, Ra was the most prominent god in Egypt and had devel",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:46:54.168826",
+      "content_hash": "33d360570c0c6aa80767fb9d62352ecb"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Maat",
+      "content": "=== Anti-fatigue mats ===\n\"Anti-fatigue mats\" are designed to help a person who is working in a standing position for prolonged periods of time. Most anti-fatigue matting is a combination of an ergonomic pattern and a cushioning underlay. The cushioning causes constant subconscious balance checks and micro movements that stimulate blood flow through the legs and lower extremities. This results in better circulation and less fatigue. The cushioning underlay insulates the feet from the hard surfac",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:46:58.940614",
+      "content_hash": "d3bc30409552b2339c964c9d3cd67b2f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Maat",
+      "content": "One-piece mats are usually used on the permanent basis. One-piece mats can be handcrafted or factory-made. The standard shapes of one-piece mat are rectangular, square, round and elliptic. One-piece mats are produced in the huge variety of sizes and colors. Real and synthetic materials are used for one-piece mats production.\nLinear length mats are manufactured as rolls that can extend 20 meters up to 40 meters for long production lines, assembly lines and packing lines. Mats are manufactured in ",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:46:58.940717",
+      "content_hash": "e7e49819ff0b55ce90c211007b111c93"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian calendar",
+      "content": "The ancient Egyptian calendar – a civil calendar – was a solar calendar with a 365-day year. The year consisted of three seasons of 120 days each, plus an intercalary month of five epagomenal days treated as outside of the year proper. Each season was divided into four months of 30 days. These twelve months were initially numbered within each season but came to also be known by the names of their principal festivals. Each month was divided into three 10-day periods known as decans or decades. It",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:47:03.947113",
+      "content_hash": "8ea0197874c79076f08ecf8f31bb0c26"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian calendar",
+      "content": "Current understanding of the earliest development of the Egyptian calendar remains speculative. A tablet from the reign of the First Dynasty pharaoh Djer (c. 3000 BC) was once thought to indicate that the Egyptians had already established a link between the heliacal rising of Sirius (Ancient Egyptian: Spdt or Sopdet, \"Triangle\"; Ancient Greek: Σῶθις, Sôthis) and the beginning of their year, but more recent analysis has questioned whether the tablet's picture refers to Sirius at all. Similarly, b",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:47:03.947173",
+      "content_hash": "5497284e1f202f7964409f9971eb8615"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian calendar",
+      "content": "Inundation or Flood (Ancient Egyptian: Ꜣḫt, sometimes anglicized as Akhet): roughly from September to January.\nEmergence or Winter (Prt, sometimes anglicized as Peret): roughly from January to May.\nLow Water or Harvest or Summer (Šmw, sometimes anglicized as Shemu): roughly from May to September.\nAs early as the reign of Djer (c. 3000 BC, Dynasty I), yearly records were being kept of the flood's high-water mark. Otto E. Neugebauer noted that a 365-day year can be established by averaging a few d",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:47:03.947220",
+      "content_hash": "4ca30bcc7b2cc2e5d43f57c7c8682396"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian calendar",
+      "content": "The Egyptians appear to have used a purely lunar calendar prior to the establishment of the solar civil calendar in which each month began on the morning when the waning crescent moon could no longer be seen. Until the closing of Egypt's polytheist temples under the Byzantines, the lunar calendar continued to be used as the liturgical year of various cults. The lunar calendar divided the month into four weeks, reflecting each quarter of the lunar phases. Because the exact time of morning conside",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:47:03.947275",
+      "content_hash": "77bee2f015e773b79fb60bffc9b51489"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian calendar",
+      "content": "A second lunar calendar is attested by a demotic astronomical papyrus dating to sometime after 144 AD which outlines a lunisolar calendar operating in accordance with the Egyptian civil calendar according to a 25 year cycle. The calendar seems to show its month beginning with the first visibility of the waxing crescent moon, but Parker displayed an error in the cycle of about a day in 500 years, using it to show the cycle was developed to correspond with the new moon around 357 BC. This date pla",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:47:03.947316",
+      "content_hash": "33c82a1f909d69cd540c4c53df5e702f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian calendar",
+      "content": "The civil calendar was established at some early date in or before the Old Kingdom, with probable evidence of its use early in the reign of Shepseskaf (c. 2510 BC, Dynasty IV) and certain attestation during the reign of Neferirkare (mid-25th century BC, Dynasty V). It was probably based upon astronomical observations of Sirius whose reappearance in the sky closely corresponded to the average onset of the Nile flood through the 5th and 4th millennium BC. A recent development is the discovery that",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:47:03.947374",
+      "content_hash": "a907f761dbae3d05e43ad6106a2ccccd"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian calendar",
+      "content": "The importance of the calendar to Egyptian religion is reflected in the use of the title \"Lord of Years\" (Nb Rnpt) for its various creator gods. Time was also considered an integral aspect of Maat, the cosmic order which opposed chaos, lies, and violence.\nThe civil calendar was apparently established in a year when Sirius rose on its New Year (I Akhet 1) but, because of its lack of leap years, it began to slowly cycle backwards through the solar year. Sirius itself, about 40° below the ecliptic,",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:47:03.947416",
+      "content_hash": "2de288752394ab4111ad76e832d2ba31"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "Ancient Egyptian mathematics is the mathematics that was developed and used in Ancient Egypt c. 3000 to c. 300 BCE, from the Old Kingdom of Egypt until roughly the beginning of Hellenistic Egypt. The ancient Egyptians utilized a numeral system for counting and solving written mathematical problems, often involving multiplication and fractions. Evidence for Egyptian mathematics is limited to a scarce amount of surviving sources written on papyrus. From these texts it is known that ancient Egyptia",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:08.928341",
+      "content_hash": "57260e691a82c7965eb192da4bb07e9c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "== Overview ==\nWritten evidence of the use of mathematics dates back to at least 3200 BC with the ivory labels found in Tomb U-j at Abydos. These labels appear to have been used as tags for grave goods and some are inscribed with numbers. Further evidence of the use of the base 10 number system can be found on the Narmer Macehead which depicts offerings of 400,000 oxen, 1,422,000 goats and 120,000 prisoners. Archaeological evidence has suggested that the Ancient Egyptian counting system had orig",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:08.928442",
+      "content_hash": "3da01902bb83913abe605e406c7de420"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "The Papyrus Anastasi I, a literary text written as a (fictional) letter written by a scribe named Hori and addressed to a scribe named Amenemope. A segment of the letter describes several mathematical problems.\nOstracon Senmut 153, a text written in hieratic\nOstracon Turin 57170, a text written in hieratic\nOstraca from Deir el-Medina contain computations. Ostracon IFAO 1206 for instance shows the calculation of volumes, presumably related to the quarrying of a tomb.\nAccording to Étienne Gilson, ",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from egyptian tradition",
+      "timestamp": "2025-12-25T19:47:08.928508",
+      "content_hash": "c2b60d8ef3f0912e7e548b302eec1b46"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "Ancient Egyptian texts could be written in either hieroglyphs or in hieratic. In either representation the number system was always given in base 10. The number 1 was depicted by a simple stroke, the number 2 was represented by two strokes, etc. The numbers 10, 100, 1000, 10,000 and 100,000 had their own hieroglyphs. Number 10 is a hobble for cattle, number 100 is represented by a coiled rope, the number 1000 is represented by a lotus flower, the number 10,000 is represented by a finger, the num",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:08.928533",
+      "content_hash": "726fe9616964468363a04f4497be5b19"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "Egyptian numerals date back to the Predynastic period. Ivory labels from Abydos record the use of this number system. It is also common to see the numerals in offering scenes to indicate the number of items offered. The king's daughter Neferetiabet is shown with an offering of 1000 oxen, bread, beer, etc.\nThe Egyptian number system was additive. Large numbers were represented by collections of the glyphs and the value was obtained by simply adding the individual numbers together.",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:08.928555",
+      "content_hash": "929a976ee8f0b9de007af0038ee43df8"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "== Notation ==\nSteps of calculations were written in sentences in Egyptian languages. (e.g. \"Multiply 10 times 100; it becomes 1000.\")",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from egyptian tradition",
+      "timestamp": "2025-12-25T19:47:08.928585",
+      "content_hash": "3fbab0a275f0346d9de509fb9ecf5606"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "Egyptian multiplication was done by a repeated doubling of the number to be multiplied (the multiplicand), and choosing which of the doublings to add together (essentially a form of binary arithmetic), a method that links to the Old Kingdom. The multiplicand was written next to figure 1; the multiplicand was then added to itself, and the result written next to the number 2. The process was continued until the doublings gave a number greater than half of the multiplier.  Then the doubled numbers ",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:08.928620",
+      "content_hash": "4f87da942d27855c0ed2e3bdf8b997f6"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "First the scribe would double 365 repeatedly until the largest possible multiple of 365 is reached, which is smaller than 3200. In this case 8 times 365 is 2920 and further addition of multiples of 365 would clearly give a value greater than 3200. Next it is noted that ⁠2/3⁠ + ⁠1/10⁠ + ⁠1/2190⁠ times 365 gives us the value of 280 we need. Hence we find that 3200 divided by 365 must equal 8 + ⁠2/3⁠ + ⁠1/10⁠ + ⁠1/2190⁠.",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from egyptian tradition",
+      "timestamp": "2025-12-25T19:47:08.928659",
+      "content_hash": "0805ddbd0e0b9b4f375df3a4cdd70e6d"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian mathematics",
+      "content": "Solving these Aha problems involves a technique called method of false position. The technique is also called the method of false assumption. The scribe would substitute an initial guess of the answer into the problem. The solution using the false assumption would be proportional to the actual answer, and the scribe would find the answer by using this ratio.\nThe mathematical writings show that the",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:08.928702",
+      "content_hash": "a14090ebf0b1871cdbae39d03b6d41ff"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Thoth",
+      "content": "A tooth (pl.: teeth) is a hard, calcified structure found in the jaws (or mouths) of many vertebrates and used to break down food. Some animals, particularly carnivores and omnivores, also use teeth to help with capturing or wounding prey, tearing food, for defensive purposes, to intimidate other animals often including their own, or to carry prey or their young. The roots of teeth are covered by gums. Teeth are not made of bone, but rather of multiple tissues of varying density and hardness tha",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:13.764688",
+      "content_hash": "79a0c0f60277cdffa836bbe893a7bb17"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Thoth",
+      "content": "An adult horse has between 36 and 44 teeth. The enamel and dentin layers of horse teeth are intertwined. All horses have 12 premolars, 12 molars, and 12 incisors. Generally, all male equines also have four canine teeth (called tushes) between the molars and incisors. However, few female horses (less than 28%) have canines, and those that do usually have only one or two, which many times are only partially erupted. A few horses have one to four wolf teeth, which are vestigial premolars, with most",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from egyptian tradition",
+      "timestamp": "2025-12-25T19:47:13.764942",
+      "content_hash": "bcd856bd0369e1d4fd18ecaa3e5e1615"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian astronomy",
+      "content": "Egyptian astronomy started in prehistoric times, in the Predynastic Period. In the 5th millennium BCE, the stone circles at Nabta Playa may have made use of astronomical alignments. By the time the historical Dynastic Period began in the 3rd millennium BCE, the 365 day period of the Egyptian calendar was already in use, and the observation of stars was important in determining the annual flooding of the Nile.\nThe Egyptian pyramids were carefully aligned towards the pole star, and the temple of A",
+      "relevance_score": 0.6,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:47:23.303515",
+      "content_hash": "5f03ceb6628936b182ed19f910b3cae3"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian astronomy",
+      "content": "Egyptian astronomy dates back to prehistoric times. The presence of stone circles at Nabta Playa in Upper Egypt from the 5th millennium BCE show the importance of astronomy to the religious life of ancient Egypt, even in the prehistoric period. The annual flooding of the Nile meant that the heliacal risings, or first visible appearances of stars at dawn, were of special interest in determining when this might occur. The 365 day period of the Egyptian calendar was already in use at the beginning ",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:47:23.303590",
+      "content_hash": "32400d577076665593d35777059b3f9d"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Egyptian astronomy",
+      "content": "Following Alexander the Great's conquests and the foundation of Ptolemaic Egypt, the native Egyptian tradition of astronomy had merged with Greek astronomy as well as Babylonian astronomy. The city of Alexandria in Lower Egypt became the centre of scientific activity throughout the Hellenistic civilization. The greatest Alexandrian astronomer of this era was the Greek, Eratosthenes (c. 276–195 BCE), who calculated the size of the Earth, providing an estimate for the circumference of the Earth.\nF",
+      "relevance_score": 0.4,
+      "trading_application": "Pattern-based market forecasting",
+      "timestamp": "2025-12-25T19:47:23.303736",
+      "content_hash": "9f70d074dc5359a2dd66eb64c909f27c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Pyramid Texts",
+      "content": "The spells, or utterances, of the Pyramid Texts were primarily concerned with enabling the transformation of the deceased into an akh (where those judged worthy could mix with the gods). The spells of the Pyramid Texts are divided into two broad categories: Sacerdotal texts and Personal texts.\nThe sacerdotal texts are ritual in nature, and were conducted by the lector priest addressing the deceased in the second person. They consist of offering spells, short spells recited in the presentation of",
+      "relevance_score": 0.4,
+      "trading_application": "Strategic positioning and tactical execution",
+      "timestamp": "2025-12-25T19:47:28.313375",
+      "content_hash": "b9f1f60c9d1133bde0eb303e06a92990"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Pyramid Texts",
+      "content": "The west gable of the burial chamber is inscribed with protective spells; in later pyramids the gable was used for texts commending the king to Nut, and, from Pepi I onwards, also for Sakhu, or 'glorifications', for the transformation into an Akh. The other walls of the burial chamber are primarily dedicated to ritual texts. The north wall, along with the northern part of the east wall and passage, is dedicated to the Offering Ritual. Spatial considerations required that part of the ritual be in",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:28.313492",
+      "content_hash": "95d0a85f36f55f31a4928e0ae850faab"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Nile flood",
+      "content": "The flooding of the Nile (commonly referred to as the Inundation) and its silt deposition was a natural cycle first attested in Ancient Egypt. It was of singular importance in the history and culture of Egypt. Governments and administrators of Egypt began constructing infrastructure to control the flooding in the 19th century, and these projects continued into the 20th. The annual flooding cycle in Egypt came to an end in 1970 with the completion of the Aswan High Dam.\n.\nThe river's predictabili",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:47:37.554842",
+      "content_hash": "0809e4edc643aeeb250cf3fd8eb9b043"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Nile flood",
+      "content": "== Cultural significance in Ancient Egypt ==\nThe flooding of the Nile held a primary importance to the people of Ancient Egypt, reflected in their founding myths, their calendar, and in their very name for their land. In the Ancient Egyptian religion, the floodwaters were Isis's tears of sorrow for the murdered Osiris, killed by his own brother Set. During inundation festivals, Egyptians planted mud figures of Osiris with barley.\nThe Egyptian calendar year was divided into three seasons: Akhet (",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:47:37.554931",
+      "content_hash": "1000573abbc1105b02b38470f69271b6"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Nile flood",
+      "content": "The flooding of the Nile is an effect of the yearly monsoon between May and August, which entails peak rainfall on the Ethiopian Highlands, the summits of which reach heights of up to 4,550 m (14,930 ft). Most of this runoff flows into the Blue Nile and, by the Atbarah River, into the main Nile; a smaller amount flows through the Sobat and the White Nile into the Nile. During this short period, the Atbarah and Sobat contribute up to 90% of Nile's flow and most of its transported sediment. After ",
+      "relevance_score": 0.8,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:47:37.554983",
+      "content_hash": "0bd867ba349af20b75a90475ac927502"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Nile flood",
+      "content": "=== Perennial irrigation ===\nMuhammad Ali Pasha, Khedive of Egypt (r. 1805–1848), attempted to modernize various aspects of Egypt. He endeavoured to extend arable land and achieve additional revenue by introducing cotton cultivation, a crop with a longer growing season and requiring sufficient water at all times. To this end, the Delta Barrages and wide systems of new canals were built, changing the irrigation system from the traditional basin irrigation to perennial irrigation whereby farmland ",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:47:37.555052",
+      "content_hash": "10f02a10065d889c60bcda5b3bfb98d3"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Nile flood",
+      "content": "The British, during their first period in Egypt, attempted to improve and expand the Egyptians' basin irrigation system, however the new infrastructure was not sufficiently capacious to fully retain the annual flooding. To remedy this, William Willcocks, in his role as director general of reservoirs for British Egypt, planned and supervised the construction of the Aswan Low Dam, the first true storage reservoir, and the Assiut Barrage, both completed in 1902. However, they were still not able to",
+      "relevance_score": 1.0,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:47:37.555127",
+      "content_hash": "e1b6d67226d1a6ba2293b7613ef7ff32"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "egyptian",
+      "topic": "Nile flood",
+      "content": "The river's predictability and annual deposits in the Nile Valley and Delta made for extraordinarily rich soil—classified today as alluvium on a bed of entisol— enabling the Egyptians to build an empire on the basis of its enormous agricultural wealth and surpluses of cereals which could be stored or traded. Egyptians were one of the first groups of people to practice agriculture on a large scale. This in turn was only possible with their innovation of surface irrigation, also called \"basin irri",
+      "relevance_score": 0.8,
+      "trading_application": "Pattern-based market forecasting",
+      "timestamp": "2025-12-27T16:01:48.540760",
+      "content_hash": "7ca6aa6633d1275f44f5e92678340f5c"
+    }
+  ],
+  "scan_history": [
+    {
+      "timestamp": "2025-12-15T10:21:24.984824",
+      "insights_found": 5,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-15T10:29:53.331557",
+      "insights_found": 37,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:38:00.553012",
+      "insights_found": 5,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:47:41.559291",
+      "insights_found": 32,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:12:27.794776",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:27:19.449197",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:32:12.907298",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T14:52:07.793039",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:01:52.595714",
+      "insights_found": 1,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:50:12.751010",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T12:31:45.275791",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T13:46:22.464150",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T14:40:27.485214",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T11:27:23.340109",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T12:02:36.899246",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:20:56.531765",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:37:06.835191",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T14:03:53.158502",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T14:57:43.744610",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:25:53.878086",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:42:38.090334",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T16:11:25.364084",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T17:21:46.930321",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T18:28:53.470041",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    }
+  ]
+}

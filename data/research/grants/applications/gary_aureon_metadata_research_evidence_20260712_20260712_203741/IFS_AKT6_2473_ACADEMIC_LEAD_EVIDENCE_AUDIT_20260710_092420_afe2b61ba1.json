@@ -1,0 +1,136 @@
+﻿{
+    "schema_version":  "aureon-ifs-akt6-academic-lead-evidence-audit-v1",
+    "generated_at":  "2026-07-10T09:24:20+01:00",
+    "operator":  "Aureon",
+    "scope":  "IFS_ONLY",
+    "event":  "ifs_akt6_academic_lead_evidence_audit",
+    "application_id":  "APP-IFS-AKT6-2473-20260709",
+    "opportunity_id":  "IFS-CURRENT-2473",
+    "competition":  "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+    "official_url":  "https://apply-for-innovation-funding.service.gov.uk/competition/2473/overview/d9a164dd-2094-4590-baa7-a057279d80a3",
+    "deadline":  "2026-07-15T11:00:00+01:00",
+    "result":  "NO_AKT6_SUBMIT_READY_ROUTE_CURRENT_EVIDENCE_KB_LEAD_AND_4FTE_REQUIRED",
+    "official_ifs_requirements":  [
+                                      {
+                                          "requirement":  "Competition closes Wednesday 15 July 2026 at 11:00am",
+                                          "source":  "Official IFS page lines 45-50"
+                                      },
+                                      {
+                                          "requirement":  "UK registered academic institutions, RTOs or Catapults can apply for a share of up to GBP2.5m",
+                                          "source":  "Official IFS page lines 45-50"
+                                      },
+                                      {
+                                          "requirement":  "The application must be submitted by the Knowledge Base partner; the Knowledge Base is the sole grant recipient",
+                                          "source":  "Official IFS page lines 78-81"
+                                      },
+                                      {
+                                          "requirement":  "Each AKT is between a UK Knowledge Base lead and a UK registered business with four or more full time employees",
+                                          "source":  "Official IFS page lines 106-110"
+                                      },
+                                      {
+                                          "requirement":  "Knowledge Base must be UK HE, FE, RTO or Catapult, invite the business, invite the AKT Monitoring Officer, and submit fEC or non-fEC evidence as applicable",
+                                          "source":  "Official IFS page lines 121-133 and 334-336"
+                                      },
+                                      {
+                                          "requirement":  "Business partner must have four or more FTE, support finances, host the Associate, and provide supervisory support",
+                                          "source":  "Official IFS page lines 144-151"
+                                      },
+                                      {
+                                          "requirement":  "Business Partner must commit at least 10 percent cash contribution; answers must not include hyperlinks",
+                                          "source":  "Official IFS page lines 207-212 and 292-301"
+                                      }
+                                  ],
+    "confirmed_findings":  {
+                               "confirmed_knowledge_base_lead":  false,
+                               "confirmed_qub_or_ulster_lead":  false,
+                               "confirmed_business_partner_four_or_more_fte":  false,
+                               "confirmed_business_financial_support_for_cash_contribution":  false,
+                               "confirmed_fec_or_non_fec_document":  false,
+                               "confirmed_akt_monitoring_officer_invite":  false,
+                               "confirmed_partner_terms_and_conditions":  false,
+                               "direct_ifs_submission_unlocked":  false
+                           },
+    "local_evidence_readback":  [
+                                    {
+                                        "path":  "applications.json",
+                                        "finding":  "AKT6 is recorded as academic/RTO/Catapult lead and four-FTE gated. Existing local note records one FTE, which is still below the official four-FTE threshold."
+                                    },
+                                    {
+                                        "path":  "contacts.json",
+                                        "finding":  "QUB and Ulster contacts exist as target contacts only. No local record confirms either organisation as AKT6 Knowledge Base lead."
+                                    },
+                                    {
+                                        "path":  "contacts/QUB_OUTREACH_EMAIL.txt",
+                                        "finding":  "Existing material is a general affiliation/collaboration outreach draft, not an AKT6 lead commitment, IFS invitation, fEC/non-fEC evidence, or partner finance evidence."
+                                    },
+                                    {
+                                        "path":  "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_085921.json",
+                                        "finding":  "Latest official route refresh already classifies AKT6 as explicitly gated or ineligible from current evidence."
+                                    },
+                                    {
+                                        "path":  "applications/IFS_PARTNER_OUTREACH_PIPELINE_20260710_081819.json",
+                                        "finding":  "Partner targets are candidates only. The file does not convert QUB, Ulster, or any Knowledge Base into a confirmed lead."
+                                    }
+                                ],
+    "drive_searches":  [
+                           {
+                               "query":  "AKT",
+                               "result_summary":  "Returned Aureon Grant War Room files and an older exported spreadsheet. These are planning records, not a confirmed Knowledge Base lead or FTE evidence."
+                           },
+                           {
+                               "query":  "KTP",
+                               "result_summary":  "Returned operating logs and an academic validation sprint email pack. No AKT6 lead, invite, fEC/non-fEC evidence, or four-FTE evidence found."
+                           },
+                           {
+                               "query":  "QUB AKT",
+                               "result_summary":  "No Google Drive results."
+                           },
+                           {
+                               "query":  "Ulster AKT",
+                               "result_summary":  "Returned Aureon Grant War Room files only. No confirmed Ulster AKT6 lead or application invite evidence found."
+                           },
+                           {
+                               "query":  "four FTE",
+                               "result_summary":  "Returned Future Leaders Fellowship, corporate/support documents, and unrelated files. No evidence confirming R\u0026A currently has four or more full-time equivalent employees found."
+                           },
+                           {
+                               "query":  "R\u0026A employees",
+                               "result_summary":  "Returned corporate/support documents. One Go Succeed diagnostic was inspected and records current FTE below the AKT6 threshold."
+                           },
+                           {
+                               "query":  "Knowledge Base lead",
+                               "result_summary":  "Returned mixed technical/planning files and War Room records. No confirmed HE/FE/RTO/Catapult lead commitment found."
+                           },
+                           {
+                               "query":  "AKT Monitoring Officer",
+                               "result_summary":  "Returned War Room files only. No evidence of an invite sent to the AKT Monitoring Officer found."
+                           }
+                       ],
+    "drive_files_inspected":  [
+                                  {
+                                      "title":  "Complete_with_Docusign_R_and_A_consulting_an.pdf",
+                                      "id":  "1vq6xJNU9gdfmmhAyZVwtzJYRuI57kNI_",
+                                      "finding":  "Go Succeed diagnostic dated 08/07/2026 records current staffing level as 0.00 FTE and future hiring potential of 2-3 engineers. This supports growth potential but does not satisfy the current four-FTE AKT6 business partner requirement."
+                                  }
+                              ],
+    "route_action":  {
+                         "portal_draft_opened":  false,
+                         "final_submission_attempted":  false,
+                         "partner_invite_sent":  false,
+                         "email_sent":  false,
+                         "upload_performed":  false,
+                         "reason":  "Official AKT6 rules require a Knowledge Base lead and current four-or-more-FTE business partner evidence. Current Aureon local and Drive evidence does not satisfy those gates."
+                     },
+    "next_actions":  [
+                         "Do not submit AKT6 directly as R\u0026A; the application must be led and submitted by an eligible Knowledge Base partner.",
+                         "Only change this route to draft-ready if a UK HE/FE/RTO/Catapult confirms lead status and creates or accepts the IFS lead role.",
+                         "Only complete the business partner side if current evidence confirms R\u0026A has four or more full-time equivalent employees and can evidence the required contribution.",
+                         "If the gates are later satisfied, have the Knowledge Base invite R\u0026A and the AKT Monitoring Officer in IFS, attach fEC/non-fEC evidence, complete finances, and review/submit before 15 July 2026 at 11:00."
+                     ],
+    "controls":  [
+                     "No unsupported Knowledge Base lead claim made",
+                     "No unsupported four-FTE claim made",
+                     "No unsupported cash contribution, fEC, non-fEC, Monitoring Officer invite, or partner T\u0026C claim made",
+                     "No IFS portal mutation, external email, upload, partner invite, award terms acceptance, or final submission performed"
+                 ]
+}

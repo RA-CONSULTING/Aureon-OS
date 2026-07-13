@@ -1,0 +1,290 @@
+﻿{
+    "created_at":  "2026-07-04",
+    "published_at":  "2026-07-05T07:13:30Z",
+    "last_verified_at":  "2026-07-05T09:05:10Z",
+    "target_google_account":  "gaxlec@gmail.com",
+    "target_title":  "Aureon Grant War Room - 2026-07-04",
+    "status":  "published_and_verified",
+    "publication_route":  "Chrome Drive and Google Sheets UI fallback after Google Drive connector create/update scope remained insufficient.",
+    "connector_scope_note":  {
+                                 "still_missing_api_methods":  [
+                                                                   "DriveFiles.Create",
+                                                                   "DriveFiles.Update",
+                                                                   "Sheets write/batchUpdate"
+                                                               ],
+                                 "readback_available":  true
+                             },
+    "drive_folder":  {
+                         "id":  "1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr",
+                         "title":  "Aureon Grant War Room - 2026-07-04",
+                         "url":  "https://drive.google.com/drive/folders/1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr"
+                     },
+    "native_google_sheet":  {
+                                "spreadsheet_id":  "1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+                                "title":  "Aureon Grant War Room - 2026-07-04",
+                                "mime_type":  "application/vnd.google-apps.spreadsheet",
+                                "url":  "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM/edit",
+                                "verified_tabs":  [
+                                                      "Read Me",
+                                                      "Company Profile",
+                                                      "Project Packages",
+                                                      "Funding Pipeline",
+                                                      "Application Tracker",
+                                                      "Evidence Register",
+                                                      "Validation Checklist",
+                                                      "Partner Map",
+                                                      "Comms Log",
+                                                      "Self Email Draft",
+                                                      "Source Register"
+                                                  ],
+                                "content_readback_checked":  [
+                                                                 "Read Me!A1:B6",
+                                                                 "Funding Pipeline!A1:K8",
+                                                                 "Source Register!A1:C8"
+                                                             ]
+                            },
+    "self_update_email":  {
+                              "status":  "sent",
+                              "sent_at":  "2026-07-05",
+                              "to":  "gaxlec@gmail.com",
+                              "subject":  "Aureon grant war room published - PDFs and funding pipeline",
+                              "attachments_verified_in_gmail":  [
+                                                                    "01_Invest_NI_Advisor_Email_Pack.pdf",
+                                                                    "02_InterTradeIreland_Innovation_Boost_Email_Pack.pdf",
+                                                                    "03_Academic_Validation_Sprint_Email_Pack.pdf",
+                                                                    "04_EIC_Accelerator_Email_Pack.pdf",
+                                                                    "05_Next_Wave_Email_Pack.pdf"
+                                                                ]
+                          },
+    "repo_corpus_addendum":  {
+                                 "status":  "published_and_verified",
+                                 "published_at":  "2026-07-05T07:35:25Z",
+                                 "title":  "AureonGrantRepoCorpus_20260705.zip",
+                                 "id":  "1TQG7f92-5Vi3tP9u2SaLTkjM5IehZHhk",
+                                 "mime_type":  "application/x-zip-compressed",
+                                 "size":  "12562",
+                                 "url":  "https://drive.google.com/file/d/1TQG7f92-5Vi3tP9u2SaLTkjM5IehZHhk/view?usp=drivesdk",
+                                 "source_zip":  "C:\\Users\\user\\outputs\\aureon_grants_20260704\\AureonGrantRepoCorpus_20260705.zip",
+                                 "contents_verified":  [
+                                                           "AUREON_WORK_CORPUS_INDEX_20260705.md",
+                                                           "grant_ready_metadata_20260705.json",
+                                                           "AIRR_AI_OPEN_ACCESS_2026_V2.md",
+                                                           "GRANT_TRACKING_PIPELINE_CURRENT_20260705.md"
+                                                       ]
+                             },
+    "published_files":  [
+                            {
+                                "title":  "Aureon Grant War Room - 2026-07-04.xlsx",
+                                "id":  "1ZSmXqD3OOsEI7pFk1euV76qHhVr7EO0s",
+                                "mime_type":  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                "url":  "https://docs.google.com/spreadsheets/d/1ZSmXqD3OOsEI7pFk1euV76qHhVr7EO0s/edit?usp=drivesdk\u0026ouid=108630789302440453568\u0026rtpof=true\u0026sd=true"
+                            },
+                            {
+                                "title":  "AureonGrantWarRoom_20260704.zip",
+                                "id":  "1Cn7YUIVa9_704vCSg3j50oFMlXGjpbvB",
+                                "mime_type":  "application/x-zip-compressed",
+                                "size":  "5346769",
+                                "modified_time":  "2026-07-05T07:18:45.562Z",
+                                "drive_version_observed":  "Version 2",
+                                "url":  "https://drive.google.com/file/d/1Cn7YUIVa9_704vCSg3j50oFMlXGjpbvB/view?usp=drivesdk"
+                            },
+                            {
+                                "title":  "AureonGrantRepoCorpus_20260705.zip",
+                                "id":  "1TQG7f92-5Vi3tP9u2SaLTkjM5IehZHhk",
+                                "mime_type":  "application/x-zip-compressed",
+                                "size":  "12562",
+                                "created_time":  "2026-07-05T07:35:25.089Z",
+                                "modified_time":  "2026-07-05T07:34:17.000Z",
+                                "url":  "https://drive.google.com/file/d/1TQG7f92-5Vi3tP9u2SaLTkjM5IehZHhk/view?usp=drivesdk"
+                            },
+                            {
+                                "title":  "01_Invest_NI_Advisor_Email_Pack.pdf",
+                                "id":  "1weWFVIwcwfLu8C9BrJfXQepzOws7Fyhh",
+                                "mime_type":  "application/pdf",
+                                "url":  "https://drive.google.com/file/d/1weWFVIwcwfLu8C9BrJfXQepzOws7Fyhh/view?usp=drivesdk"
+                            },
+                            {
+                                "title":  "02_InterTradeIreland_Innovation_Boost_Email_Pack.pdf",
+                                "id":  "1UfPkSjt69NRh6-cj-FIvxiVLEnHD1G-q",
+                                "mime_type":  "application/pdf",
+                                "url":  "https://drive.google.com/file/d/1UfPkSjt69NRh6-cj-FIvxiVLEnHD1G-q/view?usp=drivesdk"
+                            },
+                            {
+                                "title":  "03_Academic_Validation_Sprint_Email_Pack.pdf",
+                                "id":  "1Gwy7fl-jo8Mc5HD4lRopWuhocVuf7V3S",
+                                "mime_type":  "application/pdf",
+                                "url":  "https://drive.google.com/file/d/1Gwy7fl-jo8Mc5HD4lRopWuhocVuf7V3S/view?usp=drivesdk"
+                            },
+                            {
+                                "title":  "04_EIC_Accelerator_Email_Pack.pdf",
+                                "id":  "1RPkPFp7Ho2PtBo7tHKvNUBCJz9MmtyVl",
+                                "mime_type":  "application/pdf",
+                                "url":  "https://drive.google.com/file/d/1RPkPFp7Ho2PtBo7tHKvNUBCJz9MmtyVl/view?usp=drivesdk"
+                            },
+                            {
+                                "title":  "05_Next_Wave_Email_Pack.pdf",
+                                "id":  "1KLSjD3vZu1gEE27yM0B-bvH06KXhKS-c",
+                                "mime_type":  "application/pdf",
+                                "url":  "https://drive.google.com/file/d/1KLSjD3vZu1gEE27yM0B-bvH06KXhKS-c/view?usp=drivesdk"
+                            },
+                            {
+                                "title":  "AureonReposDriveBundle_SANITIZED_20260705.tar",
+                                "id":  "1AHKGb82z4FDIE2pccAAmB0oTFrSxfGCm",
+                                "mime_type":  "application/x-tar",
+                                "size":  "1527144960",
+                                "url":  "https://drive.google.com/file/d/1AHKGb82z4FDIE2pccAAmB0oTFrSxfGCm/view?usp=drivesdk"
+                            },
+                            {
+                                "title":  "repo_drive_upload_manifest_VERIFIED_20260705.json",
+                                "id":  "1fq51pNKWmA4ywDB6o2ISWUU2kjdiEUK4",
+                                "mime_type":  "application/json",
+                                "size":  "17294",
+                                "url":  "https://drive.google.com/file/d/1fq51pNKWmA4ywDB6o2ISWUU2kjdiEUK4/view?usp=drivesdk"
+                            },
+                            {
+                                "title":  "AureonAIRRPortalPack_20260705.zip",
+                                "id":  "1nXgdoFlwLDCHIFJ1MlU28G05bpm-YD-W",
+                                "mime_type":  "application/x-zip-compressed",
+                                "size":  "13848",
+                                "url":  "https://drive.google.com/file/d/1nXgdoFlwLDCHIFJ1MlU28G05bpm-YD-W/view?usp=drivesdk"
+                            },
+                            {
+                                "title":  "AureonLocalGitHistoryBundles_RAW_20260705.tar",
+                                "id":  "11oDMxnlewlJwXgpLPeKR5Bod4QdFdtBx",
+                                "mime_type":  "application/x-tar",
+                                "size":  "1241515520",
+                                "url":  "https://drive.google.com/file/d/11oDMxnlewlJwXgpLPeKR5Bod4QdFdtBx/view?usp=drivesdk"
+                            },
+                            {
+                                "title":  "AureonGitHubMirrorBundles_ALLREFS_20260705.tar",
+                                "id":  "19A5T5BSdS-hjeMWl3XyQY3ZlaUsfMYaT",
+                                "mime_type":  "application/x-tar",
+                                "size":  "366811648",
+                                "url":  "https://drive.google.com/file/d/19A5T5BSdS-hjeMWl3XyQY3ZlaUsfMYaT/view?usp=drivesdk"
+                            },
+                            {
+                                "title":  "AureonRepoArchives_PREUPLOAD_20260705.json",
+                                "id":  "13zzf3amaKeYaYmSXfqWgMfrN2h0LgTMW",
+                                "mime_type":  "application/json",
+                                "size":  "877",
+                                "url":  "https://drive.google.com/file/d/13zzf3amaKeYaYmSXfqWgMfrN2h0LgTMW/view?usp=drivesdk"
+                            }
+                        ],
+    "source_workbook":  "C:\\Users\\user\\outputs\\aureon_grants_20260704\\Aureon Grant War Room - 2026-07-04.xlsx",
+    "source_zip":  "C:\\Users\\user\\outputs\\aureon_grants_20260704\\AureonGrantWarRoom_20260704.zip",
+    "source_repo_corpus_zip":  "C:\\Users\\user\\outputs\\aureon_grants_20260704\\AureonGrantRepoCorpus_20260705.zip",
+    "csv_tabs_manifest":  "C:\\Users\\user\\outputs\\aureon_grants_20260704\\csv_tabs_manifest.json",
+    "completion_evidence":  [
+                                "Native Google Sheet exists in Google Drive.",
+                                "Metadata title is Aureon Grant War Room - 2026-07-04.",
+                                "Metadata readback shows all 11 required tabs.",
+                                "Sample range readback confirms imported content in Read Me, Funding Pipeline, and Source Register.",
+                                "Drive folder readback confirms native Google Sheet, workbook, refreshed ZIP archive, and five email PDF packs uploaded.",
+                                "Drive folder readback confirms AureonGrantRepoCorpus_20260705.zip uploaded with size 12562.",
+                                "Drive folder readback confirms AureonReposDriveBundle_SANITIZED_20260705.tar uploaded with size 1527144960 and verified manifest uploaded.",
+                                "Drive folder readback confirms AureonAIRRPortalPack_20260705.zip uploaded with size 13848."
+                            ],
+    "repo_preservation_upload":  {
+                                     "status":  "published_and_verified",
+                                     "published_at":  "2026-07-05T08:41:12Z",
+                                     "bundle":  {
+                                                    "title":  "AureonReposDriveBundle_SANITIZED_20260705.tar",
+                                                    "id":  "1AHKGb82z4FDIE2pccAAmB0oTFrSxfGCm",
+                                                    "mime_type":  "application/x-tar",
+                                                    "size":  "1527144960",
+                                                    "sha256":  "CDA331A830559F6D46D16DBDB91E2BA0F9EEE676FEB4FC4E6DCF1EEB7162BDAC",
+                                                    "url":  "https://drive.google.com/file/d/1AHKGb82z4FDIE2pccAAmB0oTFrSxfGCm/view?usp=drivesdk"
+                                                },
+                                     "manifest":  {
+                                                      "title":  "repo_drive_upload_manifest_VERIFIED_20260705.json",
+                                                      "id":  "1fq51pNKWmA4ywDB6o2ISWUU2kjdiEUK4",
+                                                      "mime_type":  "application/json",
+                                                      "size":  "17294",
+                                                      "url":  "https://drive.google.com/file/d/1fq51pNKWmA4ywDB6o2ISWUU2kjdiEUK4/view?usp=drivesdk"
+                                                  },
+                                     "contents_summary":  [
+                                                              "sanitized local source snapshots for Aureon/trading working copies and related research folders",
+                                                              "fresh all-ref GitHub mirror bundles for the three public RA-CONSULTING repos",
+                                                              "metadata inventories and verification results"
+                                                          ],
+                                     "local_raw_git_bundles_not_uploaded":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_git_bundles"
+                                 },
+    "airr_portal_pack_upload":  {
+                                    "status":  "published_and_verified",
+                                    "published_at":  "2026-07-05T08:49:07Z",
+                                    "title":  "AureonAIRRPortalPack_20260705.zip",
+                                    "id":  "1nXgdoFlwLDCHIFJ1MlU28G05bpm-YD-W",
+                                    "mime_type":  "application/x-zip-compressed",
+                                    "size":  "13848",
+                                    "sha256":  "5D6C4670F36A2409AE99F99C8864EA5FB0BFF0E7833CAD778E44612995E5DA10",
+                                    "url":  "https://drive.google.com/file/d/1nXgdoFlwLDCHIFJ1MlU28G05bpm-YD-W/view?usp=drivesdk",
+                                    "source_zip":  "C:\\Users\\user\\outputs\\aureon_grants_20260704\\AureonAIRRPortalPack_20260705.zip",
+                                    "contents":  [
+                                                     "PUBLIC_WORK_SOURCE_REGISTRY_20260705.md",
+                                                     "AIRR_PORTAL_FIELD_PACK_20260705.md",
+                                                     "AIRR_EVIDENCE_AND_ATTACHMENT_MATRIX_20260705.md",
+                                                     "grant_ready_metadata_20260705.json",
+                                                     "GRANT_TRACKING_PIPELINE_CURRENT_20260705.md"
+                                                 ]
+                                },
+    "repo_archive_completion_addendum":  {
+                                             "status":  "published_and_verified",
+                                             "published_at":  "2026-07-05T09:05:10Z",
+                                             "scope":  "local raw Git histories plus standalone public GitHub mirror all-ref archive",
+                                             "files":  [
+                                                           {
+                                                               "role":  "raw_local_git_history_bundles",
+                                                               "title":  "AureonLocalGitHistoryBundles_RAW_20260705.tar",
+                                                               "id":  "11oDMxnlewlJwXgpLPeKR5Bod4QdFdtBx",
+                                                               "mime_type":  "application/x-tar",
+                                                               "size":  "1241515520",
+                                                               "url":  "https://drive.google.com/file/d/11oDMxnlewlJwXgpLPeKR5Bod4QdFdtBx/view?usp=drivesdk",
+                                                               "local_path":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\drive_publish_full\\AureonLocalGitHistoryBundles_RAW_20260705.tar",
+                                                               "local_sha256":  "99E332CE7E1CDBEBF9FA3128052913402C08F5F97FD96888B23FD1E19810E9F1",
+                                                               "local_tar_entries":  6,
+                                                               "includes":  [
+                                                                                "Five local all-ref Git bundles from Aureon working copies"
+                                                                            ]
+                                                           },
+                                                           {
+                                                               "role":  "fresh_github_mirror_allrefs_bundles",
+                                                               "title":  "AureonGitHubMirrorBundles_ALLREFS_20260705.tar",
+                                                               "id":  "19A5T5BSdS-hjeMWl3XyQY3ZlaUsfMYaT",
+                                                               "mime_type":  "application/x-tar",
+                                                               "size":  "366811648",
+                                                               "url":  "https://drive.google.com/file/d/19A5T5BSdS-hjeMWl3XyQY3ZlaUsfMYaT/view?usp=drivesdk",
+                                                               "local_path":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\drive_publish_full\\AureonGitHubMirrorBundles_ALLREFS_20260705.tar",
+                                                               "local_sha256":  "061BD20D27779451FC8E6C04EDCB875D55F720508BB324201BA4A7770C6697A7",
+                                                               "local_tar_entries":  4,
+                                                               "includes":  [
+                                                                                "All-ref mirror bundles for the three public RA-CONSULTING GitHub repositories"
+                                                                            ]
+                                                           },
+                                                           {
+                                                               "role":  "sanitized_local_source_snapshots_and_github_mirrors",
+                                                               "title":  "AureonReposDriveBundle_SANITIZED_20260705.tar",
+                                                               "id":  "1AHKGb82z4FDIE2pccAAmB0oTFrSxfGCm",
+                                                               "mime_type":  "application/x-tar",
+                                                               "size":  "1527144960",
+                                                               "url":  "https://drive.google.com/file/d/1AHKGb82z4FDIE2pccAAmB0oTFrSxfGCm/view?usp=drivesdk",
+                                                               "local_path":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\AureonReposDriveBundle_SANITIZED_20260705.tar",
+                                                               "local_sha256":  "CDA331A830559F6D46D16DBDB91E2BA0F9EEE676FEB4FC4E6DCF1EEB7162BDAC",
+                                                               "includes":  [
+                                                                                "Sanitized local working-tree snapshots",
+                                                                                "GitHub mirror bundles",
+                                                                                "metadata",
+                                                                                "restore README"
+                                                                            ]
+                                                           },
+                                                           {
+                                                               "role":  "preupload_checksum_manifest",
+                                                               "title":  "AureonRepoArchives_PREUPLOAD_20260705.json",
+                                                               "id":  "13zzf3amaKeYaYmSXfqWgMfrN2h0LgTMW",
+                                                               "mime_type":  "application/json",
+                                                               "size":  "877",
+                                                               "url":  "https://drive.google.com/file/d/13zzf3amaKeYaYmSXfqWgMfrN2h0LgTMW/view?usp=drivesdk",
+                                                               "local_path":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\drive_publish_full\\AureonRepoArchives_PREUPLOAD_20260705.json"
+                                                           }
+                                                       ]
+                                         }
+}

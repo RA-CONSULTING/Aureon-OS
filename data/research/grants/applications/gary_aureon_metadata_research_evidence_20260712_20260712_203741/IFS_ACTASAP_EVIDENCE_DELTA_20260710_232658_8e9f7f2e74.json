@@ -1,0 +1,142 @@
+{
+  "schema_version": "aureon-ifs-actasap-evidence-delta-v1",
+  "generated_at": "2026-07-10T23:26:58+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_actasap_evidence_delta",
+  "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+  "competition": "ACTASAP Pilot Phase 1",
+  "status_after_delta": "ACTASAP_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+  "evidence_checked": {
+    "official_ifs_route": {
+      "competition": "ACTASAP Pilot Phase 1",
+      "source_url": "https://apply-for-innovation-funding.service.gov.uk/competition/2502/overview",
+      "deadline": "2026-07-28T11:00:00+01:00",
+      "lead_requirement": "Lead applicant must be a UK registered academic institution and must work alone.",
+      "business_position": "R&A Consulting and Brokerage Services Ltd is not the eligible lead for this IFS route."
+    },
+    "local_paths_checked": [
+      "C:/Users/user/aureon-trading/data/research/grants/applications",
+      "C:/Users/user/aureon-trading/data/research/grants/contacts",
+      "C:/Users/user/Documents",
+      "C:/Users/user/Downloads",
+      "C:/Users/user/Desktop"
+    ],
+    "local_search_terms": [
+      "ACTASAP",
+      "academic validation",
+      "academic lead",
+      "TTO",
+      "QUB",
+      "Queen's University Belfast",
+      "Ulster University",
+      "AICC",
+      "research office",
+      "validation work package",
+      "partner commitment",
+      "budget"
+    ],
+    "google_drive_queries": [
+      "ACTASAP",
+      "QUB Aureon",
+      "Ulster Aureon",
+      "academic validation Aureon"
+    ],
+    "google_drive_rows_checked": [
+      "Aureon Grant War Room - 2026-07-04 / Funding Pipeline / Accelerated Knowledge Transfer row",
+      "Aureon Grant War Room - 2026-07-04 / Application Tracker / Academic partner outreach rows",
+      "RA_Grant_War_Room_Package.md / ACTASAP viability note"
+    ]
+  },
+  "findings": [
+    {
+      "source": "Official IFS ACTASAP route",
+      "finding": "The route is academic-led and requires a UK registered academic institution to apply and work alone. R&A can only proceed if an eligible academic route chooses to lead or refer the work into a suitable route.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "applications/IFS_NON_P1_EVIDENCE_ACQUISITION_REGISTER_20260710_141505.md",
+      "finding": "The register identifies QUB CSIT, Ulster AIRC and AICC as evidence-acquisition targets. It classifies them as target routes and does not record a confirmed lead, TTO route, work package, budget or commitment.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "applications/outreach_payloads",
+      "finding": "Outreach-ready ACTASAP payloads exist for QUB CSIT, Ulster AIRC and AICC. They are draft-only evidence requests and do not unlock an IFS application.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_ACTASAP_PILOT_PHASE_1_20260710_134854_20260710_134902.md",
+      "finding": "Clean formal project text exists, but the academic lead, research-office or TTO route, academic owner, budget and validation work package remain blank until partner evidence is received.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Google Drive search: ACTASAP",
+      "finding": "Drive returned grant war-room package material. It classifies ACTASAP as an academic-institution-only route and does not include an authorised academic lead confirmation.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Google Drive search: QUB Aureon",
+      "finding": "No direct Drive result was found for QUB plus Aureon.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Google Drive search: Ulster Aureon / academic validation Aureon",
+      "finding": "Drive returned the war-room spreadsheet and operating log. The matching rows show academic partner outreach as a required next action, not a completed lead or commitment.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Documents/Downloads/Desktop targeted search",
+      "finding": "Local search found current ACTASAP audits, clean text and outreach drafts. No authorised academic lead, TTO contact, validation work package, budget or commitment evidence was found.",
+      "unlock_evidence": false
+    }
+  ],
+  "missing_evidence": [
+    "eligible UK academic institution lead",
+    "authorised research-office or TTO route",
+    "academic owner",
+    "validation work package",
+    "budget and commitment requirements",
+    "confirmation that the academic lead can apply and work alone under the route"
+  ],
+  "outreach_ready_refs": [
+    "applications/outreach_payloads/P2-ACTASAP-QUB-CSIT_20260710_141505.md",
+    "applications/outreach_payloads/P2-ACTASAP-ULSTER-AIRC_20260710_141505.md",
+    "applications/outreach_payloads/P2-ACTASAP-AICC_20260710_141505.md",
+    "applications/IFS_P2_ACTASAP_QUB_INNOVATION_OUTREACH_DRAFT_20260710_115624.eml",
+    "applications/IFS_P2_ACTASAP_ULSTER_INNOVATION_CONTACT_ROUTE_PAYLOAD_20260710_115624.txt",
+    "applications/IFS_ACTASAP_QUEENS_UNIVERSITY_BELFAST_INNOVATION_PROGRAMMES_OUTREACH_DRAFT_20260710_104233.eml",
+    "applications/IFS_ACTASAP_ULSTER_UNIVERSITY_INNOVATION_SERVICES_OUTREACH_DRAFT_20260710_104233.eml"
+  ],
+  "source_refs": {
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_232259.json",
+    "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_232256.json",
+    "official_current_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260710_232050.json",
+    "actasap_academic_lead_evidence_audit": "applications/IFS_ACTASAP_2502_ACADEMIC_LEAD_EVIDENCE_AUDIT_20260710_092913.json",
+    "non_p1_evidence_acquisition_register": "applications/IFS_NON_P1_EVIDENCE_ACQUISITION_REGISTER_20260710_141505.json",
+    "p2_stop_go_audit": "applications/IFS_P2_STOP_GO_AUDIT_20260710_144429.json",
+    "route_gate_evidence_search": "applications/IFS_ROUTE_GATE_EVIDENCE_SEARCH_20260710_135633.json",
+    "formal_language_qa": "applications/IFS_FORMAL_LANGUAGE_QA_20260710_134902.json",
+    "live_drive_route_unlock_readback": "applications/IFS_LIVE_DRIVE_ROUTE_UNLOCK_READBACK_20260710_142308.json"
+  },
+  "decision": {
+    "direct_submit_ready": false,
+    "safe_portal_action_now": false,
+    "new_browser_submission_available": false,
+    "external_send_ready_now": false,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "why_not_now": "The current local, Drive and Aureon evidence set contains clean grant text and academic outreach targets, but no authorised academic lead, TTO route, validation work package, budget or commitment evidence. Opening or submitting an ACTASAP IFS application as R&A would conflict with the route lead requirement.",
+    "next_operator_action": "Use the existing ACTASAP outreach payloads to obtain an eligible academic lead or referral and the route evidence. Re-run this delta immediately after any reply or partner document lands in Gmail, Drive or local folders."
+  },
+  "controls": [
+    "Local and Drive evidence references were classified for grant-side use only.",
+    "No IFS portal field was changed.",
+    "No IFS ACTASAP draft was opened.",
+    "No application was submitted.",
+    "No external email, contact form, partner invite or upload action was performed.",
+    "No password, runtime secret, bank detail, tax reference or private finance payload was written to this artifact.",
+    "No internal draft language was introduced into funder-facing text.",
+    "No public target was treated as a partner commitment."
+  ],
+  "result": "ACTASAP_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY"
+}

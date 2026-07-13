@@ -1,0 +1,35 @@
+{
+  "schema_version": "aureon-intertradeireland-cluster-to-cluster-partner-packet-v1",
+  "generated_at": "2026-07-12T12:08:45+01:00",
+  "operator": "Aureon",
+  "event": "intertradeireland_cluster_to_cluster_partner_packet",
+  "result": "INTERTRADEIRELAND_CLUSTER_TO_CLUSTER_PARTNER_PACKET_READY_NOT_SENT",
+  "application_id": "APP-INTERTRADEIRELAND-CLUSTER-TO-CLUSTER-20260712",
+  "deadline": "2026-07-17T13:30:00+01:00",
+  "email": {
+    "exists": true,
+    "package": "applications/INTERTRADEIRELAND_CLUSTER_TO_CLUSTER_PARTNER_CLARIFICATION_DRAFT_20260712_120845.eml",
+    "to": "SIClusters@intertradeireland.com",
+    "from": "Gary Leckey <gaxlec@gmail.com>",
+    "subject": "Shared Island Cluster-to-Cluster: Aureon Evidence OS partner eligibility clarification",
+    "attachment_count": 1,
+    "body_chars": 989
+  },
+  "email_sent": false,
+  "external_submission_performed": false,
+  "portal_changed": false,
+  "outputs": {
+    "json": "applications/INTERTRADEIRELAND_CLUSTER_TO_CLUSTER_PARTNER_PACKET_20260712_120845.json",
+    "markdown": "applications/INTERTRADEIRELAND_CLUSTER_TO_CLUSTER_PARTNER_PACKET_20260712_120845.md",
+    "brief_markdown": "applications/INTERTRADEIRELAND_CLUSTER_TO_CLUSTER_PARTNER_BRIEF_20260712_120845.md",
+    "email_package": "applications/INTERTRADEIRELAND_CLUSTER_TO_CLUSTER_PARTNER_CLARIFICATION_DRAFT_20260712_120845.eml",
+    "external_action_queue": "applications/AUREON_EXTERNAL_ACTION_QUEUE_20260712_120845_cluster_to_cluster.json",
+    "pipeline_report": "pipelines/pipeline_report_20260712_120845_intertradeireland_cluster_to_cluster_partner_packet.json"
+  },
+  "backups": {
+    "applications": "backups/applications_pre_intertradeireland_cluster_packet_20260712_120845.json",
+    "autopilot": "backups/autopilot_status_pre_intertradeireland_cluster_packet_20260712_120845.json",
+    "pipeline": "backups/pipeline_pre_intertradeireland_cluster_packet_20260712_120845.json",
+    "source_action_queue": "backups/AUREON_EXTERNAL_ACTION_QUEUE_20260712_20260712_114554_pre_intertradeireland_cluster_packet_20260712_120845.json"
+  }
+}

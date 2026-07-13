@@ -1,0 +1,210 @@
+{
+  "schema_version": "aureon-grant-copy-pack-v1",
+  "generated_at": "2026-07-09T04:45:15+01:00",
+  "operator": "Aureon",
+  "opportunity": {
+    "id": "IFS-NEXT-WAVE-2517",
+    "name": "Next Wave: Breakthrough Wave 1",
+    "funder": "Innovate UK",
+    "funder_country": "UK",
+    "amount_min": 100000,
+    "amount_max": 500000,
+    "currency": "GBP",
+    "opens": "2026-06-23",
+    "closes": "2026-08-11T11:00:00+01:00",
+    "eligibility": "UK registered SMEs can apply alone or lead a collaboration for industrial research aligned to Createch frontier industries.",
+    "description": "Industrial research funding for high-growth Createch innovation in commercial digital platforms and services.",
+    "fit_score": 8,
+    "status": "OPEN",
+    "research_areas": [
+      "Createch",
+      "AI",
+      "advertising and marketing",
+      "evidence automation"
+    ],
+    "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2517/overview/6ff2066d-4639-44e6-bb4f-ce7099222739",
+    "notes": "Live application 10209601 was submitted through the Innovation Funding Service. Do not reopen unless a deliberate resubmission decision is made.",
+    "created_at": "2026-07-05T00:00:00+01:00",
+    "updated_at": "2026-07-09T04:45:15+01:00"
+  },
+  "application": {
+    "id": "APP-IFS-NEXT-WAVE-10209601",
+    "opportunity_id": "IFS-NEXT-WAVE-2517",
+    "name": "Aureon Evidence Studio for Createch AI Workflows",
+    "funder": "Innovate UK",
+    "amount_requested": 175000,
+    "currency": "GBP",
+    "status": "SUBMITTED",
+    "deadline": "2026-08-11T11:00:00+01:00",
+    "submitted_at": "2026-07-07T13:47:00+01:00",
+    "documents": [
+      "IFS_NEXT_WAVE_10209601_COPY_PACK_20260705.md",
+      "IFS_NEXT_WAVE_Q14_PROJECT_PLAN_APPENDIX_20260705.pdf",
+      "IFS_NEXT_WAVE_Q15_RISK_REGISTER_APPENDIX_20260705.pdf",
+      "IFS_NEXT_WAVE_SUBMISSION_RECEIPT_20260709.pdf",
+      "IFS_NEXT_WAVE_SUBMISSION_RECEIPT_20260709.md",
+      "IFS_NEXT_WAVE_SUBMISSION_RECEIPT_20260709.json",
+      "rendered/ifs_overview_20260709_latest.png",
+      "SELF_UPDATE_IFS_NEXT_WAVE_SUBMITTED_20260709.eml",
+      "SELF_UPDATE_IFS_NEXT_WAVE_SUBMITTED_20260709_SENT_RECEIPT.json",
+      "rendered/gmail_ifs_submitted_sent_20260709.png"
+    ],
+    "assigned_to": "Aureon",
+    "notes": "Portal application 10209601 was submitted through the Innovation Funding Service on 7 Jul 2026 at 1:47pm. Do not reopen it unless a deliberate resubmission decision is made. Total eligible cost is GBP250,000 with grant request GBP175,000 and company contribution GBP75,000.",
+    "created_at": "2026-07-05T00:00:00+01:00",
+    "updated_at": "2026-07-09T04:45:15+01:00"
+  },
+  "budget": {
+    "status": "submitted",
+    "total_eligible_costs_gbp": 250000,
+    "grant_request_gbp": 175000,
+    "company_contribution_gbp": 75000,
+    "funding_rate": "70 percent micro or small business industrial research rate entered in the submitted IFS application.",
+    "work_packages": [
+      {
+        "wp": "WP1",
+        "name": "Discovery and evidence model",
+        "cost_gbp": 35000
+      },
+      {
+        "wp": "WP2",
+        "name": "Ingestion and classification prototype",
+        "cost_gbp": 55000
+      },
+      {
+        "wp": "WP3",
+        "name": "Evidence scoring, privacy rules, and drift checks",
+        "cost_gbp": 55000
+      },
+      {
+        "wp": "WP4",
+        "name": "Createch workflow demonstrator",
+        "cost_gbp": 50000
+      },
+      {
+        "wp": "WP5",
+        "name": "Validation, user testing, and iteration",
+        "cost_gbp": 30000
+      },
+      {
+        "wp": "WP6",
+        "name": "Commercial readiness and launch pack",
+        "cost_gbp": 25000
+      }
+    ]
+  },
+  "answers": {
+    "Q1 Applicant location": {
+      "type": "not_scored",
+      "answer": "R&A Consulting and Brokerage Services Ltd, 1 Quadrant Place, Belfast, Northern Ireland, BT12 4HX. No project partners or subcontractors have been confirmed or added to this application at this stage. The project will be led by R&A Consulting from Northern Ireland and the planned R&D work will be carried out in the UK. If specialist subcontractors are added before submission, their full registered names and addresses must be inserted here before this answer is marked complete."
+    },
+    "Q2 Animal testing": {
+      "type": "not_scored",
+      "selected_option": "No",
+      "answer": "No. The project is software and digital service research. It does not involve trials with animals or animal testing."
+    },
+    "Q3 Permits and licences": {
+      "type": "not_scored",
+      "selected_option": "Not applicable",
+      "answer": "Not applicable. The proposed work is industrial research into a digital evidence automation platform and demonstrator workflows. No regulated animal, clinical, environmental, construction, broadcast, financial services, or controlled-material permits are expected to be required for the submitted project scope. R&A Consulting will still manage data protection, confidentiality, intellectual property, cyber security, and software licensing obligations during the project."
+    },
+    "Q4 International collaboration": {
+      "type": "not_scored",
+      "answer": "The proposed work does not involve confirmed international collaboration or engagement at this application stage. No international project co-leads, project partners, visiting researchers, collaborators, subcontractors, or service providers have been added to this application. The project will be led from the UK by R&A Consulting and Brokerage Services Ltd. If international collaborators or service providers are added before submission or during project delivery, this answer must be updated before any related work starts."
+    },
+    "Q5 Export licence": {
+      "type": "not_scored",
+      "selected_option": "No",
+      "answer": "No export control licence is expected to be required for the submitted project scope. The project is a commercial Createch evidence workflow platform for advertising and marketing teams. It does not involve controlled goods, controlled software, controlled technology transfer, military end use, or transfer of items on the UK Strategic Export Control List. If the project scope changes, R&A Consulting will review export control obligations before carrying out the changed work."
+    },
+    "Q6 Trusted Research and Innovation": {
+      "type": "not_scored",
+      "answer": "Within the scope of this application, the proposed work does not relate to UKRI Trusted Research and Innovation risk areas. The project is a commercial Createch evidence workflow platform for advertising and marketing teams. It does not have dual-use military and non-military applications in the submitted scope, is not relevant to the National Security and Investment Act sensitive areas, does not require an export control licence, and does not include items or substances on the UK Strategic Export Control List. The project will use privacy-by-design controls, human review gates, secure source handling, and documented exclusion rules for sensitive material. If any future use case moves into defence, security, export-controlled, or NSI-relevant areas, R&A Consulting will treat that as a separate scope requiring review before work begins."
+    },
+    "Q7 Frontier industry": {
+      "type": "not_scored",
+      "selected_option": "advertising and marketing",
+      "answer": "Advertising and marketing."
+    },
+    "Q8 Need or challenge": {
+      "type": "scored",
+      "answer": "Advertising and marketing teams are moving quickly into AI-assisted production, but the evidence behind that work is fragmented. A campaign may include briefs, prompts, generated assets, reference material, code, screenshots, client approvals, compliance notes, performance assumptions and partner files. These records usually sit across local folders, cloud drives, repositories, email and design tools. When the team needs to prove what was produced, why it was used, what sources informed it and what can safely be reused, the process becomes manual, slow and inconsistent.\n\nThe business need is stronger evidence discipline for AI-enabled creative workflows. Agencies and small creative technology teams must move fast, but they also need source traceability, human review, IP awareness, client assurance and reusable records for reporting or funding. Existing project management, DAM and collaboration tools organise tasks or files, but they do not provide a controlled evidence-routing layer that maps claims to sources, scores completeness and flags privacy or reuse risks.\n\nR&A Consulting has already built a local Aureon software and research corpus around evidence automation, source ledgers, human-in-the-loop review and structured reporting. The proposed project converts that existing capability into a focused Createch product for advertising and marketing workflows. The opportunity is to give SMEs a practical way to make AI production more transparent, defensible and commercially repeatable, without turning the system into unsupported autonomous decision-making."
+    },
+    "Q9 Approach and innovation": {
+      "type": "scored",
+      "answer": "The project will develop Aureon Evidence Studio as a prototype digital platform for AI-enabled advertising and marketing workflows. The innovation is a controlled evidence layer that sits above scattered creative production material and turns it into reviewer-ready records. It will ingest mixed source material, classify evidence types, identify sensitive items, map claims to supporting files, score evidence completeness, detect version drift and create human-reviewed packs for clients, funders and internal quality assurance.\n\nThe approach will combine existing technologies in a new Createch application area with new know-how around evidence routing and review gates. The project will not create campaign content as its main output. It will create the tooling that allows creative teams to evidence, validate and reuse the work behind campaigns and AI-assisted creative experiments.\n\nThe work will improve on similar tools by combining source mapping, evidence scoring, privacy exclusions and human handoff in one workflow. Most current tools focus on asset storage, task management or AI generation. Aureon Evidence Studio will focus on proof: what source supports the claim, what changed, what is sensitive, what requires review and what can be packaged for a client or funder.\n\nExpected outputs are a demonstrator, evidence taxonomy, source-ingestion prototype, scoring rules, privacy exclusion rules, validation tests, example advertising and marketing workflows, project documentation and a commercial launch plan. This fits R&A Consulting's current service line in AI operations, evidence automation and technical documentation, while creating a new product revenue stream."
+    },
+    "Q10 Team and resources": {
+      "type": "scored",
+      "answer": "The project will be led by Gary Anthony Leckey through R&A Consulting and Brokerage Services Ltd. The lead role will combine product direction, technical architecture, evidence model design, prototype testing, grant reporting and commercial planning. The existing Aureon software and research corpus provides the starting technical base, including local evidence automation concepts, source registers, workflow control, human review patterns and grant-ready metadata work.\n\nCore project resources will include a development workstation, local Aureon repository, staged research hub, test project material, version-controlled code, documentation tools, secure storage and standard productivity software. The project will use controlled synthetic or sanitised creative workflow examples rather than private client records unless explicit permission and data controls are in place.\n\nThe project may require targeted external support for UX design, privacy review, software validation and Createch market feedback. These roles are not confirmed as partners at this stage and should be treated as budgeted subcontractor or adviser needs until named suppliers are selected. Any subcontractor costs must remain proportionate and justified.\n\nRoles likely to be recruited or contracted include: part-time software engineer for ingestion and interface work; UX/product adviser for creative team workflows; privacy or IP adviser for safe evidence handling; and test users from advertising, marketing or creative technology backgrounds. The management structure remains simple: R&A Consulting as lead applicant and owner, with external support reporting to the lead."
+    },
+    "Q11 Market awareness": {
+      "type": "scored",
+      "answer": "The primary target market is UK advertising and marketing SMEs and creative technology teams that use AI-assisted workflows to create, test or document campaign concepts, creative assets, copy, visuals, technical prototypes and client-facing reports. Adjacent markets include film and TV development teams, games teams, music and performing arts organisations and visual arts producers where AI-enabled production creates similar evidence, source and approval challenges.\n\nThe UK Creative Industries Sector Plan identifies the creative industries as a major growth sector, contributing around GBP124 billion in GVA and supporting around 2.4 million jobs. Advertising and marketing is one of the major frontier industries named for this competition, and Createch is expected to become a high-growth part of the creative economy as creative businesses adopt advanced digital tools and services.\n\nThe market is fragmented. Large agencies may build internal assurance workflows, but SMEs often rely on generic file storage, spreadsheets, project management tools, design suites and manual documentation. Barriers to entry include trust, data handling, integration with existing workflows, perceived administrative burden and the need to prove that evidence automation saves time rather than adding process.\n\nAureon Evidence Studio will target early adopters who already feel the pressure of AI governance, client assurance, IP concerns and repeatable campaign reporting. The project will validate willingness to use and pay through prototype demonstrations, feedback interviews and evidence pack examples before wider launch."
+    },
+    "Q12 Outcomes and route to market": {
+      "type": "scored",
+      "answer": "R&A Consulting is currently positioned as an early-stage technical and research-led business with existing Aureon software assets and evidence automation know-how. This project extends that position into a focused Createch product for advertising and marketing teams. The target customers are SMEs, freelancers, creative studios, campaign teams and technical producers who need to document AI-assisted work quickly, safely and convincingly.\n\nThe customer value is reduced manual administration, stronger proof of source and review, better client handover, safer reuse of creative material and faster preparation of reports or funder-ready evidence packs. Customers would use the product when they need to demonstrate what was created, what sources were used, what approvals occurred and what remains sensitive or uncertain.\n\nThe route to market is staged. During the project, R&A Consulting will build and validate the demonstrator with sample workflows and feedback from creative technology users. After the project, the first commercial route will be paid pilots and consultancy-supported implementation for small creative teams. The second route will be a repeatable software subscription or packaged service for evidence-led AI workflow assurance.\n\nRevenue will come from setup support, monthly software access, evidence pack generation and workflow assurance services. The project outputs will be protected through copyright, trade secrets, product know-how, documentation, brand development and controlled release of reusable components. The work should improve internal productivity immediately and create a new external revenue stream within 12 months of completion."
+    },
+    "Q13 Wider impacts": {
+      "type": "scored",
+      "answer": "The project can benefit customers by reducing time spent reconstructing evidence after creative work is complete. A practical target for validation is a 30 to 50 percent reduction in manual evidence pack preparation time for test workflows, alongside improved completeness and fewer unsupported claims. This can help small agencies and creative teams deliver client-ready reports faster and compete with larger firms that can afford bespoke compliance or operations teams.\n\nFor the supply chain, the platform can improve handover between strategists, designers, developers, AI operators, clients and funders. It creates clearer records of sources, decisions, changes and review status. This can reduce duplicated work, strengthen trust and improve reuse of approved creative and technical assets.\n\nThe project supports government priorities around creative industries growth, digital adoption, responsible innovation and regional innovation. Regionally, the project is led from Northern Ireland and can contribute to a stronger local Createch capability by turning an existing Belfast-based software and research corpus into a market-facing product.\n\nEnvironmental impacts are expected to be modest but positive where better evidence reuse reduces duplicated production work, repeated searches and unnecessary rework. The main negative impact is compute and storage usage, which will be managed by local-first processing, selective ingestion and retention rules. Social impacts include improved transparency around AI-assisted production, better inclusion for small teams that lack administrative support, and stronger evidence for responsible creative practice."
+    },
+    "Q14 Project management": {
+      "type": "scored",
+      "answer": "The project will be managed by R&A Consulting as lead applicant using six work packages over 12 months. WP1 Discovery and evidence model, GBP35,000, will define user workflows, evidence types, success criteria and safe data rules. WP2 Ingestion and classification prototype, GBP55,000, will build the first source import and classification layer. WP3 Evidence scoring, privacy rules and drift checks, GBP55,000, will develop source-grounding scores, completeness checks, sensitive-material exclusions and version drift logic. WP4 Createch workflow demonstrator, GBP50,000, will build advertising and marketing example workflows and human review gates. WP5 Validation, user testing and iteration, GBP30,000, will test accuracy, usability and time saving. WP6 Commercial readiness and launch pack, GBP25,000, will prepare product documentation, pricing, pilot materials and final reporting.\n\nThe lead will manage monthly milestones, weekly build reviews, issue logs, evidence registers and change control. Reporting will be held in the Aureon grant pipeline, with decision records, validation results and spend notes kept against each work package. Dependencies are sequential but overlapping: WP1 informs all work, WP2 enables WP3 and WP4, WP5 tests outputs from WP2 to WP4, and WP6 packages the validated results.\n\nA project plan appendix supports this answer."
+    },
+    "Q15 Risks": {
+      "type": "scored",
+      "answer": "The main technical risk is that mixed creative evidence is too varied to classify reliably. Mitigation: start with a defined advertising and marketing evidence taxonomy, use controlled test sets, measure classification quality and keep human review gates. A second technical risk is that evidence scoring could appear to make unsupported judgements. Mitigation: scores will be framed as review support, not automated truth, and every score will link to visible source evidence and reviewer notes.\n\nThe main data risk is accidental inclusion of private, client or sensitive material. Mitigation: use sanitised test data, exclusion rules, local-first processing, manual approval before export and a no-private-attachments rule for funder submissions. Commercial risk is weak willingness to pay from SMEs. Mitigation: test pilot workflows with target users early, validate time saved and create a service-supported route before full software scaling.\n\nManagerial risk is delivery overload for a small lead team. Mitigation: use six bounded work packages, reserve budget for targeted subcontractors and track progress weekly. Financial risk is underestimating development or validation cost. Mitigation: keep scope focused on a demonstrator and evidence pack workflow, not a broad creative suite. Regulatory and ethical risk relates to AI, IP and client trust. Mitigation: privacy and IP review, transparent human review gates and clear user documentation.\n\nA risk register appendix supports this answer."
+    },
+    "Q16 Added value": {
+      "type": "scored",
+      "answer": "Public funding would accelerate the project from existing internal evidence automation work into a validated market-facing Createch product. Without funding, R&A Consulting would continue to develop Aureon in a slower, service-led way, with limited capacity for structured user testing, privacy review, UX design and commercial validation. The result would likely be a narrower internal tool rather than a product ready for creative industry customers.\n\nThe award reduces technical and commercial risk by allowing the business to test the hard parts properly: mixed evidence ingestion, source mapping, privacy exclusions, scoring, review gates and validation against realistic advertising and marketing workflows. It also improves the credibility of the product with future customers, advisers, investors and partners because the outputs will be documented against recognised industrial research milestones.\n\nR&A Consulting has already engaged with grant and advisory routes including InterTradeIreland Innovation Boost and Invest NI advisory preparation. These routes are useful but do not replace the need for direct R&D funding. Existing company resources, the Aureon repository, local research hub and founder time will be used alongside the grant to provide the project base and match contribution.\n\nThe project changes R&A Consulting's R&D activity by moving from broad research and prototype material into a focused product plan, validation framework and commercial launch pathway for Createch evidence automation."
+    },
+    "Q17 Costs and value for money": {
+      "type": "scored",
+      "answer": "The draft total eligible project cost is GBP250,000 over 12 months. The provisional grant request is GBP175,000, based on a 70 percent industrial research rate for a micro or small business, subject to final company size and subsidy basis confirmation. R&A Consulting would contribute the remaining GBP75,000 through eligible match funding, founder time, existing software assets, facilities and direct project expenditure, subject to finance review before submission.\n\nThe cost is split across six work packages: discovery and evidence model GBP35,000; ingestion and classification prototype GBP55,000; evidence scoring, privacy rules and drift checks GBP55,000; Createch workflow demonstrator GBP50,000; validation, user testing and iteration GBP30,000; commercial readiness and launch pack GBP25,000. Any subcontractor costs will be limited to specialist inputs such as UX, privacy/IP review, validation and Createch market feedback, and will remain below the competition's subcontracting limit.\n\nThe project represents value for money because it converts an existing software and research corpus into a focused product with defined commercial outputs, rather than funding open-ended exploration. The taxpayer value is a reusable Createch productivity and assurance tool for SMEs, supporting responsible AI adoption, regional innovation and creative industry growth. Without this project, the same funds would be spent more slowly on piecemeal development with less validation and weaker commercial readiness."
+    }
+  },
+  "appendices": {
+    "project_plan_lines": [
+      "Application: IFS Next Wave 10209601",
+      "Project: Aureon Evidence Studio for Createch AI Workflows",
+      "Duration: 12 months from 1 January 2027",
+      "",
+      "Work packages:",
+      "WP1 | Discovery and evidence model | GBP35,000",
+      "WP2 | Ingestion and classification prototype | GBP55,000",
+      "WP3 | Evidence scoring, privacy rules, and drift checks | GBP55,000",
+      "WP4 | Createch workflow demonstrator | GBP50,000",
+      "WP5 | Validation, user testing, and iteration | GBP30,000",
+      "WP6 | Commercial readiness and launch pack | GBP25,000",
+      "",
+      "Milestones:",
+      "M1-M2: user workflows, evidence taxonomy, safe data rules, success metrics.",
+      "M3-M4: source ingestion prototype and classification rules.",
+      "M5-M6: evidence scoring, privacy exclusions, drift checks.",
+      "M7-M8: Createch workflow demonstrator and human review gates.",
+      "M9-M10: validation tests, user feedback, iteration.",
+      "M11-M12: commercial pack, pilot plan, final evidence report.",
+      "",
+      "Management controls: weekly build review, monthly milestone review, issue log, risk register, change control, spend tracking, evidence ledger."
+    ],
+    "risk_register_lines": [
+      "Application: IFS Next Wave 10209601",
+      "Project: Aureon Evidence Studio for Createch AI Workflows",
+      "",
+      "Risk | Likelihood | Impact | Mitigation | Owner",
+      "Mixed source evidence is hard to classify | Medium | High | Start with focused advertising and marketing taxonomy, measure accuracy, use human review | R&A",
+      "Evidence scores are misread as automated truth | Medium | High | Label as review-support scores and link to source records and reviewer notes | R&A",
+      "Sensitive material is included in exports | Medium | High | Use sanitised test data, exclusion rules, local-first processing and manual approval gates | R&A",
+      "SME willingness to pay is weaker than expected | Medium | Medium | Run early pilot interviews, validate time saved and offer service-supported entry route | R&A",
+      "Small team delivery overload | Medium | Medium | Bound scope to six work packages and use targeted subcontractor support | R&A",
+      "Costs exceed draft budget | Low | Medium | Track spend monthly, prioritise demonstrator scope and defer non-core features | R&A",
+      "IP, privacy or AI trust concerns block adoption | Medium | High | Take privacy/IP advice, document user controls and avoid unsupported automated decisions | R&A"
+    ],
+    "project_plan_markdown": "# Q14 Project Plan Appendix Source\n\nApplication: IFS Next Wave 10209601\nProject: Aureon Evidence Studio for Createch AI Workflows\nDuration: 12 months from 1 January 2027\n\nWork packages:\nWP1 | Discovery and evidence model | GBP35,000\nWP2 | Ingestion and classification prototype | GBP55,000\nWP3 | Evidence scoring, privacy rules, and drift checks | GBP55,000\nWP4 | Createch workflow demonstrator | GBP50,000\nWP5 | Validation, user testing, and iteration | GBP30,000\nWP6 | Commercial readiness and launch pack | GBP25,000\n\nMilestones:\nM1-M2: user workflows, evidence taxonomy, safe data rules, success metrics.\nM3-M4: source ingestion prototype and classification rules.\nM5-M6: evidence scoring, privacy exclusions, drift checks.\nM7-M8: Createch workflow demonstrator and human review gates.\nM9-M10: validation tests, user feedback, iteration.\nM11-M12: commercial pack, pilot plan, final evidence report.\n\nManagement controls: weekly build review, monthly milestone review, issue log, risk register, change control, spend tracking, evidence ledger.\n",
+    "risk_register_markdown": "# Q15 Risk Register Appendix Source\n\nApplication: IFS Next Wave 10209601\nProject: Aureon Evidence Studio for Createch AI Workflows\n\nRisk | Likelihood | Impact | Mitigation | Owner\nMixed source evidence is hard to classify | Medium | High | Start with focused advertising and marketing taxonomy, measure accuracy, use human review | R&A\nEvidence scores are misread as automated truth | Medium | High | Label as review-support scores and link to source records and reviewer notes | R&A\nSensitive material is included in exports | Medium | High | Use sanitised test data, exclusion rules, local-first processing and manual approval gates | R&A\nSME willingness to pay is weaker than expected | Medium | Medium | Run early pilot interviews, validate time saved and offer service-supported entry route | R&A\nSmall team delivery overload | Medium | Medium | Bound scope to six work packages and use targeted subcontractor support | R&A\nCosts exceed draft budget | Low | Medium | Track spend monthly, prioritise demonstrator scope and defer non-core features | R&A\nIP, privacy or AI trust concerns block adoption | Medium | High | Take privacy/IP advice, document user controls and avoid unsupported automated decisions | R&A\n"
+  }
+}

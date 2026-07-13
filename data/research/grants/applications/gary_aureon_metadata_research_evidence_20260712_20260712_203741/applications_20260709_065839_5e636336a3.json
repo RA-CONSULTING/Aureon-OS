@@ -1,0 +1,204 @@
+[
+  {
+    "id": "APP-AIRR-001",
+    "opportunity_id": "AIRR-COMPUTE",
+    "name": "AIRR Compute: AI Open Access Application",
+    "funder": "UKRI (EPSRC)",
+    "amount_requested": 500000,
+    "currency": "GPU_HOURS",
+    "status": "DRAFT",
+    "deadline": "2026-07-17T16:00:00+01:00",
+    "submitted_at": null,
+    "documents": [
+      "AIRR_PORTAL_FIELD_PACK_20260705.md",
+      "AIRR_AI_OPEN_ACCESS_SUPPORTING_FORM_20260706.pdf",
+      "AIRR_PORTAL_LIVE_STATUS_20260706.md",
+      "AIRR_PORTAL_LIVE_STATUS_20260706.json",
+      "SELF_UPDATE_AIRR_STAGED_20260706.eml",
+      "SELF_UPDATE_AIRR_STAGED_20260706_SENT_RECEIPT.json"
+    ],
+    "assigned_to": "AureonGrantOperator",
+    "notes": "AIRRPortal draft staged for proposal 0261-8797-7601-1. Public/private text entered, 365-day duration entered, supporting PDF attached, Isambard-AI resource request selected and saved. Portal displayed resource update confirmation. Not submitted; final Submit requires exact action-time confirmation plus subsidy/peer-review/company filing checks. Self-update email to gaxlec@gmail.com sent from Gmail and receipt recorded.",
+    "created_at": "2026-07-03T00:00:00",
+    "updated_at": "2026-07-06T07:09:16+01:00"
+  },
+  {
+    "id": "APP-QUB-001",
+    "opportunity_id": "N/A",
+    "name": "QUB Honorary Research Fellow Application",
+    "funder": "Queen's University Belfast",
+    "amount_requested": 0,
+    "currency": "GBP",
+    "status": "DRAFT",
+    "deadline": "2026-07-31",
+    "submitted_at": null,
+    "documents": [
+      "QUB_OUTREACH_EMAIL.txt"
+    ],
+    "assigned_to": "Gary Leckey",
+    "notes": "Outreach email drafted. Gary to send.",
+    "created_at": "2026-07-03T00:00:00",
+    "updated_at": "2026-07-03T00:00:00"
+  },
+  {
+    "id": "APP-IFS-NEXT-WAVE-10209601",
+    "opportunity_id": "IFS-NEXT-WAVE-2517",
+    "name": "Aureon Evidence Studio for Createch AI Workflows",
+    "funder": "Innovate UK",
+    "amount_requested": 175000,
+    "currency": "GBP",
+    "status": "SUBMITTED",
+    "deadline": "2026-08-11T11:00:00+01:00",
+    "submitted_at": "2026-07-07T13:47:00+01:00",
+    "documents": [
+      "IFS_NEXT_WAVE_10209601_COPY_PACK_20260705.md",
+      "IFS_NEXT_WAVE_Q14_PROJECT_PLAN_APPENDIX_20260705.pdf",
+      "IFS_NEXT_WAVE_Q15_RISK_REGISTER_APPENDIX_20260705.pdf",
+      "IFS_NEXT_WAVE_SUBMISSION_RECEIPT_20260709.pdf",
+      "IFS_NEXT_WAVE_SUBMISSION_RECEIPT_20260709.md",
+      "IFS_NEXT_WAVE_SUBMISSION_RECEIPT_20260709.json",
+      "rendered/ifs_overview_20260709_latest.png",
+      "SELF_UPDATE_IFS_NEXT_WAVE_SUBMITTED_20260709.eml",
+      "SELF_UPDATE_IFS_NEXT_WAVE_SUBMITTED_20260709_SENT_RECEIPT.json",
+      "rendered/gmail_ifs_submitted_sent_20260709.png"
+    ],
+    "assigned_to": "AureonGrantOperator",
+    "notes": "Portal application 10209601 was submitted through the Innovation Funding Service on 7 Jul 2026 at 1:47pm. Do not reopen it unless a deliberate resubmission decision is made. Total eligible cost is GBP250,000 with grant request GBP175,000 and company contribution GBP75,000.",
+    "created_at": "2026-07-05T00:00:00+01:00",
+    "updated_at": "2026-07-09T04:45:15+01:00"
+  },
+  {
+    "id": "APP-EIC-ACCELERATOR-STEP1-20260706",
+    "opportunity_id": "HORIZON-EIC",
+    "name": "Aureon Evidence Studio - EIC Accelerator Step 1 Draft",
+    "funder": "European Innovation Council",
+    "amount_requested": 0,
+    "currency": "EUR",
+    "status": "DRAFT",
+    "deadline": "open-continuous-step-1-confirm-in-portal",
+    "submitted_at": null,
+    "documents": [
+      "EIC_ACCELERATOR_STEP1_SHORT_PROPOSAL_DRAFT_20260706.md",
+      "EIC_ACCELERATOR_STEP1_SHORT_PROPOSAL_DRAFT_20260706.pdf",
+      "EIC_ACCELERATOR_10_SLIDE_PITCH_DECK_DRAFT_20260706.md",
+      "EIC_ACCELERATOR_3_MIN_VIDEO_SCRIPT_20260706.md",
+      "EIC_ACCELERATOR_EVIDENCE_GAP_REGISTER_20260706.json"
+    ],
+    "assigned_to": "AureonGrantOperator",
+    "notes": "Step 1 draft package generated from Aureon project text. Not submitted. Evidence gaps remain open: customer discovery, LOIs, competitor map, prototype demo, FTO/IP, finance plan, and privacy policy.",
+    "created_at": "2026-07-06T06:34:10+01:00",
+    "updated_at": "2026-07-06T06:34:10+01:00"
+  },
+  {
+    "id": "APP-IFS-FLF-R11-2499-20260709",
+    "opportunity_id": "IFS-FLF-R11-2499",
+    "name": "Aureon AI Evidence OS - Future Leaders Fellowship Round 11 Pack",
+    "funder": "UKRI / Innovate UK",
+    "amount_requested": 1500000,
+    "currency": "GBP",
+    "status": "DRAFT",
+    "deadline": "2026-11-04T11:00:00+00:00",
+    "documents": [
+      "IFS_FUTURE_LEADERS_R11_AUREON_PACK_20260709.md",
+      "IFS_FUTURE_LEADERS_R11_AUREON_PACK_20260709.json",
+      "IFS_FUTURE_LEADERS_R11_AUREON_PACK_20260709.pdf"
+    ],
+    "notes": "Priority next IFS route. Planning estimate only, not final ask. Needs host/organisation eligibility, fellowship cost model, CV/publication readback, and partner evidence before portal submission.",
+    "submitted_at": null,
+    "assigned_to": "AureonGrantOperator",
+    "created_at": "2026-07-09T07:30:00+01:00",
+    "updated_at": "2026-07-09T07:30:00+01:00"
+  },
+  {
+    "id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+    "opportunity_id": "IFS-INNOVATION-LOANS-EOI-2505",
+    "name": "Aureon Evidence Studio - Innovation Loans EOI",
+    "funder": "Innovate UK",
+    "amount_requested": 500000,
+    "currency": "GBP_LOAN",
+    "status": "DRAFT",
+    "deadline": "open-no-submission-deadline",
+    "documents": [
+      "IFS_CURRENT_FIT_MATRIX_20260709.md",
+      "AUREON_UNIFIED_WORK_CORPUS_20260709.json"
+    ],
+    "notes": "Loan route, not grant. Prepare but do not submit until repayment, cashflow, subsidy, and finance-risk review are recorded.",
+    "submitted_at": null,
+    "assigned_to": "AureonGrantOperator",
+    "created_at": "2026-07-09T07:30:00+01:00",
+    "updated_at": "2026-07-09T07:30:00+01:00"
+  },
+  {
+    "id": "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+    "opportunity_id": "IFS-CLEAN-ENERGY-FLEX-2509",
+    "name": "Aureon Energy Flexibility Evidence and Assurance Scope",
+    "funder": "Innovate UK / UKRI R&D Missions Accelerator",
+    "amount_requested": 500000,
+    "currency": "GBP",
+    "status": "DRAFT",
+    "deadline": "2026-08-26T11:00:00+01:00",
+    "documents": [
+      "IFS_CURRENT_FIT_MATRIX_20260709.md",
+      "AUREON_UNIFIED_WORK_CORPUS_20260709.json"
+    ],
+    "notes": "Potential pre-commercialisation route if scoped as consumer-energy flexibility evidence, workflow assurance, and orchestration software. Needs energy-sector scope and partner/customer evidence.",
+    "submitted_at": null,
+    "assigned_to": "AureonGrantOperator",
+    "created_at": "2026-07-09T07:30:00+01:00",
+    "updated_at": "2026-07-09T07:30:00+01:00"
+  },
+  {
+    "id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+    "opportunity_id": "IFS-UK-SWISS-CRD-R3-2512",
+    "name": "Aureon International Evidence Automation Collaboration Abstract",
+    "funder": "Innovate UK / Innosuisse",
+    "amount_requested": 300000,
+    "currency": "GBP",
+    "status": "DRAFT",
+    "deadline": "2026-09-03T11:00:00+01:00",
+    "documents": [
+      "IFS_CURRENT_FIT_MATRIX_20260709.md"
+    ],
+    "notes": "Collaboration-only route requiring Swiss implementation partner and research institute. Build partner abstract; no standalone submission.",
+    "submitted_at": null,
+    "assigned_to": "AureonGrantOperator",
+    "created_at": "2026-07-09T07:30:00+01:00",
+    "updated_at": "2026-07-09T07:30:00+01:00"
+  },
+  {
+    "id": "APP-IFS-CFI-SEN-2511-20260709",
+    "opportunity_id": "IFS-CFI-SEN-2511",
+    "name": "Aureon Responsible AI Evidence Tooling for Earlier SEN Identification",
+    "funder": "Innovate UK",
+    "amount_requested": 250000,
+    "currency": "GBP",
+    "status": "DRAFT",
+    "deadline": "2026-08-05T11:00:00+01:00",
+    "documents": [
+      "IFS_CURRENT_FIT_MATRIX_20260709.md"
+    ],
+    "notes": "Scope-check route only. Needs education/SEN partner, ethics framing, procurement fit, and proof that the tool supports fairer identification without replacing professional judgement.",
+    "submitted_at": null,
+    "assigned_to": "AureonGrantOperator",
+    "created_at": "2026-07-09T07:30:00+01:00",
+    "updated_at": "2026-07-09T07:30:00+01:00"
+  },
+  {
+    "id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+    "opportunity_id": "IFS-QUANTUM-HARDWARE-CRD-2523",
+    "name": "Aureon Scientific Compute Governance for Quantum Hardware Partner Route",
+    "funder": "Innovate UK",
+    "amount_requested": 500000,
+    "currency": "GBP",
+    "status": "DRAFT",
+    "deadline": "2026-09-18T11:00:00+01:00",
+    "documents": [
+      "IFS_CURRENT_FIT_MATRIX_20260709.md"
+    ],
+    "notes": "Partner-required software assurance angle. Needs quantum hardware lead partner; do not submit as standalone R&A project.",
+    "submitted_at": null,
+    "assigned_to": "AureonGrantOperator",
+    "created_at": "2026-07-09T07:30:00+01:00",
+    "updated_at": "2026-07-09T07:30:00+01:00"
+  }
+]

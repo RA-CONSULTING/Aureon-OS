@@ -1,0 +1,241 @@
+{
+  "created_at": "2026-07-05",
+  "owner": "Gary Anthony Leckey",
+  "organisation": "R&A Consulting and Brokerage Services Ltd / Aureon Institute",
+  "purpose": "Structured source discovery for Aureon grant operations across local disk, Google Drive, public profiles, and repo archives.",
+  "submission_status": {
+    "grants_submitted": false,
+    "external_emails_sent_from_this_index": false,
+    "requires_gary_confirmation_before_external_action": true
+  },
+  "repo_archives": [
+    {
+      "title": "AureonReposDriveBundle_SANITIZED_20260705.tar",
+      "coverage": "sanitized local source snapshots",
+      "drive_id": "1AHKGb82z4FDIE2pccAAmB0oTFrSxfGCm",
+      "drive_url": "https://drive.google.com/file/d/1AHKGb82z4FDIE2pccAAmB0oTFrSxfGCm/view?usp=drivesdk",
+      "sha256": "CDA331A830559F6D46D16DBDB91E2BA0F9EEE676FEB4FC4E6DCF1EEB7162BDAC",
+      "use_rule": "Default safe archive for grant evidence and partner review."
+    },
+    {
+      "title": "AureonLocalGitHistoryBundles_RAW_20260705.tar",
+      "coverage": "raw all-ref local Git histories for five Aureon trading states",
+      "drive_id": "11oDMxnlewlJwXgpLPeKR5Bod4QdFdtBx",
+      "drive_url": "https://drive.google.com/file/d/11oDMxnlewlJwXgpLPeKR5Bod4QdFdtBx/view?usp=drivesdk",
+      "sha256": "99E332CE7E1CDBEBF9FA3128052913402C08F5F97FD96888B23FD1E19810E9F1",
+      "use_rule": "Private backup only; raw Git history may contain secrets or sensitive historical material."
+    },
+    {
+      "title": "AureonGitHubMirrorBundles_ALLREFS_20260705.tar",
+      "coverage": "all-ref public GitHub mirrors for RA-CONSULTING repos",
+      "drive_id": "19A5T5BSdS-hjeMWl3XyQY3ZlaUsfMYaT",
+      "drive_url": "https://drive.google.com/file/d/19A5T5BSdS-hjeMWl3XyQY3ZlaUsfMYaT/view?usp=drivesdk",
+      "sha256": "061BD20D27779451FC8E6C04EDCB875D55F720508BB324201BA4A7770C6697A7",
+      "use_rule": "Public software lineage archive."
+    }
+  ],
+  "local_sources": [
+    {
+      "path": "C:\\Users\\user\\aureon-trading",
+      "role": "active operator repository and grant folder",
+      "branch_observed": "daemon-codes-war-mode-2026-07-04"
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch",
+      "role": "research corpus",
+      "observed_inventory": {
+        "total_files": 209,
+        ".md": 60,
+        ".pdf": 50,
+        ".docx": 38,
+        ".png": 25,
+        ".jpg": 13,
+        ".cs": 8,
+        ".json": 8,
+        ".xlsx": 3,
+        ".txt": 3,
+        ".ipynb": 1
+      }
+    },
+    {
+      "path": "C:\\Users\\user\\outputs\\aureon_grants_20260704",
+      "role": "grant war room, email/PDF packs, AIRR pack, operating log"
+    },
+    {
+      "path": "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705",
+      "role": "repo archive build, manifests, Drive readback files"
+    }
+  ],
+  "drive_sources": [
+    {
+      "title": "Aureon Grant War Room - 2026-07-04",
+      "id": "1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+      "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM/edit",
+      "type": "native_google_sheet",
+      "workstreams": ["grant_operations", "pipeline", "evidence_register"]
+    },
+    {
+      "title": "HNC_White_Paper_v3-2.pdf",
+      "id": "1MtAiVQA-4W0aBJZ0nkVSGJHPVQ-uGPjQ",
+      "url": "https://drive.google.com/file/d/1MtAiVQA-4W0aBJZ0nkVSGJHPVQ-uGPjQ/view",
+      "type": "pdf",
+      "workstreams": ["hnc_ai_logic", "scientific_discovery"],
+      "validation_rule": "Use as internal/public research output; not independent peer review."
+    },
+    {
+      "title": "HNC_Empirical_Audit_v3-1.pdf",
+      "id": "1cGeqWqXYkwYiWnEQv030pkCwqLstrMhh",
+      "url": "https://drive.google.com/file/d/1cGeqWqXYkwYiWnEQv030pkCwqLstrMhh/view",
+      "type": "pdf",
+      "workstreams": ["hnc_ai_logic", "validation_pack"],
+      "validation_rule": "Use with claim-class caveats."
+    },
+    {
+      "title": "HNC_Empirical_Audit_v3-3.pptx",
+      "id": "1cySiInQE1kjs-bnBBFKsq4S9QaPLSSrY",
+      "url": "https://drive.google.com/file/d/1cySiInQE1kjs-bnBBFKsq4S9QaPLSSrY/view",
+      "type": "pptx",
+      "workstreams": ["hnc_ai_logic", "partner_deck"]
+    },
+    {
+      "title": "Atlantic_Seaboard_Substrate_v1.pdf",
+      "id": "1iGa_lBbxNsxAYqRiHbD-A2mU2wfyD-Zt",
+      "url": "https://drive.google.com/file/d/1iGa_lBbxNsxAYqRiHbD-A2mU2wfyD-Zt/view",
+      "type": "pdf",
+      "workstreams": ["atlantic_substrate", "historical_pattern_recognition"]
+    },
+    {
+      "title": "Validation_Metrics_Ledger_v1.docx",
+      "id": "1o-sP8ySv0m1O7ddhnjnvbRjGEz0DSvaF",
+      "url": "https://drive.google.com/file/d/1o-sP8ySv0m1O7ddhnjnvbRjGEz0DSvaF/view",
+      "type": "docx",
+      "workstreams": ["atlantic_substrate", "claims_to_sources"]
+    },
+    {
+      "title": "Pattern_Recognition_Archaeology_Report_v1.docx",
+      "id": "1LQQlIOWk1IIekMH0va4u6Tpen60FkMm9",
+      "url": "https://drive.google.com/file/d/1LQQlIOWk1IIekMH0va4u6Tpen60FkMm9/view",
+      "type": "docx",
+      "workstreams": ["historical_pattern_recognition", "maeshowe"]
+    },
+    {
+      "title": "HNC_Grand_Unified_Framework_Leckey_2026",
+      "id": "1G5Y2q4RHB395RAPgISh9L88F7VL6ncogPPfgnEO8axk",
+      "url": "https://docs.google.com/document/d/1G5Y2q4RHB395RAPgISh9L88F7VL6ncogPPfgnEO8axk",
+      "type": "native_google_doc",
+      "workstreams": ["hnc_ai_logic", "epas_druid_lidar", "research_theory"],
+      "validation_rule": "Broad theory source; use only as hypothesis unless independently validated."
+    },
+    {
+      "title": "01_Invest_NI_Advisor_Email_Pack.pdf",
+      "id": "1weWFVIwcwfLu8C9BrJfXQepzOws7Fyhh",
+      "url": "https://drive.google.com/file/d/1weWFVIwcwfLu8C9BrJfXQepzOws7Fyhh/view",
+      "type": "pdf",
+      "workstreams": ["invest_ni"],
+      "status": "draft_not_sent"
+    },
+    {
+      "title": "02_InterTradeIreland_Innovation_Boost_Email_Pack.pdf",
+      "id": "1UfPkSjt69NRh6-cj-FIvxiVLEnHD1G-q",
+      "url": "https://drive.google.com/file/d/1UfPkSjt69NRh6-cj-FIvxiVLEnHD1G-q/view",
+      "type": "pdf",
+      "workstreams": ["intertradeireland"],
+      "status": "draft_not_sent"
+    },
+    {
+      "title": "03_Academic_Validation_Sprint_Email_Pack.pdf",
+      "id": "1Gwy7fl-jo8Mc5HD4lRopWuhocVuf7V3S",
+      "url": "https://drive.google.com/file/d/1Gwy7fl-jo8Mc5HD4lRopWuhocVuf7V3S/view",
+      "type": "pdf",
+      "workstreams": ["academic_validation"],
+      "status": "draft_not_sent"
+    },
+    {
+      "title": "AureonAIRRPortalPack_20260705.zip",
+      "id": "1nXgdoFlwLDCHIFJ1MlU28G05bpm-YD-W",
+      "url": "https://drive.google.com/file/d/1nXgdoFlwLDCHIFJ1MlU28G05bpm-YD-W/view",
+      "type": "zip",
+      "workstreams": ["airr_ai_open_access"],
+      "status": "prepared_not_submitted"
+    }
+  ],
+  "public_sources": [
+    {
+      "name": "Companies House NI696693",
+      "url": "https://find-and-update.company-information.service.gov.uk/company/NI696693",
+      "status": "active; confirmation statement overdue warning observed 2026-07-05",
+      "claim_class": "A"
+    },
+    {
+      "name": "GitHub RA-CONSULTING",
+      "url": "https://github.com/RA-CONSULTING",
+      "status": "public organisation, three public repositories",
+      "claim_class": "A/B"
+    },
+    {
+      "name": "ResearchGate Gary Leckey",
+      "url": "https://www.researchgate.net/profile/Gary-Leckey",
+      "status": "public profile with 56 publications in current search/readback",
+      "claim_class": "B"
+    },
+    {
+      "name": "ORCID Gary Leckey",
+      "url": "https://orcid.org/0009-0004-2792-4649",
+      "status": "identifier surfaced; browser/manual verification required before formal forms",
+      "claim_class": "B"
+    },
+    {
+      "name": "Academia.edu Gary Leckey",
+      "url": "https://gleckey.academia.edu/",
+      "status": "public profile pointer surfaced; manual verification required before quoting counts",
+      "claim_class": "B"
+    }
+  ],
+  "funding_routes": [
+    {
+      "id": "airr_ai_open_access_2026",
+      "name": "AIRR compute opportunity: AI open access",
+      "status": "open",
+      "deadline": "2026-07-17T16:00:00+01:00",
+      "official_url": "https://www.ukri.org/opportunity/airr-compute-opportunity-ai-open-access/",
+      "fit": "P0",
+      "route": "compute only; no cash funding"
+    },
+    {
+      "id": "invest_ni_ifas",
+      "name": "Invest NI Innovation Funding Advisory Service",
+      "status": "available support service",
+      "official_url": "https://www.investni.com/support-for-business/research-and-development-support/innovation-funding-advisory-service",
+      "fit": "P0"
+    },
+    {
+      "id": "intertradeireland_innovation_boost",
+      "name": "InterTradeIreland Innovation Boost",
+      "status": "available support route",
+      "official_url": "https://intertradeireland.com/innovation/innovation-boost/funding-support",
+      "fit": "P1"
+    },
+    {
+      "id": "next_wave_breakthrough_wave_1",
+      "name": "Next Wave: Breakthrough Wave 1",
+      "status": "open",
+      "deadline": "2026-08-11T11:00:00+01:00",
+      "official_url": "https://www.ukri.org/opportunity/next-wave-breakthrough-wave-1/",
+      "fit": "P1/P2"
+    }
+  ],
+  "sensitive_exclusions": [
+    {
+      "category": "financial_accounting_records",
+      "examples": [
+        "C:\\Users\\user\\AureonResearch\\trial_balance.xlsx",
+        "C:\\Users\\user\\AureonResearch\\general_ledger.xlsx",
+        "C:\\Users\\user\\AureonResearch\\Gary_Leckey_Full_Accounts_2024-2026.xlsx",
+        "C:\\Users\\user\\AureonResearch\\pnl.pdf",
+        "C:\\Users\\user\\AureonResearch\\tax_summary.pdf",
+        "Drive bank statements surfaced in search"
+      ],
+      "rule": "Do not include in grant packs unless Gary approves the exact use, recipient, and attachment."
+    }
+  ]
+}

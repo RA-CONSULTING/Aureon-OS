@@ -1,0 +1,77 @@
+﻿{
+    "schema_version":  "aureon-ifs-portal-progress-v1",
+    "generated_at":  "2026-07-10T07:07:30+01:00",
+    "operator":  "Aureon",
+    "scope":  "IFS_ONLY",
+    "application_id":  "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+    "portal_application_number":  "10210100",
+    "portal_url":  "https://apply-for-innovation-funding.service.gov.uk/application/10210100",
+    "competition":  "UK-Switzerland CR\u0026D Round 3",
+    "status":  "IFS_DRAFT_PROJECT_DETAILS_Q2_Q3_COMPLETE_SCORED_DRAFTS_AND_IMPACT_FTE_SAVED_PARTNER_EVIDENCE_REQUIRED",
+    "completed_sections":  [
+                               "Application details",
+                               "Research category",
+                               "Project summary",
+                               "Public description",
+                               "Scope",
+                               "Q2 Applicant location",
+                               "Q3 Animal testing"
+                           ],
+    "saved_draft_sections":  [
+                                 "Q5 International collaboration",
+                                 "Q7 Trusted Research and Innovation",
+                                 "Q8 Need or challenge",
+                                 "Q9 Approach and innovation",
+                                 "Q10 Team and resources",
+                                 "Q11 Market awareness",
+                                 "Q12 Outcomes and route to market",
+                                 "Q13 Wider impacts",
+                                 "Q14 Project management",
+                                 "Q15 Risks",
+                                 "Q16 Added value",
+                                 "Project Impact Q1 FTE employees = 1"
+                             ],
+    "incomplete_gates":  [
+                             "Subsidy basis",
+                             "Application team",
+                             "Q1 Themes",
+                             "Q4 Permits and licences",
+                             "Q6 Export licence",
+                             "Q17 Costs and value for money",
+                             "Your project finances",
+                             "Finances overview",
+                             "Project Impact review/submit and remaining impact answer verification",
+                             "Award terms and conditions",
+                             "Review and submit"
+                         ],
+    "project_impact_observation":  {
+                                       "survey_url":  "https://innovateuk.my.site.com/IMCommunity/s/?CompanyNumber=NI696693\u0026CompetitionId=2512\u0026IFSApplicationNumber=10210100\u0026OrganisationId=116134\u0026PreApproval=true",
+                                       "saved_field":  "Number of Full Time Equivalent (FTE) employees",
+                                       "saved_value":  "1",
+                                       "evidence":  "Prior submitted IFS records and finance portal entry record full-time employees 1 from 2026 accounts/iXBRL.",
+                                       "action":  "Entered FTE value 1 and returned to Project Impact review page. Did not press Submit because full review answer values were not visible enough to verify."
+                                   },
+    "evidence_files":  [
+                           "applications/IFS_CLF_10210032_SUBMISSION_RECEIPT_20260709.json",
+                           "applications/IFS_FUTURE_LEADERS_R11_10209992_FINANCE_PORTAL_ENTRY_20260709.md",
+                           "applications/IFS_FUTURE_LEADERS_R11_10209992_DRAFT_STATUS_20260709.json"
+                       ],
+    "next_actions":  [
+                         "Secure named Swiss implementation partner and research institute or waiver evidence",
+                         "Verify remaining Project Impact values before survey submission",
+                         "Fix selected technical theme before Q1, Q4, Q6, Q7, Q17 and finance completion",
+                         "Prepare partner budgets, person months, IP/data plan, export-control and TR\u0026I review",
+                         "Upload appendices only after action-time upload confirmation for the exact files",
+                         "Review and submit only after all sections are complete and evidence-backed"
+                     ],
+    "controls":  [
+                     "No final IFS submission attempted",
+                     "No Project Impact survey submission attempted",
+                     "No partner invitation attempted",
+                     "No file upload attempted",
+                     "No email or Drive upload attempted",
+                     "No plaintext password, MFA, CAPTCHA, or provider control bypass attempted",
+                     "No Q4 permits/licences or Q6 export-control binary answer selected because partner technical scope is not fixed",
+                     "No Q17 costs or finance values entered because eligible costs and partner contributions are not evidenced"
+                 ]
+}

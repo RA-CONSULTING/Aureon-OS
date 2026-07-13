@@ -1,0 +1,227 @@
+{
+  "schema_version": "aureon-ifs-next-deadline-action-queue-v1",
+  "generated_at": "2026-07-10T10:42:33+01:00",
+  "operator": "Aureon",
+  "scope": "IFS_ONLY_NEXT_DEADLINES",
+  "event": "ifs_next_deadline_action_queue",
+  "result": "NEXT_DEADLINE_ACTION_QUEUE_READY_DRAFT_ONLY_NO_EXTERNAL_SEND_NO_PORTAL_CHANGE",
+  "target_application_ids": [
+    "APP-IFS-ACTASAP-PILOT-2502-20260709",
+    "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+    "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+  ],
+  "official_sources": [
+    {
+      "id": "ifs_actasap_2502",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2502/overview/35ca10fb-d4f5-4510-9ddd-e7e3133d2b6d",
+      "evidence": [
+        "ACTASAP closes 28 July 2026 at 11:00 and is for UK registered academic institutions.",
+        "The programme supports Advanced Connectivity Technologies ideas from the UK academic research base.",
+        "Lead must be based in a UK registered academic institution, have an ACT-related idea, have TTO or equivalent support and avoid selective commercial/economic advantage.",
+        "Eligible costs are limited to participating academics' salaries and travel/subsistence to ACTASAP events."
+      ],
+      "web_line_refs": [
+        "turn2view0 lines 45-50",
+        "turn2view1 lines 65-82",
+        "turn2view3 lines 146-164",
+        "turn2view3 lines 133-144"
+      ]
+    },
+    {
+      "id": "ifs_full_adopt_2491",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2491/overview/77ba6cb6-c14d-41f7-84de-e45446636e50",
+      "evidence": [
+        "Full ADOPT Round 8 closes 29 July 2026 at 11:00.",
+        "The lead must be an active farming, growing or forestry business based in England.",
+        "Project must have total costs between GBP50,000 and GBP200,000, include a registered ADOPT Project Facilitator and collaborate with at least one other UK farmer, grower or forester claiming grant funding.",
+        "The ADOPT Support Hub contact is adoptsupport@adas.co.uk / 0800 987 8006."
+      ],
+      "web_line_refs": [
+        "turn1view1 lines 45-50",
+        "turn2view4 lines 100-127",
+        "turn2view5 lines 109-155",
+        "turn2view4 lines 96-100"
+      ]
+    },
+    {
+      "id": "ifs_adopt_facilitator_2520",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2520/overview/7b03dc59-645f-426d-a08f-6c6e6b6d6e0e",
+      "evidence": [
+        "ADOPT Facilitator Support Grant Round 10 closes 12 August 2026 at 11:00.",
+        "It is for farmers, growers and foresters based in England to engage an external registered Project Facilitator.",
+        "Lead organisation must be an active farming, growing or forestry business based in England, able to evidence commercial business status and have a UK bank account.",
+        "Project Facilitator must be registered in the Innovate UK Business Connect database."
+      ],
+      "web_line_refs": [
+        "turn1view2 lines 45-50",
+        "turn1view2 lines 65-75",
+        "turn1view2 lines 104-128",
+        "turn1view2 lines 473-479"
+      ]
+    },
+    {
+      "id": "qub_innovation_programmes",
+      "url": "https://www.qub.ac.uk/Business/Commercialisation/meet%20the%20team/innovation-programmes-team/",
+      "evidence": [
+        "Queen's public Innovation Programmes page lists innovation/commercialisation contacts for research commercialisation and deep tech programmes."
+      ],
+      "web_line_refs": [
+        "turn4view0 lines 135-148"
+      ]
+    },
+    {
+      "id": "ulster_innovation_services",
+      "url": "https://www.ulster.ac.uk/research/resources/innovation",
+      "evidence": [
+        "Ulster Innovation Services supports knowledge and technology transfer, commercialisation, IP, consultancy and confidentiality arrangements."
+      ],
+      "web_line_refs": [
+        "turn4view1 lines 35-83"
+      ]
+    },
+    {
+      "id": "adopt_support_and_facilitator",
+      "url": "https://farminginnovation.ukri.org/adopt/",
+      "evidence": [
+        "ADOPT Project Facilitator database and Support Hub are listed; Support Hub can advise on scope, suitability, expertise, partners and on-farm R&D standards.",
+        "ADOPTfacilitator@iukbc.org.uk is listed for facilitator registration information; adoptsupport@adas.co.uk and 0800 987 8006 are listed for Support Hub contact."
+      ],
+      "web_line_refs": [
+        "turn4view4 lines 73-90",
+        "turn4view4 lines 93-97"
+      ]
+    },
+    {
+      "id": "iukbc_facilitator_directory",
+      "url": "https://iuk-business-connect.org.uk/adopt-project-facilitators/directory-of-facilitators/",
+      "evidence": [
+        "Innovate UK Business Connect directory states project facilitators can support ADOPT applicants and gives ADOPTfacilitator@iukbc.org.uk for questions."
+      ],
+      "web_line_refs": [
+        "turn4view3 lines 66-83",
+        "turn4view3 lines 121-129"
+      ]
+    }
+  ],
+  "route_actions": [
+    {
+      "route": "ACTASAP",
+      "application_ids": [
+        "APP-IFS-ACTASAP-PILOT-2502-20260709"
+      ],
+      "deadline": "2026-07-28T11:00:00+01:00",
+      "truthful_portal_action_available_now": false,
+      "reason_no_direct_submission": "Current evidence does not include a UK academic lead, ACT-related academic idea, TTO support or no-subsidy role approval. R&A cannot truthfully lead or claim funding."
+    },
+    {
+      "route": "Full ADOPT / ADOPT Facilitator",
+      "application_ids": [
+        "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+      ],
+      "deadline": "2026-07-29T11:00:00+01:00 / 2026-08-12T11:00:00+01:00",
+      "truthful_portal_action_available_now": false,
+      "reason_no_direct_submission": "Current evidence does not include an active England farming/growing/forestry lead, UK farming collaborator, registered Project Facilitator, trial site, farm business evidence or budget."
+    }
+  ],
+  "draft_count": 4,
+  "email_sent": false,
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "direct_ifs_submissions_unlocked": 0,
+  "drafts": [
+    {
+      "target": "Queen's University Belfast Innovation Programmes",
+      "route": "ACTASAP",
+      "application_ids": [
+        "APP-IFS-ACTASAP-PILOT-2502-20260709"
+      ],
+      "path": "applications/IFS_ACTASAP_QUEENS_UNIVERSITY_BELFAST_INNOVATION_PROGRAMMES_OUTREACH_DRAFT_20260710_104233.eml",
+      "to": "c.hegarty@qub.ac.uk, p.nawa@qub.ac.uk",
+      "public_channel": "Public Queen's Innovation Programmes contacts",
+      "subject": "ACTASAP fit check - Aureon as non-funded evidence validation partner",
+      "status": "DRAFT_ONLY_NOT_SENT_REQUIRES_ACTION_TIME_APPROVAL",
+      "evidence_goal": [
+        "academic lead with ACT-related idea",
+        "TTO or equivalent support",
+        "non-funded industry validation role for Aureon",
+        "no selective commercial advantage assessment",
+        "eligible cost and timeline fit"
+      ]
+    },
+    {
+      "target": "Ulster University Innovation Services",
+      "route": "ACTASAP",
+      "application_ids": [
+        "APP-IFS-ACTASAP-PILOT-2502-20260709"
+      ],
+      "path": "applications/IFS_ACTASAP_ULSTER_UNIVERSITY_INNOVATION_SERVICES_OUTREACH_DRAFT_20260710_104233.eml",
+      "to": "",
+      "public_channel": "Official Ulster Innovation Services Get in Touch route",
+      "subject": "ACTASAP fit check - Aureon as non-funded evidence validation partner",
+      "status": "DRAFT_ONLY_NOT_SENT_REQUIRES_ACTION_TIME_APPROVAL",
+      "evidence_goal": [
+        "academic lead with ACT-related idea",
+        "TTO or equivalent support",
+        "non-funded industry validation role for Aureon",
+        "no selective commercial advantage assessment",
+        "eligible cost and timeline fit"
+      ]
+    },
+    {
+      "target": "ADOPT Support Hub",
+      "route": "ADOPT",
+      "application_ids": [
+        "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+      ],
+      "path": "applications/IFS_ADOPT_ADOPT_SUPPORT_HUB_OUTREACH_DRAFT_20260710_104233.eml",
+      "to": "adoptsupport@adas.co.uk",
+      "public_channel": "ADOPT Support Hub public email",
+      "subject": "ADOPT route fit check - Aureon evidence automation for farmer-led trials",
+      "status": "DRAFT_ONLY_NOT_SENT_REQUIRES_ACTION_TIME_APPROVAL",
+      "evidence_goal": [
+        "eligible England farming lead route",
+        "registered facilitator route",
+        "whether Aureon can be non-lead technology/evidence partner",
+        "required farm/site/trial/budget evidence",
+        "Full ADOPT or Facilitator Support fit"
+      ]
+    },
+    {
+      "target": "Innovate UK Business Connect ADOPT Facilitator Directory",
+      "route": "ADOPT",
+      "application_ids": [
+        "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+      ],
+      "path": "applications/IFS_ADOPT_INNOVATE_UK_BUSINESS_CONNECT_ADOPT_FACILITATOR_DIRECTORY_OUTREACH_DRAFT_20260710_104233.eml",
+      "to": "ADOPTfacilitator@iukbc.org.uk",
+      "public_channel": "Innovate UK Business Connect ADOPT facilitator contact",
+      "subject": "ADOPT facilitator route query - Aureon evidence automation for farmer-led trials",
+      "status": "DRAFT_ONLY_NOT_SENT_REQUIRES_ACTION_TIME_APPROVAL",
+      "evidence_goal": [
+        "registered facilitator matching process",
+        "eligible England farming lead route",
+        "whether Aureon can be introduced as evidence automation partner",
+        "facilitator support grant fit",
+        "Full ADOPT preparation evidence"
+      ]
+    }
+  ],
+  "controls": [
+    "No unsupported academic lead, ACT idea, TTO support, farming lead, farm collaborator, facilitator, site, permit, finance or budget claim made.",
+    "R&A is not represented as eligible ACTASAP or ADOPT lead.",
+    "Draft emails are not sent and require action-time approval for exact destination and payload.",
+    "No IFS portal mutation, upload, partner invite, award terms acceptance or final submission performed."
+  ],
+  "route_action": {
+    "portal_opened_or_changed": false,
+    "new_ifs_draft_opened": false,
+    "final_submission_attempted": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "partner_invite_sent": false,
+    "upload_performed": false
+  }
+}

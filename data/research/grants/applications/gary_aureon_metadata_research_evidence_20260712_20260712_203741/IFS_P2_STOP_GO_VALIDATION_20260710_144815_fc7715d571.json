@@ -1,0 +1,35 @@
+{
+  "schema_version": "aureon-validation-v1",
+  "generated_at": "2026-07-10T14:48:15+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_p2_stop_go_validation",
+  "source_p2_stop_go_audit": "applications/IFS_P2_STOP_GO_AUDIT_20260710_144429.json",
+  "source_current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_144540.json",
+  "source_current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_144556.json",
+  "summary": {
+    "validation_passed": true,
+    "failures": [],
+    "p2_routes_reviewed": 3,
+    "go_routes": 0,
+    "no_go_routes": 3,
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0,
+    "board_ifs_applications_total": 20,
+    "board_submitted_monitor_only": 4,
+    "board_active_not_submitted": 16,
+    "secret_scan_hits": {},
+    "internal_language_scan_hits": {}
+  },
+  "p2_application_ids": [
+    "APP-IFS-ACTASAP-PILOT-2502-20260709",
+    "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+    "APP-IFS-FULL-ADOPT-R8-2491-20260709"
+  ],
+  "controls": [
+    "Validation only; no IFS portal field was changed.",
+    "No IFS application was submitted.",
+    "No email, contact form, partner invite or upload action was performed."
+  ],
+  "result": "IFS_P2_STOP_GO_VALIDATION_PASSED"
+}

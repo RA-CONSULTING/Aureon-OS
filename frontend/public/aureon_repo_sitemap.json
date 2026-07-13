@@ -1,0 +1,59 @@
+{
+  "name": "Aureon Public Repo Sitemap",
+  "snapshot_date": "2026-07-13",
+  "source_document": "docs/REPO_SITEMAP.md",
+  "machine_readable_source": "docs/repo_sitemap.json",
+  "end_user_access_map": "frontend/public/aureon_end_user_access_map.json",
+  "capability_access_matrix": "frontend/public/aureon_capability_access_matrix.json",
+  "capability_registry": "frontend/public/aureon_capability_registry.json",
+  "navigation_index": "frontend/public/aureon_repo_navigation_index.json",
+  "organization_tree": "frontend/public/aureon_repo_organization_tree.json",
+  "repo_navigation_readiness": "frontend/public/aureon_repo_navigation_readiness.json",
+  "repo_navigation_completion_audit": "frontend/public/aureon_repo_navigation_completion_audit.json",
+  "system_integration_map": "frontend/public/aureon_system_integration_map.json",
+  "saas_integration_manifest": "frontend/public/aureon_saas_integration_manifest.json",
+  "saas_integration_handoff": "frontend/public/aureon_saas_integration_handoff.json",
+  "supabase_hardening_manifest": "frontend/public/aureon_supabase_hardening_manifest.json",
+  "autonomous_frontend_manifests": [
+    "frontend/public/aureon_saas_system_inventory.json",
+    "frontend/public/aureon_frontend_unification_plan.json",
+    "frontend/public/aureon_frontend_evolution_queue.json",
+    "frontend/public/aureon_organism_runtime_status.json",
+    "frontend/public/aureon_autonomous_capability_switchboard.json"
+  ],
+  "tracked_file_count": 11962,
+  "validation_script": "scripts/validation/validate_repo_navigation_contract.py",
+  "validation_command": "python scripts/validation/validate_repo_navigation_contract.py",
+  "frontend_navigation_tab": "#repo-map",
+  "front_doors": [
+    {"label": "Repository README", "path": "README.md"},
+    {"label": "Repo-wide sitemap", "path": "docs/REPO_SITEMAP.md"},
+    {"label": "Repo navigation index", "path": "docs/repo_navigation_index.json"},
+    {"label": "Repo organization tree", "path": "docs/repo_organization_tree.json"},
+    {"label": "Repo navigation readiness", "path": "docs/repo_navigation_readiness.json"},
+    {"label": "Repo navigation completion audit", "path": "docs/repo_navigation_completion_audit.json"},
+    {"label": "End-user access map", "path": "docs/END_USER_ACCESS_MAP.md"},
+    {"label": "Capability access matrix", "path": "docs/capability_access_matrix.json"},
+    {"label": "Capability registry", "path": "docs/CAPABILITY_REGISTRY.md"},
+    {"label": "System integration map", "path": "docs/SYSTEM_INTEGRATION_MAP.md"},
+    {"label": "SaaS integration readiness", "path": "docs/SAAS_INTEGRATION_READINESS.md"},
+    {"label": "SaaS integration manifest", "path": "docs/saas_integration_manifest.json"},
+    {"label": "SaaS integration handoff", "path": "docs/saas_integration_handoff.json"},
+    {"label": "Supabase hardening review", "path": "docs/SUPABASE_HARDENING_REVIEW.md"},
+    {"label": "Capabilities", "path": "CAPABILITIES.md"},
+    {"label": "Running locally", "path": "RUNNING.md"}
+  ],
+  "zones": [
+    {"id": "front_door", "label": "Front door and diligence", "paths": ["README.md", "docs/INDEX.md", "docs/investor/", "docs/archive/"]},
+    {"id": "operator_runtime", "label": "Operator runtime", "paths": ["AUREON_PRODUCTION_LIVE.cmd", "AUREON_DATA_OCEAN.cmd", "aureon/", "scripts/", "cli/"]},
+    {"id": "product_surfaces", "label": "Product surfaces", "paths": ["frontend/", "public/", "flameborn/", "api/", "server/", "functions/", "netlify/", "supabase/"]},
+    {"id": "evidence_research", "label": "Evidence and research", "paths": ["data/", "docs/research/", "VERIFICATION AND VALIDATION/", "imports/", "archive/"]},
+    {"id": "operations_packaging", "label": "Operations and packaging", "paths": ["Kings_Accounting_Suite/", "deploy/", "production/", "packaging/", "tests/", ".github/", "templates/"]}
+  ],
+  "public_contract": {
+    "contains_secrets": false,
+    "contains_private_runtime_state": false,
+    "contains_customer_data": false,
+    "purpose": "Static navigation data for frontend and SaaS shell integration."
+  }
+}

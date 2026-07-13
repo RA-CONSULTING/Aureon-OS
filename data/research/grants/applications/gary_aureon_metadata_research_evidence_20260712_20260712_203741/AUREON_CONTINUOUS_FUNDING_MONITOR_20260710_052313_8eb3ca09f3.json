@@ -1,0 +1,162 @@
+{
+  "schema_version": "aureon-continuous-funding-monitor-v2",
+  "run_id": "aureon-grant-operator-continuous-funding-monitor-20260710",
+  "generated_at": "2026-07-10T05:23:13+01:00",
+  "operator": "Aureon",
+  "applicant": "Gary Anthony Leckey / R&A Consulting and Brokerage Services Ltd",
+  "result": "RECONCILED_SEEDCORN_MONITOR_ROUTE_ADDED_NO_SUBMIT_READY_ROUTE",
+  "ledger_reconciliation": {
+    "opportunities_total": 45,
+    "opportunity_status_counts": {
+      "ACADEMIC_HOST_REQUIRED": 1,
+      "ADVISOR_OR_CLIENT_ROUTE_REQUIRED": 1,
+      "CLOSED": 1,
+      "EVIDENCE_GATED": 1,
+      "OPEN": 36,
+      "PARTNER_REQUIRED": 1,
+      "PENDING": 2,
+      "RESEARCH_ORG_STFC_ROUTE_REQUIRED": 1,
+      "SHORTLIST_UPLOAD_ONLY": 1
+    },
+    "applications_total": 28,
+    "application_status_counts": {
+      "ACADEMIC_HOST_REQUIRED": 1,
+      "ACADEMIC_LEAD_REQUIRED": 1,
+      "ACADEMIC_RTO_CATAPULT_LEAD_AND_4FTE_GATE": 1,
+      "ACCOUNT_CREATED_EMAIL_VERIFICATION_REQUIRED": 1,
+      "AUTOMOTIVE_ZEV_PARTNER_REQUIRED": 1,
+      "EVIDENCE_GATED": 1,
+      "FARMING_LEAD_REQUIRED": 1,
+      "HARDWARE_LEAD_PARTNER_REQUIRED": 1,
+      "MANUFACTURING_FACILITY_EVIDENCE_REQUIRED": 1,
+      "MARITIME_CONSORTIUM_REQUIRED": 6,
+      "NOT_ELIGIBLE_DIRECT": 1,
+      "NOT_GRANT_FINANCE_RISK_GATED": 1,
+      "PARTNER_OUTREACH_DRAFT": 1,
+      "PARTNER_REQUIRED": 2,
+      "PUBLIC_SECTOR_RESEARCH_ORG_REQUIRED": 1,
+      "SHORTLIST_REQUIRED": 1,
+      "SUBMITTED": 6
+    },
+    "submitted_ifs_count": 4,
+    "submitted_ifs_application_ids": [
+      "APP-IFS-NEXT-WAVE-10209601",
+      "APP-IFS-FLF-R11-2499-20260709",
+      "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+      "APP-IFS-CFI-SEN-2511-20260709"
+    ],
+    "submitted_airr_count": 2,
+    "submitted_airr_application_ids": [
+      "APP-AIRR-001",
+      "APP-AIRR-RAPID-ACCESS-20260709"
+    ],
+    "active_or_gated_application_count": 20,
+    "seedcorn_opportunity_added": true,
+    "seedcorn_application_added": true
+  },
+  "official_route_refresh": {
+    "innovate_uk_ifs": {
+      "status": "Public IFS search verified 20 current competitions; session-timeout banner shown but public listing accessible.",
+      "source": "https://apply-for-innovation-funding.service.gov.uk/competition/search",
+      "current_relevant_routes": [
+        "UK-Switzerland CR&D Round 3 - partner and Swiss implementation partner required",
+        "Scaling performance of quantum computing hardware: CR&D - collaboration and hardware partner required",
+        "DRIVE35 Innovation Fund: Collaborate 3 - automotive/ZEV collaboration required",
+        "Next Wave: Breakthrough Wave 1 - already submitted as 10209601; monitor only",
+        "CfI: Earlier identification of UK children with SEN - already submitted as 10210045; monitor only",
+        "Future Leaders Fellowships Round 11 - already submitted as 10209992; monitor only",
+        "Consumer Led Flexibility - already submitted as 10210032; monitor only",
+        "Clean Maritime Demonstration Competition 7 and ZEVI2 routes - maritime consortium required"
+      ],
+      "action": "No duplicate IFS submission. Keep submitted routes monitor-only and keep partner/evidence routes staged."
+    },
+    "ukri_funding_finder": {
+      "status": "Innovate UK/UKRI public finder still shows clean maritime and AIRR opportunities; Japan-UK advanced connectivity is EOI and full opportunity expected in July 2026.",
+      "sources": [
+        "https://www.ukri.org/opportunity/?filter_council%5B0%5D=822&filter_order=closing_date",
+        "https://www.ukri.org/opportunity/japan-uk-joint-call-for-collaborations-in-advanced-connectivity-technologies/"
+      ],
+      "action": "Monitor Japan-UK advanced connectivity for full opening; UK applicant eligibility likely requires standard UKRI/EPSRC route fit."
+    },
+    "eureka_eurostars": {
+      "status": "Eurostars Call 11 is open from 2026-07-09 to 2026-09-10 14:00 CET and requires an innovative SME-led international consortium.",
+      "source": "https://www.eurekanetwork.org/programmes-and-calls/eurostars/eurostars-call-for-projects-september-2026/",
+      "action": "Keep partner-required route staged; do not open project platform submission without consortium evidence."
+    },
+    "intertradeireland": {
+      "status": "Business Explorer remains email-verification gated locally. Seedcorn is open only for shortlisted extended slide deck/business plan upload by 2026-08-07 13:00.",
+      "sources": [
+        "https://intertradeireland.com/search/results?q=1",
+        "https://intertradeireland.com/funding/seedcorn"
+      ],
+      "action": "Verify Business Explorer email; for Seedcorn, search local email/portal evidence for shortlist before drafting/uploading."
+    },
+    "northern_ireland_routes": {
+      "status": "Concept Plus and Regional Innovation Challenge pages found but 2026 deadlines have passed; LIPF is cluster/portfolio assessment, not a direct standalone R&A application.",
+      "sources": [
+        "https://www.nibusinessinfo.co.uk/content/apply-now-ps30000-concept-plus-grants",
+        "https://www.nibusinessinfo.co.uk/content/regional-innovation-challenge-early-stage-founders",
+        "https://www.nibusinessinfo.co.uk/content/local-innovation-partnerships-fund-northern-ireland"
+      ],
+      "action": "Do not stage closed Techstart rounds; monitor LIPF only through cluster/partner route."
+    },
+    "invest_ni": {
+      "status": "Shared Island enquiry route still requires JavaScript form/CAPTCHA; Sustainability Challenge Fund launches later in 2026.",
+      "source": "https://www.investni.com/support-for-business/shared-island-enterprise-scheme",
+      "action": "Keep provider/advisor gated; human operator required for enquiry form."
+    }
+  },
+  "public_profile_index": {
+    "local_corpus": {
+      "status": "Unified work corpus and public registry retained as current local evidence index.",
+      "sources": [
+        "AUREON_UNIFIED_WORK_CORPUS_20260709.json",
+        "PUBLIC_WORK_SOURCE_REGISTRY_20260705.md"
+      ],
+      "grant_use": "Use to route work packages to IFS partner packs, Eurostars, AIRR, and profile evidence."
+    },
+    "companies_house": {
+      "status": "Public registry evidence remains Class A legal applicant/control evidence in the local registry.",
+      "source": "https://find-and-update.company-information.service.gov.uk/company/NI696693",
+      "grant_use": "Verify confirmation statement and applicant details before any new external submission."
+    },
+    "researchgate_academia_orcid": {
+      "status": "Retained as Class B profile/dissemination evidence unless manually verified before formal use.",
+      "sources": [
+        "https://www.researchgate.net/profile/Gary-Leckey",
+        "https://gleckey.academia.edu/",
+        "https://orcid.org/0009-0004-2792-4649"
+      ],
+      "grant_use": "Do not quote publication counts or titles in a live form without browser/readback verification."
+    }
+  },
+  "provider_controls": [
+    "No CAPTCHA, MFA, account-control, email-verification, or provider gate bypass attempted.",
+    "No plaintext passwords or secrets read or stored.",
+    "No live portal submission, upload, email send, or Drive upload attempted.",
+    "IFS public search showed session-timeout messaging but public competition listings remained accessible.",
+    "InterTradeIreland Business Explorer remains email-verification gated.",
+    "Invest NI enquiry form remains JavaScript/CAPTCHA/provider gated.",
+    "Seedcorn upload remains shortlist-evidence and portal-access gated."
+  ],
+  "artifacts_reviewed": [
+    "applications.json",
+    "opportunities.json",
+    "pipeline.json",
+    "autopilot_status.json",
+    "activity.log",
+    "AUREON_UNIFIED_WORK_CORPUS_20260709.json",
+    "PUBLIC_WORK_SOURCE_REGISTRY_20260705.md",
+    "applications/IFS_CONVERSION_PARTNER_PACKS_20260709.json",
+    "applications/IFS_PORTAL_READY_PDF_MANIFEST_20260709.json",
+    "output/pdf/ifs/IFS_PORTAL_READY_EVIDENCE_PACK_20260709.pdf"
+  ],
+  "next_actions": [
+    "Monitor submitted IFS applications 10209601, 10209992, 10210032, and 10210045.",
+    "Verify InterTradeIreland Business Explorer email before continuing Explore.",
+    "Search local email/portal evidence for Seedcorn shortlist before preparing any upload.",
+    "Prioritise partner evidence for UK-Switzerland CR&D, Eurostars Call 11, quantum hardware, ZEVI2, and clean maritime routes.",
+    "Monitor Japan-UK advanced connectivity full opportunity opening in July 2026.",
+    "Do not start Invest NI forms until CAPTCHA/provider form can be completed by a human operator."
+  ]
+}

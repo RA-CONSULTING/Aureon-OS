@@ -1,0 +1,704 @@
+{
+  "schema_version": "aureon-ifs-non-p1-evidence-acquisition-register-v1",
+  "generated_at": "2026-07-10T14:15:05+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_non_p1_evidence_acquisition_register",
+  "source_refs": {
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_140806.json",
+    "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_140805.json",
+    "p1_partner_acquisition_register": "applications/IFS_P1_PARTNER_ACQUISITION_REGISTER_20260710_140752.json",
+    "route_gate_evidence_search": "applications/IFS_ROUTE_GATE_EVIDENCE_SEARCH_20260710_135633.json"
+  },
+  "summary": {
+    "active_non_p1_grant_applications_covered": 11,
+    "loan_routes_held_outside_grant_queue": 1,
+    "partner_targets": 23,
+    "draft_payloads_created": 23,
+    "route_unlock_evidence_found": 0,
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0,
+    "safe_portal_actions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false
+  },
+  "covered_applications": [
+    "APP-IFS-ACTASAP-PILOT-2502-20260709",
+    "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+    "APP-IFS-CKAF-AUTUMN-2478-20260709",
+    "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+    "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+    "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+    "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+    "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+    "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+    "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+    "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709"
+  ],
+  "held_outside_grant_queue": [
+    "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709"
+  ],
+  "targets": [
+    {
+      "target_id": "P2-ACTASAP-QUB-CSIT",
+      "route_fit": "ACTASAP_ACADEMIC_AI_CYBER_LEAD",
+      "organisation": "Queen's University Belfast Centre for Secure Information Technologies",
+      "contact_route": "CSIT / Queen's business and research partnership route",
+      "source_url": "https://www.qub.ac.uk/research-centres/csit/",
+      "source_evidence": "CSIT describes challenge-led cyber security research, innovation programmes, industry engagement and Cyber-AI activity.",
+      "target_applications": [
+        "APP-IFS-ACTASAP-PILOT-2502-20260709"
+      ],
+      "ask": "Assess whether CSIT can lead or route an ACTASAP academic validation project around Aureon Evidence OS for controlled AI evidence assurance.",
+      "required_reply_evidence": [
+        "eligible UK academic lead",
+        "authorised research-office or TTO route",
+        "academic owner and validation work package",
+        "budget and commitment requirements"
+      ]
+    },
+    {
+      "target_id": "P2-ACTASAP-ULSTER-AIRC",
+      "route_fit": "ACTASAP_ACADEMIC_AI_LEAD",
+      "organisation": "Ulster University Artificial Intelligence Research Centre",
+      "contact_route": "Ulster University research and innovation / AIRC route",
+      "source_url": "https://www.ulster.ac.uk/research/topic/computer-science/artificial-intelligence",
+      "source_evidence": "Ulster AIRC describes AI theories, algorithms, tools and stakeholder/user engagement.",
+      "target_applications": [
+        "APP-IFS-ACTASAP-PILOT-2502-20260709"
+      ],
+      "ask": "Assess whether Ulster can lead or route an ACTASAP academic validation project for Aureon Evidence OS.",
+      "required_reply_evidence": [
+        "eligible UK academic lead",
+        "research-office route",
+        "AI validation work package",
+        "budget and timeline requirements"
+      ]
+    },
+    {
+      "target_id": "P2-ACTASAP-AICC",
+      "route_fit": "ACTASAP_RESPONSIBLE_AI_COLLABORATION",
+      "organisation": "Artificial Intelligence Collaboration Centre",
+      "contact_route": "AICC business engagement route",
+      "source_url": "https://www.aicc.co/",
+      "source_evidence": "AICC describes a Queen's and Ulster partnership promoting AI awareness and responsible innovation with businesses in Northern Ireland.",
+      "target_applications": [
+        "APP-IFS-ACTASAP-PILOT-2502-20260709"
+      ],
+      "ask": "Assess whether AICC can route R&A to an academic/business validation path for responsible AI workflow assurance.",
+      "required_reply_evidence": [
+        "eligible lead or referral",
+        "responsible AI validation fit",
+        "named programme/contact route",
+        "next funding route if ACTASAP is not viable"
+      ]
+    },
+    {
+      "target_id": "P2-ADOPT-SUPPORT-HUB",
+      "route_fit": "ADOPT_SUPPORT_HUB",
+      "organisation": "ADOPT Support Hub",
+      "contact_route": "adoptsupport@adas.co.uk; 0800 987 8006",
+      "source_url": "https://farminginnovation.ukri.org/adopt/",
+      "source_evidence": "The ADOPT Support Hub is listed for ADOPT applicants and projects, with email and phone support.",
+      "target_applications": [
+        "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+      ],
+      "ask": "Advise how Aureon can support an England farm-led ADOPT project as evidence automation or facilitator support rather than direct lead.",
+      "required_reply_evidence": [
+        "eligible England farm lead route",
+        "facilitator requirements",
+        "support role fit",
+        "best next ADOPT round or contact"
+      ]
+    },
+    {
+      "target_id": "P2-ADOPT-INNOVATIVE-FARMERS",
+      "route_fit": "ADOPT_FARMER_NETWORK",
+      "organisation": "Innovative Farmers",
+      "contact_route": "Innovative Farmers field lab / idea route",
+      "source_url": "https://www.innovativefarmers.org/",
+      "source_evidence": "Innovative Farmers describes a network of farmers and growers running on-farm trials.",
+      "target_applications": [
+        "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+      ],
+      "ask": "Assess whether there is a farmer-led trial group where Aureon could support evidence capture, reporting and review for ADOPT.",
+      "required_reply_evidence": [
+        "farmer or grower lead",
+        "field-lab problem statement",
+        "facilitator or coordinator route",
+        "support work package and budget basis"
+      ]
+    },
+    {
+      "target_id": "P2-ADOPT-BOFIN",
+      "route_fit": "ADOPT_APPROVED_FACILITATOR_TARGET",
+      "organisation": "British On-Farm Innovation Network",
+      "contact_route": "info@bofin.org.uk",
+      "source_url": "https://bofin.org.uk/adopt/",
+      "source_evidence": "BOFIN says it is an approved Project Facilitator and supports farmers with ideas, partners and proposals.",
+      "target_applications": [
+        "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+      ],
+      "ask": "Assess whether BOFIN can route Aureon into a farmer-led ADOPT project needing evidence automation support.",
+      "required_reply_evidence": [
+        "approved facilitator route",
+        "farmer lead or group",
+        "problem statement and trial structure",
+        "Aureon support role and budget owner"
+      ]
+    },
+    {
+      "target_id": "P2-ADOPT-FARM-CARBON-TOOLKIT",
+      "route_fit": "ADOPT_FIELD_LAB_SUSTAINABILITY_TARGET",
+      "organisation": "Farm Carbon Toolkit / field labs",
+      "contact_route": "info@innovativefarmers.org.uk via field-lab route",
+      "source_url": "https://farmcarbontoolkit.org.uk/farm-net-zero/field-labs/",
+      "source_evidence": "Farm Carbon Toolkit describes field labs and routes further information through Innovative Farmers.",
+      "target_applications": [
+        "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+      ],
+      "ask": "Assess whether a farm carbon or field-lab evidence workflow could fit an ADOPT farm-led application.",
+      "required_reply_evidence": [
+        "farm lead",
+        "field-lab trial context",
+        "data and evidence needs",
+        "facilitator or support route"
+      ]
+    },
+    {
+      "target_id": "R-UKSWISS-INNOSUISSE",
+      "route_fit": "UK_SWISS_OFFICIAL_SWISS_ROUTE",
+      "organisation": "Innosuisse Switzerland-UK call",
+      "contact_route": "Innosuisse call guidance route",
+      "source_url": "https://www.innosuisse.admin.ch/en/switzerland-uk-call-for-projects",
+      "source_evidence": "Innosuisse describes the bilateral Switzerland-UK call for Swiss and UK partners in joint R&D.",
+      "target_applications": [
+        "APP-IFS-UK-SWISS-CRD-R3-2512-20260709"
+      ],
+      "ask": "Advise how to identify an eligible Swiss implementation partner for the live UK-Swiss IFS draft.",
+      "required_reply_evidence": [
+        "Swiss business or research partner route",
+        "eligible Swiss role",
+        "partner commitment route",
+        "budget and permit/export guidance"
+      ]
+    },
+    {
+      "target_id": "R-UKSWISS-EEN-SWITZERLAND",
+      "route_fit": "UK_SWISS_PARTNER_SEARCH",
+      "organisation": "Enterprise Europe Network Switzerland",
+      "contact_route": "een@innosuisse.ch",
+      "source_url": "https://www.innosuisse.admin.ch/en/enterprise-europe-network-for-sme",
+      "source_evidence": "EEN Switzerland supports partner searches for research, innovation and business collaborations and lists een@innosuisse.ch.",
+      "target_applications": [
+        "APP-IFS-UK-SWISS-CRD-R3-2512-20260709"
+      ],
+      "ask": "Help locate Swiss partners for Aureon Evidence OS in the UK-Switzerland collaborative R&D route.",
+      "required_reply_evidence": [
+        "Swiss partner candidates",
+        "collaboration fit",
+        "partner commitment process",
+        "funding and budget split guidance"
+      ]
+    },
+    {
+      "target_id": "R-UKSWISS-B2MATCH",
+      "route_fit": "UK_SWISS_PARTNER_MARKETPLACE",
+      "organisation": "UK-Switzerland Bilateral R&D B2Match marketplace",
+      "contact_route": "B2Match marketplace profile/search route",
+      "source_url": "https://uk-switzerland-bilateral-rd.b2match.io/",
+      "source_evidence": "The marketplace is described as a place to search and profile opportunities for UK-Switzerland collaborative R&D partner matching.",
+      "target_applications": [
+        "APP-IFS-UK-SWISS-CRD-R3-2512-20260709"
+      ],
+      "ask": "Use the marketplace route to find Swiss implementation partners aligned to engineering biology, semiconductors or eligible emerging technology fit.",
+      "required_reply_evidence": [
+        "partner profile",
+        "partner commitment letter route",
+        "budget owner",
+        "permit/export-control position"
+      ]
+    },
+    {
+      "target_id": "R-UKSWISS-IUKBC-EUROPE",
+      "route_fit": "UK_SWISS_IUKBC_PARTNER_HELP",
+      "organisation": "Innovate UK Business Connect European Programmes",
+      "contact_route": "IUK Business Connect European Programmes support route",
+      "source_url": "https://iuk-business-connect.org.uk/opportunities/uk-switzerland-bilateral-collaborative-rd/",
+      "source_evidence": "IUK Business Connect says businesses wanting help to find a project partner can contact its European Programmes team.",
+      "target_applications": [
+        "APP-IFS-UK-SWISS-CRD-R3-2512-20260709"
+      ],
+      "ask": "Advise partner-search and eligibility route for Aureon in the UK-Switzerland CR&D competition.",
+      "required_reply_evidence": [
+        "partner-search route",
+        "competition fit",
+        "eligible role guidance",
+        "critical next documentation"
+      ]
+    },
+    {
+      "target_id": "R-CKAF-GOTT-GRANT-FUND",
+      "route_fit": "CKAF_PUBLIC_SECTOR_LEAD_ROUTE",
+      "organisation": "Government Office for Technology Transfer Grant Fund team",
+      "contact_route": "grantfund.gott@dsit.gov.uk",
+      "source_url": "https://www.gov.uk/guidance/get-funding-to-develop-and-exploit-knowledge-assets",
+      "source_evidence": "GOV.UK directs questions about GOTT funding to grantfund.gott@dsit.gov.uk.",
+      "target_applications": [
+        "APP-IFS-CKAF-AUTUMN-2478-20260709"
+      ],
+      "ask": "Clarify whether Aureon can only support a public-sector research organisation lead for CKAF and how to find the right lead route.",
+      "required_reply_evidence": [
+        "eligible public-sector research organisation lead route",
+        "knowledge-asset ownership requirements",
+        "senior support requirements",
+        "procurement or support role options for Aureon"
+      ]
+    },
+    {
+      "target_id": "R-CKAF-UKI2S",
+      "route_fit": "CKAF_KNOWLEDGE_ASSET_SPINOUT_ROUTE",
+      "organisation": "UK Innovation and Science Seed Fund Knowledge Assets",
+      "contact_route": "UKI2S knowledge-asset portfolio route",
+      "source_url": "https://ukinnovationscienceseedfund.co.uk/investment-areas/knowledge-assets/",
+      "source_evidence": "UKI2S describes work with GOTT to support spin-outs emerging from the public sector.",
+      "target_applications": [
+        "APP-IFS-CKAF-AUTUMN-2478-20260709"
+      ],
+      "ask": "Assess whether Aureon could support public-sector knowledge-asset commercialisation as a service or evidence platform.",
+      "required_reply_evidence": [
+        "public-sector knowledge asset owner",
+        "spinout or commercialisation route",
+        "support/procurement role",
+        "funding or referral route"
+      ]
+    },
+    {
+      "target_id": "R-DRIVE35-APC",
+      "route_fit": "DRIVE35_AUTOMOTIVE_SUPPORT",
+      "organisation": "Advanced Propulsion Centre UK",
+      "contact_route": "info@apcuk.co.uk",
+      "source_url": "https://www.gov.uk/guidance/drive35-funding-programme-scale-up",
+      "source_evidence": "GOV.UK lists APC contact info@apcuk.co.uk for DRIVE35 Scale-Up questions.",
+      "target_applications": [
+        "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+        "APP-IFS-DRIVE35-SCALE-UP-2445-20260709"
+      ],
+      "ask": "Advise whether Aureon evidence automation can fit DRIVE35 collaborative or scale-up projects as a consortium support work package.",
+      "required_reply_evidence": [
+        "vehicle manufacturer or Tier 1 lead route",
+        "ZEV work package",
+        "match funding and budget owner",
+        "consortium role fit"
+      ]
+    },
+    {
+      "target_id": "R-DRIVE35-WRIGHTBUS",
+      "route_fit": "DRIVE35_ZEV_MANUFACTURER_TARGET",
+      "organisation": "Wrightbus",
+      "contact_route": "Wrightbus website contact route",
+      "source_url": "https://wrightbus.com/",
+      "source_evidence": "Wrightbus describes zero-emission vehicle leadership through hydrogen fuel cell and battery electric buses.",
+      "target_applications": [
+        "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+        "APP-IFS-DRIVE35-SCALE-UP-2445-20260709"
+      ],
+      "ask": "Assess whether a zero-emission bus or manufacturing evidence assurance work package could fit a DRIVE35 consortium.",
+      "required_reply_evidence": [
+        "manufacturer lead interest",
+        "ZEV project context",
+        "eligible budget owner",
+        "match funding basis"
+      ]
+    },
+    {
+      "target_id": "R-DRIVE35-AMIC",
+      "route_fit": "DRIVE35_MANUFACTURING_INNOVATION_SUPPORT",
+      "organisation": "Advanced Manufacturing Innovation Centre",
+      "contact_route": "amic@qub.ac.uk; 028 9097 5433",
+      "source_url": "https://www.we-are-amic.com/about/factory-of-the-future/",
+      "source_evidence": "AMIC lists Belfast and Newtownabbey locations plus contact details, and describes advanced manufacturing engineering facilities.",
+      "target_applications": [
+        "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+        "APP-IFS-DRIVE35-SCALE-UP-2445-20260709"
+      ],
+      "ask": "Assess whether AMIC can route Aureon toward a ZEV manufacturing evidence or validation work package.",
+      "required_reply_evidence": [
+        "manufacturing facility or partner route",
+        "ZEV work package fit",
+        "eligible facility or equipment access",
+        "budget/co-investment requirements"
+      ]
+    },
+    {
+      "target_id": "R-ZEVI2-IUKBC-TRANSPORT",
+      "route_fit": "ZEVI2_PARTNER_SEARCH_SUPPORT",
+      "organisation": "Innovate UK Business Connect Transport team",
+      "contact_route": "IUK Business Connect Transport team route",
+      "source_url": "https://iuk-business-connect.org.uk/opportunities/zero-emission-vessels-and-infrastructure-2-electric-power/",
+      "source_evidence": "IUK Business Connect says applicants can contact its Transport team for advice on ZEVI2 electric power.",
+      "target_applications": [
+        "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+        "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+        "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709"
+      ],
+      "ask": "Advise partner-search route for Aureon evidence assurance support in ZEVI2 clean-maritime projects.",
+      "required_reply_evidence": [
+        "UK maritime lead route",
+        "vessel or infrastructure context",
+        "three-year demonstration owner",
+        "eligible budget and permissions owner"
+      ]
+    },
+    {
+      "target_id": "R-ZEVI2-UKSHORE-B2MATCH",
+      "route_fit": "ZEVI2_MARITIME_MATCHMAKING",
+      "organisation": "UK SHORE Networking Platform",
+      "contact_route": "Olivia Brown, olivia.brown@iukbc.org.uk",
+      "source_url": "https://www.b2match.com/e/ukshore-networking",
+      "source_evidence": "The UK SHORE B2Match platform lists an Innovate UK Business Connect event contact for networking questions.",
+      "target_applications": [
+        "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+        "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+        "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709"
+      ],
+      "ask": "Use the UK SHORE network to locate maritime leads needing evidence automation, claim mapping or demonstration reporting.",
+      "required_reply_evidence": [
+        "maritime lead or consortium contact",
+        "vessel/port/infrastructure asset",
+        "demonstration schedule",
+        "budget and permission owner"
+      ]
+    },
+    {
+      "target_id": "R-ZEVI2-CLEAN-MARITIME-HUB",
+      "route_fit": "ZEVI2_RESEARCH_AND_INDUSTRY_NETWORK",
+      "organisation": "UK National Clean Maritime Research Hub",
+      "contact_route": "Hub stakeholder engagement route",
+      "source_url": "https://www.clean-maritime-research-hub.org/",
+      "source_evidence": "The hub describes collaboration with stakeholders across the maritime sector to drive clean-maritime innovation and transformation.",
+      "target_applications": [
+        "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+        "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+        "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709"
+      ],
+      "ask": "Assess whether the hub can refer Aureon to clean-maritime partners needing evidence assurance or trial reporting support.",
+      "required_reply_evidence": [
+        "stakeholder or industry referral",
+        "clean-maritime project context",
+        "evidence or reporting need",
+        "lead and budget owner"
+      ]
+    },
+    {
+      "target_id": "R-QUANTUM-NQCC",
+      "route_fit": "QUANTUM_HARDWARE_ACCESS_AND_INDUSTRY_NETWORK",
+      "organisation": "National Quantum Computing Centre",
+      "contact_route": "NQCC engage / industry network route",
+      "source_url": "https://www.nqcc.ac.uk/engage/",
+      "source_evidence": "NQCC engagement pages describe support for UK companies and researchers interested in quantum computing through SparQ and industry engagement.",
+      "target_applications": [
+        "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709"
+      ],
+      "ask": "Assess whether Aureon can support quantum hardware scaling evidence, test records or assurance workflows in an eligible consortium.",
+      "required_reply_evidence": [
+        "eligible hardware lead or facility access",
+        "industry network route",
+        "consortium commitment path",
+        "budget and validation plan"
+      ]
+    },
+    {
+      "target_id": "R-QUANTUM-QCI3",
+      "route_fit": "QUANTUM_HUB_ACADEMIC_INDUSTRY_ROUTE",
+      "organisation": "QCi3 Hub",
+      "contact_route": "engage.qci3@physics.ox.ac.uk",
+      "source_url": "https://uknqt.ukri.org/our-programme/",
+      "source_evidence": "UKNQT lists QCi3 as a hub bringing together investigators across 18 universities and gives engage.qci3@physics.ox.ac.uk as contact.",
+      "target_applications": [
+        "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709"
+      ],
+      "ask": "Assess whether QCi3 can route Aureon into a quantum hardware consortium needing evidence automation or reproducibility support.",
+      "required_reply_evidence": [
+        "quantum hardware lead or academic route",
+        "facility or hardware access",
+        "work package fit",
+        "budget and validation owner"
+      ]
+    },
+    {
+      "target_id": "R-QUANTUM-QCA-CLUSTER",
+      "route_fit": "QUANTUM_CLUSTER_INDUSTRY_CONTACTS",
+      "organisation": "Quantum Computing Application Cluster",
+      "contact_route": "QCA Cluster industry contacts route",
+      "source_url": "https://qca-cluster.org/",
+      "source_evidence": "The QCA Cluster lists industry contacts and describes expertise across quantum hardware and software.",
+      "target_applications": [
+        "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709"
+      ],
+      "ask": "Assess whether a UK quantum hardware/software consortium could use Aureon for reproducible evidence and assurance workflows.",
+      "required_reply_evidence": [
+        "eligible consortium contact",
+        "hardware/software role",
+        "validation work package",
+        "budget and access requirements"
+      ]
+    },
+    {
+      "target_id": "R-QUANTUM-OQC",
+      "route_fit": "QUANTUM_HARDWARE_COMPANY_TARGET",
+      "organisation": "Oxford Quantum Circuits",
+      "contact_route": "OQC contact team route",
+      "source_url": "https://oqc.tech/",
+      "source_evidence": "OQC describes application-optimised quantum compute and invites contact with its team.",
+      "target_applications": [
+        "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709"
+      ],
+      "ask": "Assess whether Aureon could support quantum hardware scaling evidence, workflow traceability or validation reporting in a consortium.",
+      "required_reply_evidence": [
+        "hardware lead interest",
+        "facility/access position",
+        "work package and budget",
+        "consortium commitment route"
+      ]
+    }
+  ],
+  "payloads": [
+    {
+      "target_id": "P2-ACTASAP-QUB-CSIT",
+      "target_applications": [
+        "APP-IFS-ACTASAP-PILOT-2502-20260709"
+      ],
+      "payload": "applications/outreach_payloads/P2-ACTASAP-QUB-CSIT_20260710_141505.md",
+      "subject": "ACTASAP fit check - Aureon Evidence OS academic validation work package",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "P2-ACTASAP-ULSTER-AIRC",
+      "target_applications": [
+        "APP-IFS-ACTASAP-PILOT-2502-20260709"
+      ],
+      "payload": "applications/outreach_payloads/P2-ACTASAP-ULSTER-AIRC_20260710_141505.md",
+      "subject": "ACTASAP fit check - Aureon Evidence OS academic validation work package",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "P2-ACTASAP-AICC",
+      "target_applications": [
+        "APP-IFS-ACTASAP-PILOT-2502-20260709"
+      ],
+      "payload": "applications/outreach_payloads/P2-ACTASAP-AICC_20260710_141505.md",
+      "subject": "ACTASAP fit check - Aureon Evidence OS academic validation work package",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "P2-ADOPT-SUPPORT-HUB",
+      "target_applications": [
+        "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+      ],
+      "payload": "applications/outreach_payloads/P2-ADOPT-SUPPORT-HUB_20260710_141505.md",
+      "subject": "ADOPT fit check - Aureon evidence support for farm-led innovation",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "P2-ADOPT-INNOVATIVE-FARMERS",
+      "target_applications": [
+        "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+      ],
+      "payload": "applications/outreach_payloads/P2-ADOPT-INNOVATIVE-FARMERS_20260710_141505.md",
+      "subject": "ADOPT fit check - Aureon evidence support for farm-led innovation",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "P2-ADOPT-BOFIN",
+      "target_applications": [
+        "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+      ],
+      "payload": "applications/outreach_payloads/P2-ADOPT-BOFIN_20260710_141505.md",
+      "subject": "ADOPT fit check - Aureon evidence support for farm-led innovation",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "P2-ADOPT-FARM-CARBON-TOOLKIT",
+      "target_applications": [
+        "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709"
+      ],
+      "payload": "applications/outreach_payloads/P2-ADOPT-FARM-CARBON-TOOLKIT_20260710_141505.md",
+      "subject": "ADOPT fit check - Aureon evidence support for farm-led innovation",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "R-UKSWISS-INNOSUISSE",
+      "target_applications": [
+        "APP-IFS-UK-SWISS-CRD-R3-2512-20260709"
+      ],
+      "payload": "applications/outreach_payloads/R-UKSWISS-INNOSUISSE_20260710_141505.md",
+      "subject": "UK-Switzerland CR&D partner fit check - Aureon Evidence OS",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "R-UKSWISS-EEN-SWITZERLAND",
+      "target_applications": [
+        "APP-IFS-UK-SWISS-CRD-R3-2512-20260709"
+      ],
+      "payload": "applications/outreach_payloads/R-UKSWISS-EEN-SWITZERLAND_20260710_141505.md",
+      "subject": "UK-Switzerland CR&D partner fit check - Aureon Evidence OS",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "R-UKSWISS-B2MATCH",
+      "target_applications": [
+        "APP-IFS-UK-SWISS-CRD-R3-2512-20260709"
+      ],
+      "payload": "applications/outreach_payloads/R-UKSWISS-B2MATCH_20260710_141505.md",
+      "subject": "UK-Switzerland CR&D partner fit check - Aureon Evidence OS",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "R-UKSWISS-IUKBC-EUROPE",
+      "target_applications": [
+        "APP-IFS-UK-SWISS-CRD-R3-2512-20260709"
+      ],
+      "payload": "applications/outreach_payloads/R-UKSWISS-IUKBC-EUROPE_20260710_141505.md",
+      "subject": "UK-Switzerland CR&D partner fit check - Aureon Evidence OS",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "R-CKAF-GOTT-GRANT-FUND",
+      "target_applications": [
+        "APP-IFS-CKAF-AUTUMN-2478-20260709"
+      ],
+      "payload": "applications/outreach_payloads/R-CKAF-GOTT-GRANT-FUND_20260710_141505.md",
+      "subject": "CKAF fit check - Aureon support for public-sector knowledge assets",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "R-CKAF-UKI2S",
+      "target_applications": [
+        "APP-IFS-CKAF-AUTUMN-2478-20260709"
+      ],
+      "payload": "applications/outreach_payloads/R-CKAF-UKI2S_20260710_141505.md",
+      "subject": "CKAF fit check - Aureon support for public-sector knowledge assets",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "R-DRIVE35-APC",
+      "target_applications": [
+        "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+        "APP-IFS-DRIVE35-SCALE-UP-2445-20260709"
+      ],
+      "payload": "applications/outreach_payloads/R-DRIVE35-APC_20260710_141505.md",
+      "subject": "DRIVE35 fit check - Aureon evidence assurance for zero-emission vehicles",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "R-DRIVE35-WRIGHTBUS",
+      "target_applications": [
+        "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+        "APP-IFS-DRIVE35-SCALE-UP-2445-20260709"
+      ],
+      "payload": "applications/outreach_payloads/R-DRIVE35-WRIGHTBUS_20260710_141505.md",
+      "subject": "DRIVE35 fit check - Aureon evidence assurance for zero-emission vehicles",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "R-DRIVE35-AMIC",
+      "target_applications": [
+        "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+        "APP-IFS-DRIVE35-SCALE-UP-2445-20260709"
+      ],
+      "payload": "applications/outreach_payloads/R-DRIVE35-AMIC_20260710_141505.md",
+      "subject": "DRIVE35 fit check - Aureon evidence assurance for zero-emission vehicles",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "R-ZEVI2-IUKBC-TRANSPORT",
+      "target_applications": [
+        "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+        "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+        "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709"
+      ],
+      "payload": "applications/outreach_payloads/R-ZEVI2-IUKBC-TRANSPORT_20260710_141505.md",
+      "subject": "ZEVI2 fit check - Aureon evidence assurance for clean maritime projects",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "R-ZEVI2-UKSHORE-B2MATCH",
+      "target_applications": [
+        "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+        "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+        "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709"
+      ],
+      "payload": "applications/outreach_payloads/R-ZEVI2-UKSHORE-B2MATCH_20260710_141505.md",
+      "subject": "ZEVI2 fit check - Aureon evidence assurance for clean maritime projects",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "R-ZEVI2-CLEAN-MARITIME-HUB",
+      "target_applications": [
+        "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+        "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+        "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709"
+      ],
+      "payload": "applications/outreach_payloads/R-ZEVI2-CLEAN-MARITIME-HUB_20260710_141505.md",
+      "subject": "ZEVI2 fit check - Aureon evidence assurance for clean maritime projects",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "R-QUANTUM-NQCC",
+      "target_applications": [
+        "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709"
+      ],
+      "payload": "applications/outreach_payloads/R-QUANTUM-NQCC_20260710_141505.md",
+      "subject": "Quantum hardware CR&D fit check - Aureon evidence assurance work package",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "R-QUANTUM-QCI3",
+      "target_applications": [
+        "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709"
+      ],
+      "payload": "applications/outreach_payloads/R-QUANTUM-QCI3_20260710_141505.md",
+      "subject": "Quantum hardware CR&D fit check - Aureon evidence assurance work package",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "R-QUANTUM-QCA-CLUSTER",
+      "target_applications": [
+        "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709"
+      ],
+      "payload": "applications/outreach_payloads/R-QUANTUM-QCA-CLUSTER_20260710_141505.md",
+      "subject": "Quantum hardware CR&D fit check - Aureon evidence assurance work package",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    },
+    {
+      "target_id": "R-QUANTUM-OQC",
+      "target_applications": [
+        "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709"
+      ],
+      "payload": "applications/outreach_payloads/R-QUANTUM-OQC_20260710_141505.md",
+      "subject": "Quantum hardware CR&D fit check - Aureon evidence assurance work package",
+      "status": "PREPARED_NOT_EXTERNALLY_SENT"
+    }
+  ],
+  "controls": [
+    "Targets are evidence-acquisition candidates, not partner commitments.",
+    "No external email, contact form, partner invitation, portal upload, or IFS submission was performed.",
+    "A target reply must supply route-specific lead, asset, permission, budget or work-package evidence before any IFS portal action.",
+    "Do not mark any covered route direct-submit-ready from this register alone.",
+    "Innovation Loans remains held outside the grant queue because it is repayable finance."
+  ],
+  "result": "IFS_NON_P1_EVIDENCE_ACQUISITION_REGISTER_READY_NO_EXTERNAL_SEND"
+}

@@ -1,0 +1,58 @@
+﻿{
+    "verified_at":  "2026-07-05T09:13:13.7945193Z",
+    "status":  "drive_readback_verified",
+    "final_index_and_log_files":  [
+                                      {
+                                          "title":  "AureonRepoArchives_VERIFIED_20260705.json",
+                                          "drive_id":  "15D1a_an9pBnJX16vn5ux-D2030OhIYXu",
+                                          "drive_size":  12723,
+                                          "local_size":  12723,
+                                          "size_match":  true,
+                                          "url":  "https://drive.google.com/file/d/15D1a_an9pBnJX16vn5ux-D2030OhIYXu/view?usp=drivesdk"
+                                      },
+                                      {
+                                          "title":  "AureonRepoArchives_VERIFIED_20260705.md",
+                                          "drive_id":  "10g_Ya6KWD2QqbLh4Q5yzUwJfRjXM1_EC",
+                                          "drive_size":  2367,
+                                          "local_size":  2367,
+                                          "size_match":  true,
+                                          "url":  "https://drive.google.com/file/d/10g_Ya6KWD2QqbLh4Q5yzUwJfRjXM1_EC/view?usp=drivesdk"
+                                      },
+                                      {
+                                          "title":  "AUREON_GRANT_OPERATING_LOG.md",
+                                          "drive_id":  "18RIGlvCCNBx_GH_Mdo-37QSImZ-SXkfg",
+                                          "drive_size":  14970,
+                                          "local_size":  14970,
+                                          "size_match":  true,
+                                          "url":  "https://drive.google.com/file/d/18RIGlvCCNBx_GH_Mdo-37QSImZ-SXkfg/view?usp=drivesdk"
+                                      },
+                                      {
+                                          "title":  "DRIVE_PUBLICATION_MANIFEST.json",
+                                          "drive_id":  "1qNR1-YybsQaeYMTFKTgy7B8Pk-9h4M9v",
+                                          "drive_size":  23824,
+                                          "local_size":  23824,
+                                          "size_match":  true,
+                                          "url":  "https://drive.google.com/file/d/1qNR1-YybsQaeYMTFKTgy7B8Pk-9h4M9v/view?usp=drivesdk"
+                                      }
+                                  ],
+    "core_repo_archives":  [
+                               {
+                                   "title":  "AureonLocalGitHistoryBundles_RAW_20260705.tar",
+                                   "id":  "11oDMxnlewlJwXgpLPeKR5Bod4QdFdtBx",
+                                   "drive_size":  "1241515520",
+                                   "url":  "https://drive.google.com/file/d/11oDMxnlewlJwXgpLPeKR5Bod4QdFdtBx/view?usp=drivesdk"
+                               },
+                               {
+                                   "title":  "AureonGitHubMirrorBundles_ALLREFS_20260705.tar",
+                                   "id":  "19A5T5BSdS-hjeMWl3XyQY3ZlaUsfMYaT",
+                                   "drive_size":  "366811648",
+                                   "url":  "https://drive.google.com/file/d/19A5T5BSdS-hjeMWl3XyQY3ZlaUsfMYaT/view?usp=drivesdk"
+                               },
+                               {
+                                   "title":  "AureonReposDriveBundle_SANITIZED_20260705.tar",
+                                   "id":  "1AHKGb82z4FDIE2pccAAmB0oTFrSxfGCm",
+                                   "drive_size":  "1527144960",
+                                   "url":  "https://drive.google.com/file/d/1AHKGb82z4FDIE2pccAAmB0oTFrSxfGCm/view?usp=drivesdk"
+                               }
+                           ]
+}

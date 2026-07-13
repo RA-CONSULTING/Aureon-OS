@@ -1,0 +1,57 @@
+{
+  "operator": "Aureon",
+  "application_id": "APP-IFS-CFI-SEN-2511-20260709",
+  "portal_application_number": "10210045",
+  "title": "Aureon SEN Evidence OS: Fair Early Identification Support",
+  "funder": "Innovate UK / UKRI Contracts for Innovation",
+  "competition": "CfI: Earlier identification of UK children with SEN",
+  "status": "Application submitted",
+  "submitted_at": "2026-07-09T14:31:00+01:00",
+  "submitted_at_display": "9 Jul 2026 at 2:31pm",
+  "track_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210045/track",
+  "review_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210045/review-and-submit",
+  "finance": {
+    "procurement_contract_value_inclusive_vat_gbp": 250000,
+    "net_eligible_costs_gbp": 208333,
+    "vat_gbp": 41667,
+    "vat_registered": true,
+    "vat_number": "469976605",
+    "project_location_postcode": "BT12 4HX",
+    "milestones_total_inclusive_vat_gbp": 250000
+  },
+  "completed_sections": [
+    "Application team",
+    "Application details",
+    "Project and scope summary",
+    "Public description",
+    "Applicant location",
+    "Application questions 1-12",
+    "Funding breakdown",
+    "Project Impact survey",
+    "Award terms and conditions"
+  ],
+  "project_impact": {
+    "status": "submitted",
+    "confirmation_text": "Project impact answers submitted",
+    "answers": {
+      "fte_employees": "1",
+      "expected_additional_fte": "3.0",
+      "operating_profit_or_loss_gbp_rounded": "76000",
+      "innovation_expenditure_gbp_rounded": "25000",
+      "turnover_from_innovative_products_percent": "100",
+      "expected_additional_turnover_gbp_5_years": "500000",
+      "active_rd_projects": "1"
+    }
+  },
+  "terms": {
+    "status": "accepted",
+    "accepted_at": "2026-07-09T14:30:00+01:00",
+    "portal_text": "Terms and conditions accepted at 2:30pm on 9 July 2026 by you."
+  },
+  "submission_notes": [
+    "IFS track page verified Application submitted for application 10210045.",
+    "The submitted CfI SEN application uses a human-in-the-loop evidence workflow scope and does not claim automated diagnosis.",
+    "No confirmed education partner, safeguarding approval, child data access, or live implementation approval was claimed."
+  ],
+  "recorded_at": "2026-07-09T14:33:00+01:00"
+}

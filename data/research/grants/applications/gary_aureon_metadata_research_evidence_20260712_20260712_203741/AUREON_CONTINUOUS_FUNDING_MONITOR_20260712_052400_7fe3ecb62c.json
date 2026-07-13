@@ -1,0 +1,200 @@
+{
+  "run_id": "aureon-grant-operator-continuous-monitor-20260712_052400",
+  "automation_id": "aureon-grant-operator-continuous-funding-monitor",
+  "generated_at": "2026-07-12T05:24:00+01:00",
+  "result": "CONTINUOUS_MONITOR_RECONCILED_NO_NEW_SUBMIT_READY_ROUTE",
+  "total_opportunities": 46,
+  "total_application_records": 45,
+  "grant_or_provider_application_records": 29,
+  "investor_outreach_records_preserved": 16,
+  "ifs_application_records": 20,
+  "submitted_ifs_applications": 4,
+  "submitted_airr_applications": 2,
+  "active_or_gated_application_records": 39,
+  "official_ifs_competitions": 20,
+  "missing_official_ifs_routes": 0,
+  "direct_submit_ready_routes": 0,
+  "safe_portal_submissions_now": 0,
+  "priority_routes_waiting_reply_or_unlock_evidence": 5,
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false,
+  "contact_route_submitted": false,
+  "upload_performed": false,
+  "status_counts": {
+    "ACADEMIC_HOST_REQUIRED": 1,
+    "ACCOUNT_CREATED_EMAIL_VERIFICATION_REQUIRED": 1,
+    "ACTASAP_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY": 1,
+    "ADOPT_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY": 2,
+    "AKT6_KNOWLEDGE_BASE_EVIDENCE_REQUESTS_SENT_WAITING_REPLY": 1,
+    "BLOCKED_REQUIRED_LINKEDIN_AND_PITCH_DECK": 1,
+    "BLOCKED_REQUIRED_VERIFIED_FIELDS_OR_DECK": 1,
+    "CKAF_PUBLIC_SECTOR_RESEARCH_ORG_AND_KNOWLEDGE_ASSET_EVIDENCE_REQUIRED": 1,
+    "CMDC7_MARITIME_EVIDENCE_REQUESTS_SENT_WAITING_REPLY": 3,
+    "DRIVE35_COLLAB3_ZEV_PARTNER_MATCH_FUNDING_AND_TIER1_EVIDENCE_REQUIRED": 1,
+    "DRIVE35_SCALEUP_ZEV_MANUFACTURING_FACILITY_AND_COINVESTMENT_EVIDENCE_REQUIRED": 1,
+    "EVIDENCE_GATED": 1,
+    "INNOVATION_LOANS_REPAYABLE_FINANCE_CAPACITY_AND_ACTION_APPROVAL_REQUIRED": 1,
+    "INVESTOR_EMAIL_SENT_WAITING_REPLY": 12,
+    "LIVE_DRAFT_FINANCE_COMPLETE_COST_BOOK_VARIANCE_STAGED_PROJECT_IMPACT_TERMS_GATED": 1,
+    "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK": 3,
+    "NO_DIRECT_FORM_ROUTE_FOUND": 1,
+    "PARTNER_OUTREACH_DRAFT": 1,
+    "PARTNER_REQUIRED": 1,
+    "QUANTUM_HARDWARE_LEAD_ACCESS_CONSORTIUM_AND_BUDGET_EVIDENCE_REQUIRED": 1,
+    "RESEARCH_ORG_LEAD_AND_JAPAN_PARTNER_REQUIRED": 1,
+    "ROUTE_REQUEST_SUBMITTED_CONFIRMED": 1,
+    "SHORTLIST_REQUIRED": 1,
+    "SUBMITTED": 6
+  },
+  "official_route_readback": [
+    {
+      "source": "Innovation Funding Service competition search",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/search",
+      "observed_at": "2026-07-12 live public refresh",
+      "observed_fact": "IFS lists 20 competitions. Page 1 includes ADOPT Facilitator Support Grant Round 10, UK-Switzerland CR&D Round 3, quantum hardware CR&D, DRIVE35 Collaborate 3, Next Wave, CfI SEN, FLF Round 11, DRIVE35 Scale Up, Consumer Led Flexibility and Innovation Loans.",
+      "route_effect": "The local IFS queue remains fully covered; no unmatched direct-submit route was found."
+    },
+    {
+      "source": "Innovation Funding Service competition search page 2",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/search?page=1",
+      "observed_at": "2026-07-12 live public refresh",
+      "observed_fact": "Page 2 includes Full ADOPT Round 8, ACTASAP Pilot Phase 1, AKT6, CKAF Autumn, ZEVI2 strands and CMDC7 strands. AKT6 and CMDC7 close on 2026-07-15 and remain lead, knowledge-base, collaborator, maritime asset, permission, and budget gated.",
+      "route_effect": "Nearest deadline work remains reply monitoring and evidence acquisition, not submission."
+    },
+    {
+      "source": "UKRI Funding finder",
+      "url": "https://www.ukri.org/opportunity/",
+      "observed_at": "2026-07-12 live public refresh",
+      "observed_fact": "The newest relevant open item is the Japan-UK Advanced Connectivity Technologies call, opened 2026-07-10 and closing 2026-10-06. UK applicants must be based at an EPSRC-eligible UK research organisation and Japanese applicants must be NICT-eligible.",
+      "route_effect": "Keep staged as partner-support/monitor-only for R&A until an eligible lead and collaborator exist."
+    },
+    {
+      "source": "Eureka Eurostars Call 11",
+      "url": "https://www.eurekanetwork.org/programmes-and-calls/eurostars/eurostars-call-for-projects-september-2026/",
+      "observed_at": "2026-07-12 live public refresh",
+      "observed_fact": "Call 11 is open from 2026-07-09 to 2026-09-10 14:00 CET. A project consortium must have an innovative SME in the lead and at least two independent entities from at least two Eurostars countries.",
+      "route_effect": "Stage partner-support material only until consortium lead and partner evidence exists."
+    },
+    {
+      "source": "InterTradeIreland Seedcorn 2026 timetable",
+      "url": "https://intertradeireland.com/funding/seedcorn/2026-timetable",
+      "observed_at": "2026-07-12 live public refresh",
+      "observed_fact": "Phase 1 closed on 2026-04-24, shortlisted companies were announced on 2026-05-15, and Phase 2 uploads close on 2026-08-07.",
+      "route_effect": "No fresh direct application route is available; continue only if shortlist evidence appears."
+    }
+  ],
+  "priority_routes": [
+    {
+      "id": "APP-IFS-AKT6-2473-20260709",
+      "status": "AKT6_KNOWLEDGE_BASE_EVIDENCE_REQUESTS_SENT_WAITING_REPLY",
+      "gate": "Eligible knowledge-base lead, business FTE and contribution evidence are required before any truthful portal application.",
+      "latest_receipt": "applications/IFS_AKT6_KNOWLEDGE_BASE_EMAIL_SEND_RECEIPT_20260711_20260711_080632.json"
+    },
+    {
+      "id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "status": "CMDC7_MARITIME_EVIDENCE_REQUESTS_SENT_WAITING_REPLY",
+      "gate": "Clean maritime collaborator, asset, permission and budget evidence are required.",
+      "latest_receipt": "applications/IFS_CMDC7_MARITIME_EMAIL_SEND_RECEIPT_20260711_20260711_081014.json"
+    },
+    {
+      "id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "status": "CMDC7_MARITIME_EVIDENCE_REQUESTS_SENT_WAITING_REPLY",
+      "gate": "Clean maritime collaborator, asset, permission and budget evidence are required.",
+      "latest_receipt": "applications/IFS_CMDC7_MARITIME_EMAIL_SEND_RECEIPT_20260711_20260711_081014.json"
+    },
+    {
+      "id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "status": "CMDC7_MARITIME_EVIDENCE_REQUESTS_SENT_WAITING_REPLY",
+      "gate": "Clean maritime collaborator, asset, permission and budget evidence are required.",
+      "latest_receipt": "applications/IFS_CMDC7_MARITIME_EMAIL_SEND_RECEIPT_20260711_20260711_081014.json"
+    },
+    {
+      "id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "status": "LIVE_DRAFT_FINANCE_COMPLETE_COST_BOOK_VARIANCE_STAGED_PROJECT_IMPACT_TERMS_GATED",
+      "gate": "Draft 10210100 remains blocked by Swiss partner evidence, Project Impact persistence, terms and final review controls.",
+      "latest_receipt": "applications/IFS_NEXT_SUBMISSION_UNLOCK_PACKET_20260711_135137.json"
+    }
+  ],
+  "latest_grant_artifacts": {
+    "official_live_search_refresh": "applications/IFS_OFFICIAL_LIVE_SEARCH_REFRESH_20260711_133311.json",
+    "urgent_reply_evidence_sweep": "applications/IFS_URGENT_REPLY_EVIDENCE_SWEEP_20260711_134236.json",
+    "formal_submission_support_packet": "applications/IFS_FORMAL_SUBMISSION_SUPPORT_PACKET_20260711_135057.json",
+    "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260711_135124.json",
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260711_135132.json",
+    "next_submission_unlock_packet": "applications/IFS_NEXT_SUBMISSION_UNLOCK_PACKET_20260711_135137.json",
+    "work_evidence_index": "applications/AUREON_WORK_EVIDENCE_INDEX_REFRESH_20260711_052414.json",
+    "local_research_inventory": "applications/LOCAL_RESEARCH_PAPER_INVENTORY_20260711_20260711_094836.json",
+    "unified_work_corpus": "AUREON_UNIFIED_WORK_CORPUS_20260709.json",
+    "public_profile_index": "applications/PUBLIC_PROFILE_EVIDENCE_INDEX_20260710_230641.json"
+  },
+  "evidence_inventory": {
+    "tracked_artifacts": [
+      "applications/IFS_OFFICIAL_LIVE_SEARCH_REFRESH_20260711_133311.json",
+      "applications/IFS_URGENT_REPLY_EVIDENCE_SWEEP_20260711_134236.json",
+      "applications/IFS_FORMAL_SUBMISSION_SUPPORT_PACKET_20260711_135057.json",
+      "applications/IFS_CURRENT_ACTION_REGISTER_20260711_135124.json",
+      "applications/IFS_CURRENT_GRANT_BOARD_20260711_135132.json",
+      "applications/IFS_NEXT_SUBMISSION_UNLOCK_PACKET_20260711_135137.json",
+      "applications/AUREON_WORK_EVIDENCE_INDEX_REFRESH_20260711_052414.json",
+      "applications/LOCAL_RESEARCH_PAPER_INVENTORY_20260711_20260711_094836.json",
+      "AUREON_UNIFIED_WORK_CORPUS_20260709.json",
+      "applications/PUBLIC_PROFILE_EVIDENCE_INDEX_20260710_230641.json"
+    ],
+    "screenshot_receipts_count": 36,
+    "pdf_artifacts_count": 137,
+    "local_research_evidence_files_count": 47,
+    "recent_receipt_screenshots": [
+      "applications/evidence/OPENOCEAN_REPLY_GMAIL_SENT_20260711_20260711_2309.png",
+      "applications/evidence/PRIVATE_INVESTOR_OPENOCEAN_GMAIL_SENT_20260711_2240.png",
+      "applications/evidence/PRIVATE_INVESTOR_PASSION_CAPITAL_GMAIL_SENT_20260711_2241.png",
+      "applications/evidence/PRIVATE_INVESTOR_PASSION_CAPITAL_GMAIL_SENT_20260711_2240.png",
+      "applications/evidence/PRIVATE_INVESTOR_KINDRED_CAPITAL_GMAIL_SENT_20260711_2240.png",
+      "applications/evidence/PRIVATE_INVESTOR_ASCENSION_GMAIL_SENT_20260711_2140.png",
+      "applications/evidence/PRIVATE_INVESTOR_24HAYMARKET_GMAIL_SENT_20260711_2140.png",
+      "applications/evidence/PRIVATE_INVESTOR_CAMBRIDGE_INNOVATION_CAPITAL_GMAIL_SENT_20260711_2140.png",
+      "applications/evidence/PRIVATE_INVESTOR_BERINGEA_U_K_GMAIL_SENT_20260711_2140.png",
+      "applications/evidence/PRIVATE_INVESTOR_IQ_CAPITAL_GMAIL_SENT_20260711_2140.png",
+      "applications/evidence/PRIVATE_INVESTOR_ATLANTIC_BRIDGE_GMAIL_SENT_20260711_2125.png",
+      "applications/evidence/PRIVATE_INVESTOR_ACT_VENTURE_CAPITAL_GMAIL_SENT_20260711_2125.png"
+    ],
+    "recent_pdf_artifacts": [
+      "output/pdf/ifs/IFS_OPEN_SOURCE_COST_APPENDIX_PACK_20260711_132906.pdf",
+      "output/pdf/ifs/cost_appendices_20260711_132906/2414_Clean_Maritime_Demonstration_Competition_7_Deployment_trials_20260711_132906.pdf",
+      "output/pdf/ifs/cost_appendices_20260711_132906/2416_Clean_Maritime_Demonstration_Competition_7_Feasibility_studies_20260711_132906.pdf",
+      "output/pdf/ifs/cost_appendices_20260711_132906/2415_Clean_Maritime_Demonstration_Competition_7_Pre_deployment_trials_20260711_132906.pdf",
+      "output/pdf/ifs/cost_appendices_20260711_132906/2434_Zero_Emission_Vessels_and_Infrastructure_2_Alternative_Fuels_20260711_132906.pdf",
+      "output/pdf/ifs/cost_appendices_20260711_132906/2435_Zero_Emission_Vessels_and_Infrastructure_2_Electric_Power_20260711_132906.pdf",
+      "output/pdf/ifs/cost_appendices_20260711_132906/2436_Zero_Emission_Vessels_and_Infrastructure_2_Energy_Efficiency_20260711_132906.pdf",
+      "output/pdf/ifs/cost_appendices_20260711_132906/2478_Commercialising_Knowledge_Assets_Fund_CKAF_Autumn_20260711_132906.pdf",
+      "output/pdf/ifs/cost_appendices_20260711_132906/2473_Accelerated_Knowledge_Transfer_Partnerships_6_AKT_6_20260711_132906.pdf",
+      "output/pdf/ifs/cost_appendices_20260711_132906/2502_ACTASAP_Pilot_Phase_1_20260711_132906.pdf",
+      "output/pdf/ifs/cost_appendices_20260711_132906/2491_Full_ADOPT_Grant_Round_8_20260711_132906.pdf",
+      "output/pdf/ifs/cost_appendices_20260711_132906/2445_DRIVE35_Scale_Up_Fund_20260711_132906.pdf"
+    ]
+  },
+  "controls": [
+    "No plaintext password or secret was read, printed or stored.",
+    "No CAPTCHA, MFA, disabled submit button or provider control was bypassed.",
+    "No provider portal field, email, contact form, upload, partner invite, terms acceptance or final submission was performed.",
+    "Investor outreach artifacts remain preserved but are not treated as grant partner commitment evidence."
+  ],
+  "next_actions": [
+    "Monitor AKT6 knowledge-base replies before 2026-07-15 11:00 UK time.",
+    "Monitor CMDC7 maritime partner and support replies before 2026-07-15 11:00 UK time.",
+    "Keep UK-Switzerland draft 10210100 staged until Swiss partner, Project Impact and terms evidence are complete.",
+    "Proceed with Eurostars or Japan-UK only when eligible lead and partner evidence is confirmed.",
+    "Proceed with Seedcorn Phase 2 only if shortlist evidence is found."
+  ],
+  "outputs": {
+    "root_json": "AUREON_CONTINUOUS_FUNDING_MONITOR_20260712_052400.json",
+    "json": "applications/AUREON_CONTINUOUS_FUNDING_MONITOR_20260712_052400.json",
+    "markdown": "applications/AUREON_CONTINUOUS_FUNDING_MONITOR_20260712_052400.md",
+    "pipeline_report": "pipelines/pipeline_report_20260712_052400_continuous_funding_monitor.json"
+  },
+  "backups": {
+    "applications_json": "backups/applications_pre_continuous_monitor_20260712_20260712_052400.json",
+    "pipeline_json": "backups/pipeline_pre_continuous_monitor_20260712_20260712_052400.json",
+    "autopilot_status_json": "backups/autopilot_status_pre_continuous_monitor_20260712_20260712_052400.json"
+  }
+}

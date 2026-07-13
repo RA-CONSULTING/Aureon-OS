@@ -1,0 +1,167 @@
+﻿{
+    "created_at":  "2026-07-05T09:09:28.1709101Z",
+    "status":  "published_and_verified",
+    "target_google_account":  "gaxlec@gmail.com",
+    "drive_folder":  {
+                         "title":  "Aureon Grant War Room - 2026-07-04",
+                         "id":  "1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr",
+                         "url":  "https://drive.google.com/drive/folders/1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr"
+                     },
+    "source_summary":  {
+                           "raw_local_git_histories":  [
+                                                           "aureon-trading",
+                                                           "aureon-trading-clean",
+                                                           "aureon-trading-github-latest-20260701",
+                                                           "aureon-trading-integrated-main-20260508",
+                                                           "aureon-trading-latest"
+                                                       ],
+                           "local_source_snapshots_without_raw_git_bundle":  [
+                                                                                 "aureon-trading-loveavblr",
+                                                                                 "project-rainbow"
+                                                                             ],
+                           "public_github_repositories":  [
+                                                              "RA-CONSULTING/AUREON-QUANTUM-TRADING-SYSTEM-AQTS-",
+                                                              "RA-CONSULTING/aureon-trading",
+                                                              "RA-CONSULTING/NEXUS-LIVE-FEED-"
+                                                          ],
+                           "note":  "Raw local Git histories were uploaded per explicit user instruction on 2026-07-05; sanitized working-tree snapshots were already published and verified."
+                       },
+    "uploaded_archives":  [
+                              {
+                                  "role":  "raw_local_git_history_bundles",
+                                  "title":  "AureonLocalGitHistoryBundles_RAW_20260705.tar",
+                                  "id":  "11oDMxnlewlJwXgpLPeKR5Bod4QdFdtBx",
+                                  "mime_type":  "application/x-tar",
+                                  "size":  "1241515520",
+                                  "url":  "https://drive.google.com/file/d/11oDMxnlewlJwXgpLPeKR5Bod4QdFdtBx/view?usp=drivesdk",
+                                  "local_path":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\drive_publish_full\\AureonLocalGitHistoryBundles_RAW_20260705.tar",
+                                  "local_sha256":  "99E332CE7E1CDBEBF9FA3128052913402C08F5F97FD96888B23FD1E19810E9F1",
+                                  "local_tar_entries":  6,
+                                  "includes":  [
+                                                   "Five local all-ref Git bundles from Aureon working copies"
+                                               ]
+                              },
+                              {
+                                  "role":  "fresh_github_mirror_allrefs_bundles",
+                                  "title":  "AureonGitHubMirrorBundles_ALLREFS_20260705.tar",
+                                  "id":  "19A5T5BSdS-hjeMWl3XyQY3ZlaUsfMYaT",
+                                  "mime_type":  "application/x-tar",
+                                  "size":  "366811648",
+                                  "url":  "https://drive.google.com/file/d/19A5T5BSdS-hjeMWl3XyQY3ZlaUsfMYaT/view?usp=drivesdk",
+                                  "local_path":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\drive_publish_full\\AureonGitHubMirrorBundles_ALLREFS_20260705.tar",
+                                  "local_sha256":  "061BD20D27779451FC8E6C04EDCB875D55F720508BB324201BA4A7770C6697A7",
+                                  "local_tar_entries":  4,
+                                  "includes":  [
+                                                   "All-ref mirror bundles for the three public RA-CONSULTING GitHub repositories"
+                                               ]
+                              },
+                              {
+                                  "role":  "sanitized_local_source_snapshots_and_github_mirrors",
+                                  "title":  "AureonReposDriveBundle_SANITIZED_20260705.tar",
+                                  "id":  "1AHKGb82z4FDIE2pccAAmB0oTFrSxfGCm",
+                                  "mime_type":  "application/x-tar",
+                                  "size":  "1527144960",
+                                  "url":  "https://drive.google.com/file/d/1AHKGb82z4FDIE2pccAAmB0oTFrSxfGCm/view?usp=drivesdk",
+                                  "local_path":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\AureonReposDriveBundle_SANITIZED_20260705.tar",
+                                  "local_sha256":  "CDA331A830559F6D46D16DBDB91E2BA0F9EEE676FEB4FC4E6DCF1EEB7162BDAC",
+                                  "includes":  [
+                                                   "Sanitized local working-tree snapshots",
+                                                   "GitHub mirror bundles",
+                                                   "metadata",
+                                                   "restore README"
+                                               ]
+                              },
+                              {
+                                  "role":  "preupload_checksum_manifest",
+                                  "title":  "AureonRepoArchives_PREUPLOAD_20260705.json",
+                                  "id":  "13zzf3amaKeYaYmSXfqWgMfrN2h0LgTMW",
+                                  "mime_type":  "application/json",
+                                  "size":  "877",
+                                  "url":  "https://drive.google.com/file/d/13zzf3amaKeYaYmSXfqWgMfrN2h0LgTMW/view?usp=drivesdk",
+                                  "local_path":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\drive_publish_full\\AureonRepoArchives_PREUPLOAD_20260705.json"
+                              }
+                          ],
+    "local_git_bundles":  [
+                              {
+                                  "name":  "aureon-trading",
+                                  "path":  "C:\\Users\\user\\aureon-trading",
+                                  "bundle":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_git_bundles\\aureon-trading_local_allrefs_20260705.bundle",
+                                  "bytes":  269692996,
+                                  "status":  "created_verified"
+                              },
+                              {
+                                  "name":  "aureon-trading-clean",
+                                  "path":  "C:\\Users\\user\\aureon-trading-clean",
+                                  "bundle":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_git_bundles\\aureon-trading-clean_local_allrefs_20260705.bundle",
+                                  "bytes":  162297928,
+                                  "status":  "created_verified"
+                              },
+                              {
+                                  "name":  "aureon-trading-github-latest-20260701",
+                                  "path":  "C:\\Users\\user\\aureon-trading-github-latest-20260701",
+                                  "bundle":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_git_bundles\\aureon-trading-github-latest-20260701_local_allrefs_20260705.bundle",
+                                  "bytes":  278021189,
+                                  "status":  "created_verified"
+                              },
+                              {
+                                  "name":  "aureon-trading-integrated-main-20260508",
+                                  "path":  "C:\\Users\\user\\aureon-trading-integrated-main-20260508",
+                                  "bundle":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_git_bundles\\aureon-trading-integrated-main-20260508_local_allrefs_20260705.bundle",
+                                  "bytes":  261799914,
+                                  "status":  "created_verified"
+                              },
+                              {
+                                  "name":  "aureon-trading-latest",
+                                  "path":  "C:\\Users\\user\\aureon-trading-latest",
+                                  "bundle":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_git_bundles\\aureon-trading-latest_local_allrefs_20260705.bundle",
+                                  "bytes":  269697705,
+                                  "status":  "created_verified"
+                              }
+                          ],
+    "local_paths_without_raw_git_bundle":  [
+                                               {
+                                                   "name":  "aureon-trading-loveavblr",
+                                                   "path":  "C:\\Users\\user\\aureon-trading\\loveavblr",
+                                                   "status":  "skipped_no_verified_head"
+                                               },
+                                               {
+                                                   "name":  "project-rainbow",
+                                                   "path":  "C:\\Users\\user\\project-rainbow",
+                                                   "status":  "skipped_no_verified_head"
+                                               }
+                                           ],
+    "github_mirror_bundles":  [
+                                  {
+                                      "name":  "AUREON-QUANTUM-TRADING-SYSTEM-AQTS-",
+                                      "full_name":  "RA-CONSULTING/AUREON-QUANTUM-TRADING-SYSTEM-AQTS-",
+                                      "clone_url":  "https://github.com/RA-CONSULTING/AUREON-QUANTUM-TRADING-SYSTEM-AQTS-.git",
+                                      "default_branch":  "main",
+                                      "bundle":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\github_mirror_bundles\\AUREON-QUANTUM-TRADING-SYSTEM-AQTS-_github_mirror_allrefs_20260705.bundle",
+                                      "bytes":  876526,
+                                      "status":  "created_verified"
+                                  },
+                                  {
+                                      "name":  "aureon-trading",
+                                      "full_name":  "RA-CONSULTING/aureon-trading",
+                                      "clone_url":  "https://github.com/RA-CONSULTING/aureon-trading.git",
+                                      "default_branch":  "main",
+                                      "bundle":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\github_mirror_bundles\\aureon-trading_github_mirror_allrefs_20260705.bundle",
+                                      "bytes":  278349517,
+                                      "status":  "created_verified"
+                                  },
+                                  {
+                                      "name":  "NEXUS-LIVE-FEED-",
+                                      "full_name":  "RA-CONSULTING/NEXUS-LIVE-FEED-",
+                                      "clone_url":  "https://github.com/RA-CONSULTING/NEXUS-LIVE-FEED-.git",
+                                      "default_branch":  "main",
+                                      "bundle":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\github_mirror_bundles\\NEXUS-LIVE-FEED-_github_mirror_allrefs_20260705.bundle",
+                                      "bytes":  87582108,
+                                      "status":  "created_verified"
+                                  }
+                              ],
+    "restore_notes":  [
+                          "Extract the tar archive first with tar -xf \u003carchive\u003e.tar.",
+                          "Restore a repo from a .bundle with git clone \u003cbundle-file\u003e \u003ctarget-folder\u003e.",
+                          "Use the sanitized bundle for grant/evidence review; use RAW local history bundle only when full refs/history are required."
+                      ]
+}

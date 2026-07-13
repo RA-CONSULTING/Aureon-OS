@@ -1,0 +1,58 @@
+{
+  "initialization": {
+    "timestamp": "2026-07-09T13:46:00.875006",
+    "actions": [
+      {
+        "action": "full_index",
+        "result": {
+          "new": 185,
+          "updated": 0,
+          "removed": 3,
+          "total": 185
+        }
+      },
+      {
+        "action": "save_config",
+        "status": "ok"
+      },
+      {
+        "action": "git_check",
+        "status": "no_repo"
+      }
+    ]
+  },
+  "report": {
+    "generated_at": "2026-07-09T13:46:01.801701",
+    "system_version": "2.0.0",
+    "components": {
+      "local_disk": {
+        "total_files": 185,
+        "by_research_area": {
+          "Uncategorized": 166,
+          "HNC": 19
+        },
+        "by_file_type": {
+          ".json": 98,
+          ".md": 48,
+          ".py": 17,
+          ".txt": 7,
+          ".pdf": 15
+        },
+        "last_indexed": "2026-07-09T13:46:01.801701"
+      },
+      "scraper": {
+        "generated_at": "2026-07-09T13:46:01.801701",
+        "active_scrapers": [
+          "ukri",
+          "innovate_uk",
+          "uk_space"
+        ],
+        "hnc_mentions_total": 0,
+        "hnc_mentions_recent": 0,
+        "cache_size": 0
+      }
+    }
+  },
+  "system_ready": true,
+  "timestamp": "2026-07-09T13:46:01.801701"
+}

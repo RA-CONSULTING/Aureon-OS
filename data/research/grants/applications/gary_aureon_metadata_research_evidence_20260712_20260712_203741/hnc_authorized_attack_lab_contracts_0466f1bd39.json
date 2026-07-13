@@ -1,0 +1,303 @@
+{
+  "contracts": {
+    "goal_5173516196b6": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "goal_5173516196b6",
+      "contract_type": "goal",
+      "created_at": "2026-05-11T19:17:14.314510+00:00",
+      "parent_id": "",
+      "payload": {
+        "loop": [
+          "understand",
+          "recall_memory",
+          "choose_route",
+          "create_tasks",
+          "queue_work_orders",
+          "observe_result",
+          "write_memory"
+        ],
+        "objective": "Repair weaknesses found by Aureon's authorized unhackable self-attack lab and retest.",
+        "route_surfaces": [
+          "saas_security",
+          "contracts",
+          "self_enhancement",
+          "validation"
+        ],
+        "success_criteria": [
+          "work orders queued",
+          "result observed",
+          "memory written"
+        ]
+      },
+      "priority": 5,
+      "queue": "default",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_authorized_attack_lab",
+      "status": "created",
+      "tags": [],
+      "title": "Repair weaknesses found by Aureon's authorized unhackable self-attack lab and retest.",
+      "trace_id": "trace_df5d4c73834b",
+      "updated_at": "2026-05-11T19:17:14.314510+00:00"
+    },
+    "job_6d7df05ece90": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "job_6d7df05ece90",
+      "contract_type": "job",
+      "created_at": "2026-05-11T19:17:14.314510+00:00",
+      "parent_id": "goal_5173516196b6",
+      "payload": {
+        "goal_id": "goal_5173516196b6",
+        "queue": "organism.default",
+        "retry_policy": {
+          "max_attempts": 1,
+          "mode": "manual_retry"
+        },
+        "task_ids": [
+          "task_e2e16c28bf37"
+        ]
+      },
+      "priority": 5,
+      "queue": "organism.default",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_authorized_attack_lab",
+      "status": "created",
+      "tags": [],
+      "title": "Execute routed goal plan",
+      "trace_id": "trace_a86e50a27be5",
+      "updated_at": "2026-05-11T19:17:14.314510+00:00"
+    },
+    "task_e2e16c28bf37": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "task_e2e16c28bf37",
+      "contract_type": "task",
+      "created_at": "2026-05-11T19:17:14.314510+00:00",
+      "parent_id": "goal_5173516196b6",
+      "payload": {
+        "acceptance_checks": [
+          "route selected",
+          "safe boundary checked",
+          "next work order queued"
+        ],
+        "goal_id": "goal_5173516196b6",
+        "instructions": "Use the goal-capability map, relevant skills, ThoughtBus, vault memory, and safe local tools to plan the next step.",
+        "required_skills": [
+          "hnc_authorized_attack_lab",
+          "hnc_saas_security_architect",
+          "capability_growth_loop"
+        ]
+      },
+      "priority": 5,
+      "queue": "default",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_authorized_attack_lab",
+      "status": "created",
+      "tags": [],
+      "title": "Plan and route goal",
+      "trace_id": "trace_21878e4665e2",
+      "updated_at": "2026-05-11T19:17:14.314510+00:00"
+    },
+    "wo_2a63807a330e": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_2a63807a330e",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:17:14.323664+00:00",
+      "parent_id": "",
+      "payload": {
+        "action_type": "execute_internal_task",
+        "cycle": [
+          "define_authorized_scope",
+          "threat_model",
+          "implement_control",
+          "try_to_break_own_system",
+          "stress_test",
+          "record_vulnerability_or_proof",
+          "queue_fix",
+          "retest",
+          "update_benchmark",
+          "deployment_gate_review",
+          "write_vault_memory"
+        ],
+        "finding": {
+          "benchmark_id": "bench_auth_breakout",
+          "evidence": [
+            "frontend/src/lib/harmonic-nexus-auth.ts",
+            "case=bench_auth_breakout"
+          ],
+          "id": "finding_auth_autologin_surface",
+          "queued": false,
+          "recommended_fix": "Replace production SaaS auto-login with explicit authenticated session creation, MFA policy, short-lived tokens, and tests proving auto-login is disabled outside local demo mode.",
+          "severity": "high",
+          "status": "needs_fix",
+          "title": "Frontend HNC auth surface still exposes an auto-login path that must not be production SaaS default."
+        },
+        "goal_id": "",
+        "guardrails": [
+          "credential theft",
+          "password spraying",
+          "phishing",
+          "malware",
+          "persistence",
+          "evasion",
+          "real exploit against third party",
+          "data exfiltration",
+          "destructive payload"
+        ],
+        "job_id": "",
+        "queue": "organism.hnc_attack_lab",
+        "required_retest": "bench_auth_breakout"
+      },
+      "priority": 6,
+      "queue": "organism.hnc_attack_lab",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_authorized_attack_lab",
+      "status": "queued",
+      "tags": [],
+      "title": "Fix self-attack finding: Frontend HNC auth surface still exposes an auto-login path that must not be production SaaS default.",
+      "trace_id": "trace_bfa75231f65e",
+      "updated_at": "2026-05-11T19:17:14.323664+00:00"
+    },
+    "wo_6b00eff09a06": {
+      "blocked": false,
+      "blocked_reason": "",
+      "contract_id": "wo_6b00eff09a06",
+      "contract_type": "work_order",
+      "created_at": "2026-05-11T19:17:14.314510+00:00",
+      "parent_id": "job_6d7df05ece90",
+      "payload": {
+        "action_type": "execute_internal_task",
+        "goal_id": "goal_5173516196b6",
+        "job_id": "job_6d7df05ece90",
+        "objective": "Repair weaknesses found by Aureon's authorized unhackable self-attack lab and retest.",
+        "queue": "organism.default",
+        "recommended_skills": [
+          "hnc_authorized_attack_lab",
+          "hnc_saas_security_architect",
+          "capability_growth_loop"
+        ],
+        "route_surfaces": [
+          "saas_security",
+          "contracts",
+          "self_enhancement",
+          "validation"
+        ],
+        "task_id": "task_e2e16c28bf37"
+      },
+      "priority": 5,
+      "queue": "organism.default",
+      "requires_human": false,
+      "risk": "low",
+      "safety": {
+        "audit_mode": "1",
+        "companies_house_submission_manual_only": true,
+        "exchange_or_trading_mutation_requires_live_gate": true,
+        "hmrc_submission_manual_only": true,
+        "official_filing_manual_only": true,
+        "real_orders_allowed": false,
+        "schema_version": "aureon-contract-safety-v1",
+        "tax_or_penalty_payment_manual_only": true
+      },
+      "schema_version": "aureon-organism-contract-v1",
+      "source": "hnc_authorized_attack_lab",
+      "status": "queued",
+      "tags": [],
+      "title": "Run internal goal step",
+      "trace_id": "trace_76768361514c",
+      "updated_at": "2026-05-11T19:17:14.314510+00:00"
+    }
+  },
+  "history": [
+    {
+      "contract_id": "goal_5173516196b6",
+      "contract_type": "goal",
+      "event": "organism.contract.goal.created",
+      "status": "created",
+      "ts": "2026-05-11T19:17:14.314510+00:00"
+    },
+    {
+      "contract_id": "task_e2e16c28bf37",
+      "contract_type": "task",
+      "event": "organism.contract.task.created",
+      "status": "created",
+      "ts": "2026-05-11T19:17:14.314510+00:00"
+    },
+    {
+      "contract_id": "job_6d7df05ece90",
+      "contract_type": "job",
+      "event": "organism.contract.job.created",
+      "status": "created",
+      "ts": "2026-05-11T19:17:14.314510+00:00"
+    },
+    {
+      "contract_id": "wo_6b00eff09a06",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:17:14.314510+00:00"
+    },
+    {
+      "contract_id": "wo_2a63807a330e",
+      "contract_type": "work_order",
+      "event": "organism.contract.work_order.queued",
+      "status": "queued",
+      "ts": "2026-05-11T19:17:14.323664+00:00"
+    }
+  ],
+  "queue": [
+    "wo_6b00eff09a06",
+    "wo_2a63807a330e"
+  ],
+  "schema_version": "aureon-contract-stack-state-v1",
+  "updated_at": "2026-05-11T19:17:14.324709+00:00"
+}

@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-07-09T07:27:00+01:00",
+  "to": "gaxlec@gmail.com",
+  "from": "gaxlec@gmail.com",
+  "subject": "Aureon grant submission run - 2026-07-09",
+  "method": "Gmail web UI",
+  "status": "SENT_BY_CTRL_ENTER_UI_ACTION",
+  "mailbox_search_verified": false,
+  "notes": "Gmail compose closed after Ctrl+Enter. Subsequent Gmail search navigation did not complete cleanly in the browser window, so receipt records UI send action rather than search-confirmed mailbox readback.",
+  "body_summary": [
+    "AIRR submitted: proposal 0261-8797-7601-1.",
+    "IFS Next Wave submitted: application 10209601.",
+    "InterTradeIreland Innovation Boost enquiry submitted.",
+    "IFS Future Leaders Round 11 account form ready, awaiting final account-create confirmation.",
+    "Gated routes updated without false submissions.",
+    "Drive package uploaded: AUREON_GRANT_OPERATOR_SUBMISSION_RUN_20260709.zip."
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "schema_version": "aureon-airr-portal-status-v1",
+  "generated_at": "2026-07-06T07:00:44+01:00",
+  "application_id": "APP-AIRR-001",
+  "proposal_title": "Aureon Evidence OS for AI-Driven Scientific Discovery",
+  "portal_proposal_id": "0261-8797-7601-1",
+  "portal_url": "https://portal-airr.isambard.ac.uk/proposals/5a87cac10a0044db903550fe12188b4a/",
+  "status": "PORTAL_DRAFT_STAGED_NOT_SUBMITTED",
+  "deadline": "2026-07-17T16:00:00+01:00",
+  "lead": {
+    "name": "Gary Leckey",
+    "email": "gaxlec@gmail.com",
+    "organisation": "R&A Consulting and Brokerage Services Ltd",
+    "company_number": "NI696693"
+  },
+  "entered_fields": {
+    "summary_characters": 785,
+    "description_characters": 1528,
+    "duration_days": 365,
+    "non_commercial_or_research_only": false,
+    "confidential_sensitive_or_gdpr_protected": false
+  },
+  "resource_request": {
+    "template": "Isambard-AI",
+    "offering": "Isambard-AI Open Access",
+    "plan": "Default",
+    "requested_gpu_hours": 500000,
+    "portal_preconfigured_attributes": 0,
+    "portal_message": "Resource requests has been updated."
+  },
+  "attachments": [
+    {
+      "name": "AIRR_AI_OPEN_ACCESS_SUPPORTING_FORM_20260706.pdf",
+      "local_path": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\AIRR_AI_OPEN_ACCESS_SUPPORTING_FORM_20260706.pdf",
+      "portal_visible_name": "AIRR_AI_OPEN_ACCESS_SUPPORTING_FORM.pdf",
+      "portal_visible_size": "9.9 KB",
+      "uploaded_at_observed": "2026-07-06T06:56:00+01:00"
+    }
+  ],
+  "evidence_screenshots": [
+    "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\rendered\\airr_after_upload_20260706.png",
+    "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\rendered\\airr_resource_saved_20260706.png",
+    "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\rendered\\airr_resource_expanded_20260706.png"
+  ],
+  "not_submitted_reason": [
+    "Final portal Submit is a legal/external submission and needs exact action-time confirmation for APP-AIRR-001.",
+    "Subsidy history and any related declarations require Gary/company confirmation.",
+    "AIRR distributed peer-review obligation must be accepted deliberately before final submission.",
+    "Companies House confirmation-statement position should be checked/resolved or consciously disclosed before final submission."
+  ]
+}

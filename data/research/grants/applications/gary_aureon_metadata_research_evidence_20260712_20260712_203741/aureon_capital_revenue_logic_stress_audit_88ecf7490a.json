@@ -1,0 +1,152 @@
+{
+  "blockers": [
+    "capital_ecosystem_intelligence_missing",
+    "tick_in_progress_stalled"
+  ],
+  "candidate_revenue_proof": {
+    "blockers": [
+      "capital_ecosystem_intelligence_missing"
+    ],
+    "candidate_level_intent_eligible_candidates": [],
+    "candidate_level_intent_eligible_count": 0,
+    "candidate_revenue_fields_complete": true,
+    "checked_candidate_count": 0,
+    "false_positive_reject_count": 0,
+    "missing_revenue_field_rows": [],
+    "net_positive_candidate_count": 0,
+    "rejected_false_positives": [],
+    "top_net_positive_candidates": [],
+    "trade_ready_candidate_count": 0
+  },
+  "capital_order_intent_readiness": {
+    "blockers": [
+      "tick_in_progress_stalled"
+    ],
+    "candidate_level_eligible_count": 0,
+    "intent_eligible_candidate_count": 0,
+    "intent_eligible_candidates": [],
+    "live_gates_blocking": true,
+    "required_conditions": {
+      "broker_correlation_complete": false,
+      "buy_or_sell_side": "side must be BUY or SELL",
+      "close_first_positions_covered": true,
+      "fresh_capital_snapshot": "candidate_revenue_blockers must not contain capital_snapshot_not_fresh",
+      "net_revenue_positive": "expected_net_revenue must be positive after costs and buffers",
+      "route_not_active": "lifecycle_duplicate_blocked must be false",
+      "runtime_gates_clear": false,
+      "tradeable_market": "market_status must be TRADEABLE"
+    },
+    "runtime_gate_blockers": [
+      "tick_in_progress_stalled"
+    ]
+  },
+  "close_first_proof": {
+    "blockers": [],
+    "close_first_opportunity_count": 0,
+    "opportunities": [],
+    "recovered_close_chain_status": "",
+    "recovered_exit_blockers": [],
+    "recovered_position_close_first_covered": false,
+    "recovered_position_count": 0
+  },
+  "external_confirmation_proof": {
+    "blockers": [],
+    "exchange_matrix_rows": 4,
+    "external_shadow_only": true,
+    "hedges": [],
+    "leak_count": 0,
+    "leak_rows": [],
+    "shadow_confirmation_count": 0
+  },
+  "generated_at": "2026-05-21T15:09:45.338260+00:00",
+  "lifecycle_proof": {
+    "active_lifecycle_route_count": 0,
+    "active_route_keys": [],
+    "broker_correlation_complete": false,
+    "continuity_blockers": [],
+    "duplicate_route_blocked_count": 0,
+    "duplicate_routes_blocked": false,
+    "lifecycle_continuity_complete": false
+  },
+  "manual_boundaries": [
+    "read-only revenue logic stress",
+    "no live order submission",
+    "no live close request",
+    "no cancel request",
+    "no external hedge order",
+    "no credential read or reveal",
+    "existing runtime and lifecycle gates remain authoritative"
+  ],
+  "mode": "read_only_capital_revenue_logic_stress",
+  "net_positive_candidates": [],
+  "ok": false,
+  "output_files": [
+    "state/aureon_capital_revenue_logic_stress_audit_last_run.json",
+    "docs/audits/aureon_capital_revenue_logic_stress_audit.json",
+    "docs/audits/aureon_capital_revenue_logic_stress_audit.md",
+    "frontend/public/aureon_capital_revenue_logic_stress_audit.json"
+  ],
+  "rejected_false_positives": [],
+  "runtime_gate_proof": {
+    "blockers": [
+      "tick_in_progress_stalled"
+    ],
+    "broker_correlation_complete": false,
+    "close_first_covered": true,
+    "exchange_mutations_disabled": false,
+    "executor_enabled": false,
+    "live_dry_certified": false,
+    "live_dry_status": "",
+    "live_gates_clear": false,
+    "live_trading_enabled": false,
+    "real_orders_disabled": false,
+    "runtime_clearances": [],
+    "runtime_fresh_from_live_dry": false,
+    "runtime_generated_at": "",
+    "runtime_status_present": true
+  },
+  "schema_version": "aureon-capital-revenue-logic-stress-audit-v1",
+  "source_paths": {
+    "capital_ecosystem": "frontend/public/aureon_capital_ecosystem_intelligence_company.json",
+    "capital_live_dry_stress": "frontend/public/aureon_capital_ecosystem_live_dry_stress_audit.json",
+    "exchange_matrix": "frontend/public/aureon_exchange_data_capability_matrix.json",
+    "runtime_status": "state/unified_runtime_status.json"
+  },
+  "status": "capital_ecosystem_intelligence_missing",
+  "summary": {
+    "active_watchlist_count": 0,
+    "bench_watchlist_count": 0,
+    "candidate_count": 0,
+    "candidate_level_intent_eligible_count": 0,
+    "close_first_opportunity_count": 0,
+    "duplicate_route_blocked_count": 0,
+    "external_shadow_only": true,
+    "false_positive_reject_count": 0,
+    "intent_eligible_candidate_count": 0,
+    "live_gates_blocking": true,
+    "net_positive_candidate_count": 0,
+    "no_live_mutation": true,
+    "shadow_confirmation_count": 0,
+    "trade_ready_candidate_count": 0
+  },
+  "write_info": {
+    "evidence_writes": [
+      {
+        "bytes": 4597,
+        "path": "C:\\Users\\user\\aureon-trading\\state\\aureon_capital_revenue_logic_stress_audit_last_run.json"
+      },
+      {
+        "bytes": 4597,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_capital_revenue_logic_stress_audit.json"
+      },
+      {
+        "bytes": 499,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_capital_revenue_logic_stress_audit.md"
+      },
+      {
+        "bytes": 4597,
+        "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_capital_revenue_logic_stress_audit.json"
+      }
+    ]
+  }
+}

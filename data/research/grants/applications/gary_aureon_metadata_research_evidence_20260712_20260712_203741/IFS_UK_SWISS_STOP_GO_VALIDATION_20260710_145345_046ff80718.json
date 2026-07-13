@@ -1,0 +1,31 @@
+{
+  "schema_version": "aureon-validation-v1",
+  "generated_at": "2026-07-10T14:53:45+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_uk_swiss_stop_go_validation",
+  "source_uk_swiss_stop_go_audit": "applications/IFS_UK_SWISS_STOP_GO_AUDIT_20260710_145126.json",
+  "source_current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_145204.json",
+  "source_current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_145212.json",
+  "summary": {
+    "validation_passed": true,
+    "failures": [],
+    "routes_reviewed": 1,
+    "go_routes": 0,
+    "no_go_routes": 1,
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0,
+    "safe_portal_actions_available": 0,
+    "board_ifs_applications_total": 20,
+    "board_submitted_monitor_only": 4,
+    "board_active_not_submitted": 16,
+    "secret_scan_hits": {},
+    "internal_language_scan_hits": {}
+  },
+  "controls": [
+    "Validation only; no IFS portal field was changed.",
+    "No IFS application was submitted.",
+    "No email, contact form, partner invite, upload, award terms or Project Impact action was performed."
+  ],
+  "result": "IFS_UK_SWISS_STOP_GO_VALIDATION_PASSED"
+}

@@ -1,0 +1,1069 @@
+{
+  "generated_at": "2026-05-15T18:57:32.902123",
+  "source": "unified_market_trader",
+  "mode": "runtime_gated_order_intent",
+  "intent_count": 4,
+  "intents": [
+    {
+      "id": "uintent-1778867852-1",
+      "generated_at": "2026-05-15T18:57:32.902123",
+      "source": "unified_market_trader",
+      "topic": "execution.order.intent",
+      "symbol": "XRPUSD",
+      "side": "SELL",
+      "confidence": 1.0,
+      "selection_rank": 1,
+      "profit_velocity_score": 0.767399,
+      "fast_money_score": 0.813679,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.813679,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 2.212,
+        "avg_change_pct": 1.464,
+        "volume_24h": 67456311.49181,
+        "freshest_age_sec": 2.759,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 1.0,
+        "stream_freshness_score": 0.4482,
+        "orderbook_score": 0.581633,
+        "orderbook_alignment": "neutral",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_liquidity_confirmed"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "XRPUSDT",
+        "side": "SELL",
+        "pressure_side": "NEUTRAL",
+        "score": 0.581633,
+        "bid_depth_usd": 1238344.16911,
+        "ask_depth_usd": 1257423.07474,
+        "signed_imbalance": -0.007645,
+        "spread_pct": 0.006903,
+        "generated_at": "2026-05-15T18:55:47.304626",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": false,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 7.377,
+      "cash_capable_route_count": 3,
+      "history_validation_score": 0.5,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 4,
+      "sources": [
+        "kraken",
+        "binance",
+        "live_stream_cache",
+        "historical_waveform_models"
+      ],
+      "model_signal": {
+        "symbol": "XRPUSD",
+        "exchange": "kraken",
+        "direction": "NEUTRAL",
+        "confidence": 0.517,
+        "raw_score": 0.517,
+        "sources": [
+          "momentum(+2.00%)",
+          "regime_against(RISK_OFF)"
+        ]
+      },
+      "model_alignment": false,
+      "routes": [
+        {
+          "venue": "kraken",
+          "market_type": "spot",
+          "symbol": "XRPUSDT",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "unified_executor",
+          "cash_capability": {
+            "state": "asset_balance_checked_at_execution",
+            "score": 0.55,
+            "checked_by": "runtime_executor"
+          },
+          "cash_capability_state": "asset_balance_checked_at_execution",
+          "cash_capability_score": 0.55,
+          "model_stack_key": "kraken_spot",
+          "model_count": 7,
+          "model_total_count": 7,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "KrakenClient",
+              "path": "aureon/exchanges/kraken_client.py",
+              "role": "Kraken spot execution and account state",
+              "available": true
+            },
+            {
+              "name": "KrakenTradingAdapter",
+              "path": "aureon/exchanges/kraken_trading_adapter.py",
+              "role": "Kraken route adapter",
+              "available": true
+            },
+            {
+              "name": "KrakenSignalBridge",
+              "path": "aureon/bridges/aureon_kraken_unified_signal_bridge.py",
+              "role": "Kraken signal bridge",
+              "available": true
+            }
+          ]
+        },
+        {
+          "venue": "kraken",
+          "market_type": "margin",
+          "symbol": "XRPUSDT",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "unified_executor",
+          "cash_capability": {
+            "state": "margin_runtime_checked_at_execution",
+            "score": 0.65,
+            "checked_by": "runtime_executor"
+          },
+          "cash_capability_state": "margin_runtime_checked_at_execution",
+          "cash_capability_score": 0.65,
+          "model_stack_key": "kraken_margin",
+          "model_count": 7,
+          "model_total_count": 7,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "KrakenMarginArmyTrader",
+              "path": "aureon/exchanges/kraken_margin_penny_trader.py",
+              "role": "Kraken autonomous margin trader",
+              "available": true
+            },
+            {
+              "name": "UnifiedMarginDecisionBrain",
+              "path": "aureon/trading/unified_margin_brain.py",
+              "role": "margin approval/reject decision fusion",
+              "available": true
+            },
+            {
+              "name": "TemporalTradeCognition",
+              "path": "aureon/trading/temporal_trade_cognition.py",
+              "role": "margin timing cognition",
+              "available": true
+            }
+          ]
+        },
+        {
+          "venue": "binance",
+          "market_type": "spot",
+          "symbol": "XRPUSDT",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "unified_executor",
+          "cash_capability": {
+            "state": "asset_balance_checked_at_execution",
+            "score": 0.55,
+            "checked_by": "runtime_executor"
+          },
+          "cash_capability_state": "asset_balance_checked_at_execution",
+          "cash_capability_score": 0.55,
+          "model_stack_key": "binance_spot",
+          "model_count": 7,
+          "model_total_count": 7,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "BinanceClient",
+              "path": "aureon/exchanges/binance_client.py",
+              "role": "Binance spot execution and account state",
+              "available": true
+            },
+            {
+              "name": "BinanceWebSocketClient",
+              "path": "aureon/exchanges/binance_ws_client.py",
+              "role": "Binance stream intelligence",
+              "available": true
+            },
+            {
+              "name": "S5BinanceEcosystem",
+              "path": "aureon/strategies/s5_binance_ecosystem.py",
+              "role": "Binance strategy ecosystem",
+              "available": true
+            }
+          ]
+        }
+      ],
+      "runtime_gate": "executor_required",
+      "authority_mode": "intent_only_runtime_gated",
+      "safety": {
+        "direct_exchange_mutation_by_cognition": false,
+        "requires_runtime_risk_gate": true,
+        "requires_executor": true
+      }
+    },
+    {
+      "id": "uintent-1778867852-2",
+      "generated_at": "2026-05-15T18:57:32.902123",
+      "source": "unified_market_trader",
+      "topic": "execution.order.intent",
+      "symbol": "SOLUSD",
+      "side": "SELL",
+      "confidence": 1.0,
+      "selection_rank": 2,
+      "profit_velocity_score": 0.736133,
+      "fast_money_score": 0.718075,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.718075,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 3.16,
+        "avg_change_pct": 1.58,
+        "volume_24h": 0.0,
+        "freshest_age_sec": 0.385,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.0,
+        "stream_freshness_score": 0.923,
+        "orderbook_score": 0.583198,
+        "orderbook_alignment": "neutral",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_missing_from_stream",
+          "fresh_stream_cache_signal"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "SOLUSDT",
+        "side": "SELL",
+        "pressure_side": "NEUTRAL",
+        "score": 0.583198,
+        "bid_depth_usd": 2215530.92884,
+        "ask_depth_usd": 2276980.89192,
+        "signed_imbalance": -0.013678,
+        "spread_pct": 0.011141,
+        "generated_at": "2026-05-15T18:55:48.134028",
+        "whale_supporting_buy": true,
+        "whale_blocking_buy": true,
+        "whale_blocking_sell": true,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 6.835,
+      "cash_capable_route_count": 4,
+      "history_validation_score": 0.5,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 3,
+      "sources": [
+        "binance",
+        "live_stream_cache",
+        "historical_waveform_models"
+      ],
+      "model_signal": {
+        "symbol": "SOLUSD",
+        "exchange": "live_stream_cache",
+        "direction": "NEUTRAL",
+        "confidence": 0.475,
+        "raw_score": 0.475,
+        "sources": [
+          "momentum(+0.60%)",
+          "regime_against(RISK_OFF)"
+        ]
+      },
+      "model_alignment": false,
+      "routes": [
+        {
+          "venue": "kraken",
+          "market_type": "spot",
+          "symbol": "SOLUSD",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "unified_executor",
+          "cash_capability": {
+            "state": "asset_balance_checked_at_execution",
+            "score": 0.55,
+            "checked_by": "runtime_executor"
+          },
+          "cash_capability_state": "asset_balance_checked_at_execution",
+          "cash_capability_score": 0.55,
+          "model_stack_key": "kraken_spot",
+          "model_count": 7,
+          "model_total_count": 7,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "KrakenClient",
+              "path": "aureon/exchanges/kraken_client.py",
+              "role": "Kraken spot execution and account state",
+              "available": true
+            },
+            {
+              "name": "KrakenTradingAdapter",
+              "path": "aureon/exchanges/kraken_trading_adapter.py",
+              "role": "Kraken route adapter",
+              "available": true
+            },
+            {
+              "name": "KrakenSignalBridge",
+              "path": "aureon/bridges/aureon_kraken_unified_signal_bridge.py",
+              "role": "Kraken signal bridge",
+              "available": true
+            }
+          ]
+        },
+        {
+          "venue": "kraken",
+          "market_type": "margin",
+          "symbol": "SOLUSDT",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "unified_executor",
+          "cash_capability": {
+            "state": "margin_runtime_checked_at_execution",
+            "score": 0.65,
+            "checked_by": "runtime_executor"
+          },
+          "cash_capability_state": "margin_runtime_checked_at_execution",
+          "cash_capability_score": 0.65,
+          "model_stack_key": "kraken_margin",
+          "model_count": 7,
+          "model_total_count": 7,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "KrakenMarginArmyTrader",
+              "path": "aureon/exchanges/kraken_margin_penny_trader.py",
+              "role": "Kraken autonomous margin trader",
+              "available": true
+            },
+            {
+              "name": "UnifiedMarginDecisionBrain",
+              "path": "aureon/trading/unified_margin_brain.py",
+              "role": "margin approval/reject decision fusion",
+              "available": true
+            },
+            {
+              "name": "TemporalTradeCognition",
+              "path": "aureon/trading/temporal_trade_cognition.py",
+              "role": "margin timing cognition",
+              "available": true
+            }
+          ]
+        },
+        {
+          "venue": "alpaca",
+          "market_type": "spot",
+          "symbol": "SOL/USD",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "unified_executor",
+          "cash_capability": {
+            "state": "asset_balance_checked_at_execution",
+            "score": 0.55,
+            "checked_by": "runtime_executor"
+          },
+          "cash_capability_state": "asset_balance_checked_at_execution",
+          "cash_capability_score": 0.55,
+          "model_stack_key": "alpaca_spot",
+          "model_count": 8,
+          "model_total_count": 8,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "AlpacaClient",
+              "path": "aureon/exchanges/alpaca_client.py",
+              "role": "Alpaca spot crypto and stock execution",
+              "available": true
+            },
+            {
+              "name": "AlpacaCapitalStyleTrader",
+              "path": "aureon/exchanges/alpaca_capital_style_trader.py",
+              "role": "Alpaca autonomous trader",
+              "available": true
+            },
+            {
+              "name": "AlpacaScannerBridge",
+              "path": "aureon/bridges/aureon_alpaca_scanner_bridge.py",
+              "role": "Alpaca scanner bridge",
+              "available": true
+            },
+            {
+              "name": "AlpacaTruthTracker",
+              "path": "aureon/exchanges/alpaca_truth_tracker.py",
+              "role": "Alpaca signal truth tracking",
+              "available": true
+            }
+          ]
+        },
+        {
+          "venue": "binance",
+          "market_type": "spot",
+          "symbol": "SOLUSDT",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "unified_executor",
+          "cash_capability": {
+            "state": "asset_balance_checked_at_execution",
+            "score": 0.55,
+            "checked_by": "runtime_executor"
+          },
+          "cash_capability_state": "asset_balance_checked_at_execution",
+          "cash_capability_score": 0.55,
+          "model_stack_key": "binance_spot",
+          "model_count": 7,
+          "model_total_count": 7,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "BinanceClient",
+              "path": "aureon/exchanges/binance_client.py",
+              "role": "Binance spot execution and account state",
+              "available": true
+            },
+            {
+              "name": "BinanceWebSocketClient",
+              "path": "aureon/exchanges/binance_ws_client.py",
+              "role": "Binance stream intelligence",
+              "available": true
+            },
+            {
+              "name": "S5BinanceEcosystem",
+              "path": "aureon/strategies/s5_binance_ecosystem.py",
+              "role": "Binance strategy ecosystem",
+              "available": true
+            }
+          ]
+        }
+      ],
+      "runtime_gate": "executor_required",
+      "authority_mode": "intent_only_runtime_gated",
+      "safety": {
+        "direct_exchange_mutation_by_cognition": false,
+        "requires_runtime_risk_gate": true,
+        "requires_executor": true
+      }
+    },
+    {
+      "id": "uintent-1778867852-3",
+      "generated_at": "2026-05-15T18:57:32.902123",
+      "source": "unified_market_trader",
+      "topic": "execution.order.intent",
+      "symbol": "SUIUSD",
+      "side": "SELL",
+      "confidence": 1.0,
+      "selection_rank": 3,
+      "profit_velocity_score": 0.733577,
+      "fast_money_score": 0.791293,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.791293,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 8.059,
+        "avg_change_pct": 8.059,
+        "volume_24h": 28305020.47726,
+        "freshest_age_sec": 2.759,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 1.0,
+        "stream_freshness_score": 0.4482,
+        "orderbook_score": 0.488726,
+        "orderbook_alignment": "opposed",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_liquidity_confirmed",
+          "orderbook_pressure_opposed"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": true,
+        "source": "BattlefieldIntel.binance_depth",
+        "symbol": "SUIUSDT",
+        "side": "SELL",
+        "pressure_side": "BUY",
+        "score": 0.488726,
+        "bid_depth_usd": 256212.08103,
+        "ask_depth_usd": 166441.7908,
+        "signed_imbalance": 0.212397,
+        "spread_pct": 0.009043,
+        "generated_at": "2026-05-15T18:55:47.571773",
+        "whale_supporting_buy": false,
+        "whale_blocking_buy": false,
+        "whale_blocking_sell": false,
+        "budget_role": "sensor_priority",
+        "orderbook_min_interval_sec": 3.0
+      },
+      "estimated_target_eta_sec": 5.0,
+      "cash_capable_route_count": 2,
+      "history_validation_score": 0.5,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 2,
+      "sources": [
+        "live_stream_cache",
+        "historical_waveform_models"
+      ],
+      "model_signal": {
+        "symbol": "SUIUSD",
+        "exchange": "historical_waveform_models",
+        "direction": "SELL",
+        "confidence": 0.4147,
+        "raw_score": 0.4147,
+        "sources": [
+          "momentum(-1.41%)",
+          "regime_against(RISK_OFF)"
+        ]
+      },
+      "model_alignment": true,
+      "routes": [
+        {
+          "venue": "kraken",
+          "market_type": "spot",
+          "symbol": "SUIUSD",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "unified_executor",
+          "cash_capability": {
+            "state": "asset_balance_checked_at_execution",
+            "score": 0.55,
+            "checked_by": "runtime_executor"
+          },
+          "cash_capability_state": "asset_balance_checked_at_execution",
+          "cash_capability_score": 0.55,
+          "model_stack_key": "kraken_spot",
+          "model_count": 7,
+          "model_total_count": 7,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "KrakenClient",
+              "path": "aureon/exchanges/kraken_client.py",
+              "role": "Kraken spot execution and account state",
+              "available": true
+            },
+            {
+              "name": "KrakenTradingAdapter",
+              "path": "aureon/exchanges/kraken_trading_adapter.py",
+              "role": "Kraken route adapter",
+              "available": true
+            },
+            {
+              "name": "KrakenSignalBridge",
+              "path": "aureon/bridges/aureon_kraken_unified_signal_bridge.py",
+              "role": "Kraken signal bridge",
+              "available": true
+            }
+          ]
+        },
+        {
+          "venue": "binance",
+          "market_type": "spot",
+          "symbol": "SUIUSDT",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "unified_executor",
+          "cash_capability": {
+            "state": "asset_balance_checked_at_execution",
+            "score": 0.55,
+            "checked_by": "runtime_executor"
+          },
+          "cash_capability_state": "asset_balance_checked_at_execution",
+          "cash_capability_score": 0.55,
+          "model_stack_key": "binance_spot",
+          "model_count": 7,
+          "model_total_count": 7,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "BinanceClient",
+              "path": "aureon/exchanges/binance_client.py",
+              "role": "Binance spot execution and account state",
+              "available": true
+            },
+            {
+              "name": "BinanceWebSocketClient",
+              "path": "aureon/exchanges/binance_ws_client.py",
+              "role": "Binance stream intelligence",
+              "available": true
+            },
+            {
+              "name": "S5BinanceEcosystem",
+              "path": "aureon/strategies/s5_binance_ecosystem.py",
+              "role": "Binance strategy ecosystem",
+              "available": true
+            }
+          ]
+        }
+      ],
+      "runtime_gate": "executor_required",
+      "authority_mode": "intent_only_runtime_gated",
+      "safety": {
+        "direct_exchange_mutation_by_cognition": false,
+        "requires_runtime_risk_gate": true,
+        "requires_executor": true
+      }
+    },
+    {
+      "id": "uintent-1778867852-4",
+      "generated_at": "2026-05-15T18:57:32.902123",
+      "source": "unified_market_trader",
+      "topic": "execution.order.intent",
+      "symbol": "SAGAUSD",
+      "side": "SELL",
+      "confidence": 1.0,
+      "selection_rank": 4,
+      "profit_velocity_score": 0.724906,
+      "fast_money_score": 0.663222,
+      "fast_money_candidate": true,
+      "fast_money_profile": {
+        "schema_version": 1,
+        "fast_money_score": 0.663222,
+        "fast_money_candidate": true,
+        "momentum_tier": "tier_1_hot",
+        "volatility_pct": 14.689,
+        "avg_change_pct": 14.689,
+        "volume_24h": 4769145.19971,
+        "freshest_age_sec": 2.759,
+        "momentum_score": 1.0,
+        "volatility_score": 1.0,
+        "volume_score": 0.190766,
+        "stream_freshness_score": 0.4482,
+        "orderbook_score": 0.35,
+        "orderbook_alignment": "unavailable",
+        "thresholds": {
+          "min_volatility_pct": 0.34,
+          "break_even_move_pct": 0.34,
+          "volume_usd_target": 25000000.0,
+          "min_fast_money_score": 0.55
+        },
+        "sources": [
+          "live_stream_cache"
+        ],
+        "reasons": [
+          "volatility_threshold_passed",
+          "micro_momentum_cost_threshold_passed",
+          "volume_seen_but_below_target"
+        ]
+      },
+      "orderbook_pressure": {
+        "schema_version": 1,
+        "available": false,
+        "source": "orderbook_probe",
+        "symbol": "SAGAUSD",
+        "side": "SELL",
+        "pressure_side": "NEUTRAL",
+        "score": 0.35,
+        "reason": "no_budgeted_orderbook_source_available",
+        "generated_at": "2026-05-15T18:55:48.976330"
+      },
+      "estimated_target_eta_sec": 5.0,
+      "cash_capable_route_count": 1,
+      "history_validation_score": 0.5,
+      "selection_basis": "cash-capable routes, fresh/reference price, high-volatility fast-money evidence, volume/liquidity, order-book pressure, shadow history, support, model alignment, whole-intelligence mesh readiness, and fastest target ETA, scanner fusion cross-reference",
+      "support_count": 2,
+      "sources": [
+        "live_stream_cache",
+        "historical_waveform_models"
+      ],
+      "model_signal": {
+        "symbol": "SAGAUSD",
+        "exchange": "historical_waveform_models",
+        "direction": "SELL",
+        "confidence": 0.4107,
+        "raw_score": 0.4107,
+        "sources": [
+          "momentum(-1.54%)",
+          "regime_against(RISK_OFF)"
+        ]
+      },
+      "model_alignment": true,
+      "routes": [
+        {
+          "venue": "kraken",
+          "market_type": "spot",
+          "symbol": "SAGAUSD",
+          "ready": true,
+          "trade_clearance_state": "available",
+          "guard_state": "available",
+          "runtime_clearances": [],
+          "guards": [],
+          "clearance_required": [],
+          "end_user_trade_available": true,
+          "blockers": [],
+          "execution_owner": "unified_executor",
+          "cash_capability": {
+            "state": "asset_balance_checked_at_execution",
+            "score": 0.55,
+            "checked_by": "runtime_executor"
+          },
+          "cash_capability_state": "asset_balance_checked_at_execution",
+          "cash_capability_score": 0.55,
+          "model_stack_key": "kraken_spot",
+          "model_count": 7,
+          "model_total_count": 7,
+          "model_coverage_ready": true,
+          "models": [
+            {
+              "name": "UnifiedSignalEngine",
+              "path": "aureon/trading/unified_signal_engine.py",
+              "role": "multi-source signal fusion",
+              "available": true
+            },
+            {
+              "name": "UnifiedSniperBrain",
+              "path": "aureon/trading/unified_sniper_brain.py",
+              "role": "entry/exit probability and timing",
+              "available": true
+            },
+            {
+              "name": "UnifiedSymbolManager",
+              "path": "aureon/trading/unified_symbol_manager.py",
+              "role": "exchange symbol and precision rules",
+              "available": true
+            },
+            {
+              "name": "OrcaIntelligence",
+              "path": "aureon/bots_intelligence/aureon_orca_intelligence.py",
+              "role": "cross-exchange whale and opportunity intelligence",
+              "available": true
+            },
+            {
+              "name": "KrakenClient",
+              "path": "aureon/exchanges/kraken_client.py",
+              "role": "Kraken spot execution and account state",
+              "available": true
+            },
+            {
+              "name": "KrakenTradingAdapter",
+              "path": "aureon/exchanges/kraken_trading_adapter.py",
+              "role": "Kraken route adapter",
+              "available": true
+            },
+            {
+              "name": "KrakenSignalBridge",
+              "path": "aureon/bridges/aureon_kraken_unified_signal_bridge.py",
+              "role": "Kraken signal bridge",
+              "available": true
+            }
+          ]
+        }
+      ],
+      "runtime_gate": "executor_required",
+      "authority_mode": "intent_only_runtime_gated",
+      "safety": {
+        "direct_exchange_mutation_by_cognition": false,
+        "requires_runtime_risk_gate": true,
+        "requires_executor": true
+      }
+    }
+  ],
+  "order_intent_log": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\unified_exchange_order_intents.jsonl",
+  "order_intent_state": "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\state\\unified_exchange_order_intents.json"
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": "aureon-email-send-receipt-v1",
+  "generated_at": "2026-07-06T07:09:16+01:00",
+  "message_type": "self_update",
+  "to": "gaxlec@gmail.com",
+  "from": "gaxlec@gmail.com",
+  "subject": "Aureon grant update: AIRR AI Open Access staged",
+  "status": "SENT_OBSERVED_IN_GMAIL_UI",
+  "observed_message": "Message sent",
+  "draft_file": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\SELF_UPDATE_AIRR_STAGED_20260706.eml",
+  "evidence_screenshot": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\rendered\\gmail_airr_sent_20260706.png"
+}

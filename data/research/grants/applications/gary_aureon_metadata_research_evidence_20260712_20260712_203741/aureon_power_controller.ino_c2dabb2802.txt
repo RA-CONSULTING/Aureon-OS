@@ -1,0 +1,578 @@
+/*
+ * AUREON POWER CONTROLLER — ESP32 FIRMWARE
+ * ==========================================
+ * The trading system was the proof of concept.
+ * This is the real thing.
+ * 
+ * Same Queen. Same Compound King. Same ORCA Kill Cycle.
+ * Different market. Watts instead of dollars.
+ * 
+ * ARCHITECTURE:
+ * - TEC voltage sensor → measures energy INCOME
+ * - AD9850 DDS output → controls which frequency plays
+ * - Queen AI → decides WHICH frequency, WHEN
+ * - Compound King → reinvests recovered energy optimally
+ * - ORCA → kills dead frequency channels
+ * - Rainbow Bridge → walks the Auris ladder
+ * 
+ * The brain feeds itself from the system's waste heat.
+ * The frequencies it chooses determine how much heat it gets.
+ * Better frequency selection = more heat = more power = smarter brain.
+ * Positive feedback loop. The system gets better at staying alive.
+ * 
+ * Gary Leckey | Aureon Institute | April 2026
+ * 
+ * "In her darkest day I was the flame,
+ *  and in her brightest light I will be the protector."
+ */
+
+// ═══════════════════════════════════════════
+// PIN DEFINITIONS
+// ═══════════════════════════════════════════
+#define TEC_VOLTAGE_PIN   34    // ADC input — TEC output voltage
+#define TEC_CURRENT_PIN   35    // ADC input — TEC current (via shunt)
+#define CAPACITOR_PIN     32    // ADC input — storage cap voltage
+#define AD9850_DATA       25    // DDS data pin
+#define AD9850_CLK        26    // DDS clock pin  
+#define AD9850_FQ_UD      27    // DDS frequency update
+#define AD9850_RESET      14    // DDS reset
+#define RF_ENABLE_PIN     13    // RF amplifier on/off
+#define LED_STATUS_PIN    2     // Onboard LED — heartbeat
+#define PIEZO_PIN         4     // Piezo buzzer for audible feedback
+
+// ═══════════════════════════════════════════
+// HNC CONSTANTS
+// ═══════════════════════════════════════════
+const float PHI = 1.6180339887;
+const float PHI_SQ = 2.6180339887;
+const float SCHUMANN = 7.83;
+const float F_BREATH = SCHUMANN * PHI;  // 12.67 Hz
+
+// ═══════════════════════════════════════════
+// THE AURIS FREQUENCY LADDER (Rainbow Bridge)
+// ═══════════════════════════════════════════
+#define NUM_AURIS 9
+const float AURIS_FREQS[NUM_AURIS] = {
+    174.0,   // Sadness — Root clearing
+    396.0,   // Liberation — Fear release
+    432.0,   // Hope — Natural harmony
+    528.0,   // LOVE — Heart Prime (SEED)
+    639.0,   // Gratitude — Social Prime
+    741.0,   // Joy — Awakening
+    852.0,   // Intuition — Third eye
+    963.0,   // Awe — Crown
+    528.422  // Lumina Seed — φ² bridge to hydrogen line
+};
+
+const char* AURIS_NAMES[NUM_AURIS] = {
+    "Sadness", "Liberation", "Hope", "LOVE",
+    "Gratitude", "Joy", "Intuition", "Awe", "Lumina"
+};
+
+// ═══════════════════════════════════════════
+// QUEEN AI — ENERGY FLOW DECISION ENGINE
+// ═══════════════════════════════════════════
+struct QueenState {
+    float tec_voltage;        // Current TEC output (mV)
+    float tec_power;          // Current power recovery (mW)
+    float cap_voltage;        // Storage capacitor voltage
+    float cap_energy;         // Stored energy (mJ)
+    float coherence;          // Γ = 1 - σ/μ of recent readings
+    int active_freq_idx;      // Current Auris frequency index
+    float freq_scores[NUM_AURIS];  // Performance score per frequency
+    int freq_samples[NUM_AURIS];   // Sample count per frequency
+    float lambda;             // Current Λ(t) value
+    bool rf_enabled;          // RF amplifier state
+    unsigned long last_switch; // Timestamp of last freq switch
+    float best_freq;          // Best performing frequency (Hz)
+    float best_score;         // Best frequency's score
+};
+
+QueenState queen;
+
+// ═══════════════════════════════════════════
+// COMPOUND KING — ENERGY REINVESTMENT
+// ═══════════════════════════════════════════
+struct CompoundKing {
+    float bank;               // Available energy reserve (mJ)
+    float invested;           // Energy allocated to RF (mJ)
+    float returns;            // Energy recovered from TEC (mJ)
+    float roi;                // Return on investment
+    float kelly_fraction;     // Kelly criterion sizing
+    int cycle_count;          // Total management cycles
+    float gross_return;       // Gross energy returned
+    float total_fees;         // Total conversion losses
+    float net_return;         // Net energy gain/loss
+};
+
+CompoundKing king;
+
+// ═══════════════════════════════════════════
+// ORCA KILL CYCLE — DEAD CHANNEL ELIMINATION
+// ═══════════════════════════════════════════
+struct OrcaState {
+    bool channel_alive[NUM_AURIS];  // Is this freq channel active?
+    float channel_pnl[NUM_AURIS];   // Profit/loss per channel
+    int kill_count;                  // Total channels killed
+    int revive_count;                // Channels revived after conditions changed
+    unsigned long last_kill_time;
+};
+
+OrcaState orca;
+
+// ═══════════════════════════════════════════
+// LAMBDA FIELD CALCULATOR
+// ═══════════════════════════════════════════
+#define LAMBDA_HISTORY 100
+float lambda_history[LAMBDA_HISTORY];
+int lambda_idx = 0;
+
+float calculate_lambda(float substrate, float observer_input) {
+    // Λ(t) = substrate + α·tanh(g·Λ̄(t)) + β·Λ(t−τ)
+    
+    float alpha = 0.35;
+    float g = 2.5;
+    float beta = 0.25;
+    int tau = 10;
+    
+    // Λ̄(t) — average of recent Lambda values
+    float lambda_bar = 0;
+    for (int i = 0; i < LAMBDA_HISTORY; i++) {
+        lambda_bar += lambda_history[i];
+    }
+    lambda_bar /= LAMBDA_HISTORY;
+    
+    // Observer term
+    float observer = alpha * tanh(g * lambda_bar);
+    
+    // Memory term
+    int memory_idx = (lambda_idx - tau + LAMBDA_HISTORY) % LAMBDA_HISTORY;
+    float memory = beta * lambda_history[memory_idx];
+    
+    // Combined
+    float lambda = substrate + observer + memory;
+    
+    // Store
+    lambda_history[lambda_idx] = lambda;
+    lambda_idx = (lambda_idx + 1) % LAMBDA_HISTORY;
+    
+    return lambda;
+}
+
+// ═══════════════════════════════════════════
+// AD9850 DDS DRIVER
+// ═══════════════════════════════════════════
+void dds_reset() {
+    digitalWrite(AD9850_RESET, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(AD9850_RESET, LOW);
+    delayMicroseconds(10);
+}
+
+void dds_set_frequency(float freq_hz) {
+    // AD9850 tuning word = freq × 2^32 / 125MHz
+    unsigned long tuning_word = (unsigned long)(freq_hz * 4294967296.0 / 125000000.0);
+    
+    // Send 32-bit tuning word, LSB first
+    for (int i = 0; i < 32; i++) {
+        digitalWrite(AD9850_DATA, (tuning_word >> i) & 0x01);
+        digitalWrite(AD9850_CLK, HIGH);
+        delayMicroseconds(1);
+        digitalWrite(AD9850_CLK, LOW);
+        delayMicroseconds(1);
+    }
+    
+    // Phase = 0, power up
+    for (int i = 0; i < 8; i++) {
+        digitalWrite(AD9850_DATA, 0);
+        digitalWrite(AD9850_CLK, HIGH);
+        delayMicroseconds(1);
+        digitalWrite(AD9850_CLK, LOW);
+        delayMicroseconds(1);
+    }
+    
+    // Pulse FQ_UD to load
+    digitalWrite(AD9850_FQ_UD, HIGH);
+    delayMicroseconds(1);
+    digitalWrite(AD9850_FQ_UD, LOW);
+}
+
+// ═══════════════════════════════════════════
+// SENSOR READINGS
+// ═══════════════════════════════════════════
+float read_tec_voltage() {
+    // ADC: 0-4095 maps to 0-3.3V
+    // With voltage divider for higher ranges
+    int raw = analogRead(TEC_VOLTAGE_PIN);
+    return (raw / 4095.0) * 3300.0;  // millivolts
+}
+
+float read_tec_power() {
+    float v = read_tec_voltage();
+    int raw_i = analogRead(TEC_CURRENT_PIN);
+    // Current through 1Ω shunt resistor
+    float i_mA = (raw_i / 4095.0) * 3300.0;  // mA
+    return v * i_mA / 1000.0;  // milliwatts
+}
+
+float read_cap_voltage() {
+    int raw = analogRead(CAPACITOR_PIN);
+    return (raw / 4095.0) * 3.3;  // Volts (supercap 0-5V via divider)
+}
+
+// ═══════════════════════════════════════════
+// QUEEN DECISION LOGIC
+// ═══════════════════════════════════════════
+int queen_decide() {
+    /*
+     * The Queen evaluates all alive frequency channels.
+     * She picks the one with the best energy coupling score.
+     * 
+     * Score = recent TEC power output while this freq was active.
+     * 
+     * If a channel consistently underperforms, ORCA kills it.
+     * If conditions change, ORCA may revive killed channels.
+     * 
+     * This is EXACTLY the trading queen's logic:
+     * - Each frequency is a "trade"
+     * - TEC voltage is the "P&L"
+     * - Bad frequencies get killed (ORCA)
+     * - Good frequencies get more time (compound king)
+     */
+    
+    int best_idx = queen.active_freq_idx;
+    float best_score = -999;
+    
+    for (int i = 0; i < NUM_AURIS; i++) {
+        if (!orca.channel_alive[i]) continue;  // Skip killed channels
+        
+        float score = queen.freq_scores[i];
+        
+        // Exploration bonus for under-sampled channels
+        if (queen.freq_samples[i] < 10) {
+            score += 0.5;  // Try new things
+        }
+        
+        if (score > best_score) {
+            best_score = score;
+            best_idx = i;
+        }
+    }
+    
+    return best_idx;
+}
+
+// ═══════════════════════════════════════════
+// ORCA KILL CYCLE
+// ═══════════════════════════════════════════
+void orca_evaluate() {
+    /*
+     * Kill frequencies that waste energy.
+     * Same as ORCA killing losing trades.
+     * 
+     * A frequency is "losing" if its TEC power output
+     * is below 50% of the average across all channels.
+     * 
+     * Killed channels get retested every 60 seconds
+     * in case conditions have changed (glass temp,
+     * plasma density, ambient temperature).
+     */
+    
+    // Calculate average score across alive channels
+    float avg_score = 0;
+    int alive_count = 0;
+    for (int i = 0; i < NUM_AURIS; i++) {
+        if (orca.channel_alive[i] && queen.freq_samples[i] > 5) {
+            avg_score += queen.freq_scores[i];
+            alive_count++;
+        }
+    }
+    if (alive_count > 0) avg_score /= alive_count;
+    
+    // Kill underperformers (but never kill LOVE — it's the seed)
+    for (int i = 0; i < NUM_AURIS; i++) {
+        if (i == 3) continue;  // LOVE (528) is NEVER killed
+        if (!orca.channel_alive[i]) continue;
+        if (queen.freq_samples[i] < 10) continue;  // Need data first
+        
+        if (queen.freq_scores[i] < avg_score * 0.5) {
+            orca.channel_alive[i] = false;
+            orca.channel_pnl[i] = queen.freq_scores[i];
+            orca.kill_count++;
+            orca.last_kill_time = millis();
+        }
+    }
+    
+    // Revive killed channels every 60 seconds for retesting
+    if (millis() - orca.last_kill_time > 60000) {
+        for (int i = 0; i < NUM_AURIS; i++) {
+            if (!orca.channel_alive[i]) {
+                orca.channel_alive[i] = true;
+                queen.freq_scores[i] = 0;
+                queen.freq_samples[i] = 0;
+                orca.revive_count++;
+            }
+        }
+    }
+}
+
+// ═══════════════════════════════════════════
+// COMPOUND KING — ENERGY REINVESTMENT
+// ═══════════════════════════════════════════
+void king_manage() {
+    /*
+     * Kelly Criterion applied to energy investment.
+     * 
+     * f* = (p × b - q) / b
+     * where:
+     *   p = probability of positive coupling (win rate)
+     *   q = 1 - p
+     *   b = ratio of energy gained to energy risked
+     * 
+     * Determines what fraction of stored energy to
+     * reinvest into RF amplification vs hold in reserve.
+     */
+    
+    king.cycle_count++;
+    
+    // Update returns
+    float tec_power = queen.tec_power;
+    king.gross_return += tec_power;
+    
+    // Estimate win rate from frequency scores
+    int wins = 0, total = 0;
+    for (int i = 0; i < NUM_AURIS; i++) {
+        if (queen.freq_samples[i] > 0) {
+            total += queen.freq_samples[i];
+            if (queen.freq_scores[i] > 0) wins += queen.freq_samples[i];
+        }
+    }
+    
+    float p = (total > 0) ? (float)wins / total : 0.5;
+    float q = 1.0 - p;
+    
+    // Gain ratio (how much energy back per mW invested)
+    float b = (king.invested > 0) ? king.gross_return / king.invested : 1.0;
+    
+    // Kelly fraction
+    king.kelly_fraction = (p * b - q) / b;
+    if (king.kelly_fraction < 0.05) king.kelly_fraction = 0.05;  // Minimum 5%
+    if (king.kelly_fraction > 0.5) king.kelly_fraction = 0.5;    // Maximum 50%
+    
+    // Decide: RF on or off based on cap voltage and Kelly
+    float cap_v = read_cap_voltage();
+    
+    if (cap_v > 2.0) {
+        // Good reserves — invest more in RF
+        queen.rf_enabled = true;
+        king.invested += tec_power * king.kelly_fraction;
+    } else if (cap_v < 0.5) {
+        // Low reserves — conserve, reduce RF duty
+        queen.rf_enabled = false;  // Coast on momentum
+    } else {
+        // Normal — follow Kelly
+        queen.rf_enabled = (king.kelly_fraction > 0.2);
+    }
+    
+    // Net return
+    king.net_return = king.gross_return - king.invested;
+    king.roi = (king.invested > 0) ? king.net_return / king.invested : 0;
+}
+
+// ═══════════════════════════════════════════
+// BREATHING ENVELOPE — φ × Schumann
+// ═══════════════════════════════════════════
+float get_breath_envelope() {
+    float t = millis() / 1000.0;
+    return 0.5 * (1.0 + sin(2.0 * PI * F_BREATH * t));
+}
+
+// ═══════════════════════════════════════════
+// MAIN SETUP
+// ═══════════════════════════════════════════
+void setup() {
+    Serial.begin(115200);
+    Serial.println("========================================");
+    Serial.println("  AUREON POWER CONTROLLER v1.0");
+    Serial.println("  Queen AI | Compound King | ORCA");
+    Serial.println("  Harmonic Thermodynamics Engine");
+    Serial.println("========================================");
+    Serial.println();
+    Serial.println("  \"In her darkest day I was the flame,");
+    Serial.println("   and in her brightest light I will be the protector.\"");
+    Serial.println();
+    
+    // Pin setup
+    pinMode(TEC_VOLTAGE_PIN, INPUT);
+    pinMode(TEC_CURRENT_PIN, INPUT);
+    pinMode(CAPACITOR_PIN, INPUT);
+    pinMode(AD9850_DATA, OUTPUT);
+    pinMode(AD9850_CLK, OUTPUT);
+    pinMode(AD9850_FQ_UD, OUTPUT);
+    pinMode(AD9850_RESET, OUTPUT);
+    pinMode(RF_ENABLE_PIN, OUTPUT);
+    pinMode(LED_STATUS_PIN, OUTPUT);
+    
+    // Init DDS
+    dds_reset();
+    dds_set_frequency(528.0);  // Start at LOVE
+    
+    // Init Queen
+    queen.active_freq_idx = 3;  // LOVE
+    queen.rf_enabled = true;
+    queen.best_freq = 528.0;
+    for (int i = 0; i < NUM_AURIS; i++) {
+        queen.freq_scores[i] = 0;
+        queen.freq_samples[i] = 0;
+    }
+    
+    // Init ORCA — all channels alive
+    for (int i = 0; i < NUM_AURIS; i++) {
+        orca.channel_alive[i] = true;
+        orca.channel_pnl[i] = 0;
+    }
+    orca.kill_count = 0;
+    orca.revive_count = 0;
+    
+    // Init Compound King
+    king.bank = 0;
+    king.invested = 0;
+    king.returns = 0;
+    king.kelly_fraction = 0.25;
+    king.cycle_count = 0;
+    king.gross_return = 0;
+    king.total_fees = 0;
+    king.net_return = 0;
+    
+    // Init Lambda history
+    for (int i = 0; i < LAMBDA_HISTORY; i++) {
+        lambda_history[i] = 0;
+    }
+    
+    Serial.println("  LOVE frequency locked: 528 Hz");
+    Serial.println("  Rainbow Bridge: ACTIVE");
+    Serial.println("  Queen AI: ONLINE");
+    Serial.println("  Compound King: MANAGING");
+    Serial.println("  ORCA: HUNTING");
+    Serial.println();
+    
+    digitalWrite(RF_ENABLE_PIN, HIGH);
+    Serial.println("  RF AMPLIFIER: ENGAGED");
+    Serial.println("  The spark is lit. The song begins.");
+    Serial.println();
+}
+
+// ═══════════════════════════════════════════
+// MAIN LOOP — THE HARMONIC THERMODYNAMICS ENGINE
+// ═══════════════════════════════════════════
+unsigned long last_report = 0;
+unsigned long last_freq_switch = 0;
+unsigned long last_orca_check = 0;
+int cycle = 0;
+
+void loop() {
+    cycle++;
+    unsigned long now = millis();
+    
+    // ─── READ SENSORS ───
+    queen.tec_voltage = read_tec_voltage();
+    queen.tec_power = read_tec_power();
+    queen.cap_voltage = read_cap_voltage();
+    
+    // ─── CALCULATE LAMBDA ───
+    float substrate = queen.tec_power / 100.0;  // Normalize
+    float breath = get_breath_envelope();
+    queen.lambda = calculate_lambda(substrate * breath, queen.tec_voltage);
+    
+    // ─── CALCULATE COHERENCE ───
+    // Γ = 1 - σ/μ over recent Lambda values
+    float sum = 0, sum_sq = 0;
+    for (int i = 0; i < LAMBDA_HISTORY; i++) {
+        sum += lambda_history[i];
+        sum_sq += lambda_history[i] * lambda_history[i];
+    }
+    float mu = sum / LAMBDA_HISTORY;
+    float variance = sum_sq / LAMBDA_HISTORY - mu * mu;
+    float sigma = sqrt(abs(variance));
+    queen.coherence = (mu > 0) ? 1.0 - sigma / mu : 0;
+    
+    // ─── UPDATE FREQUENCY SCORE ───
+    int idx = queen.active_freq_idx;
+    queen.freq_scores[idx] = (queen.freq_scores[idx] * queen.freq_samples[idx] 
+                               + queen.tec_power) 
+                               / (queen.freq_samples[idx] + 1);
+    queen.freq_samples[idx]++;
+    
+    // ─── QUEEN DECIDES (every 500ms) ───
+    if (now - last_freq_switch > 500) {
+        int new_idx = queen_decide();
+        
+        if (new_idx != queen.active_freq_idx) {
+            queen.active_freq_idx = new_idx;
+            dds_set_frequency(AURIS_FREQS[new_idx]);
+        }
+        
+        last_freq_switch = now;
+    }
+    
+    // ─── COMPOUND KING MANAGES (every 1s) ───
+    if (cycle % 100 == 0) {
+        king_manage();
+        digitalWrite(RF_ENABLE_PIN, queen.rf_enabled ? HIGH : LOW);
+    }
+    
+    // ─── ORCA EVALUATES (every 10s) ───
+    if (now - last_orca_check > 10000) {
+        orca_evaluate();
+        last_orca_check = now;
+    }
+    
+    // ─── HEARTBEAT ───
+    if (cycle % 50 == 0) {
+        digitalWrite(LED_STATUS_PIN, !digitalRead(LED_STATUS_PIN));
+    }
+    
+    // ─── REPORT (every 5s) ───
+    if (now - last_report > 5000) {
+        Serial.println("─────────────────────────────────────────");
+        Serial.print("  Λ(t) = "); Serial.println(queen.lambda, 4);
+        Serial.print("  Γ = "); Serial.println(queen.coherence, 4);
+        Serial.print("  Freq: "); Serial.print(AURIS_FREQS[queen.active_freq_idx], 1);
+        Serial.print(" Hz ("); Serial.print(AURIS_NAMES[queen.active_freq_idx]);
+        Serial.println(")");
+        Serial.print("  TEC: "); Serial.print(queen.tec_voltage, 1);
+        Serial.print(" mV | "); Serial.print(queen.tec_power, 2);
+        Serial.println(" mW");
+        Serial.print("  Cap: "); Serial.print(queen.cap_voltage, 2);
+        Serial.println(" V");
+        Serial.print("  RF: "); Serial.println(queen.rf_enabled ? "ON" : "COASTING");
+        Serial.print("  Kelly f*: "); Serial.println(king.kelly_fraction, 3);
+        Serial.print("  King ROI: "); Serial.print(king.roi * 100, 1);
+        Serial.println("%");
+        Serial.print("  ORCA: "); Serial.print(orca.kill_count);
+        Serial.print(" killed, "); Serial.print(orca.revive_count);
+        Serial.println(" revived");
+        
+        // Show alive channels
+        Serial.print("  Rainbow: ");
+        for (int i = 0; i < NUM_AURIS; i++) {
+            if (orca.channel_alive[i]) {
+                Serial.print(AURIS_NAMES[i][0]);
+            } else {
+                Serial.print("x");
+            }
+        }
+        Serial.println();
+        
+        // Breath phase
+        float b = get_breath_envelope();
+        if (b > 0.7) Serial.println("  Breath: INHALE");
+        else if (b < 0.3) Serial.println("  Breath: EXHALE");
+        else Serial.println("  Breath: transition");
+        
+        last_report = now;
+    }
+    
+    // ─── CYCLE TIMING ───
+    delay(10);  // ~100 Hz main loop = 100 decisions/second
+}

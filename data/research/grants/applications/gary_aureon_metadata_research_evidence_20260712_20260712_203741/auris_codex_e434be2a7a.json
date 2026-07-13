@@ -1,0 +1,170 @@
+{
+  "version": "1.0.0",
+  "description": "Auris Codex - Intent to Frequency Mapping for Biofield Synthesis",
+  "base_frequencies": {
+    "schumann_fundamental": 7.83,
+    "heart_coherence": 0.1,
+    "brain_alpha": 10.0,
+    "brain_theta": 6.0,
+    "solar_plexus": 126.22,
+    "heart_chakra": 341.3,
+    "throat_chakra": 384.0,
+    "crown_chakra": 963.0
+  },
+  "intent_mappings": {
+    "aura": {
+      "frequencies": [7.83, 14.3, 20.8],
+      "decay": 0.85,
+      "amplitude": 1.0,
+      "harmonics": [1, 0.7, 0.4]
+    },
+    "validation": {
+      "frequencies": [10.0, 40.0],
+      "decay": 0.92,
+      "amplitude": 0.8,
+      "harmonics": [1, 0.5]
+    },
+    "harmony": {
+      "frequencies": [7.83, 15.66, 23.49],
+      "decay": 0.88,
+      "amplitude": 1.2,
+      "harmonics": [1, 0.8, 0.6]
+    },
+    "grounding": {
+      "frequencies": [7.83, 3.91],
+      "decay": 0.95,
+      "amplitude": 1.5,
+      "harmonics": [1, 0.9]
+    },
+    "love": {
+      "frequencies": [341.3, 528.0],
+      "decay": 0.82,
+      "amplitude": 1.1,
+      "harmonics": [1, 0.75]
+    },
+    "joy": {
+      "frequencies": [528.0, 741.0],
+      "decay": 0.78,
+      "amplitude": 1.3,
+      "harmonics": [1, 0.6]
+    },
+    "protection": {
+      "frequencies": [396.0, 963.0],
+      "decay": 0.90,
+      "amplitude": 1.0,
+      "harmonics": [1, 0.8]
+    },
+    "clarity": {
+      "frequencies": [852.0, 10.0],
+      "decay": 0.87,
+      "amplitude": 0.9,
+      "harmonics": [1, 0.7]
+    },
+    "peace": {
+      "frequencies": [7.83, 6.0, 4.0],
+      "decay": 0.93,
+      "amplitude": 0.8,
+      "harmonics": [1, 0.85, 0.7]
+    },
+    "biofield": {
+      "frequencies": [7.83, 14.3, 0.1],
+      "decay": 0.89,
+      "amplitude": 1.0,
+      "harmonics": [1, 0.6, 0.9]
+    }
+  },
+  "composite_patterns": {
+    "prime_sentinel": {
+      "base": "aura",
+      "modifiers": ["validation", "protection"],
+      "blend_ratio": [0.6, 0.25, 0.15]
+    },
+    "heart_coherence": {
+      "base": "love",
+      "modifiers": ["harmony", "peace"],
+      "blend_ratio": [0.5, 0.3, 0.2]
+    }
+  },
+  "planetary_modulators": {
+    "description": "Song of the Spheres - Orbital periods mapped to ultra-low frequency modulators",
+    "enabled": true,
+    "planets": {
+      "mercury": {
+        "orbital_period_days": 88,
+        "frequency_hz": 0.000131,
+        "weight": 0.15,
+        "phase_offset": 0,
+        "targets": ["harmonic_weights", "color_palette"]
+      },
+      "venus": {
+        "orbital_period_days": 225,
+        "frequency_hz": 0.0000514,
+        "weight": 0.25,
+        "phase_offset": 120,
+        "targets": ["harmonic_weights", "phase_bias"]
+      },
+      "earth": {
+        "orbital_period_days": 365.25,
+        "frequency_hz": 0.0000317,
+        "weight": 1.0,
+        "phase_offset": 0,
+        "targets": ["fundamental", "color_palette", "phase_bias"]
+      },
+      "mars": {
+        "orbital_period_days": 687,
+        "frequency_hz": 0.0000168,
+        "weight": 0.35,
+        "phase_offset": 240,
+        "targets": ["harmonic_weights", "surge_modulation"]
+      },
+      "jupiter": {
+        "orbital_period_days": 4333,
+        "frequency_hz": 0.00000267,
+        "weight": 0.8,
+        "phase_offset": 90,
+        "targets": ["coherence_nudge", "color_palette"]
+      },
+      "saturn": {
+        "orbital_period_days": 10759,
+        "frequency_hz": 0.00000107,
+        "weight": 0.6,
+        "phase_offset": 180,
+        "targets": ["phase_bias", "surge_modulation"]
+      }
+    },
+    "synodic_beats": {
+      "jupiter_saturn": {
+        "enabled": true,
+        "period_years": 19.86,
+        "frequency_hz": 0.00000159,
+        "weight": 0.4,
+        "target": "coherence_nudge"
+      },
+      "earth_venus": {
+        "enabled": true,
+        "period_years": 1.6,
+        "frequency_hz": 0.0000198,
+        "weight": 0.3,
+        "target": "harmonic_weights"
+      }
+    },
+    "circle_of_fifths_mapping": {
+      "enabled": true,
+      "base_frequency": 261.63,
+      "steps": 12,
+      "fifth_ratio": 1.5,
+      "key_to_hue_degrees": [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330],
+      "prime_10_9_1_weighting": {
+        "unity": 1.0,
+        "flow": 0.9,
+        "anchor": 0.1
+      }
+    }
+  },
+  "tokens": {
+    "awakening": { "freqs_hz": [7.83, 14.3], "decay": 0.94, "phase_hint": "0" },
+    "alignment": { "freqs_hz": [20.8, 27.3], "decay": 0.88, "phase_hint": "lock_to_7.83" },
+    "tickets": { "freqs_hz": [7.83, 15.66], "decay": 0.90, "phase_hint": "seal_bias" },
+    "prime_10_9_1": { "bands": [10, 9, 1], "weights": [0.5, 0.35, 0.15] }
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "schema_version": "aureon-ifs-urgent-evidence-execution-packet-v1",
+  "generated_at": "2026-07-11T10:48:25+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_urgent_evidence_execution_packet",
+  "result": "IFS_URGENT_EVIDENCE_EXECUTION_PACKET_READY_NO_EXTERNAL_SEND_NO_PORTAL_CHANGE",
+  "source_artifacts": {
+    "official_refresh": "applications/IFS_OFFICIAL_CURRENT_REFRESH_20260711_104546.json",
+    "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260711_104055.json",
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260711_104056.json",
+    "send_queue": "applications/IFS_OUTBOUND_EVIDENCE_ACQUISITION_SEND_QUEUE_20260710_233602.json",
+    "send_control_packet": "applications/IFS_EVIDENCE_ACQUISITION_SEND_CONTROL_PACKET_20260710_234052.json"
+  },
+  "official_refresh": {
+    "official_competition_count": 20,
+    "local_ifs_application_count": 20,
+    "missing_from_aureon_queue_count": 0,
+    "result": "OFFICIAL_IFS_ROUTES_ALREADY_COVERED_NO_NEW_SUBMIT_READY_ROUTE"
+  },
+  "summary": {
+    "urgent_batch_items": 7,
+    "sendable_email_drafts": 6,
+    "contact_route_payloads": 1,
+    "covered_application_ids": [
+      "APP-IFS-AKT6-2473-20260709",
+      "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709"
+    ],
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false
+  },
+  "urgent_batch_items": [
+    {
+      "queue_id": "P1:P1-AKT6-QUB-KTP",
+      "route": "AKT6",
+      "target": "Queen's University Belfast KTP",
+      "application_ids": [
+        "APP-IFS-AKT6-2473-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_P1_AKT6_QUB_KTP_OUTREACH_DRAFT_20260710_114411.eml",
+      "sha256": "eb16ef07bed0d5639e784e0658eb61c784e3d94cfb4d97eac1d911e501cb31a2",
+      "to": "ktp@qub.ac.uk",
+      "destination_display": "ktp@qub.ac.uk",
+      "subject": "Time-sensitive AKT6 fit check: Aureon evidence automation validation sprint",
+      "current_contact_source_url": "https://www.qub.ac.uk/Business/access-our-expertise/Knowledge-Transfer-Partnerships/",
+      "current_contact_source_evidence": "QUB KTP page presents Knowledge Transfer Partnerships as structured university-business collaborations and provides a Get in Touch route.",
+      "action_status": "READY_FOR_EXACT_ACTION_TIME_APPROVAL_NOT_SENT",
+      "reason": "Urgent route evidence is required before AKT6 or CMDC7 can become IFS-submittable; sending is an external message action and was not performed by this packet.",
+      "external_action_performed": false,
+      "email_sent": false,
+      "contact_route_submitted": false,
+      "portal_changed": false
+    },
+    {
+      "queue_id": "P1:P1-AKT6-ULSTER-KTP",
+      "route": "AKT6",
+      "target": "Ulster University KTP / Business Partnerships",
+      "application_ids": [
+        "APP-IFS-AKT6-2473-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_P1_AKT6_ULSTER_KTP_OUTREACH_DRAFT_20260710_114411.eml",
+      "sha256": "55c3db0cbc231a51b7e16416994f87096da66067d4c7b4bff6b4b0f76c7cc8b2",
+      "to": "a.fullerton@ulster.ac.uk, p.gilpin@ulster.ac.uk",
+      "destination_display": "a.fullerton@ulster.ac.uk, p.gilpin@ulster.ac.uk",
+      "subject": "Time-sensitive AKT6 fit check: Aureon evidence automation validation sprint",
+      "current_contact_source_url": "https://www.ulster.ac.uk/ktp",
+      "current_contact_source_evidence": "Ulster KTP page lists Amanda Fullerton as Knowledge Exchange Manager - KTP and provides a.fullerton@ulster.ac.uk.",
+      "action_status": "READY_FOR_EXACT_ACTION_TIME_APPROVAL_NOT_SENT",
+      "reason": "Urgent route evidence is required before AKT6 or CMDC7 can become IFS-submittable; sending is an external message action and was not performed by this packet.",
+      "external_action_performed": false,
+      "email_sent": false,
+      "contact_route_submitted": false,
+      "portal_changed": false
+    },
+    {
+      "queue_id": "P1:P1-CMDC7-BELFAST-HARBOUR",
+      "route": "CMDC7",
+      "target": "Belfast Harbour",
+      "application_ids": [
+        "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+        "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+        "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_P1_CMDC7_BELFAST_HARBOUR_OUTREACH_DRAFT_20260710_114411.eml",
+      "sha256": "a8c94c05e1fe3c1e81640ecfcb9d63bffa589bb26c0f4ae7cb1d770a558c7632",
+      "to": "info@belfast-harbour.co.uk",
+      "destination_display": "info@belfast-harbour.co.uk",
+      "subject": "CMDC7 fit check: Aureon evidence automation collaborator route",
+      "current_contact_source_url": "https://www.belfast-harbour.co.uk/contact-us/",
+      "current_contact_source_evidence": "Belfast Harbour contact page lists info@belfast-harbour.co.uk and a public telephone route.",
+      "action_status": "READY_FOR_EXACT_ACTION_TIME_APPROVAL_NOT_SENT",
+      "reason": "Urgent route evidence is required before AKT6 or CMDC7 can become IFS-submittable; sending is an external message action and was not performed by this packet.",
+      "external_action_performed": false,
+      "email_sent": false,
+      "contact_route_submitted": false,
+      "portal_changed": false
+    },
+    {
+      "queue_id": "P1:P1-CMDC7-IUKBC-SUPPORT",
+      "route": "CMDC7",
+      "target": "Innovate UK / Business Connect CMDC7 support",
+      "application_ids": [
+        "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+        "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+        "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_P1_CMDC7_IUKBC_TRANSPORT_SUPPORT_REQUEST_20260710_114411.eml",
+      "sha256": "bb2838bd24bf375df1e2e67dcd87946180459f0e3f38ac8183295c23cba8a72b",
+      "to": "support@iuk.ukri.org",
+      "destination_display": "support@iuk.ukri.org",
+      "subject": "CMDC7 partner support request: Belfast evidence automation SME seeking maritime lead",
+      "current_contact_source_url": "https://iuk-business-connect.org.uk/opportunities/clean-maritime-demonstration-competition-7/",
+      "current_contact_source_evidence": "Business Connect is the partner-support route referenced by the current CMDC7 evidence queue.",
+      "action_status": "READY_FOR_EXACT_ACTION_TIME_APPROVAL_NOT_SENT",
+      "reason": "Urgent route evidence is required before AKT6 or CMDC7 can become IFS-submittable; sending is an external message action and was not performed by this packet.",
+      "external_action_performed": false,
+      "email_sent": false,
+      "contact_route_submitted": false,
+      "portal_changed": false
+    },
+    {
+      "queue_id": "P1:P1-CMDC7-NAVANTIA-UK",
+      "route": "CMDC7",
+      "target": "Navantia UK",
+      "application_ids": [
+        "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+        "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+        "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_P1_CMDC7_NAVANTIA_UK_OUTREACH_DRAFT_20260710_114411.eml",
+      "sha256": "d8c64adfae75fc6406b34580bab18c4dc290392b6fc17b22bc750fa06b8148d2",
+      "to": "info@navantia.co.uk",
+      "destination_display": "info@navantia.co.uk",
+      "subject": "CMDC7 fit check: Aureon evidence automation work package",
+      "current_contact_source_url": "https://www.navantia.co.uk/",
+      "current_contact_source_evidence": "Navantia UK is the current shipyard/maritime-industrial target route from the P1 packet; final recipient verification remains required before send.",
+      "action_status": "READY_FOR_EXACT_ACTION_TIME_APPROVAL_NOT_SENT",
+      "reason": "Urgent route evidence is required before AKT6 or CMDC7 can become IFS-submittable; sending is an external message action and was not performed by this packet.",
+      "external_action_performed": false,
+      "email_sent": false,
+      "contact_route_submitted": false,
+      "portal_changed": false
+    },
+    {
+      "queue_id": "P1:P1-CMDC7-NI-MARITIME",
+      "route": "CMDC7",
+      "target": "NI Maritime & Offshore",
+      "application_ids": [
+        "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+        "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+        "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709"
+      ],
+      "payload_type": "email_draft",
+      "path": "applications/IFS_P1_CMDC7_NI_MARITIME_OFFSHORE_OUTREACH_DRAFT_20260710_114411.eml",
+      "sha256": "6cffab2feadd1e5589bb23f27e40a06f04e60e10fd1e6b5eb6c9820f394ba62f",
+      "to": "contact@nimaritime.com",
+      "destination_display": "contact@nimaritime.com",
+      "subject": "CMDC7 partner route query: Belfast evidence automation SME",
+      "current_contact_source_url": "https://nimaritime.com/",
+      "current_contact_source_evidence": "NI Maritime & Offshore page lists contact@nimaritime.com and regional maritime/offshore cluster context.",
+      "action_status": "READY_FOR_EXACT_ACTION_TIME_APPROVAL_NOT_SENT",
+      "reason": "Urgent route evidence is required before AKT6 or CMDC7 can become IFS-submittable; sending is an external message action and was not performed by this packet.",
+      "external_action_performed": false,
+      "email_sent": false,
+      "contact_route_submitted": false,
+      "portal_changed": false
+    },
+    {
+      "queue_id": "P1:P1-CMDC7-ARTEMIS-CONTACT-FORM",
+      "route": "CMDC7",
+      "target": "Artemis Technologies",
+      "application_ids": [
+        "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+        "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+        "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709"
+      ],
+      "payload_type": "contact_form_payload",
+      "path": "applications/IFS_P1_CMDC7_ARTEMIS_CONTACT_FORM_PAYLOAD_20260710_114411.txt",
+      "sha256": "fbb75f1b6c1ea0dc873d1c43210cc3c7b42d1a8d3faceac889b835f414a1c2c9",
+      "to": "",
+      "destination_display": "contact form / public contact route",
+      "subject": "CMDC7 fit check: Aureon evidence automation work package",
+      "current_contact_source_url": "https://www.artemistechnologies.co.uk/contact-us/",
+      "current_contact_source_evidence": "Artemis is a clean-maritime technology target; the queue uses a contact-form payload rather than an email recipient.",
+      "action_status": "READY_FOR_EXACT_ACTION_TIME_APPROVAL_NOT_SENT",
+      "reason": "Urgent route evidence is required before AKT6 or CMDC7 can become IFS-submittable; sending is an external message action and was not performed by this packet.",
+      "external_action_performed": false,
+      "email_sent": false,
+      "contact_route_submitted": false,
+      "portal_changed": false
+    }
+  ],
+  "controls": [
+    "Current official IFS search was refreshed before this packet.",
+    "This packet prepares evidence acquisition only; it does not submit an IFS application.",
+    "No email was sent.",
+    "No contact form was submitted.",
+    "No partner invite, upload, award terms acceptance, Project Impact submit or final submit was performed.",
+    "No unsupported partner, budget, asset, permit, safety, finance or four-FTE evidence was invented."
+  ],
+  "next_operator_action": "Use the urgent batch items to acquire knowledge-base or maritime partner evidence. Do not create or submit AKT6/CMDC7 IFS drafts until a lead, role, budget, and eligibility evidence are returned."
+}

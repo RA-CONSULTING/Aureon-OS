@@ -1,0 +1,178 @@
+{
+  "schema_version": "aureon-current-non-ifs-funding-discovery-v1",
+  "generated_at": "2026-07-12T12:06:34+01:00",
+  "operator": "Aureon",
+  "event": "current_non_ifs_funding_discovery",
+  "result": "CURRENT_NON_IFS_FUNDING_DISCOVERY_RECORDED_NEW_GATED_ROUTES",
+  "summary": {
+    "routes_reviewed": 8,
+    "new_application_records_created": 5,
+    "existing_application_records_refreshed": 3,
+    "new_opportunity_records_created": 5,
+    "existing_opportunity_records_refreshed": 2,
+    "direct_submit_ready_routes": 0,
+    "monitor_or_partner_gated_routes": 7,
+    "submitted_routes_preserved": 1
+  },
+  "routes": [
+    {
+      "opportunity_id": "INTERTRADEIRELAND-CLUSTER-TO-CLUSTER-20260717",
+      "application_id": "APP-INTERTRADEIRELAND-CLUSTER-TO-CLUSTER-20260712",
+      "name": "Shared Island Cluster-to-Cluster Project Development Fund",
+      "funder": "InterTradeIreland",
+      "url": "https://intertradeireland.com/shared-island-cluster-to-cluster-project-development-fund",
+      "source_readback": "Call opens 2 June 2026 and closes 17 July 2026, 1.30pm. Applications should include at least one cluster from each jurisdiction.",
+      "deadline": "2026-07-17T13:30:00+01:00",
+      "currency": "GBP",
+      "amount_requested": 0,
+      "amount_min": null,
+      "amount_max": null,
+      "funding_type": "Project development fund",
+      "status": "CLUSTER_PARTNER_REQUIRED",
+      "fit_score": 5,
+      "route_decision": "Potential NI/Ireland collaboration route but not standalone; requires eligible cluster partner in the opposite jurisdiction.",
+      "next_action": "Prepare a one-page cluster partner brief and contact SIClusters@intertradeireland.com only after partner/cluster role is defined.",
+      "research_areas": [
+        "AI",
+        "Open Source",
+        "Cross-border R&D",
+        "Evidence systems"
+      ]
+    },
+    {
+      "opportunity_id": "EIT-HEALTH-INNOVATION-UPTAKE-2026",
+      "application_id": "APP-EIT-HEALTH-INNOVATION-UPTAKE-2026-20260712",
+      "name": "EIT Health Innovation Uptake Call 2026",
+      "funder": "EIT Health / Horizon Europe",
+      "url": "https://iuk-business-connect.org.uk/opportunities/eit-health-innovation-uptake-call-2026/",
+      "source_readback": "Opens 24 June 2026, closes 16 September 2026 15:00. Maximum funding per project EUR650k, up to 50% of total project costs, led by a commercialising entity; requires a multi-country consortium and clinically validated digital or AI-powered healthcare solution.",
+      "deadline": "2026-09-16T15:00:00+01:00",
+      "currency": "EUR",
+      "amount_requested": 0,
+      "amount_min": 400000,
+      "amount_max": 650000,
+      "funding_type": "Horizon Europe / EIT Health funding",
+      "status": "HEALTH_VALIDATION_AND_CONSORTIUM_REQUIRED",
+      "fit_score": 4,
+      "route_decision": "Aureon Evidence OS has AI workflow relevance, but current evidence does not prove a regulated clinically validated digital medical device or healthcare consortium.",
+      "next_action": "Monitor and use only if a regulated healthcare partner, clinical validation evidence and EU/UK consortium are obtained.",
+      "research_areas": [
+        "AI",
+        "Digital Health",
+        "Evidence systems"
+      ]
+    },
+    {
+      "opportunity_id": "HORIZON-CHIPS-JU-2026",
+      "application_id": "APP-HORIZON-CHIPS-JU-2026-20260712",
+      "name": "Horizon Europe Chips Joint Undertaking 2026",
+      "funder": "Horizon Europe / Chips JU",
+      "url": "https://iuk-business-connect.org.uk/opportunities/horizon-europe-chips-joint-undertaking-2026/",
+      "source_readback": "ECS resilience calls expected to open 7 July 2026 with 16 September 2026 deadline; skills calls close 24 September 2026. UK organisations can apply as part of a consortium with at least three countries, including one EU member state.",
+      "deadline": "2026-09-16T17:00:00+02:00",
+      "currency": "EUR",
+      "amount_requested": 0,
+      "amount_min": null,
+      "amount_max": 20000000,
+      "funding_type": "Horizon Europe collaborative funding",
+      "status": "HORIZON_CONSORTIUM_REQUIRED",
+      "fit_score": 5,
+      "route_decision": "Possible evidence/AI/chip design support route, but requires a Horizon consortium and topic-specific role; not a direct solo application.",
+      "next_action": "Prepare partner role note around evidence OS for chip design or supply-chain resilience and search for consortium calls.",
+      "research_areas": [
+        "AI",
+        "Semiconductors",
+        "Evidence systems",
+        "Supply chain resilience"
+      ]
+    },
+    {
+      "opportunity_id": "UKRI-ADVANCING-SUSTAINABLE-AI-TECH-202608",
+      "application_id": "APP-UKRI-ADVANCING-SUSTAINABLE-AI-TECH-20260712",
+      "name": "Advancing Sustainable AI Technology",
+      "funder": "UKRI",
+      "url": "https://www.ukri.org/apply-for-funding/future-research-and-innovation-funding-opportunities/",
+      "source_readback": "UKRI future opportunities list shows August 2026 Advancing Sustainable AI Technology, total fund GBP10m with maximum award GBP500k, expected to proceed subject to approvals.",
+      "deadline": "upcoming-2026-08",
+      "currency": "GBP",
+      "amount_requested": 0,
+      "amount_min": null,
+      "amount_max": 500000,
+      "funding_type": "Upcoming UKRI grant",
+      "status": "UPCOMING_MONITOR_ROUTE_FIT_HIGH",
+      "fit_score": 8,
+      "route_decision": "Strong thematic fit for Aureon open-source evidence and sustainable AI tooling, but the route is not open yet and eligibility details are not final.",
+      "next_action": "Create a pre-application evidence pack and monitor UKRI publication for eligibility and submission route.",
+      "research_areas": [
+        "AI",
+        "Sustainable AI",
+        "Open Source",
+        "Evidence systems"
+      ]
+    },
+    {
+      "opportunity_id": "HMGCC-SMART-ASSISTANT-SECURITY-RESEARCHERS-20260507",
+      "application_id": "APP-HMGCC-SMART-ASSISTANT-SECURITY-RESEARCHERS-20260712",
+      "name": "HMGCC Co-Creation Challenge: Smart personal assistant for security researchers",
+      "funder": "HMGCC Co-Creation",
+      "url": "https://iuk-business-connect.org.uk/opportunities/hmgcc-co-creation-challenge-smart-personal-assistant-for-security-researchers/",
+      "source_readback": "Challenge opened 16 March 2026 and closed 7 May 2026 17:00. It offered up to GBP60k for a 12-week funded challenge.",
+      "deadline": "2026-05-07T17:00:00+01:00",
+      "currency": "GBP",
+      "amount_requested": 0,
+      "amount_min": null,
+      "amount_max": 60000,
+      "funding_type": "Closed challenge",
+      "status": "CLOSED_EXCLUDE_FROM_ACTIVE_APPLICATIONS",
+      "fit_score": 7,
+      "route_decision": "Technically relevant to Aureon evidence indexing and offline assistant work, but closed before 12 July 2026 and must not be treated as a live application.",
+      "next_action": "Use as past-fit intelligence only; monitor HMGCC for future similar challenges.",
+      "research_areas": [
+        "AI",
+        "Cybersecurity",
+        "Evidence systems",
+        "Offline assistant"
+      ]
+    },
+    {
+      "application_id": "APP-EUREKA-EUROSTARS-CALL11-20260709",
+      "opportunity_id": "EUREKA-EUROSTARS-CALL11-20260910",
+      "source_readback": "Eurostars Call 11 opened 9 July 2026 and closes 10 September 2026 at 14:00 CET. Consortium must be led by an innovative SME from a Eurostars country and include at least two independent entities from at least two Eurostars countries.",
+      "status": "PARTNER_REQUIRED",
+      "next_action": "Continue partner search; do not submit without independent international partner and national funding checks."
+    },
+    {
+      "application_id": "APP-INTERTRADEIRELAND-BUSINESS-EXPLORER-EXPLORE-20260709",
+      "opportunity_id": "INTERTRADEIRELAND-INNOVATION-BOOST-20260709",
+      "source_readback": "InterTradeIreland Innovation Boost offers up to GBP56,000/EUR67,900 support for academic expertise and project manager salary contribution.",
+      "status": "ACCOUNT_CREATED_EMAIL_VERIFICATION_REQUIRED",
+      "next_action": "Complete account/email verification and continue the provider enquiry/application route."
+    },
+    {
+      "application_id": "APP-AIRR-001",
+      "opportunity_id": "AIRR-COMPUTE",
+      "source_readback": "AIRR AI Open Access remains an active compute opportunity closing 17 July 2026 16:00 UK time; current Aureon Open Access application is already submitted.",
+      "status": "SUBMITTED",
+      "next_action": "Monitor submitted application receipt and provider communications."
+    }
+  ],
+  "controls": [
+    "No external form was submitted by this discovery run.",
+    "No email was sent by this discovery run.",
+    "Partner, consortium, clinical, cluster, account-verification, or not-yet-open routes remain gated until evidence changes."
+  ],
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false,
+  "backups": {
+    "applications": "backups/applications_pre_current_non_ifs_funding_discovery_20260712_120634.json",
+    "opportunities": "backups/opportunities_pre_current_non_ifs_funding_discovery_20260712_120634.json",
+    "autopilot": "backups/autopilot_status_pre_current_non_ifs_funding_discovery_20260712_120634.json",
+    "pipeline": "backups/pipeline_pre_current_non_ifs_funding_discovery_20260712_120634.json"
+  },
+  "outputs": {
+    "json": "applications/CURRENT_NON_IFS_FUNDING_DISCOVERY_20260712_120634.json",
+    "markdown": "applications/CURRENT_NON_IFS_FUNDING_DISCOVERY_20260712_120634.md",
+    "pipeline_report": "pipelines/pipeline_report_20260712_120634_current_non_ifs_funding_discovery.json"
+  }
+}

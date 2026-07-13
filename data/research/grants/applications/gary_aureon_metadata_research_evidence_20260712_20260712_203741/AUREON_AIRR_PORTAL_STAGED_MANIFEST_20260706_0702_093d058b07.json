@@ -1,0 +1,22 @@
+﻿{
+  "schema_version": "aureon-drive-airr-sync-v1",
+  "generated_at": "2026-07-06T07:02:00+01:00",
+  "drive_folder": "https://drive.google.com/drive/folders/1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr",
+  "application_id": "APP-AIRR-001",
+  "portal_proposal_id": "0261-8797-7601-1",
+  "portal_status": "PORTAL_DRAFT_STAGED_NOT_SUBMITTED",
+  "included_files": [
+    "aureon-trading/data/research/grants/applications/AIRR_PORTAL_LIVE_STATUS_20260706.md",
+    "aureon-trading/data/research/grants/applications/AIRR_PORTAL_LIVE_STATUS_20260706.json",
+    "aureon-trading/data/research/grants/applications/AIRR_AI_OPEN_ACCESS_SUPPORTING_FORM_20260706.pdf",
+    "aureon-trading/data/research/grants/applications/AIRR_PORTAL_FIELD_PACK_20260705.md",
+    "aureon-trading/data/research/grants/applications/rendered/airr_after_upload_20260706.png",
+    "aureon-trading/data/research/grants/applications/rendered/airr_resource_saved_20260706.png",
+    "aureon-trading/data/research/grants/applications/rendered/airr_resource_expanded_20260706.png",
+    "aureon-trading/data/research/grants/applications.json",
+    "aureon-trading/data/research/grants/opportunities.json",
+    "aureon-trading/data/research/grants/pipeline.json",
+    "aureon-trading/data/research/grants/autopilot_status.json",
+    "Aureon_Work_Hub_20260705/04_GRANT_WORKING_PACKS/LIVE_GRANT_SUBMISSION_STATUS_20260705.md"
+  ]
+}

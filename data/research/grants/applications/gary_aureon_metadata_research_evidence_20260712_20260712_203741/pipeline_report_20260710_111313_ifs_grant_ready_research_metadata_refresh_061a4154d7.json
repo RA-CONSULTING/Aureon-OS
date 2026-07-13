@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-07-10T11:13:13+01:00",
+  "operator": "Aureon",
+  "event": "ifs_grant_ready_research_metadata_refresh",
+  "artifact": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+  "markdown": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.md",
+  "result": "GRANT_READY_RESEARCH_METADATA_REFRESH_ATTACHED_NO_NEW_IFS_SUBMIT_READY_ROUTE",
+  "ifs_applications_reviewed": 20,
+  "work_packages": 5,
+  "operator_terms_translated": 8,
+  "direct_ifs_submissions_unlocked": 0,
+  "new_browser_submissions_available": 0,
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false,
+  "private_finance_files_used": false
+}

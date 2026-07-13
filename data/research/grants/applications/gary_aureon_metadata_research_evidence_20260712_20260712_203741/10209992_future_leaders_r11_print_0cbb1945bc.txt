@@ -1,0 +1,273 @@
+Skip to main content
+Print your application
+You can print your application by pressing CTRL+P (Windows) or CMD+P (mac)
+Project details
+Subsidy basis
+Partner	Funding rules	
+R&A CONSULTING AND BROKERAGE SERVICES LTD (Lead)	Subsidy control	View answers
+Application team
+R&A CONSULTING AND BROKERAGE SERVICES LTD
+Organisation details	
+Type	Business
+Team members
+Full name	Email	EDI survey
+gary leckey	gaxlec@gmail.com	Complete
+Application details
+Competition name
+Future Leaders Fellowships: Round 11, business and non-academic
+Application name
+Aureon Evidence OS for AI-Driven Scientific Discovery and Auditable SME Automation
+When do you wish to start your project?
+1 October 2027
+Project duration in months
+48 months
+Has this application been previously submitted to Innovate UK?
+No
+Research category
+Selected research category
+Industrial research
+Project summary
+Project summary
+
+This fellowship will build Aureon Evidence OS: a local-first evidence operating system for AI-driven scientific discovery and auditable SME automation. The programme will convert Gary Leckey's existing software, research corpus and workflow records into reproducible tools for source classification, claim-to-evidence mapping, validation planning, and reviewer-ready reporting.
+
+The work will combine industrial research in AI workflow assurance with practical SME demonstrators. It will produce a controlled runtime, evidence ledger, benchmark tasks, governance controls, and validation reports that show how AI-assisted research and business workflows can be made transparent, repeatable and safe to review.
+
+R&A Consulting and Brokerage Services Ltd will host the fellowship in Northern Ireland through the Aureon Institute programme. The project will support UK capability in responsible AI, reproducible research infrastructure, SME digital adoption and high-integrity evidence handling.
+
+Public description
+Public description
+
+Aureon Evidence OS will help researchers and SMEs turn complex digital work into clear, source-grounded evidence. The project will develop local-first software that records sources, maps claims to evidence, organises validation tasks and produces transparent reports for review.
+
+The fellowship will focus on responsible AI workflows for scientific discovery and practical SME automation, using R&A Consulting and Brokerage Services Ltd's existing Aureon software and research corpus as the starting point. Outputs will include prototype software, validation reports, governance controls and public dissemination material.
+
+Scope
+How does your project align with the scope of this competition?
+
+The project fits the Future Leaders Fellowships business and non-academic route because it gives Gary Leckey a four-year programme to develop as an independent innovation leader while delivering an ambitious UK-hosted research and innovation programme.
+
+Aureon goes beyond business as usual by turning an existing body of software, authored research and operational workflow material into a reproducible evidence operating system. The work addresses responsible AI, reproducible research tooling, source-grounded reporting and SME evidence automation, all of which align with UK priorities in AI, digital adoption, research integrity and innovation-led productivity.
+
+The fellowship will include explicit leadership development: technical direction, research framing, validation strategy, partner engagement, governance, dissemination and commercial translation. R&A Consulting and Brokerage Services Ltd will host the work from Northern Ireland, provide access to the existing Aureon corpus and software base, and support exploitation of results in the UK.
+
+Application questions
+1. Applicant location (not scored)
+Applicant location (not scored)
+
+The lead applicant is R&A Consulting and Brokerage Services Ltd, company number NI696693. The company is registered in Northern Ireland with registered office at 1 Quadrant Place, Belfast, BT12 4HX. The project will be led and principally carried out in the UK, with exploitation of results intended for the UK research and SME innovation ecosystem.
+
+2. Host organisation (not scored)
+Host organisation (not scored)
+
+R&A Consulting and Brokerage Services Ltd will host the fellowship as a UK registered business. The company will provide the Aureon software corpus, research records, local development environment, evidence registers, grant records, and operational workflow material required for the programme.
+
+The host commitment is to provide protected time for Gary Leckey to lead the fellowship, access to the Aureon technical and research assets, project governance through evidence-led review, and support for partner engagement, dissemination, data handling, IP management and UK exploitation.
+
+3. Core team members (not scored)
+Core team members (not scored)
+
+The core team is Gary Anthony Leckey as Fellow, lead applicant and technical director for Aureon. Additional specialist support may be procured or invited later for software engineering review, research validation, data governance, IP, finance and commercialisation, subject to eligibility and value-for-money checks.
+
+4. Non-funded project partners (not scored)
+Will your proposed research include non-funded partners?
+
+No
+
+5. Animal testing (not scored)
+Will your project involve any trials with animals or animal testing?
+
+No
+
+6. Permits and licences (not scored)
+Will you have the correct permits and licences in place to carry out your project?
+
+Not applicable
+
+7. International collaboration (not scored)
+Does your proposed work involve any international collaboration or engagement?
+
+No funded international collaboration is planned at submission. The project may use public international research literature and may disseminate findings internationally, but project work, leadership, data handling and exploitation will be UK-hosted through R&A Consulting and Brokerage Services Ltd. Any later overseas engagement will be checked against UKRI, security, IP and data-transfer requirements.
+
+8. Export licence (not scored)
+Export licence (not scored)
+
+No
+
+9. Trusted Research and Innovation (not scored)
+Trusted Research and Innovation (not scored)
+
+The project is UK-hosted and local-first. It will use public, owned or sanitised data and will exclude credentials, private finance, customer records and sensitive personal data from external outputs. Aureon will apply source tracking, claim controls, access review, IP checks and partner due-diligence before any collaboration, publication or data sharing.
+
+10. Resubmissions (not scored)
+Is this application a resubmission of a proposal to the Future Leaders Fellowship (FLF) scheme?
+
+This is not a resubmission to the Future Leaders Fellowships scheme. It is a new application for the Aureon Evidence OS programme hosted by R&A Consulting and Brokerage Services Ltd.
+
+11. Reduced hours (not scored)
+Do you wish to take your fellowship as reduced hours?
+
+No. The planning assumption is that Gary Anthony Leckey will undertake the fellowship on a full-time basis, subject to the final eligible cost and employment structure agreed during application development and project setup.
+
+12. Vision
+What are your plans for the fellowship?
+
+The fellowship vision is to establish Aureon Evidence OS as a UK-led evidence operating system for AI-driven scientific discovery and auditable SME automation. The core idea is that high-value research and business work increasingly depends on AI-assisted gathering, interpreting and reporting of evidence, but the evidence trail behind those outputs is often fragmented, hard to review and hard to reproduce. Aureon will address this by building a local-first software layer that records sources, maps claims to evidence, tracks validation status and produces reviewer-ready reports.
+
+The programme will turn R&A Consulting and Brokerage Services Ltd's existing Aureon software, research corpus and workflow records into an externally validated research and innovation platform. It will focus on three linked outcomes. First, a technical runtime for source ingestion, claim classification, evidence routing, coherence scoring, audit trails and human review. Second, reproducible scientific-discovery workflows that convert authored research outputs and hypotheses into testable benchmark tasks, negative-result records and transparent reports. Third, SME automation demonstrators showing how the same evidence methods can support compliance, operational records, grant reporting, warehouse evidence and back-office review.
+
+The fellowship will accelerate Gary Leckey's development from independent technical founder and research author into a recognised leader in responsible AI workflow assurance. The leadership challenge is not only to build software, but to create a discipline for evidence-led AI operations: clear boundaries between hypotheses and validated claims, transparent source use, privacy-aware data handling, and practical tooling that smaller organisations can adopt.
+
+The UK benefit is a stronger capability for trustworthy AI adoption, research reproducibility and SME productivity. Northern Ireland is an appropriate base because the project combines digital innovation, small business needs, responsible AI practice and international research visibility from a UK region that can benefit from high-value technical leadership. By the end of the fellowship, Aureon should have a validated software prototype, a public technical evidence framework, partner-reviewed demonstrators, an IP and commercialisation route, and a leadership platform for continued UK exploitation.
+
+13. Approach and innovation
+What approach will you take and where will the focus of the innovation be?
+
+The approach is to build Aureon Evidence OS through staged industrial research, validation and demonstrator work. The project will start from existing Aureon repositories, workflow scripts, research records and evidence packs, then turn them into a coherent software and research programme with clear review controls.
+
+WP1 will define the Evidence OS core. This includes source indexing, claim-to-evidence mapping, evidence status labels, local storage rules, privacy exclusions, review records and report generation. The innovation focus is the combination of local-first AI workflow control with grant, research and operational evidence ledgers. The goal is not to replace expert judgement, but to make AI-assisted work inspectable and repeatable.
+
+WP2 will create scientific-discovery workflows. HNC, PEFC, EPAS and related authored research material will be treated as hypotheses, simulation routes or validation targets. The project will convert them into reproducible tasks: source classification, coherence scoring, benchmark comparison, falsification protocols, negative findings and technical reporting. This creates a credible pathway from authored material to testable outputs.
+
+WP3 will build SME automation demonstrators. These will focus on evidence-heavy workflows such as compliance records, warehouse or stock proof, grant reporting and back-office documentation. The demonstrators will measure time saved, completeness of evidence packs, review status clarity and reduction in unsupported claims.
+
+WP4 will run external validation and challenge. The project will seek review from technical, academic, SME and governance advisers. Validation will include benchmark tasks, usability review, claim-quality scoring and stress-testing of the system's ability to separate evidence, assumptions and unsupported claims.
+
+WP5 will prepare exploitation. This will cover product architecture, IP review, data protection, open technical reporting, partner pipeline, pricing and a responsible commercial route.
+
+The innovation sits in the structured evidence layer: a practical bridge between AI tools, research workflows, software repositories and funder/customer-ready evidence. Current tools can generate text or manage documents, but Aureon is designed to preserve why a claim is made, where the source came from, what has been checked and what remains unverified.
+
+14. Your capability to deliver
+Why are you the right person to deliver this work?
+
+Gary Anthony Leckey is the right person to deliver this work because the fellowship builds directly on a sustained body of authored research, software development, evidence organisation and grant-application delivery under the Aureon Institute programme. He has already developed local Aureon repositories, workflow tools, research records, evidence ledgers and formal grant packs that demonstrate the underlying need for a structured evidence operating system.
+
+The existing work covers AI-assisted evidence handling, source-led reporting, workflow automation, research hypothesis organisation, validation planning and SME operational use cases. It includes local software assets, public profile routes, research materials and submitted grant records. The strongest current capability is the ability to move complex, fragmented work into structured, auditable evidence packs.
+
+Gary's role in the fellowship will combine technical direction, research framing, validation strategy, responsible AI governance, partner engagement and commercial translation. This combination is important because the project is not a narrow software build. It requires leadership across research integrity, AI workflow design, SME adoption, data handling, IP and public-benefit exploitation.
+
+R&A Consulting and Brokerage Services Ltd provides the host environment, company identity, software corpus and operational use cases. The fellowship will add the structure, external challenge and resources needed to move from local prototypes and authored research into validated outputs. Where specialist expertise is required, the project will use advisers, subcontractors or partners for software review, data governance, IP, finance, technical challenge and commercialisation.
+
+The application uses bounded claims. Existing research material is presented as authored work and a source of testable hypotheses unless independent validation exists. That discipline is part of the capability: the project is designed to strengthen evidence quality, not overstate it.
+
+15. Career development
+Why is this fellowship the right way to develop your career and how will you use it to benefit others?
+
+This fellowship is the right development route because it gives Gary Leckey the time, structure and external challenge needed to move from independent founder-researcher activity into recognised leadership in responsible AI evidence systems. Shorter project grants would support one prototype or one application area, but would not provide the four-year leadership platform needed to integrate research, software, validation, governance and commercial translation.
+
+The fellowship will develop Gary's capability in programme leadership, partner management, research design, responsible AI governance, IP strategy, dissemination and product commercialisation. It will also create a route for mentoring, advisory review and structured engagement with technical, academic and SME stakeholders.
+
+The benefit to others will be practical. Researchers, SMEs, advisers and funders need better ways to understand what AI-assisted work is based on, what evidence supports it and what remains unverified. Aureon will produce tools, methods and public reporting that help smaller organisations adopt AI with stronger evidence discipline. The career outcome is a UK-based leader able to build and promote transparent, reproducible and responsible AI workflows from Northern Ireland.
+
+16. Host organisation support
+How will the host organisation support your fellowship?
+
+R&A Consulting and Brokerage Services Ltd will host the fellowship as the lead UK-registered business. The company will provide protected time for Gary Leckey to lead the programme, access to the Aureon software repositories and research corpus, and use of existing operational evidence workflows as test material.
+
+The host will support delivery through project governance, evidence-led review, data handling rules, IP management, partner engagement and commercialisation planning. It will maintain the local-first development environment, preserve source and evidence records, and ensure sensitive material such as credentials, private finance, customer records and private communications is excluded from external outputs unless specifically reviewed and approved.
+
+The host will also support leadership development by enabling Gary to focus on technical direction, external validation, dissemination, adviser engagement and market translation. Where the fellowship requires specialist input, R&A will procure or invite appropriate support for software review, data governance, finance, IP, product development and customer discovery, subject to eligibility and value-for-money rules.
+
+17. Ethics and responsible research and innovation (RRI)
+What are the ethical and RRI implications and issues relating to the proposed work?
+
+The main ethical and responsible research issues are evidence integrity, AI transparency, privacy, data protection, IP, bias and possible misuse of automated reporting. Aureon will address these by designing the system around source tracking, claim classification, human review and clear separation between evidence, assumptions, hypotheses and unsupported claims.
+
+The project will use public, owned, licensed or sanitised data. Credentials, private financial records, customer records, private emails and sensitive personal data will be excluded from external outputs unless a specific lawful basis, review and approval process is in place.
+
+The system will not be presented as replacing expert judgement. It will support review by making evidence trails clearer. Research materials such as HNC, PEFC and EPAS will be treated as authored research outputs, hypotheses, simulation routes or validation targets unless independently validated.
+
+The project does not plan animal testing. Human participation, if later required for usability or SME workflow testing, will be handled through consent, minimal-data collection, privacy notices and ethical review proportionate to the activity.
+
+Uploaded IFS_FUTURE_LEADERS_R11_10209992_ETHICS_RESPONSE_20260709.pdf
+
+IFS_FUTURE_LEADERS_R11_10209992_ETHICS_RESPONSE_20260709.pdf (opens in a new window).
+
+18. Project management
+How will you manage your project effectively?
+
+The project will be managed as a four-year programme with staged work packages, evidence milestones and review points. R&A Consulting will maintain a project board covering technical delivery, evidence quality, finance, risk, data handling, IP and dissemination.
+
+Year 1 will focus on Evidence OS architecture, source and claim taxonomy, governance rules and baseline prototypes. Year 2 will build scientific-discovery workflows, benchmark tasks and validation methods. Year 3 will develop SME automation demonstrators and external review. Year 4 will consolidate validation, public reporting, product architecture, exploitation planning and follow-on funding or commercial routes.
+
+Each work package will have defined outputs, acceptance criteria and evidence records. Progress will be tracked through repository history, issue logs, evidence registers, prototype demonstrations, validation reports and partner/adviser feedback.
+
+Decision points will test whether the project is ready to move from design to prototype, from prototype to validation, and from validation to exploitation. Risks will be reviewed regularly, with corrective action recorded. Finance and procurement will follow eligible cost and value-for-money rules.
+
+19. Risks
+What are the main risks for this project?
+
+The main technical risk is that the Evidence OS becomes too broad. This will be managed by staged scope control: core evidence ledger first, then scientific workflows and SME demonstrators.
+
+The main evidence risk is overstating early-stage research. This will be managed through claim classification, validation status labels, negative-result records and external challenge. Authored research will be presented as hypotheses or validation targets unless independent evidence supports stronger claims.
+
+The main delivery risk is limited specialist capacity. This will be managed by using advisers, subcontractors or partners for targeted software review, data governance, IP, finance and validation support.
+
+The main data risk is inappropriate use of sensitive material. Aureon will use public, owned or sanitised data by default, with explicit exclusions for credentials, private finance, personal records and private communications.
+
+The main commercial risk is that SMEs do not adopt a complex evidence system. This will be managed by testing practical workflows, measuring time saving and completeness, and designing simple outputs that fit grant reporting, compliance and operational review needs.
+
+20. Added value
+How will this public funding help you to accelerate or enhance your approach to developing your innovation. What impact would this fellowship have on your career development that another grant would not?
+
+Public funding will transform this work from a local founder-led corpus and prototype set into a validated, UK-hosted research and innovation programme. Without the fellowship, development would remain fragmented around short-term business needs, limited internal resources and isolated grant opportunities.
+
+The fellowship adds value because it funds the leadership time, validation work, governance development, external challenge and dissemination needed to make Aureon credible beyond one company. It allows the programme to address the hard research and assurance questions: how AI-assisted work should preserve evidence, how claims should be classified, how reproducibility can be tested, and how SMEs can adopt AI without losing auditability.
+
+For Gary Leckey's career, FLF is distinct from a normal project grant because it supports development as an independent future leader. It creates the platform to build technical leadership, partner networks, responsible AI governance capability and a long-term commercial and public-benefit route from Northern Ireland.
+
+21. Costs and value for money
+How much will the project cost and how does it represent value for money for the team and the taxpayer?
+
+The working budget will be built from eligible FLF cost rules and the IFS finance tables before submission. The current planning envelope is a four-year industrial research programme covering fellow time, targeted technical support, software engineering, compute and infrastructure, validation activity, adviser and partner workshops, data governance, IP support, dissemination and commercialisation.
+
+The budget will be kept within the competition rules and will be tested for value for money at work-package level. The largest value driver is protected leadership and development time: without it the existing Aureon corpus cannot be converted into a validated evidence operating system. Specialist support will be used only where it gives capability R&A does not already hold, for example independent technical review, data protection, IP, finance and market validation.
+
+The expected value for the taxpayer is a reusable UK capability for responsible AI workflow assurance, reproducible research tooling and SME evidence automation. Outputs will include software prototypes, validation reports, public technical learning, governance methods and demonstrators that can support adoption beyond R&A Consulting. Final figures will be reconciled to eligible cost categories, grant rate, overhead rules and any required cost-cap notifications before final submission.
+
+22. Data Management and Sharing
+How will you manage and share data collected or acquired through the proposed research?
+
+Aureon will manage data using a local-first, evidence-led model. Data sources will be classified before use as public, owned, licensed, partner-provided, sensitive or excluded. The default evidence base will be public or owned material, local software repositories, research outputs, generated validation records, project logs, benchmark results and sanitised SME workflow examples.
+
+Sensitive material will be minimised. Credentials, private financial records, private emails, customer records, personal files and unreviewed confidential material will be excluded from external outputs unless there is a clear lawful basis, permission, purpose and review process.
+
+The project will record source provenance, access permissions, claim links, review status, retention decisions and publication status. Data used for benchmarks and reports will be versioned so that results can be reproduced or challenged. Negative findings and limitations will be recorded alongside successful outputs.
+
+Sharing will be proportionate. Public outputs may include technical reports, non-sensitive datasets, benchmark descriptions, validation methods and selected open-source code. Commercially sensitive code, private company material and personal data will not be openly released. Any partner data will be governed by written terms covering access, use, IP, confidentiality, security, retention and publication.
+
+The aim is to make evidence more transparent without exposing private or sensitive material.
+
+The finances of all project partners are included in this summary.
+
+Organisation name
+	Total costs (£)	Funding level (%)	Funding sought (£)	Contribution to project (£)	Other public sector funding (£)
+
+R&A CONSULTING AND BROKERAGE SERVICES LTD
+Organisation
+	250,000	70.00	175,000	75,000	0
+Funding breakdown
+R&A CONSULTING AND BROKERAGE SERVICES LTD  
+£250,000
+Organisation
+View finances
+Labour	£200,000
+Overheads	£40,000
+Materials	£0
+Capital usage	£0
+Subcontracting	£0
+Travel and subsistence	£0
+Other costs	£10,000
+Totals  
+£250,000
+Labour	£200,000
+Overheads	£40,000
+Materials	£0
+Capital usage	£0
+Subcontracting	£0
+Travel and subsistence	£0
+Other costs	£10,000
+Terms and conditions
+Award terms and conditions
+Partner	Funding rules	Terms and conditions
+R&A CONSULTING AND BROKERAGE SERVICES LTD (Lead)	Subsidy control	Innovate UK - Subsidy control

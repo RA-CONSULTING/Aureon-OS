@@ -1,0 +1,19 @@
+{
+  "schema_version": "aureon-pipeline-report-v1",
+  "generated_at": "2026-07-12T11:37:22+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_project_cost_build_validation",
+  "artifact": "applications/IFS_PROJECT_COST_BUILD_VALIDATION_20260712_113722.json",
+  "markdown": "applications/IFS_PROJECT_COST_BUILD_VALIDATION_20260712_113722.md",
+  "result": "IFS_PROJECT_COST_BUILD_VALIDATED_OPEN_SOURCE_DATA",
+  "routes_reviewed": 20,
+  "individual_appendices_created": 15,
+  "staged_total_gbp": 2752500,
+  "source_backed_total_gbp": 2362930,
+  "pdf_pages": 15,
+  "language_findings": 0,
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false
+}

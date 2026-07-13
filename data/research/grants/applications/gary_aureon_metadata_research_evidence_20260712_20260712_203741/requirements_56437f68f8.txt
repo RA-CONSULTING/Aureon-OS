@@ -1,0 +1,11 @@
+# AUREON Desktop Launcher Dependencies
+
+# Windows Credential Manager integration
+keyring>=24.0.0
+
+# For packaging into .exe
+pyinstaller>=6.0.0
+
+# Core dependencies (should already be installed)
+requests>=2.31.0
+python-dotenv>=1.0.0

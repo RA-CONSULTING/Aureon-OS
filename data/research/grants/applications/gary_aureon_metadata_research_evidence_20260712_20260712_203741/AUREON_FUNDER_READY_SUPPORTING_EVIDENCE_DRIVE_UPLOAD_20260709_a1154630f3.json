@@ -1,0 +1,36 @@
+{
+  "schema_version": "aureon-drive-upload-receipt-v1",
+  "created_at": "2026-07-09T07:48:52+01:00",
+  "operator": "Aureon",
+  "local_file": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\AUREON_FUNDER_READY_SUPPORTING_EVIDENCE_20260709.zip",
+  "drive_folder": {
+    "id": "1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr",
+    "name": "Aureon Grant War Room - 2026-07-04",
+    "url": "https://drive.google.com/drive/folders/1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr"
+  },
+  "drive_file": {
+    "id": "14JYRp_ye9IZUpf1buzkZYOZ_Bsx8x0aV",
+    "name": "AUREON_FUNDER_READY_SUPPORTING_EVIDENCE_20260709.zip",
+    "mime_type": "application/x-zip-compressed",
+    "size_bytes": 33852,
+    "url": "https://drive.google.com/file/d/14JYRp_ye9IZUpf1buzkZYOZ_Bsx8x0aV/view?usp=drivesdk"
+  },
+  "package_contents": [
+    "FORMAL_ATTACHMENT_INDEX_20260709.md",
+    "FORMAL_ATTACHMENT_INDEX_20260709.pdf",
+    "AUREON_MASTER_SUPPORTING_EVIDENCE_20260709.md",
+    "AUREON_MASTER_SUPPORTING_EVIDENCE_20260709.pdf",
+    "AIRR_SUPPORTING_EVIDENCE_SUMMARY_20260709.md",
+    "AIRR_SUPPORTING_EVIDENCE_SUMMARY_20260709.pdf",
+    "IFS_NEXT_WAVE_10209601_SUPPORTING_EVIDENCE_SUMMARY_20260709.md",
+    "IFS_NEXT_WAVE_10209601_SUPPORTING_EVIDENCE_SUMMARY_20260709.pdf",
+    "IFS_FUTURE_LEADERS_R11_SUPPORTING_EVIDENCE_20260709.md",
+    "IFS_FUTURE_LEADERS_R11_SUPPORTING_EVIDENCE_20260709.pdf"
+  ],
+  "verification": {
+    "local_pdf_text_scan": "passed",
+    "drive_folder_list_readback": "passed",
+    "connector_upload": "blocked by insufficient Drive API upload scope; completed through signed-in Chrome Drive session"
+  }
+}
+

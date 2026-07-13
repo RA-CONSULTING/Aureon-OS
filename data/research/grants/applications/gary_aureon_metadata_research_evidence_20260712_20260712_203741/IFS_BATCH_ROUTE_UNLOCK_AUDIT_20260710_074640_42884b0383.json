@@ -1,0 +1,256 @@
+﻿{
+    "schema_version":  "aureon-ifs-batch-route-unlock-audit-v1",
+    "generated_at":  "2026-07-10T07:46:40+01:00",
+    "operator":  "Aureon",
+    "scope":  "IFS_ONLY",
+    "result":  "NO_NEW_IFS_ROUTE_UNLOCK_EVIDENCE_FOUND",
+    "routes_checked":  16,
+    "unlock_evidence_found":  false,
+    "route_groups":  {
+                         "maritime_partner_asset_budget_permit_gate":  6,
+                         "uk_swiss_partner_budget_gate":  1,
+                         "quantum_hardware_lead_partner_gate":  1,
+                         "automotive_zev_partner_gate":  1,
+                         "manufacturing_facility_gate":  1,
+                         "lead_or_entity_eligibility_gate":  5,
+                         "not_grant_finance_risk_gate":  1
+                     },
+    "drive_search":  [
+                         {
+                             "query":  "maritime",
+                             "topn":  5,
+                             "finding":  "Returned Atlantic Substrate research documents. They discuss maritime cultural transmission, not a Clean Maritime or ZEVI deployment partner, vessel, port, shipyard, permit, or budget."
+                         },
+                         {
+                             "query":  "vessel",
+                             "topn":  5,
+                             "finding":  "Returned Arctic/creative research documents. No grant partner, vessel asset, owner, port, shipyard, or budget evidence."
+                         },
+                         {
+                             "query":  "shipyard",
+                             "topn":  5,
+                             "finding":  "No Drive results."
+                         },
+                         {
+                             "query":  "DRIVE35",
+                             "topn":  5,
+                             "finding":  "No Drive results."
+                         },
+                         {
+                             "query":  "quantum hardware",
+                             "topn":  5,
+                             "finding":  "Returned Grant War Room and duplicate XLSX files plus Master Work Index. These are planning/index files, not a quantum hardware lead partner commitment."
+                         },
+                         {
+                             "query":  "manufacturing facility",
+                             "topn":  5,
+                             "finding":  "Returned generic tool/docs files. No R\u0026A manufacturing facility or qualifying facility evidence."
+                         }
+                     ],
+    "fetched_drive_files":  [
+                                {
+                                    "title":  "Atlantic_Seaboard_Substrate_v.docx",
+                                    "url":  "https://drive.google.com/file/d/1gt25FWYhVMAzynVz2Bk5DXBNtmqyPBe0",
+                                    "classification":  "research corpus",
+                                    "finding":  "No maritime grant deployment partner, vessel, asset, permit, or budget evidence."
+                                },
+                                {
+                                    "title":  "MASTER_WORK_INDEX_20260705.md",
+                                    "url":  "https://drive.google.com/file/d/1O-mPZhaX3JdY_CWi-YJ3j8Z-nM71eeVq",
+                                    "classification":  "grant-operational index",
+                                    "finding":  "Confirms maritime/Atlantic work is research-route evidence and submission controls remain in force; no route unlock."
+                                }
+                            ],
+    "local_search":  {
+                         "searched_paths":  [
+                                                "C:\\Users\\user\\Desktop",
+                                                "C:\\Users\\user\\Documents",
+                                                "C:\\Users\\user\\Downloads",
+                                                "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications"
+                                            ],
+                         "common_local_result":  "Matches in Desktop/Documents/Downloads were research PDFs, extracted research markdown, or sensitive/accounting workpapers; none evidenced an IFS partner, asset, vessel, manufacturing facility, lead-eligible organisation, permit, or budget.",
+                         "grant_workspace_result":  "Matches were existing conversion packs, portal-ready text, partner evidence requests, and prior submitted route evidence; no confirmed unlock evidence.",
+                         "sensitive_material_control":  "Accounting and bank transaction files were not used as external grant attachments or partner evidence."
+                     },
+    "route_results":  [
+                          {
+                              "id":  "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+                              "name":  "Innovation Loans Expression of Interest",
+                              "status":  "NOT_GRANT_FINANCE_RISK_GATED",
+                              "group":  "NOT_GRANT_FINANCE_RISK_GATE",
+                              "unlock_evidence_found":  false,
+                              "finding":  "No confirmed partner, asset, facility, lead-eligibility, budget, permit, or cost evidence found in this batch scan.",
+                              "retained_next_action":  "Do not submit as R\u0026A from current evidence. Reassess only if the missing eligibility gate is evidenced or, for loans, repayable finance is explicitly approved with capacity evidence.",
+                              "gate":  "NOT_GRANT_FINANCE_RISK_GATED"
+                          },
+                          {
+                              "id":  "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+                              "name":  "UK-Switzerland CR\u0026D Round 3",
+                              "status":  "IFS_DRAFT_EVIDENCE_DISCOVERY_COMPLETE_PARTNER_BUDGET_EVIDENCE_REQUIRED",
+                              "group":  "UK_SWISS_PARTNER_BUDGET_GATE",
+                              "unlock_evidence_found":  false,
+                              "finding":  "No confirmed partner, asset, facility, lead-eligibility, budget, permit, or cost evidence found in this batch scan.",
+                              "retained_next_action":  "Use this evidence-discovery artifact to continue partner confirmation and cost-basis work; do not complete Q1, Q4-Q17, finances, Project Impact forecasts/readiness, award terms, or review/submit until confirmed partner and budget evidence exists.",
+                              "gate":  "Named Swiss implementation partner, research institute or waiver, partner work-package split, eligible costs, IP/data plan, export-control/TR\u0026I review, Project Impact readiness, award terms and final review evidence required before submission."
+                          },
+                          {
+                              "id":  "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+                              "name":  "Scaling performance of quantum computing hardware: CR\u0026D",
+                              "status":  "HARDWARE_LEAD_PARTNER_REQUIRED",
+                              "group":  "QUANTUM_HARDWARE_LEAD_PARTNER_GATE",
+                              "unlock_evidence_found":  false,
+                              "finding":  "No confirmed partner, asset, facility, lead-eligibility, budget, permit, or cost evidence found in this batch scan.",
+                              "retained_next_action":  "Use the formal IFS conversion pack to gather partner evidence before portal drafting or final submission.",
+                              "gate":  "HARDWARE_LEAD_PARTNER_REQUIRED"
+                          },
+                          {
+                              "id":  "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+                              "name":  "ADOPT Facilitator Support Grant: Round 10",
+                              "status":  "NOT_ELIGIBLE_DIRECT",
+                              "group":  "LEAD_OR_ENTITY_ELIGIBILITY_GATE",
+                              "unlock_evidence_found":  false,
+                              "finding":  "No confirmed partner, asset, facility, lead-eligibility, budget, permit, or cost evidence found in this batch scan.",
+                              "retained_next_action":  "Do not submit as R\u0026A from current evidence. Reassess only if the missing eligibility gate is evidenced or, for loans, repayable finance is explicitly approved with capacity evidence.",
+                              "gate":  "NOT_ELIGIBLE_DIRECT"
+                          },
+                          {
+                              "id":  "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+                              "name":  "DRIVE35 Innovation Fund: Collaborate 3",
+                              "status":  "AUTOMOTIVE_ZEV_PARTNER_REQUIRED",
+                              "group":  "AUTOMOTIVE_ZEV_PARTNER_GATE",
+                              "unlock_evidence_found":  false,
+                              "finding":  "No confirmed partner, asset, facility, lead-eligibility, budget, permit, or cost evidence found in this batch scan.",
+                              "retained_next_action":  "Use the formal IFS conversion pack to gather partner evidence before portal drafting or final submission.",
+                              "gate":  "AUTOMOTIVE_ZEV_PARTNER_REQUIRED"
+                          },
+                          {
+                              "id":  "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+                              "name":  "DRIVE35: Scale Up Fund",
+                              "status":  "MANUFACTURING_FACILITY_EVIDENCE_REQUIRED",
+                              "group":  "MANUFACTURING_FACILITY_GATE",
+                              "unlock_evidence_found":  false,
+                              "finding":  "No confirmed partner, asset, facility, lead-eligibility, budget, permit, or cost evidence found in this batch scan.",
+                              "retained_next_action":  "Do not submit as R\u0026A from current evidence. Reassess only if the missing eligibility gate is evidenced or, for loans, repayable finance is explicitly approved with capacity evidence.",
+                              "gate":  "MANUFACTURING_FACILITY_EVIDENCE_REQUIRED"
+                          },
+                          {
+                              "id":  "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+                              "name":  "Full ADOPT Grant: Round 8",
+                              "status":  "FARMING_LEAD_REQUIRED",
+                              "group":  "LEAD_OR_ENTITY_ELIGIBILITY_GATE",
+                              "unlock_evidence_found":  false,
+                              "finding":  "No confirmed partner, asset, facility, lead-eligibility, budget, permit, or cost evidence found in this batch scan.",
+                              "retained_next_action":  "Do not submit as R\u0026A from current evidence. Reassess only if the missing eligibility gate is evidenced or, for loans, repayable finance is explicitly approved with capacity evidence.",
+                              "gate":  "FARMING_LEAD_REQUIRED"
+                          },
+                          {
+                              "id":  "APP-IFS-ACTASAP-PILOT-2502-20260709",
+                              "name":  "ACTASAP Pilot Phase 1",
+                              "status":  "ACADEMIC_LEAD_REQUIRED",
+                              "group":  "LEAD_OR_ENTITY_ELIGIBILITY_GATE",
+                              "unlock_evidence_found":  false,
+                              "finding":  "No confirmed partner, asset, facility, lead-eligibility, budget, permit, or cost evidence found in this batch scan.",
+                              "retained_next_action":  "Do not submit as R\u0026A from current evidence. Reassess only if the missing eligibility gate is evidenced or, for loans, repayable finance is explicitly approved with capacity evidence.",
+                              "gate":  "ACADEMIC_LEAD_REQUIRED"
+                          },
+                          {
+                              "id":  "APP-IFS-AKT6-2473-20260709",
+                              "name":  "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+                              "status":  "ACADEMIC_RTO_CATAPULT_LEAD_AND_4FTE_GATE",
+                              "group":  "LEAD_OR_ENTITY_ELIGIBILITY_GATE",
+                              "unlock_evidence_found":  false,
+                              "finding":  "No confirmed partner, asset, facility, lead-eligibility, budget, permit, or cost evidence found in this batch scan.",
+                              "retained_next_action":  "Do not submit as R\u0026A from current evidence. Reassess only if the missing eligibility gate is evidenced or, for loans, repayable finance is explicitly approved with capacity evidence.",
+                              "gate":  "ACADEMIC_RTO_CATAPULT_LEAD_AND_4FTE_GATE"
+                          },
+                          {
+                              "id":  "APP-IFS-CKAF-AUTUMN-2478-20260709",
+                              "name":  "Commercialising Knowledge Assets Fund (CKAF) Autumn",
+                              "status":  "PUBLIC_SECTOR_RESEARCH_ORG_REQUIRED",
+                              "group":  "LEAD_OR_ENTITY_ELIGIBILITY_GATE",
+                              "unlock_evidence_found":  false,
+                              "finding":  "No confirmed partner, asset, facility, lead-eligibility, budget, permit, or cost evidence found in this batch scan.",
+                              "retained_next_action":  "Do not submit as R\u0026A from current evidence. Reassess only if the missing eligibility gate is evidenced or, for loans, repayable finance is explicitly approved with capacity evidence.",
+                              "gate":  "PUBLIC_SECTOR_RESEARCH_ORG_REQUIRED"
+                          },
+                          {
+                              "id":  "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+                              "name":  "Zero Emission Vessels and Infrastructure 2: Energy Efficiency",
+                              "status":  "MARITIME_CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+                              "group":  "MARITIME_PARTNER_ASSET_BUDGET_PERMIT_GATE",
+                              "unlock_evidence_found":  false,
+                              "finding":  "No confirmed partner, asset, facility, lead-eligibility, budget, permit, or cost evidence found in this batch scan.",
+                              "retained_next_action":  "Use the new maritime conversion pack to secure named partner, asset, budget, permits, safety, and deployment evidence before opening an IFS draft or submitting.",
+                              "gate":  "MARITIME_PARTNER_ASSET_BUDGET_PERMIT_EVIDENCE_REQUIRED"
+                          },
+                          {
+                              "id":  "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+                              "name":  "Zero Emission Vessels and Infrastructure 2: Electric Power",
+                              "status":  "MARITIME_CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+                              "group":  "MARITIME_PARTNER_ASSET_BUDGET_PERMIT_GATE",
+                              "unlock_evidence_found":  false,
+                              "finding":  "No confirmed partner, asset, facility, lead-eligibility, budget, permit, or cost evidence found in this batch scan.",
+                              "retained_next_action":  "Use the new maritime conversion pack to secure named partner, asset, budget, permits, safety, and deployment evidence before opening an IFS draft or submitting.",
+                              "gate":  "MARITIME_PARTNER_ASSET_BUDGET_PERMIT_EVIDENCE_REQUIRED"
+                          },
+                          {
+                              "id":  "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+                              "name":  "Zero Emission Vessels and Infrastructure 2: Alternative Fuels",
+                              "status":  "MARITIME_CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+                              "group":  "MARITIME_PARTNER_ASSET_BUDGET_PERMIT_GATE",
+                              "unlock_evidence_found":  false,
+                              "finding":  "No confirmed partner, asset, facility, lead-eligibility, budget, permit, or cost evidence found in this batch scan.",
+                              "retained_next_action":  "Use the new maritime conversion pack to secure named partner, asset, budget, permits, safety, and deployment evidence before opening an IFS draft or submitting.",
+                              "gate":  "MARITIME_PARTNER_ASSET_BUDGET_PERMIT_EVIDENCE_REQUIRED"
+                          },
+                          {
+                              "id":  "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+                              "name":  "Clean Maritime Demonstration Competition 7: Pre-deployment trials",
+                              "status":  "MARITIME_CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+                              "group":  "MARITIME_PARTNER_ASSET_BUDGET_PERMIT_GATE",
+                              "unlock_evidence_found":  false,
+                              "finding":  "No confirmed partner, asset, facility, lead-eligibility, budget, permit, or cost evidence found in this batch scan.",
+                              "retained_next_action":  "Use the new maritime conversion pack to secure named partner, asset, budget, permits, safety, and deployment evidence before opening an IFS draft or submitting.",
+                              "gate":  "MARITIME_PARTNER_ASSET_BUDGET_PERMIT_EVIDENCE_REQUIRED"
+                          },
+                          {
+                              "id":  "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+                              "name":  "Clean Maritime Demonstration Competition 7: Feasibility studies",
+                              "status":  "MARITIME_CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+                              "group":  "MARITIME_PARTNER_ASSET_BUDGET_PERMIT_GATE",
+                              "unlock_evidence_found":  false,
+                              "finding":  "No confirmed partner, asset, facility, lead-eligibility, budget, permit, or cost evidence found in this batch scan.",
+                              "retained_next_action":  "Use the new maritime conversion pack to secure named partner, asset, budget, permits, safety, and deployment evidence before opening an IFS draft or submitting.",
+                              "gate":  "MARITIME_PARTNER_ASSET_BUDGET_PERMIT_EVIDENCE_REQUIRED"
+                          },
+                          {
+                              "id":  "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+                              "name":  "Clean Maritime Demonstration Competition 7: Deployment trials",
+                              "status":  "MARITIME_CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+                              "group":  "MARITIME_PARTNER_ASSET_BUDGET_PERMIT_GATE",
+                              "unlock_evidence_found":  false,
+                              "finding":  "No confirmed partner, asset, facility, lead-eligibility, budget, permit, or cost evidence found in this batch scan.",
+                              "retained_next_action":  "Use the new maritime conversion pack to secure named partner, asset, budget, permits, safety, and deployment evidence before opening an IFS draft or submitting.",
+                              "gate":  "MARITIME_PARTNER_ASSET_BUDGET_PERMIT_EVIDENCE_REQUIRED"
+                          }
+                      ],
+    "decision":  {
+                     "status":  "KEEP_CURRENT_GATED_CLASSIFICATIONS",
+                     "rationale":  "The current IFS queue already has conversion packs and portal-ready text where appropriate, but no new evidence was found to truthfully complete partner, asset, facility, lead, finance, permit, or final submission gates.",
+                     "next_action":  "Continue partner/evidence acquisition outside final IFS submission. Open or complete further IFS drafts only when confirmed route-specific evidence is recorded."
+                 },
+    "controls":  [
+                     "No IFS draft opened in this batch audit",
+                     "No final IFS submission attempted",
+                     "No Project Impact final submit attempted",
+                     "No award terms accepted",
+                     "No partner invitation, email, upload, or Drive write attempted",
+                     "No partner, asset, vessel, facility, lead-organisation, permit, or budget claim invented",
+                     "No CAPTCHA/MFA/provider-control bypass or plaintext password storage attempted"
+                 ],
+    "artifacts":  [
+                      "applications/IFS_BATCH_ROUTE_UNLOCK_AUDIT_20260710_074640.json",
+                      "applications/IFS_BATCH_ROUTE_UNLOCK_AUDIT_20260710_074640.md",
+                      "pipelines/pipeline_report_20260710_074640_ifs_batch_route_unlock_audit.json"
+                  ]
+}

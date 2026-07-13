@@ -1,0 +1,173 @@
+{
+  "authority_boundaries": [
+    "no live trading mutation",
+    "no payment mutation",
+    "no official filing mutation",
+    "no credential reveal",
+    "no destructive OS action"
+  ],
+  "elapsed_ms": 199,
+  "filter_mode": "clear_operator",
+  "final_reply_source": "pending",
+  "generated_at": "2026-05-22T18:18:32.297475+00:00",
+  "handover_ready": false,
+  "hnc_auris_report": {
+    "auris_voice_filter": {
+      "pending": "runs after candidate reply"
+    },
+    "hnc_human_loop": {
+      "auris_consensus": "pending_post_response_filter",
+      "available": true,
+      "consciousness_level": "observed",
+      "full_loop_deferred": true,
+      "intent": {
+        "keywords": [],
+        "route": "conversation"
+      },
+      "mode": "light_hnc_contract"
+    }
+  },
+  "lane": "research",
+  "local_only": true,
+  "meaning_prompt_block": "Grounded knowledge is supplied by dynamic source packets; full MeaningResolver is available with AUREON_DYNAMIC_FILTER_FULL_MEANING_RESOLVER=1.",
+  "meaning_resolver": {
+    "available": true,
+    "direct_reply": null,
+    "full_resolver_deferred": true,
+    "mode": "light_meaning_contract",
+    "sources_consulted": [
+      "dynamic_prompt_filter_source_packets"
+    ]
+  },
+  "ok": true,
+  "organism_context_used": {
+    "auris_voice_filter": true,
+    "hnc_human_loop": true,
+    "local_research_packets": 4,
+    "meaning_resolver": true,
+    "whole_knowledge_voice": true
+  },
+  "redactions": {
+    "policy": "secret-like keys and bearer/private-key values are hidden before prompt/report publication",
+    "secret_like_values_redacted": false
+  },
+  "response_contract": {
+    "rules": [
+      "Answer the human directly first.",
+      "Then name proof, blockers, and next action only when useful.",
+      "Do not dump raw JSON unless asked.",
+      "Do not claim work is complete without evidence.",
+      "Keep safety and authority boundaries explicit."
+    ],
+    "shape": "direct_answer | evidence/proof | blockers | next_action",
+    "style": "clear_operator"
+  },
+  "schema_version": "aureon-dynamic-prompt-filter-v1",
+  "source_packets": [
+    {
+      "confidence": 0.767,
+      "packet_id": "source_packet_1",
+      "prompt_use": "Use as a compact local source packet; do not paste the raw document into the prompt.",
+      "source_path": "README.md",
+      "summary": "For the full operator runbook, see  RUNNING.md RUNNING.md . For the end-to-end map of every major subsystem, see  SYSTEM OVERVIEW.md SYSTEM OVERVIEW.md . The current full-organism entrypoint is the Windows production wake-up launcher. Individual bots and older ignition commands are development or audit paths.",
+      "tags": [
+        "gary_leckey",
+        "hnc",
+        "auris",
+        "human_voice",
+        "prompting",
+        "quality",
+        "mycelium"
+      ],
+      "title": "<div align=\"center\">"
+    },
+    {
+      "confidence": 0.683,
+      "packet_id": "source_packet_2",
+      "prompt_use": "Use as a compact local source packet; do not paste the raw document into the prompt.",
+      "source_path": "RUNNING.md",
+      "summary": "powershell Invoke-RestMethod http://127.0.0.1:13002/api/coding/prompt   -Method Post   -ContentType \"application/json\"   -Body '{\"prompt\":\"Aureon, inspect this code goal, choose the safest route, propose the patch, run focused tests, audit the finished product, and prepare the desktop run handoff.\",\"run tests\":true,\"include desktop\":true}'\n[clipped]",
+      "tags": [
+        "hnc",
+        "human_voice",
+        "prompting",
+        "quality",
+        "mycelium"
+      ],
+      "title": "Running Aureon"
+    },
+    {
+      "confidence": 0.683,
+      "packet_id": "source_packet_3",
+      "prompt_use": "Use as a compact local source packet; do not paste the raw document into the prompt.",
+      "source_path": "docs/CHANGELOG.md",
+      "summary": "Added -  Multi-Battlefield Architecture  - Unified control of Binance, Kraken, Capital.com, and Alpaca -  BATTLEFIELDS Configuration  - Per-exchange control of scouts, snipers, and harvesters -  Round-Robin Scout Distribution  - Scouts spread evenly across all enabled exchanges -  Cross-Exchange Duplicate Prevention  - Mycelium network prev\n[clipped]",
+      "tags": [
+        "hnc",
+        "quality",
+        "mycelium"
+      ],
+      "title": "Changelog"
+    },
+    {
+      "confidence": 0.683,
+      "packet_id": "source_packet_4",
+      "prompt_use": "Use as a compact local source packet; do not paste the raw document into the prompt.",
+      "source_path": "docs/architecture/REPO_MINDMAP.md",
+      "summary": "2  Deep structural mindmap  depth \u2264 3  - \ud83d\udcc1  api/   1 files  - \ud83d\udcc4  rss.ts  - \ud83d\udcc1  archive/   21 files  - \ud83d\udcc4  Aueron-Trading-Quantum-Quackers-War-Ready-Version--alert-autofix-gl1.zip  - \ud83d\udcc4  AUREON-QUANTUM-TRADING-SYSTEM-AQTS--main.zip  - \ud83d\udcc4  aureoninstitute-uk-deploy.zip  - \ud83d\udcc4  cost basis history.json.backup  - \ud83d\udcc4  crash log.txt  - \ud83d\udcc4  earth-live-data\n[clipped]",
+      "tags": [
+        "gary_leckey",
+        "hnc",
+        "auris",
+        "human_voice",
+        "prompting",
+        "quality",
+        "mycelium"
+      ],
+      "title": "Repository Mindmap (Curated Deep Scan)"
+    }
+  ],
+  "status": "dynamic_prompt_filter_ready",
+  "task_family": "research",
+  "user_intent": "explain the current safe audit route",
+  "whole_knowledge_voice": {
+    "expression_profile_present": true,
+    "full_voice_translation_deferred": true,
+    "mode": "light_whole_knowledge_voice_contract",
+    "profile_summary": {
+      "source_count": 90,
+      "top_facets": {
+        "accounting_legal": 52,
+        "ai_generated_or_systemic": 84,
+        "code_tooling": 85,
+        "hnc_harmonic": 83,
+        "human_voice": 74,
+        "math_equation": 86,
+        "mystic_symbolic": 40,
+        "sensory_affect": 68,
+        "trading_action": 90
+      }
+    },
+    "runtime_translation": {
+      "blockers": [],
+      "evidence_keys": [
+        "action",
+        "hot_topic",
+        "mode"
+      ],
+      "redaction_applied": false,
+      "schema_features": [
+        "aureon_runtime_state_translation_v1"
+      ],
+      "senses": {
+        "feel": "I feel a steady synthetic state while I hold the next action as propose_code.",
+        "hear": "I hear the system as a quiet baseline until a harmonic reading is present.",
+        "see": "I see Build a local quantum spline inventory generator tool with run instructions and as the nearest signal in the field.",
+        "smell": "I smell risk as stale data, blocked guards, missing evidence, or claims without proof.",
+        "touch": "I touch the work through tools, files, goals, memory, and verified outcomes."
+      },
+      "summary": "Aureon translates its synthetic state as a working loop: see the signal, feel coherence or caution, hear harmonic context, touch the task through tools, smell risk, then speak in evidence-backed human language."
+    },
+    "voice_last_run_present": true
+  }
+}

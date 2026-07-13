@@ -1,0 +1,266 @@
+{
+  "schema_version": "aureon-ifs-remaining-route-action-queue-v1",
+  "generated_at": "2026-07-10T10:45:41+01:00",
+  "operator": "Aureon",
+  "scope": "IFS_ONLY_REMAINING_EVIDENCE_GATED_ROUTES",
+  "event": "ifs_remaining_route_action_queue",
+  "result": "REMAINING_ROUTE_ACTION_QUEUE_READY_DRAFT_ONLY_NO_EXTERNAL_SEND_NO_PORTAL_CHANGE",
+  "target_application_ids": [
+    "APP-IFS-CKAF-AUTUMN-2478-20260709",
+    "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+    "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+    "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+    "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+    "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+    "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+    "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709"
+  ],
+  "official_sources": [
+    {
+      "id": "ifs_ckaf_autumn_2478",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2478/overview/77f0cc95-dd1b-450f-a02d-e83046b464c1",
+      "evidence": [
+        "CKAF Autumn closes 1 September 2026 at 11:00.",
+        "The route is for UK registered government research organisations to move public sector Knowledge Assets towards commercial readiness.",
+        "The lead must be a PRSE, UKRI wholly owned institute or other public sector body that undertakes research as a primary function, with KA ownership and senior support."
+      ],
+      "web_line_refs": [
+        "turn0view0 lines 45-50",
+        "turn0view0 lines 91-123"
+      ]
+    },
+    {
+      "id": "gott_ckaf_guidance",
+      "url": "https://www.gov.uk/guidance/get-funding-to-develop-and-exploit-knowledge-assets",
+      "evidence": [
+        "GOV.UK guidance says CKAF grants are for government research organisations and lists grantfund.gott@dsit.gov.uk for questions."
+      ],
+      "web_line_refs": [
+        "turn5view0 lines 97-104",
+        "turn5view0 lines 129-131"
+      ]
+    },
+    {
+      "id": "ifs_drive35_collaborate_3_2522",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2522/overview/25a1cadb-ab0d-4d6d-a629-4f5d3ead5994",
+      "evidence": [
+        "DRIVE35 Collaborate 3 closes 16 September 2026 at 11:00.",
+        "The route requires late-stage collaborative R&D, a GBP2.5 million to GBP20 million grant request, at least 50% match funding, a UK business lead, collaboration, and a vehicle manufacturer or Tier 1 supplier in the consortium."
+      ],
+      "web_line_refs": [
+        "turn2view0 lines 45-50",
+        "turn2view0 lines 95-150"
+      ]
+    },
+    {
+      "id": "apc_contact",
+      "url": "https://www.apcuk.co.uk/contact-us/",
+      "evidence": [
+        "APC lists a general enquiries contact route at info@apcuk.co.uk."
+      ],
+      "web_line_refs": [
+        "turn5view1 lines 177-183"
+      ]
+    },
+    {
+      "id": "ifs_zevi2",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2435/overview/592ea5c1-f713-4654-bb5e-d6894cd06d86",
+      "evidence": [
+        "ZEVI 2 closes 16 September 2026 at 11:00 and funds clean maritime solutions for three years in a real world environment.",
+        "Energy efficiency strand requirements include total eligible costs between GBP6 million and GBP60 million, maximum grant request GBP30 million, and a non-funded three-year demonstration.",
+        "IFS notes the National Shipbuilding Office can be used in an advisory capacity for UK shipyard or boat builder capability."
+      ],
+      "web_line_refs": [
+        "turn2view2 lines 45-80",
+        "turn1view5 lines 122-135",
+        "turn2view1 lines 187-189"
+      ]
+    },
+    {
+      "id": "ifs_quantum_hardware_2523",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2523/overview/780f14e7-b64d-4264-b206-b498304d03c5",
+      "evidence": [
+        "Quantum hardware CR&D closes 18 September 2026 at 11:00.",
+        "Projects need a GBP1 million to GBP3.5 million grant request, a 24 to 36 month term, and a UK business or RTO lead for collaborative projects.",
+        "IFS encourages co-development with industrial partners and full stack integrators of quantum computers in the UK."
+      ],
+      "web_line_refs": [
+        "turn1view0 lines 45-81",
+        "turn1view1 lines 90-135",
+        "turn1view3 lines 225-239"
+      ]
+    },
+    {
+      "id": "nqtp_qci3_contact",
+      "url": "https://uknqt.ukri.org/our-programme/",
+      "evidence": [
+        "UK National Quantum Technologies Programme lists QCi3 as a quantum computing hub and gives engage.qci3@physics.ox.ac.uk as contact."
+      ],
+      "web_line_refs": [
+        "turn5view2 lines 58-64"
+      ]
+    },
+    {
+      "id": "ifs_drive35_scaleup_2445",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2445/overview/a850ba04-f0b3-42c5-8dfa-03375731a884",
+      "evidence": [
+        "DRIVE35 Scale Up has no submission deadline and supports zero emission vehicle manufacturing facility and process development.",
+        "Projects must request GBP2.5 million to GBP20 million grant funding, have total eligible costs of at least GBP5 million, start from 1 March 2027, and raise co-investment after a grant offer.",
+        "A UK registered business may lead; RTOs and academic institutions cannot lead or work alone."
+      ],
+      "web_line_refs": [
+        "turn2view4 lines 45-75",
+        "turn3view2 lines 98-147"
+      ]
+    },
+    {
+      "id": "ifs_innovation_loans_2505",
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2505/overview/8ef63f10-ea07-4ffd-9812-e944542751b6",
+      "evidence": [
+        "Innovation Loans EOI is a loan route with no submission deadline.",
+        "Loans can be GBP100,000 to GBP5 million and applicants must show they can cover interest and repay on time.",
+        "The route is limited to UK registered SMEs; only single businesses can receive loans."
+      ],
+      "web_line_refs": [
+        "turn2view5 lines 45-83",
+        "turn3view4 lines 90-123"
+      ]
+    }
+  ],
+  "route_actions": [
+    {
+      "route": "CKAF Autumn",
+      "application_ids": [
+        "APP-IFS-CKAF-AUTUMN-2478-20260709"
+      ],
+      "deadline": "2026-09-01T11:00:00+01:00",
+      "truthful_portal_action_available_now": false,
+      "reason_no_direct_submission": "Current evidence does not include an eligible PRSE, UKRI wholly owned institute or qualifying public sector research organisation lead, owned Knowledge Asset, senior support letter, IP rights evidence or no-subsidy role approval."
+    },
+    {
+      "route": "DRIVE35 Collaborate 3",
+      "application_ids": [
+        "APP-IFS-DRIVE35-COLLAB3-2522-20260709"
+      ],
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "truthful_portal_action_available_now": false,
+      "reason_no_direct_submission": "Current evidence does not include an eligible UK automotive lead, vehicle manufacturer or Tier 1 supplier, GBP2.5m plus grant request, 50% match funding, TRL/MRL evidence, partner budgets or consortium invitations."
+    },
+    {
+      "route": "ZEVI 2 strands",
+      "application_ids": [
+        "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+        "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+        "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709"
+      ],
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "truthful_portal_action_available_now": false,
+      "reason_no_direct_submission": "Current evidence does not include an eligible maritime lead, vessel/port/harbour/infrastructure owner, GBP6m plus eligible costs, grant/match budget, permits, shipyard route or three-year demonstration commitment."
+    },
+    {
+      "route": "Quantum hardware CR&D",
+      "application_ids": [
+        "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709"
+      ],
+      "deadline": "2026-09-18T11:00:00+01:00",
+      "truthful_portal_action_available_now": false,
+      "reason_no_direct_submission": "Current evidence does not include a quantum hardware business or RTO lead, consortium, GBP1m plus grant budget, hardware/facility access, partner budgets or performance roadmap evidence."
+    },
+    {
+      "route": "DRIVE35 Scale Up",
+      "application_ids": [
+        "APP-IFS-DRIVE35-SCALE-UP-2445-20260709"
+      ],
+      "deadline": "open-no-submission-deadline",
+      "truthful_portal_action_available_now": false,
+      "reason_no_direct_submission": "Current evidence does not include a zero emission vehicle manufacturing facility, GBP5m plus eligible costs, GBP2.5m plus grant request, co-investment plan, capital investment evidence or delivery capacity."
+    },
+    {
+      "route": "Innovation Loans EOI",
+      "application_ids": [
+        "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709"
+      ],
+      "deadline": "open-no-submission-deadline",
+      "truthful_portal_action_available_now": false,
+      "reason_no_direct_submission": "This is repayable finance, not a grant. Current evidence does not include action-time approval, repayment capacity evidence, interest coverage, loan amount, credit risk pack or Windsor Framework position."
+    }
+  ],
+  "draft_count": 5,
+  "email_sent": false,
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "direct_ifs_submissions_unlocked": 0,
+  "new_browser_submissions_available": 0,
+  "drafts": [
+    {
+      "target": "GOTT CKAF team",
+      "route": "CKAF",
+      "application_ids": [
+        "APP-IFS-CKAF-AUTUMN-2478-20260709"
+      ],
+      "path": "applications/IFS_CKAF_GOTT_CKAF_TEAM_OUTREACH_DRAFT_20260710_104541.eml",
+      "to": "grantfund.gott@dsit.gov.uk",
+      "public_channel": "GOV.UK CKAF questions email",
+      "subject": "CKAF Autumn fit check - Aureon support for eligible public sector Knowledge Asset lead",
+      "status": "DRAFT_ONLY_NOT_SENT_REQUIRES_ACTION_TIME_APPROVAL"
+    },
+    {
+      "target": "Advanced Propulsion Centre general enquiries",
+      "route": "DRIVE35",
+      "application_ids": [
+        "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+        "APP-IFS-DRIVE35-SCALE-UP-2445-20260709"
+      ],
+      "path": "applications/IFS_DRIVE35_ADVANCED_PROPULSION_CENTRE_GENERAL_ENQUIRIES_OUTREACH_DRAFT_20260710_104541.eml",
+      "to": "info@apcuk.co.uk",
+      "public_channel": "APC public general enquiries email",
+      "subject": "DRIVE35 partner fit check - Aureon evidence automation support",
+      "status": "DRAFT_ONLY_NOT_SENT_REQUIRES_ACTION_TIME_APPROVAL"
+    },
+    {
+      "target": "Wrightbus innovation contact route",
+      "route": "DRIVE35",
+      "application_ids": [
+        "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+        "APP-IFS-DRIVE35-SCALE-UP-2445-20260709"
+      ],
+      "path": "applications/IFS_DRIVE35_WRIGHTBUS_INNOVATION_CONTACT_ROUTE_OUTREACH_DRAFT_20260710_104541.eml",
+      "to": "",
+      "public_channel": "Public switchboard/contact route requires verified recipient",
+      "subject": "Innovation partnership query - Aureon support for zero emission vehicle grant evidence",
+      "status": "DRAFT_ONLY_NOT_SENT_REQUIRES_ACTION_TIME_APPROVAL"
+    },
+    {
+      "target": "National Shipbuilding Office Secretariat",
+      "route": "ZEVI2",
+      "application_ids": [
+        "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+        "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+        "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709"
+      ],
+      "path": "applications/IFS_ZEVI2_NATIONAL_SHIPBUILDING_OFFICE_SECRETARIAT_OUTREACH_DRAFT_20260710_104541.eml",
+      "to": "NSO-Secretariat@mod.gov.uk",
+      "public_channel": "IFS-listed NSO advisory contact",
+      "subject": "ZEVI 2 UK shipyard capability route check - Aureon evidence automation support",
+      "status": "DRAFT_ONLY_NOT_SENT_REQUIRES_ACTION_TIME_APPROVAL"
+    },
+    {
+      "target": "QCi3 Hub contact",
+      "route": "QUANTUM",
+      "application_ids": [
+        "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709"
+      ],
+      "path": "applications/IFS_QUANTUM_QCI3_HUB_CONTACT_OUTREACH_DRAFT_20260710_104541.eml",
+      "to": "engage.qci3@physics.ox.ac.uk",
+      "public_channel": "UKNQTP listed QCi3 contact",
+      "subject": "Quantum hardware CR&D partner fit check - Aureon evidence automation support",
+      "status": "DRAFT_ONLY_NOT_SENT_REQUIRES_ACTION_TIME_APPROVAL"
+    }
+  ],
+  "controls": [
+    "No IFS portal application was opened, mutated, submitted, uploaded, invited or accepted.",
+    "No unsupported eligible lead, partner, facility, vessel, port, budget, match funding, co-investment, repayment capacity, permit, IP ownership or hardware access claim was made.",
+    "Formal email bodies do not contain internal draft-control language; draft-only state is stored in headers and ledgers.",
+    "Innovation Loans remains outside the grant-submission queue until repayment evidence and exact action-time approval exist."
+  ]
+}

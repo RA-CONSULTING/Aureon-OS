@@ -1,0 +1,36 @@
+﻿{
+    "created_at":  "2026-07-06T06:20:40.5141645+01:00",
+    "repo":  "C:\\Users\\user\\aureon-trading",
+    "branch":  "daemon-codes-war-mode-2026-07-04",
+    "head":  "aad0f437533c9ae00e5c93074a7fd72db2ce9117",
+    "remote":  [
+                   "origin\thttps://github.com/RA-CONSULTING/aureon-trading (fetch)",
+                   "origin\thttps://github.com/RA-CONSULTING/aureon-trading (push)"
+               ],
+    "status_short":  [
+                         " M .env.example",
+                         " M .env1.txt",
+                         "?? aureon/grants/",
+                         "?? daemon_codes/",
+                         "?? data/research/grants/"
+                     ],
+    "archives":  [
+                     {
+                         "path":  "C:\\Users\\user\\Aureon_Work_Hub_20260705\\07_DRIVE_EXPORTS\\AUREON_GRANT_OPERATOR_REPO_STATE_20260706_062033.tar.gz",
+                         "purpose":  "Sanitized Aureon repo grant operator state and current grant ledger",
+                         "bytes":  678359
+                     },
+                     {
+                         "path":  "C:\\Users\\user\\Aureon_Work_Hub_20260705\\07_DRIVE_EXPORTS\\AUREON_GRANT_WORKING_PACK_20260706_062033.tar.gz",
+                         "purpose":  "Curated grant working hub indexes and grant packs",
+                         "bytes":  3850260
+                     }
+                 ],
+    "excluded_policy":  [
+                            "No .git directory",
+                            "No .env or .env1.txt secrets",
+                            "No cache folders",
+                            "No full 31GB thoughts.jsonl runtime log",
+                            "No bank/tax/private credential material"
+                        ]
+}

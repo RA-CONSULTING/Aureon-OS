@@ -1,0 +1,21 @@
+{
+  "generated_at": "2026-07-10T08:55:56+01:00",
+  "operator": "Aureon",
+  "scope": "IFS_ONLY",
+  "event": "ifs_remaining_queue_submit_ready_audit",
+  "ifs_applications_reviewed": 20,
+  "submitted_ifs_applications": 4,
+  "live_ifs_drafts": 1,
+  "direct_submit_ready_routes": 0,
+  "new_browser_submissions_available": 0,
+  "result": "NO_REMAINING_IFS_ROUTE_SUBMIT_READY_FROM_CURRENT_AUREON_LEDGER",
+  "artifacts": [
+    "applications/IFS_REMAINING_QUEUE_SUBMIT_READY_AUDIT_20260710_085556.json",
+    "applications/IFS_REMAINING_QUEUE_SUBMIT_READY_AUDIT_20260710_085556.md"
+  ],
+  "controls": [
+    "No submitted IFS application reopened",
+    "No final submission attempted",
+    "No unsupported gated route opened in IFS"
+  ]
+}

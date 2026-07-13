@@ -1,0 +1,171 @@
+{
+  "schema_version": "aureon-ifs-uk-swiss-evidence-delta-v1",
+  "generated_at": "2026-07-10T23:07:10+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_uk_swiss_evidence_delta_after_live_readback",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "portal_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210100",
+  "competition": "UK-Switzerland CR&D Round 3",
+  "application_progress_from_last_live_readback": "80%",
+  "incomplete_sections": [
+    "Q4 Permits and licences",
+    "Q6 Export licence",
+    "Q17 Costs and value for money",
+    "Finances summary",
+    "Project impact",
+    "Award terms and conditions"
+  ],
+  "evidence_requirements": [
+    "named Swiss implementation partner",
+    "research institute or waiver evidence",
+    "partner commitment letter",
+    "partner budget and eligible-cost split",
+    "permit/licence position",
+    "export-control position",
+    "project finances and Project Impact basis",
+    "award terms final review authority"
+  ],
+  "local_paths_checked": [
+    "C:/Users/user/aureon-trading/data/research/grants",
+    "C:/Users/user/Downloads",
+    "C:/Users/user/Documents",
+    "C:/Users/user/Desktop"
+  ],
+  "local_search_terms": [
+    "10210100",
+    "UK-Switzerland",
+    "Swiss partner",
+    "Innosuisse",
+    "export licence",
+    "export license",
+    "permit",
+    "licence",
+    "eligible costs",
+    "Project Impact",
+    "award terms",
+    "finance basis",
+    "cash flow",
+    "partner budget"
+  ],
+  "local_findings": [
+    {
+      "source": "Aureon grant workspace",
+      "finding": "Existing IFS artifacts and prior no-unlock audits were found, including the live authenticated readback and board records. They confirm the same UK-Switzerland partner, budget, permit/export and finance gates.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Downloads extracted research notes",
+      "finding": "Only general research/licence text was found. No named Swiss partner, partner budget, permit/export basis or UK-Switzerland finance document was found.",
+      "unlock_evidence": false
+    },
+    {
+      "source": "Documents and Desktop targeted search",
+      "finding": "General AIRR, outreach, and accounting-system references were found. No route-unlocking UK-Switzerland partner or cost evidence was found.",
+      "unlock_evidence": false
+    }
+  ],
+  "google_drive_queries": [
+    "10210100",
+    "UK Switzerland",
+    "Innosuisse",
+    "Swiss partner",
+    "partner budget"
+  ],
+  "google_drive_findings": [
+    {
+      "query": "10210100",
+      "finding": "No direct Google Drive hit for the live IFS portal application number.",
+      "unlock_evidence": false
+    },
+    {
+      "query": "UK Switzerland / Innosuisse / Swiss partner / partner budget",
+      "source_title": "Aureon Grant War Room - 2026-07-04",
+      "source_url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM",
+      "finding": "The Drive war-room sheet lists UK-Switzerland CR&D as open and states that a Swiss implementation partner and research institute are required. Its next action is still to build a target list; it does not evidence a committed partner, budget, permit/export position, or finance basis.",
+      "unlock_evidence": false
+    },
+    {
+      "query": "Swiss partner / partner budget",
+      "source_title": "AUREON_GRANT_OPERATING_LOG_REFRESHED_20260705.md",
+      "source_url": "https://drive.google.com/file/d/1AgBUZhuDzRZl-7RaDrm5zoGHZ1C2Npbf",
+      "finding": "The operating log records UK-Switzerland as blocked by Swiss partner and research institute evidence. It does not include a later commitment, budget, or portal-ready declaration basis.",
+      "unlock_evidence": false
+    },
+    {
+      "query": "partner budget",
+      "source_title": "RA_Grant_War_Room_Package.pdf",
+      "source_url": "https://drive.google.com/file/d/1x7igP7CET552Ey3QKyC6ZVBcN1GMAv5g",
+      "finding": "The PDF contains broad grant planning text and sensitive finance/admin fields. It is excluded from direct IFS use until independently verified and sanitised; it is not a UK-Switzerland partner commitment or eligible-cost schedule.",
+      "unlock_evidence": false,
+      "sensitive_material_excluded": true
+    },
+    {
+      "query": "partner budget",
+      "source_title": "IFS_FUTURE_LEADERS_R11_AUREON_PACK_20260709.pdf",
+      "finding": "This is a Future Leaders pack, not UK-Switzerland CR&D evidence. It does not unlock the live 10210100 IFS draft.",
+      "unlock_evidence": false
+    }
+  ],
+  "section_decisions": {
+    "Q4 Permits and licences": {
+      "decision": "hold",
+      "reason": "No permit/licence position for the UK-Switzerland work package was found.",
+      "portal_action_now": false
+    },
+    "Q6 Export licence": {
+      "decision": "hold",
+      "reason": "No export-control position for cross-border collaboration was found.",
+      "portal_action_now": false
+    },
+    "Q17 Costs and value for money": {
+      "decision": "hold",
+      "reason": "No eligible-cost schedule, partner cost split, or value-for-money basis was found.",
+      "portal_action_now": false
+    },
+    "Finances summary": {
+      "decision": "hold",
+      "reason": "Live IFS readback shows GBP0 totals and no validated finance basis was found.",
+      "portal_action_now": false
+    },
+    "Project impact": {
+      "decision": "hold",
+      "reason": "Project Impact should not be submitted until finances and declarations are complete.",
+      "portal_action_now": false
+    },
+    "Award terms and conditions": {
+      "decision": "hold",
+      "reason": "Award terms are a final authority step and remain blocked by incomplete evidence.",
+      "portal_action_now": false
+    }
+  },
+  "decision": {
+    "direct_submit_ready": false,
+    "safe_portal_action_now": false,
+    "new_browser_submission_available": false,
+    "portal_edit_recommended_now": false,
+    "why_not_now": "The new local and Drive evidence pass found prior grant planning material and target lists, but not the committed partner, budget, permit/export, finance, Project Impact or award-terms evidence required to complete the live draft.",
+    "next_operator_action": "Keep application 10210100 open as a staged draft. Use the existing partner acquisition material to obtain Swiss partner/research institute commitment and eligible-cost evidence, then re-run this delta before editing IFS."
+  },
+  "source_refs": {
+    "live_authenticated_readback": "applications/IFS_UK_SWISS_LIVE_AUTHENTICATED_READBACK_20260710_230706.json",
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_230659.json",
+    "current_action_register": "applications/IFS_CURRENT_ACTION_REGISTER_20260710_230652.json",
+    "live_drive_route_unlock_readback": "applications/IFS_LIVE_DRIVE_ROUTE_UNLOCK_READBACK_20260710_142308.json",
+    "uk_swiss_stop_go_audit": "applications/IFS_UK_SWISS_STOP_GO_AUDIT_20260710_145126.json"
+  },
+  "controls": [
+    "Google Drive was searched read-only.",
+    "Local files were searched read-only.",
+    "Sensitive finance/admin material found in Drive was not copied into the IFS payload.",
+    "No IFS portal field was changed.",
+    "No Q4 permit/licence declaration was made.",
+    "No Q6 export-control declaration was made.",
+    "No cost, finance, Project Impact or award-terms field was completed.",
+    "No final IFS submission was attempted.",
+    "No email, contact form, partner invite or upload action was performed.",
+    "No password or runtime secret was written to this artifact."
+  ],
+  "result": "IFS_UK_SWISS_EVIDENCE_DELTA_NO_UNLOCK_KEEP_DRAFT_80_PERCENT"
+}

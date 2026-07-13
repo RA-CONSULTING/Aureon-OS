@@ -1,0 +1,169 @@
+{
+  "authoring_path": [
+    "GoalExecutionEngine.submit_goal",
+    "GoalExecutionEngine._execute_repo_self_repair",
+    "aureon.autonomous.aureon_repo_self_repair.run_repo_self_repair",
+    "run_checks",
+    "self_review_and_repair_operational_ui",
+    "QueenCodeArchitect.write_file",
+    "retest_failed_checks"
+  ],
+  "checks": [
+    {
+      "command": [
+        "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\.venv\\Scripts\\python.exe",
+        "-m",
+        "compileall",
+        "-q",
+        "aureon",
+        "Kings_Accounting_Suite",
+        "tests"
+      ],
+      "duration_s": 1.052,
+      "id": "python_compile_repo",
+      "returncode": 0,
+      "status": "passed",
+      "stderr_tail": "",
+      "stdout_tail": ""
+    },
+    {
+      "command": [
+        "C:\\Users\\user\\aureon-trading-integrated-main-20260508\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "tests/test_aureon_unified_ui_builder.py",
+        "tests/test_frontend_work_order_executor.py",
+        "tests/test_goal_execution_engine_self_ui.py",
+        "tests/test_aureon_repo_self_repair.py",
+        "tests/test_safe_code_control.py",
+        "tests/test_code_expression_context.py",
+        "tests/test_aureon_organism_runtime_observer.py",
+        "-q"
+      ],
+      "duration_s": 13.133,
+      "id": "focused_self_repair_tests",
+      "returncode": 0,
+      "status": "passed",
+      "stderr_tail": "",
+      "stdout_tail": ".................                                                        [100%]\n17 passed in 12.06s\n"
+    },
+    {
+      "command": [
+        "C:\\Program Files\\nodejs\\npm.cmd",
+        "run",
+        "build"
+      ],
+      "duration_s": 7.535,
+      "id": "frontend_build",
+      "returncode": 0,
+      "status": "passed",
+      "stderr_tail": "",
+      "stdout_tail": "\n> vite_react_shadcn_ts@0.0.0 build\n> vite build\n\n\u001b[36mvite v5.4.21 \u001b[32mbuilding for production...\u001b[36m\u001b[39m\ntransforming...\n\u001b[32m\u00e2\u0153\u201c\u001b[39m 1685 modules transformed.\nrendering chunks...\ncomputing gzip size...\n\u001b[2mdist/\u001b[22m\u001b[32mindex.html                 \u001b[39m\u001b[1m\u001b[2m  1.16 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m \u00e2\u201d\u201a gzip:   0.51 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[35massets/index-Ccs5pZ3J.css  \u001b[39m\u001b[1m\u001b[2m171.71 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m \u00e2\u201d\u201a gzip:  25.10 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[36massets/index-D70gORz6.js   \u001b[39m\u001b[1m\u001b[2m408.89 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m \u00e2\u201d\u201a gzip: 121.53 kB\u001b[22m\n\u001b[32m\u00e2\u0153\u201c built in 6.41s\u001b[39m\n"
+    }
+  ],
+  "generated_at": "2026-05-13T19:38:01.219033+00:00",
+  "goal": "Aureon must refresh its own repo self-repair bug report after the work-order fixes and record Queen writer evidence.",
+  "issues": [
+    {
+      "evidence": {
+        "code": "runtime_feed_not_live_in_ui_evidence",
+        "next_action": "Run the production launcher or refresh runtime manifests; do not patch UI code for an offline runtime.",
+        "severity": "attention",
+        "value": "offline"
+      },
+      "fix_status": "attention",
+      "id": "ui:runtime_feed_not_live_in_ui_evidence",
+      "next_action": "Run the production launcher or refresh runtime manifests; do not patch UI code for an offline runtime.",
+      "severity": "attention",
+      "source": "operational_ui_self_review",
+      "summary": "runtime_feed_not_live_in_ui_evidence"
+    },
+    {
+      "evidence": {
+        "code": "ui_exposes_blind_spots",
+        "next_action": "Use the blind-spot list as Aureon's next self-work queue.",
+        "severity": "attention",
+        "value": 28
+      },
+      "fix_status": "attention",
+      "id": "ui:ui_exposes_blind_spots",
+      "next_action": "Use the blind-spot list as Aureon's next self-work queue.",
+      "severity": "attention",
+      "source": "operational_ui_self_review",
+      "summary": "ui_exposes_blind_spots"
+    },
+    {
+      "evidence": {
+        "code": "ui_exposes_blocked_work_orders",
+        "next_action": "Resolve or archive blocked work orders through the frontend evolution queue.",
+        "severity": "attention",
+        "value": 36
+      },
+      "fix_status": "attention",
+      "id": "ui:ui_exposes_blocked_work_orders",
+      "next_action": "Resolve or archive blocked work orders through the frontend evolution queue.",
+      "severity": "attention",
+      "source": "operational_ui_self_review",
+      "summary": "ui_exposes_blocked_work_orders"
+    }
+  ],
+  "repair_actions": [
+    {
+      "evidence": {
+        "final_review_status": "ui_review_passed",
+        "status": "self_repair_passed"
+      },
+      "files": [
+        "frontend/src/components/generated/AureonGeneratedOperationalConsole.tsx",
+        "state/aureon_self_ui_repair_last_run.json"
+      ],
+      "id": "operational_ui_self_review",
+      "status": "passed",
+      "summary": "Aureon reviewed and repaired its operational UI through the Queen writer."
+    }
+  ],
+  "repo_root": "C:\\Users\\user\\aureon-trading-integrated-main-20260508",
+  "retest_checks": [],
+  "safety": {
+    "audit_mode": true,
+    "external_mutations": false,
+    "live_trading_disabled": true,
+    "real_orders_disabled": true,
+    "secret_values_written": false
+  },
+  "schema_version": "aureon-repo-self-repair-v1",
+  "status": "repo_self_repair_passed",
+  "summary": {
+    "blocking_issue_count": 0,
+    "check_count": 3,
+    "failed_check_count": 0,
+    "failed_retest_count": 0,
+    "issue_count": 3,
+    "repair_action_count": 1,
+    "retest_check_count": 0,
+    "ui_self_review_success": true
+  },
+  "write_info": {
+    "created_files": [
+      {
+        "action": "write",
+        "file": "docs/audits/aureon_repo_self_repair.json",
+        "size": 5687,
+        "timestamp": "2026-05-13T20:38:01.219322"
+      },
+      {
+        "action": "write",
+        "file": "docs/audits/aureon_repo_self_repair.md",
+        "size": 1274,
+        "timestamp": "2026-05-13T20:38:01.219322"
+      },
+      {
+        "action": "write",
+        "file": "state/aureon_repo_self_repair_last_run.json",
+        "size": 5687,
+        "timestamp": "2026-05-13T20:38:01.227339"
+      }
+    ],
+    "writer": "QueenCodeArchitect"
+  }
+}

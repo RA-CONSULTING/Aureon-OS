@@ -1,0 +1,393 @@
+{
+  "schema_version": "aureon-ifs-next-submission-unlock-packet-v1",
+  "generated_at": "2026-07-11T13:34:34+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_next_submission_unlock_packet",
+  "result": "IFS_NEXT_SUBMISSION_UNLOCK_PACKET_READY_NO_SAFE_PORTAL_SUBMISSION",
+  "source_current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260711_133135.json",
+  "source_official_live_search_refresh": "applications/IFS_OFFICIAL_LIVE_SEARCH_REFRESH_20260711_133311.json",
+  "source_cost_appendix_pack": "applications/IFS_OPEN_SOURCE_COST_APPENDIX_PACK_20260711_132906.json",
+  "official_refresh": {
+    "official_competition_count": 20,
+    "missing_from_aureon_queue_count": 0,
+    "result": "IFS_OFFICIAL_LIVE_SEARCH_REFRESH_RECONCILED_NO_NEW_SUBMIT_READY_ROUTE"
+  },
+  "summary": {
+    "active_gated_routes": 16,
+    "cost_appendices_linked": 15,
+    "direct_submit_ready_routes": 0,
+    "safe_portal_submissions_now": 0,
+    "new_browser_submissions_available": 0,
+    "emails_ready_without_action_time_confirmation": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false
+  },
+  "route_queue": [
+    {
+      "application_id": "APP-IFS-AKT6-2473-20260709",
+      "name": "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+      "status": "AKT6_KNOWLEDGE_BASE_EVIDENCE_REQUESTS_SENT_WAITING_REPLY",
+      "route_family": "P1_NEAREST_DEADLINE",
+      "priority": 1,
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "missing_evidence": [
+        "eligible UK knowledge-base lead",
+        "TTO or authorised lead contact",
+        "UK business four-FTE evidence",
+        "work package, budget and signed role confirmation"
+      ],
+      "unlock_type": "WAITING_FOR_KNOWLEDGE_BASE_REPLY",
+      "next_action": "Check gaxlec@gmail.com and local/Drive evidence for a Queen's, Ulster, RTO or Catapult lead reply with four-FTE and budget confirmation.",
+      "safe_when": "Eligible lead organisation, authorised contact, four-FTE evidence, role confirmation and project budget are all present.",
+      "cost_appendix_pdf": "output/pdf/ifs/cost_appendices_20260711_132906/2473_Accelerated_Knowledge_Transfer_Partnerships_6_AKT_6_20260711_132906.pdf",
+      "direct_submit_ready": false,
+      "safe_portal_submission_now": false,
+      "external_action_ready_without_confirmation": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "name": "Clean Maritime Demonstration Competition 7: Deployment trials",
+      "status": "CMDC7_MARITIME_EVIDENCE_REQUESTS_SENT_WAITING_REPLY",
+      "route_family": "P1_NEAREST_DEADLINE",
+      "priority": 1,
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "missing_evidence": [
+        "UK maritime deployment lead",
+        "deployment asset or site",
+        "permissions and safety case",
+        "partner budget and deployment schedule"
+      ],
+      "unlock_type": "WAITING_FOR_MARITIME_PARTNER_REPLY",
+      "next_action": "Check gaxlec@gmail.com and local/Drive evidence for maritime lead, asset/site, safety/permissions and partner budget evidence.",
+      "safe_when": "Named UK maritime lead, vessel/port/shipyard asset, permissions/safety basis and eligible budget are confirmed.",
+      "cost_appendix_pdf": "output/pdf/ifs/cost_appendices_20260711_132906/2414_Clean_Maritime_Demonstration_Competition_7_Deployment_trials_20260711_132906.pdf",
+      "direct_submit_ready": false,
+      "safe_portal_submission_now": false,
+      "external_action_ready_without_confirmation": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "name": "Clean Maritime Demonstration Competition 7: Feasibility studies",
+      "status": "CMDC7_MARITIME_EVIDENCE_REQUESTS_SENT_WAITING_REPLY",
+      "route_family": "P1_NEAREST_DEADLINE",
+      "priority": 1,
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "missing_evidence": [
+        "UK maritime lead",
+        "feasibility partner and asset context",
+        "scope, budget and work package",
+        "partner commitment evidence"
+      ],
+      "unlock_type": "WAITING_FOR_MARITIME_PARTNER_REPLY",
+      "next_action": "Check gaxlec@gmail.com and local/Drive evidence for maritime lead, asset/site, safety/permissions and partner budget evidence.",
+      "safe_when": "Named UK maritime lead, vessel/port/shipyard asset, permissions/safety basis and eligible budget are confirmed.",
+      "cost_appendix_pdf": "output/pdf/ifs/cost_appendices_20260711_132906/2416_Clean_Maritime_Demonstration_Competition_7_Feasibility_studies_20260711_132906.pdf",
+      "direct_submit_ready": false,
+      "safe_portal_submission_now": false,
+      "external_action_ready_without_confirmation": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "name": "Clean Maritime Demonstration Competition 7: Pre-deployment trials",
+      "status": "CMDC7_MARITIME_EVIDENCE_REQUESTS_SENT_WAITING_REPLY",
+      "route_family": "P1_NEAREST_DEADLINE",
+      "priority": 1,
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "missing_evidence": [
+        "UK maritime lead",
+        "vessel or port/shipyard asset",
+        "trial site permissions",
+        "safety case, permits and insurance basis",
+        "eligible budget and deployment plan"
+      ],
+      "unlock_type": "WAITING_FOR_MARITIME_PARTNER_REPLY",
+      "next_action": "Check gaxlec@gmail.com and local/Drive evidence for maritime lead, asset/site, safety/permissions and partner budget evidence.",
+      "safe_when": "Named UK maritime lead, vessel/port/shipyard asset, permissions/safety basis and eligible budget are confirmed.",
+      "cost_appendix_pdf": "output/pdf/ifs/cost_appendices_20260711_132906/2415_Clean_Maritime_Demonstration_Competition_7_Pre_deployment_trials_20260711_132906.pdf",
+      "direct_submit_ready": false,
+      "safe_portal_submission_now": false,
+      "external_action_ready_without_confirmation": false
+    },
+    {
+      "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+      "name": "ACTASAP Pilot Phase 1",
+      "status": "ACTASAP_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+      "route_family": "P2_NEXT_DEADLINE",
+      "priority": 2,
+      "deadline": "2026-07-28T11:00:00+01:00",
+      "missing_evidence": [
+        "eligible UK academic institution lead",
+        "TTO or authorised research-office contact",
+        "scope and validation work package",
+        "budget and commitment evidence"
+      ],
+      "unlock_type": "ACADEMIC_LEAD_REQUIRED",
+      "next_action": "Search for an academic/TTO lead response and validation work-package confirmation.",
+      "safe_when": "Eligible UK academic institution lead and authorised submission route are confirmed.",
+      "cost_appendix_pdf": "output/pdf/ifs/cost_appendices_20260711_132906/2502_ACTASAP_Pilot_Phase_1_20260711_132906.pdf",
+      "direct_submit_ready": false,
+      "safe_portal_submission_now": false,
+      "external_action_ready_without_confirmation": false
+    },
+    {
+      "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+      "name": "Full ADOPT Grant: Round 8",
+      "status": "ADOPT_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+      "route_family": "P2_NEXT_DEADLINE",
+      "priority": 2,
+      "deadline": "2026-07-29T11:00:00+01:00",
+      "missing_evidence": [
+        "England farming, growing or forestry lead",
+        "collaborating farm business",
+        "farm problem statement",
+        "facilitator or support role evidence"
+      ],
+      "unlock_type": "PARTNER_LED_FARM_ROUTE",
+      "next_action": "Treat as partner/service route; search for an England farm lead and role evidence, not a direct R&A submission.",
+      "safe_when": "Eligible farm lead, farm collaboration, support role and budget evidence are confirmed.",
+      "cost_appendix_pdf": "output/pdf/ifs/cost_appendices_20260711_132906/2491_Full_ADOPT_Grant_Round_8_20260711_132906.pdf",
+      "direct_submit_ready": false,
+      "safe_portal_submission_now": false,
+      "external_action_ready_without_confirmation": false
+    },
+    {
+      "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+      "name": "ADOPT Facilitator Support Grant: Round 10",
+      "status": "ADOPT_EVIDENCE_DELTA_NO_UNLOCK_OUTREACH_READY",
+      "route_family": "P2_NEXT_DEADLINE",
+      "priority": 3,
+      "deadline": "2026-08-12T11:00:00+01:00",
+      "missing_evidence": [
+        "England farm business context",
+        "registered facilitator evidence",
+        "role and procurement evidence"
+      ],
+      "unlock_type": "PARTNER_LED_FARM_ROUTE",
+      "next_action": "Treat as partner/service route; search for an England farm lead and role evidence, not a direct R&A submission.",
+      "safe_when": "Eligible farm lead, farm collaboration, support role and budget evidence are confirmed.",
+      "cost_appendix_pdf": "output/pdf/ifs/cost_appendices_20260711_132906/2520_ADOPT_Facilitator_Support_Grant_Round_10_20260711_132906.pdf",
+      "direct_submit_ready": false,
+      "safe_portal_submission_now": false,
+      "external_action_ready_without_confirmation": false
+    },
+    {
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "name": "UK-Switzerland CR&D Round 3",
+      "status": "LIVE_DRAFT_FINANCE_COMPLETE_COST_BOOK_VARIANCE_STAGED_PROJECT_IMPACT_TERMS_GATED",
+      "route_family": "LIVE_DRAFT_UK_SWISS",
+      "priority": 3,
+      "deadline": "2026-09-03T11:00:00+01:00",
+      "missing_evidence": [
+        "Swiss implementation partner",
+        "research institute or waiver evidence",
+        "partner commitment letter",
+        "partner budget and eligible-cost split",
+        "permit/licence position",
+        "export-control position",
+        "project finances and Project Impact"
+      ],
+      "unlock_type": "LIVE_DRAFT_PROVIDER_AND_PARTNER_GATED",
+      "next_action": "Resume IFS application 10210100 only after Project Impact persists and Swiss partner/research/budget evidence is attached.",
+      "safe_when": "Project Impact persists in IFS, Award terms can be completed truthfully, Swiss implementation partner and research institute/waiver evidence are present.",
+      "cost_appendix_pdf": "output/pdf/ifs/cost_appendices_20260711_132906/2512_UK_Switzerland_CR_D_Round_3_20260711_132906.pdf",
+      "direct_submit_ready": false,
+      "safe_portal_submission_now": false,
+      "external_action_ready_without_confirmation": false
+    },
+    {
+      "application_id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+      "name": "Commercialising Knowledge Assets Fund (CKAF) Autumn",
+      "status": "CKAF_PUBLIC_SECTOR_RESEARCH_ORG_AND_KNOWLEDGE_ASSET_EVIDENCE_REQUIRED",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "priority": 4,
+      "deadline": "2026-09-01T11:00:00+01:00",
+      "missing_evidence": [
+        "eligible public-sector research organisation lead",
+        "knowledge-asset ownership evidence",
+        "senior support or authorised lead evidence",
+        "Aureon support/procurement role"
+      ],
+      "unlock_type": "PUBLIC_SECTOR_RESEARCH_ORG_REQUIRED",
+      "next_action": "Search for eligible public-sector research organisation lead and knowledge-asset ownership evidence.",
+      "safe_when": "Eligible PSRE/ALB/public-sector research body lead owns or controls the knowledge asset and authorises the application.",
+      "cost_appendix_pdf": "output/pdf/ifs/cost_appendices_20260711_132906/2478_Commercialising_Knowledge_Assets_Fund_CKAF_Autumn_20260711_132906.pdf",
+      "direct_submit_ready": false,
+      "safe_portal_submission_now": false,
+      "external_action_ready_without_confirmation": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+      "name": "DRIVE35 Innovation Fund: Collaborate 3",
+      "status": "DRIVE35_COLLAB3_ZEV_PARTNER_MATCH_FUNDING_AND_TIER1_EVIDENCE_REQUIRED",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "priority": 4,
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "missing_evidence": [
+        "vehicle manufacturer or Tier 1 partner",
+        "ZEV work package",
+        "match funding evidence",
+        "eligible budget and consortium role"
+      ],
+      "unlock_type": "ZEV_PARTNER_AND_FINANCE_REQUIRED",
+      "next_action": "Search for vehicle manufacturer, Tier 1, ZEV facility, match funding or co-investment evidence.",
+      "safe_when": "Named eligible automotive/ZEV partner, role, match funding and eligible budget are confirmed.",
+      "cost_appendix_pdf": "output/pdf/ifs/cost_appendices_20260711_132906/2522_DRIVE35_Innovation_Fund_Collaborate_3_20260711_132906.pdf",
+      "direct_submit_ready": false,
+      "safe_portal_submission_now": false,
+      "external_action_ready_without_confirmation": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+      "name": "Zero Emission Vessels and Infrastructure 2: Alternative Fuels",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "priority": 4,
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "missing_evidence": [
+        "UK maritime lead",
+        "alternative-fuel vessel or infrastructure asset",
+        "three-year demonstration commitment",
+        "eligible budget and permissions"
+      ],
+      "unlock_type": "MARITIME_CONSORTIUM_REQUIRED",
+      "next_action": "Search for maritime consortium, vessel/infrastructure asset, permissions and three-year demonstration budget.",
+      "safe_when": "UK maritime consortium, asset/site, permissions and eligible demonstration budget are confirmed.",
+      "cost_appendix_pdf": "output/pdf/ifs/cost_appendices_20260711_132906/2434_Zero_Emission_Vessels_and_Infrastructure_2_Alternative_Fuels_20260711_132906.pdf",
+      "direct_submit_ready": false,
+      "safe_portal_submission_now": false,
+      "external_action_ready_without_confirmation": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+      "name": "Zero Emission Vessels and Infrastructure 2: Electric Power",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "priority": 4,
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "missing_evidence": [
+        "UK maritime lead",
+        "electric-power vessel or infrastructure asset",
+        "three-year demonstration commitment",
+        "eligible budget and permissions"
+      ],
+      "unlock_type": "MARITIME_CONSORTIUM_REQUIRED",
+      "next_action": "Search for maritime consortium, vessel/infrastructure asset, permissions and three-year demonstration budget.",
+      "safe_when": "UK maritime consortium, asset/site, permissions and eligible demonstration budget are confirmed.",
+      "cost_appendix_pdf": "output/pdf/ifs/cost_appendices_20260711_132906/2435_Zero_Emission_Vessels_and_Infrastructure_2_Electric_Power_20260711_132906.pdf",
+      "direct_submit_ready": false,
+      "safe_portal_submission_now": false,
+      "external_action_ready_without_confirmation": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+      "name": "Zero Emission Vessels and Infrastructure 2: Energy Efficiency",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "priority": 4,
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "missing_evidence": [
+        "UK maritime lead",
+        "vessel/infrastructure asset",
+        "three-year demonstration commitment",
+        "eligible budget and permissions"
+      ],
+      "unlock_type": "MARITIME_CONSORTIUM_REQUIRED",
+      "next_action": "Search for maritime consortium, vessel/infrastructure asset, permissions and three-year demonstration budget.",
+      "safe_when": "UK maritime consortium, asset/site, permissions and eligible demonstration budget are confirmed.",
+      "cost_appendix_pdf": "output/pdf/ifs/cost_appendices_20260711_132906/2436_Zero_Emission_Vessels_and_Infrastructure_2_Energy_Efficiency_20260711_132906.pdf",
+      "direct_submit_ready": false,
+      "safe_portal_submission_now": false,
+      "external_action_ready_without_confirmation": false
+    },
+    {
+      "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "name": "Scaling performance of quantum computing hardware: CR&D",
+      "status": "QUANTUM_HARDWARE_LEAD_ACCESS_CONSORTIUM_AND_BUDGET_EVIDENCE_REQUIRED",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "priority": 4,
+      "deadline": "2026-09-18T11:00:00+01:00",
+      "missing_evidence": [
+        "eligible quantum hardware lead",
+        "facility or hardware access",
+        "consortium commitment",
+        "budget and validation plan"
+      ],
+      "unlock_type": "QUANTUM_HARDWARE_LEAD_REQUIRED",
+      "next_action": "Search for quantum hardware lead, facility access and validation budget evidence.",
+      "safe_when": "Eligible quantum hardware lead, hardware/facility access and consortium budget are confirmed.",
+      "cost_appendix_pdf": "output/pdf/ifs/cost_appendices_20260711_132906/2523_Scaling_performance_of_quantum_computing_hardware_CR_D_20260711_132906.pdf",
+      "direct_submit_ready": false,
+      "safe_portal_submission_now": false,
+      "external_action_ready_without_confirmation": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+      "name": "DRIVE35: Scale Up Fund",
+      "status": "DRIVE35_SCALEUP_ZEV_MANUFACTURING_FACILITY_AND_COINVESTMENT_EVIDENCE_REQUIRED",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "priority": 5,
+      "deadline": "open-no-submission-deadline",
+      "missing_evidence": [
+        "ZEV manufacturing facility or site",
+        "co-investment evidence",
+        "eligible GBP5m plus project cost basis",
+        "manufacturing scale-up plan"
+      ],
+      "unlock_type": "ZEV_PARTNER_AND_FINANCE_REQUIRED",
+      "next_action": "Search for vehicle manufacturer, Tier 1, ZEV facility, match funding or co-investment evidence.",
+      "safe_when": "Named eligible automotive/ZEV partner, role, match funding and eligible budget are confirmed.",
+      "cost_appendix_pdf": "output/pdf/ifs/cost_appendices_20260711_132906/2445_DRIVE35_Scale_Up_Fund_20260711_132906.pdf",
+      "direct_submit_ready": false,
+      "safe_portal_submission_now": false,
+      "external_action_ready_without_confirmation": false
+    },
+    {
+      "application_id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+      "name": "Innovation Loans Expression of Interest",
+      "status": "INNOVATION_LOANS_REPAYABLE_FINANCE_CAPACITY_AND_ACTION_APPROVAL_REQUIRED",
+      "route_family": "REPAYABLE_FINANCE_HELD_OUTSIDE_GRANT_QUEUE",
+      "priority": 6,
+      "deadline": "open-no-submission-deadline",
+      "missing_evidence": [
+        "repayable finance approval",
+        "repayment capacity evidence",
+        "cash-flow forecast",
+        "specific action-time approval for loan route"
+      ],
+      "unlock_type": "REPAYABLE_FINANCE_EXCLUDED_FROM_GRANT_QUEUE",
+      "next_action": "Keep outside grant queue unless repayable finance is deliberately approved with cash-flow evidence.",
+      "safe_when": "Specific action-time approval for loan finance and repayment capacity evidence are present.",
+      "cost_appendix_pdf": null,
+      "direct_submit_ready": false,
+      "safe_portal_submission_now": false,
+      "external_action_ready_without_confirmation": false
+    }
+  ],
+  "controls": [
+    "No route is promoted to direct-submit-ready from this packet.",
+    "No IFS portal field was changed and no external submission, email, contact form, upload or partner invitation was performed.",
+    "Cost appendices are attached as evidence assets only; they do not remove partner, eligibility, budget or provider gates.",
+    "The next operational action is evidence acquisition and reply monitoring, then a fresh route-specific stop/go audit."
+  ],
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false,
+  "contact_route_submitted": false,
+  "partner_invite_sent": false,
+  "upload_performed": false,
+  "direct_submit_ready_routes": 0,
+  "new_browser_submissions_available": 0,
+  "outputs": {
+    "json": "applications/IFS_NEXT_SUBMISSION_UNLOCK_PACKET_20260711_133434.json",
+    "markdown": "applications/IFS_NEXT_SUBMISSION_UNLOCK_PACKET_20260711_133434.md",
+    "pipeline_report": "pipelines/pipeline_report_20260711_133434_ifs_next_submission_unlock_packet.json"
+  },
+  "backups": {
+    "applications": "backups/applications_pre_ifs_next_submission_unlock_packet_20260711_133434.json",
+    "autopilot_status": "backups/autopilot_status_pre_ifs_next_submission_unlock_packet_20260711_133434.json",
+    "pipeline": "backups/pipeline_pre_ifs_next_submission_unlock_packet_20260711_133434.json"
+  }
+}

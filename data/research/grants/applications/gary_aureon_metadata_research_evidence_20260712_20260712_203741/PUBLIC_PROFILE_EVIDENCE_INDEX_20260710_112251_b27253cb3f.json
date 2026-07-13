@@ -1,0 +1,403 @@
+{
+  "schema_version": "aureon-public-profile-evidence-index-v1",
+  "generated_at": "2026-07-10T11:22:51+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "public_profile_evidence_index",
+  "public_sources": [
+    {
+      "source_id": "official_company_evidence",
+      "name": "Companies House officer appointments",
+      "url": "https://find-and-update.company-information.service.gov.uk/officers/MBz3UJ2TUYab2wWi-r2iSWD3SWw/appointments",
+      "source_type": "official_register",
+      "claim_weight": "A_OFFICIAL_PUBLIC_REGISTER",
+      "evidence_summary": [
+        "R&A Consulting and Brokerage Services Ltd is listed as active with company number NI696693.",
+        "Gary Leckey is listed as an active director appointed on 26 April 2023.",
+        "The company context supports applicant identity and governance background for grant records."
+      ],
+      "grant_use": [
+        "Use to support applicant identity, company/director context, and governance background.",
+        "Do not use as evidence of route-specific eligibility, partner commitment, budget, permits, export-control status, or financial capacity."
+      ],
+      "exclusions": [
+        "Not evidence of IFS route-specific eligibility.",
+        "Not evidence of partner commitment, budget, site permissions, permits, export-control position, or financial capacity."
+      ]
+    },
+    {
+      "source_id": "persistent_identifier_evidence",
+      "name": "ORCID public record",
+      "url": "https://orcid.org/0009-0004-2792-4649",
+      "source_type": "persistent_researcher_identifier",
+      "claim_weight": "B_PUBLIC_PROFILE_SELF_ASSERTED_WITH_PERSISTENT_ID",
+      "evidence_summary": [
+        "ORCID iD 0009-0004-2792-4649 is associated with Gary Leckey.",
+        "The profile presents research around harmonic systems, quantum-consciousness integration, energy systems, aerospace propulsion, and applied harmonic technology.",
+        "The record includes public researcher links and open research outputs, including Zenodo DOI entries."
+      ],
+      "grant_use": [
+        "Use to support researcher identity, persistent public profile, research themes, and open research output routing.",
+        "Do not present profile metadata as independent technical validation or partner endorsement."
+      ],
+      "exclusions": [
+        "Not independent peer review by itself.",
+        "Not evidence of IFS partner eligibility, budget, permit, export licence, or award-term acceptance."
+      ]
+    },
+    {
+      "source_id": "research_profile_evidence",
+      "name": "ResearchGate public profile",
+      "url": "https://www.researchgate.net/profile/Gary-Leckey",
+      "source_type": "public_research_profile",
+      "claim_weight": "B_C_PUBLIC_PROFILE",
+      "evidence_summary": [
+        "The profile identifies Gary Anthony Leckey as Research Director at Aureon Institute.",
+        "The profile presents a public research biography and skills in probability, data analysis, computational learning, adaptive systems, and related methods.",
+        "The profile shows a substantial public publication count, useful for narrative context but not for route eligibility by itself."
+      ],
+      "grant_use": [
+        "Use to support public research activity, role description, publication volume, and domain narrative.",
+        "Do not treat profile statements as peer-review, grant eligibility evidence, or independent validation unless separately evidenced."
+      ],
+      "exclusions": [
+        "Not an independent validation report.",
+        "Not proof that any current IFS partner-led route has an eligible lead, site, asset, or budget."
+      ]
+    },
+    {
+      "source_id": "open_source_evidence",
+      "name": "RA-CONSULTING GitHub organisation",
+      "url": "https://github.com/RA-CONSULTING",
+      "source_type": "public_source_code_profile",
+      "claim_weight": "A_B_PUBLIC_REPOSITORY_EVIDENCE",
+      "evidence_summary": [
+        "The public organisation identifies Aureon Institute as the research department of R&A Consulting.",
+        "The organisation hosts public repositories including aureon-trading.",
+        "The aureon-trading repository is public, Python-based, and has public stars/forks visibility, supporting open-source software evidence."
+      ],
+      "grant_use": [
+        "Use to support open-source/software evidence, repository visibility, and technical implementation narrative.",
+        "Do not treat repository presence as proof of commercial traction, external partner access, or validated performance."
+      ],
+      "exclusions": [
+        "Not proof of validated model performance, commercial sales, or external partner commitment.",
+        "Not evidence for partner-led IFS eligibility gates without separate partner records."
+      ]
+    },
+    {
+      "source_id": "academic_profile_evidence",
+      "name": "Academia public profiles",
+      "url": "https://gleckey.academia.edu/",
+      "additional_urls": [
+        "https://independent.academia.edu/AureonInstitute"
+      ],
+      "source_type": "public_academic_profile",
+      "claim_weight": "C_PUBLIC_PROFILE_SUPPLEMENTARY",
+      "evidence_summary": [
+        "Academia profiles provide public distribution and research narrative context for Gary Leckey and Aureon Institute.",
+        "Use only as supplementary public-profile evidence behind primary local artifacts, ORCID, source code, and official registers."
+      ],
+      "grant_use": [
+        "Use as a public distribution/profile channel and supplementary research narrative source.",
+        "Do not use as high-weight eligibility or validation evidence without primary sources."
+      ],
+      "exclusions": [
+        "Not route eligibility evidence.",
+        "Not independent validation or proof of collaborator commitment."
+      ]
+    },
+    {
+      "source_id": "formal_company_research_site",
+      "name": "R&A Consulting public research page",
+      "url": "https://www.raconsultingandbrokerage.com/research",
+      "source_type": "applicant_controlled_public_research_site",
+      "claim_weight": "C_SELF_PUBLISHED_PUBLIC_SITE",
+      "evidence_summary": [
+        "Applicant-controlled public research page can provide a stable external reference for the Aureon research programme where it matches local evidence.",
+        "Use as a public narrative channel, not as independent validation."
+      ],
+      "grant_use": [
+        "Use as an applicant-controlled public research reference where it matches local evidence.",
+        "Class as self-published; do not use as independent validation."
+      ],
+      "exclusions": [
+        "Do not use as independent validation.",
+        "Do not use for route-specific partner, budget, permit, export, or finance claims."
+      ]
+    },
+    {
+      "source_id": "public_outreach_low_weight",
+      "name": "Public social/outreach channels listed from researcher profiles",
+      "url": null,
+      "source_type": "public_outreach_channel",
+      "claim_weight": "LOW_WEIGHT_OUTREACH_ONLY",
+      "evidence_summary": [
+        "Social channels may evidence public outreach or dissemination only where a funder explicitly asks for it.",
+        "They are excluded from the formal IFS evidence base unless a later route-specific pack deliberately selects and sanitizes them."
+      ],
+      "grant_use": [
+        "Use only for public-outreach context if a route specifically asks for dissemination channels.",
+        "Avoid in formal IFS attachments unless needed and sanitized."
+      ],
+      "exclusions": [
+        "Do not cite in formal IFS technical or eligibility answers unless necessary.",
+        "Do not use for technical validation, eligibility, budget, partner, permit, or finance claims."
+      ]
+    }
+  ],
+  "route_use": [
+    {
+      "application_id": "APP-IFS-NEXT-WAVE-10209601",
+      "title": "Aureon Evidence Studio for Createch AI Workflows",
+      "deadline": "2026-08-11T11:00:00+01:00",
+      "status": "SUBMITTED",
+      "route_state": "SUBMITTED_MONITOR_ONLY",
+      "public_profile_evidence_use": "Attach public-profile evidence for monitoring, clarification responses, and future amendment packs only.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-FLF-R11-2499-20260709",
+      "title": "Aureon AI Evidence OS - Future Leaders Fellowship Round 11 Pack",
+      "deadline": "2026-11-04T11:00:00+00:00",
+      "status": "SUBMITTED",
+      "route_state": "SUBMITTED_MONITOR_ONLY",
+      "public_profile_evidence_use": "Attach public-profile evidence for monitoring, clarification responses, and future amendment packs only.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+      "title": "Innovation Loans Expression of Interest",
+      "deadline": "open-no-submission-deadline",
+      "status": "INNOVATION_LOANS_REPAYABLE_FINANCE_CAPACITY_AND_ACTION_APPROVAL_REQUIRED",
+      "route_state": "FINANCE_RISK_GATED",
+      "public_profile_evidence_use": "Public profile evidence does not address repayable finance risk, repayment capacity, cash-flow forecast or loan-specific approval.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+      "title": "Aureon Flex Evidence OS: AI Assurance for Consumer-Led Flexibility",
+      "deadline": "2026-08-26T11:00:00+01:00",
+      "status": "SUBMITTED",
+      "route_state": "SUBMITTED_MONITOR_ONLY",
+      "public_profile_evidence_use": "Attach public-profile evidence for monitoring, clarification responses, and future amendment packs only.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "title": "UK-Switzerland CR&D Round 3",
+      "deadline": "2026-09-03T11:00:00+01:00",
+      "status": "IFS_DRAFT_80_PERCENT_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route_state": "LIVE_DRAFT_GATED",
+      "public_profile_evidence_use": "Strengthens public research and software narrative for live draft 10210100, but does not unlock Q4 permits, Q6 export status, partner budget, partner commitment, Project Impact, finances or award terms.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-CFI-SEN-2511-20260709",
+      "title": "Aureon SEN Evidence OS: Fair Early Identification Support",
+      "deadline": "2026-08-05T11:00:00+01:00",
+      "status": "SUBMITTED",
+      "route_state": "SUBMITTED_MONITOR_ONLY",
+      "public_profile_evidence_use": "Attach public-profile evidence for monitoring, clarification responses, and future amendment packs only.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "title": "Scaling performance of quantum computing hardware: CR&D",
+      "deadline": "2026-09-18T11:00:00+01:00",
+      "status": "QUANTUM_HARDWARE_LEAD_ACCESS_CONSORTIUM_AND_BUDGET_EVIDENCE_REQUIRED",
+      "route_state": "ELIGIBILITY_OR_PARTNER_GATED",
+      "public_profile_evidence_use": "Supports research narrative and open-source profile, but does not unlock quantum hardware lead, facility access, consortium commitment or budget evidence.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+      "title": "ADOPT Facilitator Support Grant: Round 10",
+      "deadline": "2026-08-12T11:00:00+01:00",
+      "status": "ADOPT_FACILITATOR_ENGLAND_FARM_BUSINESS_AND_REGISTERED_FACILITATOR_EVIDENCE_REQUIRED",
+      "route_state": "ELIGIBILITY_OR_PARTNER_GATED",
+      "public_profile_evidence_use": "May support facilitator/service narrative only; does not unlock England farming, growing or forestry lead evidence.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+      "title": "DRIVE35 Innovation Fund: Collaborate 3",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "status": "DRIVE35_COLLAB3_ZEV_PARTNER_MATCH_FUNDING_AND_TIER1_EVIDENCE_REQUIRED",
+      "route_state": "ELIGIBILITY_OR_PARTNER_GATED",
+      "public_profile_evidence_use": "May support software/evidence workflow narrative only; does not unlock ZEV manufacturer, Tier 1 partner, site, facility, match funding or budget evidence.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+      "title": "DRIVE35: Scale Up Fund",
+      "deadline": "open-no-submission-deadline",
+      "status": "DRIVE35_SCALEUP_ZEV_MANUFACTURING_FACILITY_AND_COINVESTMENT_EVIDENCE_REQUIRED",
+      "route_state": "ELIGIBILITY_OR_PARTNER_GATED",
+      "public_profile_evidence_use": "May support software/evidence workflow narrative only; does not unlock ZEV manufacturer, Tier 1 partner, site, facility, match funding or budget evidence.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+      "title": "Full ADOPT Grant: Round 8",
+      "deadline": "2026-07-29T11:00:00+01:00",
+      "status": "ADOPT_FULL_FARMING_LEAD_AND_PARTNER_EVIDENCE_REQUIRED",
+      "route_state": "ELIGIBILITY_OR_PARTNER_GATED",
+      "public_profile_evidence_use": "May support facilitator/service narrative only; does not unlock England farming, growing or forestry lead evidence.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+      "title": "ACTASAP Pilot Phase 1",
+      "deadline": "2026-07-28T11:00:00+01:00",
+      "status": "ACTASAP_ACADEMIC_LEAD_AND_TTO_EVIDENCE_REQUIRED",
+      "route_state": "ELIGIBILITY_OR_PARTNER_GATED",
+      "public_profile_evidence_use": "May support the scientific narrative for an academic-led route; does not unlock eligible academic lead, TTO contact, scope approval or budget evidence.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-AKT6-2473-20260709",
+      "title": "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "status": "AKT6_KNOWLEDGE_BASE_LEAD_AND_4FTE_EVIDENCE_REQUIRED",
+      "route_state": "ELIGIBILITY_OR_PARTNER_GATED",
+      "public_profile_evidence_use": "May support business/research narrative for an AKT6 partner role; does not unlock eligible knowledge-base lead, TTO authorization, 4 FTE evidence or signed work package.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+      "title": "Commercialising Knowledge Assets Fund (CKAF) Autumn",
+      "deadline": "2026-09-01T11:00:00+01:00",
+      "status": "CKAF_PUBLIC_SECTOR_RESEARCH_ORG_AND_KNOWLEDGE_ASSET_EVIDENCE_REQUIRED",
+      "route_state": "ELIGIBILITY_OR_PARTNER_GATED",
+      "public_profile_evidence_use": "May support knowledge-asset narrative only; does not unlock eligible public-sector research organisation lead or asset ownership evidence.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+      "title": "Zero Emission Vessels and Infrastructure 2: Energy Efficiency",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route_state": "PARTNER_LED_CONVERSION_PACK_READY",
+      "public_profile_evidence_use": "May support Aureon evidence-assurance role in a partner-led maritime route; does not unlock UK maritime lead, asset, site permissions, safety case, insurance, permits or eligible budget.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+      "title": "Zero Emission Vessels and Infrastructure 2: Electric Power",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route_state": "PARTNER_LED_CONVERSION_PACK_READY",
+      "public_profile_evidence_use": "May support Aureon evidence-assurance role in a partner-led maritime route; does not unlock UK maritime lead, asset, site permissions, safety case, insurance, permits or eligible budget.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+      "title": "Zero Emission Vessels and Infrastructure 2: Alternative Fuels",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route_state": "PARTNER_LED_CONVERSION_PACK_READY",
+      "public_profile_evidence_use": "May support Aureon evidence-assurance role in a partner-led maritime route; does not unlock UK maritime lead, asset, site permissions, safety case, insurance, permits or eligible budget.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "title": "Clean Maritime Demonstration Competition 7: Pre-deployment trials",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route_state": "PARTNER_LED_CONVERSION_PACK_READY",
+      "public_profile_evidence_use": "May support Aureon evidence-assurance role in a partner-led maritime route; does not unlock UK maritime lead, asset, site permissions, safety case, insurance, permits or eligible budget.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "title": "Clean Maritime Demonstration Competition 7: Feasibility studies",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route_state": "PARTNER_LED_CONVERSION_PACK_READY",
+      "public_profile_evidence_use": "May support Aureon evidence-assurance role in a partner-led maritime route; does not unlock UK maritime lead, asset, site permissions, safety case, insurance, permits or eligible budget.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "title": "Clean Maritime Demonstration Competition 7: Deployment trials",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "route_state": "PARTNER_LED_CONVERSION_PACK_READY",
+      "public_profile_evidence_use": "May support Aureon evidence-assurance role in a partner-led maritime route; does not unlock UK maritime lead, asset, site permissions, safety case, insurance, permits or eligible budget.",
+      "direct_submit_ready_from_public_profile_evidence": false,
+      "portal_action_ready_now": false,
+      "email_send_ready_now": false
+    }
+  ],
+  "source_quality_controls": [
+    "Use Companies House and other official registers as primary identity/governance evidence.",
+    "Use ORCID as persistent researcher identity and public profile metadata, not as independent validation.",
+    "Use ResearchGate and Academia only as public profile and dissemination evidence unless backed by primary outputs.",
+    "Use GitHub repositories as public software/source evidence, not as proof of partner commitment or technical performance.",
+    "Use applicant-controlled websites and social channels as low-weight public narrative or outreach evidence only."
+  ],
+  "route_gate_controls": [
+    "No public profile source unlocks eligible partner lead, research institute, TTO authorization, 4 FTE evidence, site/asset ownership, permissions, safety case, permits, export licence, Project Impact, budget, match funding, repayment capacity, or award-term acceptance.",
+    "Do not submit active IFS routes from this evidence alone.",
+    "Do not enter binary legal/export declarations from public profile evidence.",
+    "Do not invite partners, upload files, send emails, accept terms, or press final submission from this index."
+  ],
+  "privacy_and_secret_controls": [
+    "This index uses public profile and public register facts only.",
+    "No plaintext passwords, bank details, tax identifiers, private keys, tokens, national insurance numbers, or private finance files are copied.",
+    "Public email addresses from profile pages are deliberately excluded from this index unless a later outreach pack receives exact action-time approval."
+  ],
+  "summary": {
+    "public_sources_indexed": 7,
+    "ifs_applications_reviewed": 20,
+    "submitted_monitor_only_routes": 4,
+    "active_not_submitted_routes": 16,
+    "direct_ifs_submissions_unlocked": 0,
+    "new_browser_submissions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "private_finance_files_used": false,
+    "secrets_or_passwords_copied": false
+  },
+  "result": "PUBLIC_PROFILE_EVIDENCE_INDEX_ATTACHED_NO_NEW_IFS_SUBMIT_READY_ROUTE"
+}

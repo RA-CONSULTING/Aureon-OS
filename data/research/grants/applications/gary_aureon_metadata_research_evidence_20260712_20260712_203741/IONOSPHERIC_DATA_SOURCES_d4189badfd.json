@@ -1,0 +1,211 @@
+{
+  "timestamp": "2026-04-07T23:28:16.226160",
+  "title": "Open Source Ionospheric Data Sources - Analysis",
+  "objective": "Identify and catalog publicly accessible ionospheric monitoring systems",
+  "data_sources": {
+    "real_time_monitoring": [
+      {
+        "name": "GIRO/GAMBIT",
+        "url": "https://giro.uml.edu/GAMBIT",
+        "description": "Global Assimilative Model of Bottomside Ionosphere Timeline",
+        "data_types": [
+          "IRTAM 3D coefficients",
+          "foF2",
+          "hmF2",
+          "B0",
+          "B1"
+        ],
+        "access": "Open academic-use access, Guest account available",
+        "coverage": "Global via 69+ ionosonde stations",
+        "real_time": "3-day delay for open data, Real-time via subscription"
+      },
+      {
+        "name": "HAARP Diagnostic Suite",
+        "url": "https://haarp.gi.alaska.edu/diagnostic-suite",
+        "description": "University of Alaska Fairbanks ionospheric observatory",
+        "data_types": [
+          "Ionosonde",
+          "Oblique ionosonde",
+          "Magnetometer",
+          "Riometer"
+        ],
+        "access": "Public real-time data feeds",
+        "coverage": "Gakona, Alaska (62.4\u00b0N, 145.2\u00b0W)",
+        "real_time": "Yes - continuous passive monitoring"
+      },
+      {
+        "name": "Mirrion 2 (NOAA)",
+        "url": "https://www.ncei.noaa.gov/products/space-weather/legacy-data/mirrion-2-real-time-ionosonde",
+        "description": "Real-time ionosonde data mirror system",
+        "data_types": [
+          "Latest ionograms",
+          "MUF3000 maps",
+          "Global station maps"
+        ],
+        "access": "Public FTP, Web interface",
+        "coverage": "100+ global ionosonde stations",
+        "real_time": "Yes"
+      },
+      {
+        "name": "SGO Ionosonde (Finland)",
+        "url": "https://www.sgo.fi/Data/Ionosonde/ionData.php",
+        "description": "Sodankyl\u00e4 Geophysical Observatory",
+        "data_types": [
+          "HFTI plots",
+          "HTI plots",
+          "foE",
+          "foF2"
+        ],
+        "access": "Free for scientific/educational use",
+        "coverage": "Northern Finland (67.4\u00b0N, 26.6\u00b0E)",
+        "real_time": "Daily updates"
+      },
+      {
+        "name": "WALDO VLF Database",
+        "url": "https://waldo.world",
+        "description": "Worldwide Archive of Low-Frequency Data and Observations",
+        "data_types": [
+          "VLF amplitude data",
+          "Transmitter-receiver pairs"
+        ],
+        "access": "Open access, MATLAB format",
+        "coverage": "Global VLF network",
+        "real_time": "Archive with recent data"
+      }
+    ],
+    "schumann_resonance": [
+      {
+        "name": "Space Observing System (Tomsk)",
+        "url": "https://schumannresonancedata.com/",
+        "description": "Real-time Schumann resonance monitoring",
+        "data_types": [
+          "SR spectrograms",
+          "Amplitude data",
+          "Frequency tracking"
+        ],
+        "access": "Public web interface",
+        "coverage": "Tomsk, Russia (56.5\u00b0N, 85.0\u00b0E)",
+        "real_time": "Hourly updates"
+      },
+      {
+        "name": "GeoCenter.info",
+        "url": "https://geocenter.info/en/monitoring/schumann",
+        "description": "Schumann resonance online monitoring",
+        "data_types": [
+          "Frequency plots",
+          "Amplitude plots",
+          "Q-factor plots"
+        ],
+        "access": "Public web interface",
+        "coverage": "Tomsk region",
+        "real_time": "Continuous"
+      },
+      {
+        "name": "Disclosure News Italy",
+        "url": "https://www.disclosurenews.it/schumann-resonance-today/",
+        "description": "Schumann resonance daily updates and analysis",
+        "data_types": [
+          "Daily SR reports",
+          "Power levels",
+          "Frequency variations"
+        ],
+        "access": "Public web updates",
+        "coverage": "Global",
+        "real_time": "Daily updates"
+      }
+    ],
+    "space_weather": [
+      {
+        "name": "NOAA SWPC",
+        "url": "https://www.swpc.noaa.gov",
+        "description": "Space Weather Prediction Center",
+        "data_types": [
+          "Solar wind",
+          "Magnetometer",
+          "Kp index",
+          "Aurora forecasts"
+        ],
+        "access": "Public",
+        "coverage": "Global",
+        "real_time": "Yes"
+      },
+      {
+        "name": "NASA iSWA",
+        "url": "https://iswa.gsfc.nasa.gov",
+        "description": "Integrated Space Weather Analysis",
+        "data_types": [
+          "Enlil solar storm model",
+          "Magnetosphere models",
+          "Satellite data"
+        ],
+        "access": "Public",
+        "coverage": "Global",
+        "real_time": "Yes"
+      },
+      {
+        "name": "TechTIDE",
+        "url": "http://www.tech-tide.eu/",
+        "description": "Traveling Ionospheric Disturbance detection network",
+        "data_types": [
+          "TID tracking",
+          "LSTID detection",
+          "Real-time warnings"
+        ],
+        "access": "Public web interface",
+        "coverage": "Europe, South Africa",
+        "real_time": "Yes"
+      }
+    ],
+    "gnss_tec": [
+      {
+        "name": "IGS (International GNSS Service)",
+        "url": "https://igs.org/",
+        "description": "Global TEC maps and data",
+        "data_types": [
+          "VTEC maps",
+          "GNSS data",
+          "Ionospheric products"
+        ],
+        "access": "Public",
+        "coverage": "Global",
+        "real_time": "Yes"
+      },
+      {
+        "name": "NASA CDDIS",
+        "url": "https://cddis.nasa.gov/",
+        "description": "Crustal Dynamics Data Information System",
+        "data_types": [
+          "GNSS data archive",
+          "RINEX files"
+        ],
+        "access": "Public FTP",
+        "coverage": "Global",
+        "real_time": "Archive with recent data"
+      }
+    ]
+  },
+  "anomaly_detection_methods": {
+    "ionosonde": [
+      "Spread-F detection (HA419-IonogramSet dataset available)",
+      "Critical frequency variations (foF2, foE)",
+      "Virtual height anomalies",
+      "D-region absorption (DRAP model)"
+    ],
+    "vlf": [
+      "Amplitude variations from transmitter-receiver pairs",
+      "Sudden ionospheric disturbances (SIDs)",
+      "Solar flare effects"
+    ],
+    "schumann": [
+      "Frequency deviations from 7.83 Hz baseline",
+      "Amplitude spikes (Power levels)",
+      "Harmonic anomalies (14, 20, 26, 33 Hz)"
+    ],
+    "magnetometer": [
+      "Kp index variations",
+      "Local magnetic field fluctuations",
+      "Auroral electrojet activity"
+    ]
+  },
+  "key_insight": "Multiple independent open-source systems confirm ionospheric monitoring capability exists globally. Data is accessible for anomaly detection, correlation analysis, and independent verification of unusual ionospheric events."
+}

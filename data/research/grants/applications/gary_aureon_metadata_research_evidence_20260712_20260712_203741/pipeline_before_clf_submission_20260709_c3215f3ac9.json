@@ -1,0 +1,623 @@
+{
+  "generated_at": "2026-07-09T11:21:31+01:00",
+  "summary": {
+    "total_opportunities_tracked": 40,
+    "open_opportunities": 37,
+    "urgent_deadlines_30d": 8,
+    "total_applications": 12,
+    "draft_applications": 0,
+    "submitted_applications": 3,
+    "awarded_applications": 0,
+    "active_applications": 3,
+    "pipeline_value_gbp": 350000,
+    "non_gbp_active_requests": [
+      {
+        "id": "APP-AIRR-001",
+        "currency": "GPU_HOURS",
+        "amount_requested": 500000
+      }
+    ]
+  },
+  "urgent_opportunities": [
+    {
+      "id": "IFS-AKT6-2473",
+      "name": "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+      "funder": "Innovate UK",
+      "funder_country": "UK",
+      "amount_min": 0,
+      "amount_max": 0,
+      "currency": "GBP",
+      "opens": "2026-05-26T11:00:00+01:00",
+      "closes": "2026-07-15T11:00:00+01:00",
+      "eligibility": "To lead a project your organisation must: be a UK registered higher education or further education institution, research and technology organisation (RTO) or Catapult collaborate with a UK registered business of any size with four or more full time employees The business must contribute a minimum of 10% to the project’s costs.",
+      "description": "UK registered academic institutions, RTOs or Catapults can apply for a share of up to £2.5 million to fund innovation projects with businesses.",
+      "fit_score": 4,
+      "status": "OPEN",
+      "research_areas": [
+        "knowledge transfer",
+        "SME innovation",
+        "academic partnership"
+      ],
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2473/overview/d9a164dd-2094-4590-baa7-a057279d80a3",
+      "notes": "IFS current sweep 2026-07-09. Route decision: Aureon can be the business problem owner, but an academic/RTO/Catapult lead is required. Next action: Use as academic partnership target. Raw closes text: 15 July 2026. IFS search result gave date only; 11:00 UK time is a tracker placeholder until the competition-specific page is checked.",
+      "created_at": "2026-07-09T07:30:00+01:00",
+      "updated_at": "2026-07-09T07:30:00+01:00"
+    },
+    {
+      "id": "IFS-CMDC7-PREDEPLOYMENT-2415",
+      "name": "Clean Maritime Demonstration Competition 7: Pre-deployment trials",
+      "funder": "Innovate UK",
+      "funder_country": "UK",
+      "amount_min": 0,
+      "amount_max": 0,
+      "currency": "GBP",
+      "opens": "2026-03-11T11:00:00+01:00",
+      "closes": "2026-07-15T11:00:00+01:00",
+      "eligibility": "This competition is open to collaborations only. To lead a collaborative project your organisation must: be a UK registered business of any size collaborate with other UK registered organisations",
+      "description": "UK registered organisations can apply for a share of up to £121 million across the three strands of this competition for innovative clean maritime technologies. This funding is from the Department for Transport (DfT).",
+      "fit_score": 5,
+      "status": "OPEN",
+      "research_areas": [
+        "clean maritime",
+        "energy",
+        "simulation",
+        "AI assurance"
+      ],
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2415/overview/fa34afe8-b2e7-4cda-b77b-cf952d26a27a",
+      "notes": "IFS current sweep 2026-07-09. Route decision: Potential partner route for energy/simulation evidence only; maritime deployment partner required. Next action: Log partner-required route and deadline risk. Raw closes text: 15 July 2026. IFS search result gave date only; 11:00 UK time is a tracker placeholder until the competition-specific page is checked.",
+      "created_at": "2026-07-09T07:30:00+01:00",
+      "updated_at": "2026-07-09T07:30:00+01:00"
+    },
+    {
+      "id": "IFS-CMDC7-FEASIBILITY-2416",
+      "name": "Clean Maritime Demonstration Competition 7: Feasibility studies",
+      "funder": "Innovate UK",
+      "funder_country": "UK",
+      "amount_min": 0,
+      "amount_max": 0,
+      "currency": "GBP",
+      "opens": "2026-03-11T11:00:00+01:00",
+      "closes": "2026-07-15T11:00:00+01:00",
+      "eligibility": "This competition is open to collaborations only. To lead a collaborative project your organisation must: be a UK registered business of any size collaborate with other UK registered organisations",
+      "description": "UK registered organisations can apply for a share of up to £121 million across the three strands of this competition for innovative clean maritime technologies. This funding is from the Department for Transport (DfT).",
+      "fit_score": 5,
+      "status": "OPEN",
+      "research_areas": [
+        "clean maritime",
+        "energy",
+        "simulation",
+        "AI assurance"
+      ],
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2416/overview/f49610a2-5e82-4898-b357-10f80154a2b8",
+      "notes": "IFS current sweep 2026-07-09. Route decision: Potential partner route for energy/simulation evidence only; maritime deployment partner required. Next action: Log partner-required route and deadline risk. Raw closes text: 15 July 2026. IFS search result gave date only; 11:00 UK time is a tracker placeholder until the competition-specific page is checked.",
+      "created_at": "2026-07-09T07:30:00+01:00",
+      "updated_at": "2026-07-09T07:30:00+01:00"
+    },
+    {
+      "id": "IFS-CMDC7-DEPLOYMENT-2414",
+      "name": "Clean Maritime Demonstration Competition 7: Deployment trials",
+      "funder": "Innovate UK",
+      "funder_country": "UK",
+      "amount_min": 0,
+      "amount_max": 0,
+      "currency": "GBP",
+      "opens": "2026-03-11T11:00:00+01:00",
+      "closes": "2026-07-15T11:00:00+01:00",
+      "eligibility": "This competition is open to collaborations only. To lead a collaborative project your organisation must: be a UK registered business of any size collaborate with other UK registered organisations",
+      "description": "UK registered organisations can apply for a share of up to £121 million across the three strands of this competition for innovative clean maritime technologies. This funding is from the Department for Transport (DfT).",
+      "fit_score": 5,
+      "status": "OPEN",
+      "research_areas": [
+        "clean maritime",
+        "energy",
+        "simulation",
+        "AI assurance"
+      ],
+      "url": "https://apply-for-innovation-funding.service.gov.uk/competition/2414/overview/3409b968-a2b7-44e7-83a7-c2d3e8ad8f8e",
+      "notes": "IFS current sweep 2026-07-09. Route decision: Potential partner route for energy/simulation evidence only; maritime deployment partner required. Next action: Log partner-required route and deadline risk. Raw closes text: 15 July 2026. IFS search result gave date only; 11:00 UK time is a tracker placeholder until the competition-specific page is checked.",
+      "created_at": "2026-07-09T07:30:00+01:00",
+      "updated_at": "2026-07-09T07:30:00+01:00"
+    }
+  ],
+  "top_opportunities": [
+    {
+      "id": "INNOVATE-UK-SMART",
+      "name": "Innovate UK Smart Grant",
+      "funder": "Innovate UK",
+      "funder_country": "UK",
+      "amount_min": 25000,
+      "amount_max": 2000000,
+      "currency": "GBP",
+      "opens": null,
+      "closes": null,
+      "eligibility": "UK-registered businesses. No PhD required.",
+      "description": "Supports disruptive innovations with commercial potential. Quarterly rounds.",
+      "fit_score": 10,
+      "status": "OPEN",
+      "research_areas": [
+        "AI",
+        "Energy",
+        "Space",
+        "Defence"
+      ],
+      "url": "https://www.ukri.org/councils/innovate-uk/",
+      "notes": "R&A Consulting can apply directly. Priority: Aureon AI commercialization.",
+      "created_at": "2026-07-03T00:00:00",
+      "updated_at": "2026-07-03T00:00:00"
+    },
+    {
+      "id": "UKSA-NSIP",
+      "name": "National Space Innovation Programme",
+      "funder": "UK Space Agency",
+      "funder_country": "UK",
+      "amount_min": 50000,
+      "amount_max": 500000,
+      "currency": "GBP",
+      "opens": null,
+      "closes": null,
+      "eligibility": "UK organisations. SMEs encouraged.",
+      "description": "Supports innovative space technology and services.",
+      "fit_score": 10,
+      "status": "OPEN",
+      "research_areas": [
+        "Space",
+        "Energy",
+        "LSSP"
+      ],
+      "url": "https://www.gov.uk/government/organisations/uk-space-agency",
+      "notes": "Perfect fit for LSSP and EPAS. Contact innovation team.",
+      "created_at": "2026-07-03T00:00:00",
+      "updated_at": "2026-07-03T00:00:00"
+    },
+    {
+      "id": "AIRR-COMPUTE",
+      "name": "AIRR Compute: AI Open Access",
+      "funder": "UKRI (EPSRC)",
+      "funder_country": "UK",
+      "amount_min": 50000,
+      "amount_max": 1400000,
+      "currency": "GPU_HOURS",
+      "opens": "2026-06-04T09:00:00+01:00",
+      "closes": "2026-07-17T16:00:00+01:00",
+      "eligibility": "UK registered businesses and eligible UK research organisations can apply for AIRR AI Open Access compute.",
+      "description": "Compute-only access to AIRR resources including Isambard-AI for AI-driven research and scientific discovery.",
+      "fit_score": 10,
+      "status": "OPEN",
+      "research_areas": [
+        "AI",
+        "Compute",
+        "Neuroscience"
+      ],
+      "url": "https://www.ukri.org/opportunity/airr-compute-opportunity-ai-open-access/",
+      "notes": "Portal draft created for proposal 0261-8797-7601-1. Final submit requires subsidy, peer-review, and company filing checks.",
+      "created_at": "2026-07-03T00:00:00",
+      "updated_at": "2026-07-06T07:00:44+01:00"
+    },
+    {
+      "id": "TEMPLETON-FOUNDATION",
+      "name": "Templeton Foundation Science & Big Questions",
+      "funder": "John Templeton Foundation",
+      "funder_country": "USA",
+      "amount_min": 50000,
+      "amount_max": 500000,
+      "currency": "USD",
+      "opens": null,
+      "closes": null,
+      "eligibility": "Open. International researchers welcome.",
+      "description": "Supports research at the intersection of science and big questions (consciousness, meaning, etc.).",
+      "fit_score": 10,
+      "status": "OPEN",
+      "research_areas": [
+        "Consciousness",
+        "Physics",
+        "Meaning"
+      ],
+      "url": "https://www.templeton.org/",
+      "notes": "PERFECT FIT. Your HNC framework and consciousness research are exactly what they fund.",
+      "created_at": "2026-07-03T00:00:00",
+      "updated_at": "2026-07-03T00:00:00"
+    },
+    {
+      "id": "UKRI-FLF-2026",
+      "name": "UKRI Future Leaders Fellowship Round 9",
+      "funder": "UK Research and Innovation",
+      "funder_country": "UK",
+      "amount_min": 500000,
+      "amount_max": 2100000,
+      "currency": "GBP",
+      "opens": "2026-01-01",
+      "closes": "2026-06-16",
+      "eligibility": "Must be at eligible UK research organisation. Transitioning to independence.",
+      "description": "Supports early career researchers transitioning to research independence. 4-year fellowship.",
+      "fit_score": 9,
+      "status": "CLOSED",
+      "research_areas": [
+        "AI",
+        "Neuroscience",
+        "Physics",
+        "Space"
+      ],
+      "url": "https://www.ukri.org/opportunity/ukri-future-leaders-fellowships-round-9/",
+      "notes": "CRITICAL: Need university affiliation. Contact QUB/Ulster immediately. Stale status corrected by Aureon current sweep on 2026-07-09.",
+      "created_at": "2026-07-03T00:00:00",
+      "updated_at": "2026-07-09T07:30:00+01:00"
+    },
+    {
+      "id": "HORIZON-EIC",
+      "name": "Horizon Europe EIC Accelerator",
+      "funder": "European Innovation Council",
+      "funder_country": "EU",
+      "amount_min": 500000,
+      "amount_max": 2500000,
+      "currency": "EUR",
+      "opens": null,
+      "closes": null,
+      "eligibility": "EU-based companies. UK companies can participate (associate status).",
+      "description": "Grants + equity for breakthrough innovations.",
+      "fit_score": 9,
+      "status": "OPEN",
+      "research_areas": [
+        "Energy",
+        "AI",
+        "Space"
+      ],
+      "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities",
+      "notes": "Apply through Innovate UK as UK national contact point.",
+      "created_at": "2026-07-03T00:00:00",
+      "updated_at": "2026-07-03T00:00:00"
+    },
+    {
+      "id": "NATO-DIANA",
+      "name": "NATO DIANA Accelerator",
+      "funder": "NATO",
+      "funder_country": "International",
+      "amount_min": 100000,
+      "amount_max": 300000,
+      "currency": "EUR",
+      "opens": "2027-01-01",
+      "closes": "2027-03-31",
+      "eligibility": "Dual-use technology companies.",
+      "description": "Accelerator for deep tech with defence applications.",
+      "fit_score": 9,
+      "status": "PENDING",
+      "research_areas": [
+        "Space",
+        "Energy",
+        "Defence",
+        "EPAS"
+      ],
+      "url": "https://www.diana.nato.int/",
+      "notes": "2027 cohort. Space Solar Power is NATO priority. Prepare now.",
+      "created_at": "2026-07-03T00:00:00",
+      "updated_at": "2026-07-03T00:00:00"
+    },
+    {
+      "id": "SCHMIDT-FUTURES",
+      "name": "Schmidt Sciences / Schmidt Futures",
+      "funder": "Eric & Wendy Schmidt",
+      "funder_country": "USA",
+      "amount_min": 100000,
+      "amount_max": 2000000,
+      "currency": "USD",
+      "opens": null,
+      "closes": null,
+      "eligibility": "Open. Interdisciplinary research.",
+      "description": "Supports ambitious interdisciplinary research.",
+      "fit_score": 9,
+      "status": "OPEN",
+      "research_areas": [
+        "AI",
+        "Science",
+        "Interdisciplinary"
+      ],
+      "url": "https://www.schmidtfutures.com/",
+      "notes": "Your interdisciplinary AI + physics + neuroscience is exactly what they want.",
+      "created_at": "2026-07-03T00:00:00",
+      "updated_at": "2026-07-03T00:00:00"
+    },
+    {
+      "id": "SIMONS-FOUNDATION",
+      "name": "Simons Foundation Collaboration Grants",
+      "funder": "Simons Foundation",
+      "funder_country": "USA",
+      "amount_min": 100000,
+      "amount_max": 2000000,
+      "currency": "USD",
+      "opens": null,
+      "closes": null,
+      "eligibility": "Open. Mathematics and physical sciences focus.",
+      "description": "Supports mathematics, physics, and life sciences.",
+      "fit_score": 9,
+      "status": "OPEN",
+      "research_areas": [
+        "Mathematics",
+        "Physics",
+        "Neuroscience"
+      ],
+      "url": "https://www.simonsfoundation.org/",
+      "notes": "HNC harmonic mathematics and physics are strong fit.",
+      "created_at": "2026-07-03T00:00:00",
+      "updated_at": "2026-07-03T00:00:00"
+    },
+    {
+      "id": "ARPA-E",
+      "name": "ARPA-E Energy Research",
+      "funder": "Advanced Research Projects Agency-Energy",
+      "funder_country": "USA",
+      "amount_min": 500000,
+      "amount_max": 5000000,
+      "currency": "USD",
+      "opens": null,
+      "closes": null,
+      "eligibility": "US entities. International collaboration.",
+      "description": "Supports high-risk energy technology research.",
+      "fit_score": 9,
+      "status": "OPEN",
+      "research_areas": [
+        "Energy",
+        "Technology"
+      ],
+      "url": "https://arpa-e.energy.gov/",
+      "notes": "LSSP space energy and Illumination Chip. PERFECT FIT.",
+      "created_at": "2026-07-03T00:00:00",
+      "updated_at": "2026-07-03T00:00:00"
+    }
+  ],
+  "applications": [
+    {
+      "id": "APP-AIRR-001",
+      "opportunity_id": "AIRR-COMPUTE",
+      "name": "AIRR Compute: AI Open Access Application",
+      "funder": "UKRI (EPSRC)",
+      "amount_requested": 500000,
+      "currency": "GPU_HOURS",
+      "status": "SUBMITTED",
+      "deadline": "2026-07-17T16:00:00+01:00",
+      "submitted_at": "2026-07-09T06:57:00+01:00",
+      "documents": [
+        "funder_ready/FORMAL_ATTACHMENT_INDEX_20260709.pdf",
+        "funder_ready/AIRR_SUPPORTING_EVIDENCE_SUMMARY_20260709.pdf",
+        "funder_ready/AUREON_MASTER_SUPPORTING_EVIDENCE_20260709.pdf",
+        "AIRR_AI_OPEN_ACCESS_SUPPORTING_FORM_20260706.pdf"
+      ],
+      "assigned_to": "Aureon",
+      "notes": "AIRRPortal proposal 0261-8797-7601-1 was submitted on 9 July 2026 at 6:57 AM portal time. Requested 500,000 Isambard-AI Open Access GPU hours over 365 days. Funder-ready evidence files are available in applications/funder_ready.",
+      "created_at": "2026-07-03T00:00:00",
+      "updated_at": "2026-07-09T06:58:39.863733+01:00"
+    },
+    {
+      "id": "APP-QUB-001",
+      "opportunity_id": "N/A",
+      "name": "QUB Honorary Research Fellow Application",
+      "funder": "Queen's University Belfast",
+      "amount_requested": 0,
+      "currency": "GBP",
+      "status": "PARTNER_OUTREACH_DRAFT",
+      "deadline": "2026-07-31",
+      "submitted_at": null,
+      "documents": [
+        "QUB_OUTREACH_EMAIL.txt"
+      ],
+      "assigned_to": "Gary Leckey",
+      "notes": "QUB route is partner/research-affiliation outreach, not a grant submission. Use only as a partner-development route.",
+      "created_at": "2026-07-03T00:00:00",
+      "updated_at": "2026-07-09T07:16:53+01:00"
+    },
+    {
+      "id": "APP-IFS-NEXT-WAVE-10209601",
+      "opportunity_id": "IFS-NEXT-WAVE-2517",
+      "name": "Aureon Evidence Studio for Createch AI Workflows",
+      "funder": "Innovate UK",
+      "amount_requested": 175000,
+      "currency": "GBP",
+      "status": "SUBMITTED",
+      "deadline": "2026-08-11T11:00:00+01:00",
+      "submitted_at": "2026-07-07T13:47:00+01:00",
+      "documents": [
+        "funder_ready/FORMAL_ATTACHMENT_INDEX_20260709.pdf",
+        "funder_ready/IFS_NEXT_WAVE_10209601_SUPPORTING_EVIDENCE_SUMMARY_20260709.pdf",
+        "funder_ready/AUREON_MASTER_SUPPORTING_EVIDENCE_20260709.pdf",
+        "IFS_NEXT_WAVE_Q14_PROJECT_PLAN_APPENDIX_20260705.pdf",
+        "IFS_NEXT_WAVE_Q15_RISK_REGISTER_APPENDIX_20260705.pdf",
+        "IFS_NEXT_WAVE_SUBMISSION_RECEIPT_20260709.pdf"
+      ],
+      "assigned_to": "Aureon",
+      "notes": "Portal application 10209601 was submitted through the Innovation Funding Service on 7 July 2026 at 1:47pm. Monitor assessment and feedback; reopening is reserved for a deliberate resubmission decision. Total eligible cost is GBP250,000 with grant request GBP175,000 and company contribution GBP75,000.",
+      "created_at": "2026-07-05T00:00:00+01:00",
+      "updated_at": "2026-07-09T04:45:15+01:00"
+    },
+    {
+      "id": "APP-EIC-ACCELERATOR-STEP1-20260706",
+      "opportunity_id": "HORIZON-EIC",
+      "name": "Aureon Evidence Studio - EIC Accelerator Step 1 Draft",
+      "funder": "European Innovation Council",
+      "amount_requested": 0,
+      "currency": "EUR",
+      "status": "EVIDENCE_GATED",
+      "deadline": "open-continuous-step-1-confirm-in-portal",
+      "submitted_at": null,
+      "documents": [
+        "EIC_ACCELERATOR_STEP1_SHORT_PROPOSAL_DRAFT_20260706.md",
+        "EIC_ACCELERATOR_STEP1_SHORT_PROPOSAL_DRAFT_20260706.pdf",
+        "EIC_ACCELERATOR_10_SLIDE_PITCH_DECK_DRAFT_20260706.md",
+        "EIC_ACCELERATOR_3_MIN_VIDEO_SCRIPT_20260706.md",
+        "EIC_ACCELERATOR_EVIDENCE_GAP_REGISTER_20260706.json"
+      ],
+      "assigned_to": "Aureon",
+      "notes": "EIC Step 1 pack exists as a preparation route. Customer discovery notes, LOIs or pilot interest, competitor map, prototype or demo evidence, FTO/IP note, finance plan, and privacy policy are required before external submission.",
+      "created_at": "2026-07-06T06:34:10+01:00",
+      "updated_at": "2026-07-09T07:16:53+01:00"
+    },
+    {
+      "id": "APP-IFS-FLF-R11-2499-20260709",
+      "opportunity_id": "IFS-FLF-R11-2499",
+      "name": "Aureon AI Evidence OS - Future Leaders Fellowship Round 11 Pack",
+      "funder": "UKRI / Innovate UK",
+      "amount_requested": 175000,
+      "currency": "GBP",
+      "status": "SUBMITTED",
+      "deadline": "2026-11-04T11:00:00+00:00",
+      "documents": [
+        "funder_ready/FORMAL_ATTACHMENT_INDEX_20260709.pdf",
+        "funder_ready/IFS_FUTURE_LEADERS_R11_SUPPORTING_EVIDENCE_20260709.pdf",
+        "funder_ready/AUREON_MASTER_SUPPORTING_EVIDENCE_20260709.pdf",
+        "IFS_FUTURE_LEADERS_R11_10209992_ETHICS_RESPONSE_20260709.pdf",
+        "IFS_FUTURE_LEADERS_R11_10209992_DRAFT_STATUS_20260709.md",
+        "IFS_FUTURE_LEADERS_R11_10209992_FINANCE_WORKPAPER_20260709.md",
+        "CHROME_IFS_ACCESS_DIAGNOSTIC_20260709.md",
+        "IFS_FUTURE_LEADERS_R11_10209992_SUBSIDY_COMPLETED_20260709.md",
+        "IFS_FUTURE_LEADERS_R11_10209992_FINANCE_PORTAL_ENTRY_20260709.md",
+        "IFS_FUTURE_LEADERS_R11_10209992_PAYE_EVIDENCE_20260709.md",
+        "applications/evidence/HMRC_PAYE_APPLICATION_RECEIVED_RNA_CONSULTING_BRPY00000169269_20260709.jpg",
+        "IFS_FUTURE_LEADERS_R11_10209992_READY_FOR_FINAL_SUBMIT_20260709.md",
+        "applications/evidence/HMRC_PAYE_APPLICATION_RECEIVED_RNA_CONSULTING_BRPY00000169269_20260709_source2.jpg",
+        "IFS_FUTURE_LEADERS_R11_10209992_SUBMISSION_STATUS_20260709.md",
+        "IFS_FUTURE_LEADERS_R11_10209992_SUBMISSION_RECEIPT_20260709.json"
+      ],
+      "notes": "IFS application 10209992 was submitted through the Innovation Funding Service. Portal status page shows Application submitted for Future Leaders Fellowships: Round 11, business and non-academic, submitted on 9 Jul 2026 at 11:07am. Track URL: https://apply-for-innovation-funding.service.gov.uk/application/10209992/track. Submitted finance: total eligible costs GBP250,000, funding level 70.00%, funding sought GBP175,000, company contribution GBP75,000, other public sector funding GBP0. Monitor the IFS track page and gaxlec@gmail.com for eligibility checks, assessment updates, and funder correspondence.",
+      "submitted_at": "2026-07-09T11:07:00+01:00",
+      "assigned_to": "Aureon",
+      "created_at": "2026-07-09T07:30:00+01:00",
+      "updated_at": "2026-07-09T11:09:28+01:00"
+    },
+    {
+      "id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+      "opportunity_id": "IFS-INNOVATION-LOANS-EOI-2505",
+      "name": "Aureon Evidence Studio - Innovation Loans EOI",
+      "funder": "Innovate UK",
+      "amount_requested": 500000,
+      "currency": "GBP_LOAN",
+      "status": "NOT_GRANT_FINANCE_RISK_GATED",
+      "deadline": "open-no-submission-deadline",
+      "documents": [
+        "IFS_CURRENT_FIT_MATRIX_20260709.md",
+        "AUREON_UNIFIED_WORK_CORPUS_20260709.json"
+      ],
+      "notes": "Innovation Loans is a loan route rather than grant funding. Submission requires repayment, cashflow, subsidy, finance-risk, and director approval records.",
+      "submitted_at": null,
+      "assigned_to": "Aureon",
+      "created_at": "2026-07-09T07:30:00+01:00",
+      "updated_at": "2026-07-09T07:16:53+01:00"
+    },
+    {
+      "id": "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+      "opportunity_id": "IFS-CLEAN-ENERGY-FLEX-2509",
+      "name": "Aureon Energy Flexibility Evidence and Assurance Scope",
+      "funder": "Innovate UK / UKRI R&D Missions Accelerator",
+      "amount_requested": 500000,
+      "currency": "GBP",
+      "status": "PARTNER_CUSTOMER_EVIDENCE_GATED",
+      "deadline": "2026-08-26T11:00:00+01:00",
+      "documents": [
+        "IFS_CURRENT_FIT_MATRIX_20260709.md",
+        "AUREON_UNIFIED_WORK_CORPUS_20260709.json"
+      ],
+      "notes": "Potential grant route when scoped with consumer-energy flexibility partner or customer evidence. Energy-domain partner/customer evidence and project scope are required before a standalone application.",
+      "submitted_at": null,
+      "assigned_to": "Aureon",
+      "created_at": "2026-07-09T07:30:00+01:00",
+      "updated_at": "2026-07-09T07:16:53+01:00"
+    },
+    {
+      "id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "opportunity_id": "IFS-UK-SWISS-CRD-R3-2512",
+      "name": "Aureon International Evidence Automation Collaboration Abstract",
+      "funder": "Innovate UK / Innosuisse",
+      "amount_requested": 300000,
+      "currency": "GBP",
+      "status": "PARTNER_REQUIRED",
+      "deadline": "2026-09-03T11:00:00+01:00",
+      "documents": [
+        "IFS_CURRENT_FIT_MATRIX_20260709.md"
+      ],
+      "notes": "Collaboration-only route requiring at least one Swiss implementation partner under the equivalent Innosuisse programme.",
+      "submitted_at": null,
+      "assigned_to": "Aureon",
+      "created_at": "2026-07-09T07:30:00+01:00",
+      "updated_at": "2026-07-09T07:16:53+01:00"
+    },
+    {
+      "id": "APP-IFS-CFI-SEN-2511-20260709",
+      "opportunity_id": "IFS-CFI-SEN-2511",
+      "name": "Aureon Responsible AI Evidence Tooling for Earlier SEN Identification",
+      "funder": "Innovate UK",
+      "amount_requested": 250000,
+      "currency": "GBP",
+      "status": "PARTNER_ETHICS_GATED",
+      "deadline": "2026-08-05T11:00:00+01:00",
+      "documents": [
+        "IFS_CURRENT_FIT_MATRIX_20260709.md"
+      ],
+      "notes": "Requires education/SEN partner, ethics framing, procurement fit, and evidence that tooling supports professional judgement without replacing it.",
+      "submitted_at": null,
+      "assigned_to": "Aureon",
+      "created_at": "2026-07-09T07:30:00+01:00",
+      "updated_at": "2026-07-09T07:16:53+01:00"
+    },
+    {
+      "id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "opportunity_id": "IFS-QUANTUM-HARDWARE-CRD-2523",
+      "name": "Aureon Scientific Compute Governance for Quantum Hardware Partner Route",
+      "funder": "Innovate UK",
+      "amount_requested": 500000,
+      "currency": "GBP",
+      "status": "HARDWARE_LEAD_PARTNER_REQUIRED",
+      "deadline": "2026-09-18T11:00:00+01:00",
+      "documents": [
+        "IFS_CURRENT_FIT_MATRIX_20260709.md"
+      ],
+      "notes": "Requires a quantum hardware lead partner. Aureon can be positioned as software, runtime, and evidence-assurance support.",
+      "submitted_at": null,
+      "assigned_to": "Aureon",
+      "created_at": "2026-07-09T07:30:00+01:00",
+      "updated_at": "2026-07-09T07:16:53+01:00"
+    },
+    {
+      "id": "APP-EUREKA-EUROSTARS-CALL11-20260709",
+      "opportunity_id": "EUREKA-EUROSTARS-CALL11-20260910",
+      "name": "Aureon Eurostars International R&D Collaboration Route",
+      "funder": "Eureka Eurostars",
+      "amount_requested": 0,
+      "currency": "NATIONAL_RULES",
+      "status": "PARTNER_REQUIRED",
+      "deadline": "2026-09-10T14:00:00+02:00",
+      "submitted_at": null,
+      "documents": [
+        "applications/EUROSTARS_CALL11_PARTNER_ROUTE_BRIEF_20260709.md",
+        "AUREON_UNIFIED_WORK_CORPUS_20260709.json",
+        "IFS_CURRENT_FIT_MATRIX_20260709.md"
+      ],
+      "assigned_to": "Aureon",
+      "notes": "Stage only. Build a cross-border SME/research partner shortlist, confirm UK national funding body rules, then prepare a Eurostars consortium abstract. No portal submission without partner confirmation.",
+      "created_at": "2026-07-09T11:21:31+01:00",
+      "updated_at": "2026-07-09T11:21:31+01:00"
+    },
+    {
+      "id": "APP-UKRI-CHERI-IKC-PARTNER-20260709",
+      "opportunity_id": "UKRI-EPSRC-CHERI-IKC-20260917",
+      "name": "Aureon CHERI IKC Academic Partner Evidence Route",
+      "funder": "EPSRC / DSIT",
+      "amount_requested": 0,
+      "currency": "GBP",
+      "status": "ACADEMIC_HOST_REQUIRED",
+      "deadline": "2026-09-17T16:00:00+01:00",
+      "submitted_at": null,
+      "documents": [
+        "applications/UKRI_CHERI_IKC_PARTNER_ROUTE_BRIEF_20260709.md"
+      ],
+      "assigned_to": "Aureon",
+      "notes": "Not directly eligible as lead. Stage a partner note for QUB/Ulster/EPSRC-eligible host discussions.",
+      "created_at": "2026-07-09T11:21:31+01:00",
+      "updated_at": "2026-07-09T11:21:31+01:00"
+    }
+  ],
+  "incremental_monitor": {
+    "run_id": "aureon-grant-operator-20260709-incremental",
+    "added_routes": [
+      "EUREKA-EUROSTARS-CALL11-20260910",
+      "UKRI-EPSRC-CHERI-IKC-20260917",
+      "UKRI-EPSRC-OPTICAL-WIRELESS-FACILITY-20260915"
+    ],
+    "submission_guard": "Submitted IFS/AIRR records preserved; no provider login, CAPTCHA, MFA, or final submission attempted in this incremental run."
+  }
+}

@@ -1,0 +1,227 @@
+{
+  "merge_checklist": [
+    {
+      "item": "Extract Antarctic research assets",
+      "relates_to": "source research corpus",
+      "status": "available",
+      "where_it_flows": "source_manifest"
+    },
+    {
+      "item": "Map phi-graded sphere and 13-sign zodiac into Seer",
+      "relates_to": "Seer star/rune reading",
+      "status": "wired",
+      "where_it_flows": "seer.antarctic_research"
+    },
+    {
+      "item": "Map rune/Ogham emotional texture into Lyra",
+      "relates_to": "Lyra emotional resonance",
+      "status": "wired",
+      "where_it_flows": "lyra.antarctic_research"
+    },
+    {
+      "item": "Expose shared context to Probability Nexus",
+      "relates_to": "prediction confidence context",
+      "status": "wired",
+      "where_it_flows": "research_score/research_modifier"
+    },
+    {
+      "item": "Keep research context out of broker mutation authority",
+      "relates_to": "live execution safety boundary",
+      "status": "preserved",
+      "where_it_flows": "execution_command=none"
+    }
+  ],
+  "mode": "context_signal_only",
+  "research_context": {
+    "lyra": {
+      "confidence_modifier": 0.9922,
+      "dominant_ogham_emotion": "Blackthorn",
+      "dominant_rune_emotion": "ice, stillness, hold",
+      "emotional_instruction": "hold_emotional_balance_until_price_and_lifecycle_proof_agree",
+      "logic": [
+        "Feel market emotion through shadow, balance, and prime frequency zones.",
+        "Use rune meaning as an emotional texture for caution, expansion, or holding.",
+        "Let emotional resonance alter confidence only inside existing risk gates."
+      ],
+      "map": "emotion_frequency_folded_onto_phi_rune_lattice",
+      "role": "lyra_reads_emotions",
+      "score": 0.5041
+    },
+    "schema_version": "aureon-antarctic-research-seer-lyra-bridge-v1",
+    "seer": {
+      "action_bias": "HOLD",
+      "confidence_modifier": 0.9833,
+      "dominant_ogham": "Straif",
+      "dominant_rune": "Is",
+      "logic": [
+        "Read the star/rune geometry as timing and coherence context.",
+        "Fold rune and Ogham wheels from the Samhain anchor.",
+        "Use Ophiuchus and the phi-graded sphere as research context, not standalone trade proof."
+      ],
+      "map": "phi_graded_sphere_rune_meridian_13_sign_zodiac",
+      "role": "seer_reads_stars",
+      "score": 0.5219,
+      "wall": "SW",
+      "zodiac_13_sign": "Taurus"
+    },
+    "shared_map": {
+      "chamber_wall": {
+        "bearing_deg": 225.0,
+        "offset_deg": 26.275,
+        "role": "source / seed bank",
+        "wall": "SW"
+      },
+      "execution_command": "none",
+      "generated_at": "2026-05-21T14:50:54.756800+00:00",
+      "golden_angle_deg": 137.507764,
+      "influence": "context_modifier_only",
+      "ogham": {
+        "index": 13,
+        "name": "Straif",
+        "sector_angle_deg": 187.2,
+        "sector_size_deg": 14.4,
+        "tree": "Blackthorn"
+      },
+      "phi_alignment": 0.1096,
+      "phi_error_deg": 61.217,
+      "phi_target_angle_deg": 137.5078,
+      "research_key": "seer_reads_stars_lyra_reads_emotions",
+      "samhain_anchor": "11-01",
+      "seasonal_angle_deg": 198.7248,
+      "source_manifest": {
+        "research_root": "Antarctic research",
+        "source_count": 9,
+        "sources": [
+          {
+            "name": "Pattern_Recognition_Archaeology_Report_v1.docx",
+            "path": "Antarctic research\\Pattern_Recognition_Archaeology_Report_v1.docx",
+            "present": true
+          },
+          {
+            "name": "HNC_White_Paper_v3.docx",
+            "path": "Antarctic research\\HNC_White_Paper_v3.docx",
+            "present": true
+          },
+          {
+            "name": "HNC_White_Paper_v3-1.pdf",
+            "path": "Antarctic research\\HNC_White_Paper_v3-1.pdf",
+            "present": true
+          },
+          {
+            "name": "HNC_Empirical_Audit_v3-1.pptx",
+            "path": "Antarctic research\\HNC_Empirical_Audit_v3-1.pptx",
+            "present": true
+          },
+          {
+            "name": "HNC_Empirical_Audit_v3-1.pdf",
+            "path": "Antarctic research\\HNC_Empirical_Audit_v3-1.pdf",
+            "present": true
+          },
+          {
+            "name": "aureon_poster-1.html",
+            "path": "Antarctic research\\aureon_poster-1.html",
+            "present": true
+          },
+          {
+            "name": "aureon_poster-2.html",
+            "path": "Antarctic research\\aureon_poster-2.html",
+            "present": true
+          },
+          {
+            "name": "aureon_poster-3.html",
+            "path": "Antarctic research\\aureon_poster-3.html",
+            "present": true
+          },
+          {
+            "name": "antarctic_true_shape_replay_report.md",
+            "path": "Antarctic research\\antarctic_true_shape_replay_report.md",
+            "present": true
+          }
+        ],
+        "visual_media": [
+          "Antarctic research\\_extracted\\pattern_report\\word\\media\\590513c76b9371c346b05784850c51d4824081be.png",
+          "Antarctic research\\_extracted\\pattern_report\\word\\media\\9e4f4cda73fbc17d73a9cb657f0ca181f4e3f595.png",
+          "Antarctic research\\_extracted\\pattern_report\\word\\media\\fe0883b042c1c21ee72b8e80b0b495976a69233b.png"
+        ]
+      },
+      "younger_futhork": {
+        "bias": "HOLD",
+        "index": 8,
+        "meaning": "ice, stillness, hold",
+        "name": "Is",
+        "sector_angle_deg": 180.0,
+        "sector_size_deg": 22.5
+      },
+      "zodiac_13_sign": "Taurus"
+    },
+    "status": "research_bridge_ready"
+  },
+  "schema_version": "aureon-antarctic-research-unity-bridge-v1",
+  "source_paths": {
+    "audit_json": "docs/audits/aureon_antarctic_research_unity_bridge.json",
+    "audit_md": "docs/audits/aureon_antarctic_research_unity_bridge.md",
+    "public_json": "frontend/public/aureon_antarctic_research_unity_bridge.json",
+    "research_root": "Antarctic research",
+    "state": "state/aureon_antarctic_research_unity_bridge_last_run.json"
+  },
+  "status": "antarctic_research_context_wired",
+  "summary": {
+    "execution_command_added": false,
+    "lyra_context_available": true,
+    "nexus_context_available": true,
+    "no_new_blocker_gates": true,
+    "seer_context_available": true,
+    "source_count": 9,
+    "visual_media_count": 3
+  },
+  "wiring_rows": [
+    {
+      "authority": "context_signal_only",
+      "path": "aureon/intelligence/aureon_seer_integration.py",
+      "present": true,
+      "relationship": "seer_get_vision attaches Antarctic star/rune research context",
+      "system": "Seer"
+    },
+    {
+      "authority": "context_signal_only",
+      "path": "aureon/trading/aureon_lyra_integration.py",
+      "present": true,
+      "relationship": "lyra_get_resonance attaches Antarctic emotion/frequency research context",
+      "system": "Lyra"
+    },
+    {
+      "authority": "context_signal_only",
+      "path": "aureon/bridges/aureon_probability_nexus.py",
+      "present": true,
+      "relationship": "nexus reads research context as a bounded confidence modifier",
+      "system": "Probability Nexus"
+    },
+    {
+      "authority": "context_signal_only",
+      "path": "aureon/wisdom/antarctic_research_bridge.py",
+      "present": true,
+      "relationship": "machine-readable map for Seer stars and Lyra emotions",
+      "system": "Research Bridge"
+    }
+  ],
+  "write_info": {
+    "evidence_writes": [
+      {
+        "bytes": 7350,
+        "path": "state/aureon_antarctic_research_unity_bridge_last_run.json"
+      },
+      {
+        "bytes": 7350,
+        "path": "docs/audits/aureon_antarctic_research_unity_bridge.json"
+      },
+      {
+        "bytes": 1640,
+        "path": "docs/audits/aureon_antarctic_research_unity_bridge.md"
+      },
+      {
+        "bytes": 7350,
+        "path": "frontend/public/aureon_antarctic_research_unity_bridge.json"
+      }
+    ]
+  }
+}

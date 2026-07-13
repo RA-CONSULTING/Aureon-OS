@@ -1,0 +1,121 @@
+{
+  "9b9b5b6fbe7e": {
+    "tag": "MEGA_WHALE",
+    "reason": "Volume exceeds $1M threshold - institutional threat",
+    "actor": "auto_tagger",
+    "timestamp": 1768509905.7621243,
+    "rule_name": "mega_whale"
+  },
+  "7d8d972b3faf": {
+    "tag": "MEGA_WHALE",
+    "reason": "Volume exceeds $1M threshold - institutional threat",
+    "actor": "auto_tagger",
+    "timestamp": 1768509905.7631688,
+    "rule_name": "mega_whale"
+  },
+  "c53dcccbf5ce": {
+    "tag": "MEGA_WHALE",
+    "reason": "Volume exceeds $1M threshold - institutional threat",
+    "actor": "auto_tagger",
+    "timestamp": 1768509905.763869,
+    "rule_name": "mega_whale"
+  },
+  "a840bee7293c": {
+    "tag": "MEGA_WHALE",
+    "reason": "Volume exceeds $1M threshold - institutional threat",
+    "actor": "auto_tagger",
+    "timestamp": 1768509905.7644942,
+    "rule_name": "mega_whale"
+  },
+  "5b9f486ddd26": {
+    "tag": "MEGA_WHALE",
+    "reason": "Volume exceeds $1M threshold - institutional threat",
+    "actor": "auto_tagger",
+    "timestamp": 1768509905.7651322,
+    "rule_name": "mega_whale"
+  },
+  "9af2f12991e9": {
+    "tag": "MEGA_WHALE",
+    "reason": "Volume exceeds $1M threshold - institutional threat",
+    "actor": "auto_tagger",
+    "timestamp": 1768509905.7659194,
+    "rule_name": "mega_whale"
+  },
+  "592042eaf694": {
+    "tag": "ghost_alameda",
+    "reason": "Pattern matches defunct Alameda Research signature",
+    "actor": "auto_tagger",
+    "timestamp": 1768510059.3613234,
+    "rule_name": "ghost_pattern"
+  },
+  "10ed5380f658": {
+    "tag": "ghost_alameda",
+    "reason": "Pattern matches defunct Alameda Research signature",
+    "actor": "auto_tagger",
+    "timestamp": 1768510121.598882,
+    "rule_name": "ghost_pattern"
+  },
+  "3cf6c0f1d6ef": {
+    "tag": "ghost_alameda",
+    "reason": "Pattern matches defunct Alameda Research signature",
+    "actor": "auto_tagger",
+    "timestamp": 1768510589.7337935,
+    "rule_name": "ghost_pattern"
+  },
+  "1d2e7f1cccd3": {
+    "tag": "ghost_alameda",
+    "reason": "Pattern matches defunct Alameda Research signature",
+    "actor": "auto_tagger",
+    "timestamp": 1768510617.8223884,
+    "rule_name": "ghost_pattern"
+  },
+  "9a68f72fdc6c": {
+    "tag": "ghost_alameda",
+    "reason": "Pattern matches defunct Alameda Research signature",
+    "actor": "auto_tagger",
+    "timestamp": 1768510646.3763952,
+    "rule_name": "ghost_pattern"
+  },
+  "8ae7c6552b76": {
+    "tag": "ghost_alameda",
+    "reason": "Pattern matches defunct Alameda Research signature",
+    "actor": "auto_tagger",
+    "timestamp": 1768511722.6048927,
+    "rule_name": "ghost_pattern"
+  },
+  "8996887457c9": {
+    "tag": "ghost_alameda",
+    "reason": "Pattern matches defunct Alameda Research signature",
+    "actor": "auto_tagger",
+    "timestamp": 1768511858.5063,
+    "rule_name": "ghost_pattern"
+  },
+  "338a43426971": {
+    "tag": "MEGA_WHALE",
+    "reason": "Volume exceeds $1M threshold - institutional threat",
+    "actor": "auto_tagger",
+    "timestamp": 1768512418.653255,
+    "rule_name": "mega_whale"
+  },
+  "4c23bdfbb9d7": {
+    "tag": "whale_sweep",
+    "reason": "Large whale position building - likely liquidity sweep incoming",
+    "actor": "auto_tagger",
+    "timestamp": 1768513249.521261,
+    "rule_name": "whale_sweep"
+  },
+  "ab3899f6be9a": {
+    "tag": "ghost_alameda",
+    "reason": "Pattern matches defunct Alameda Research signature",
+    "actor": "auto_tagger",
+    "timestamp": 1768515220.782654,
+    "rule_name": "ghost_pattern"
+  },
+  "e6986560d787": {
+    "tag": "MEGA_WHALE",
+    "reason": "Volume exceeds $1M threshold - institutional threat",
+    "actor": "auto_tagger",
+    "timestamp": 1768684493.7049313,
+    "rule_name": "mega_whale"
+  }
+}

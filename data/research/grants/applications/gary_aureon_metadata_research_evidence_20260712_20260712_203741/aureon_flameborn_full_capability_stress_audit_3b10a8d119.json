@@ -1,0 +1,852 @@
+{
+  "artifact_receipt_proof": {
+    "live_signal_fabric": {
+      "mycelium_receiving": false,
+      "status": "",
+      "thoughtbus_receiving": false
+    },
+    "live_signal_fabric_stress": {
+      "status": "",
+      "summary": {}
+    },
+    "murge_runtime_activation": {
+      "status": "",
+      "summary": {}
+    }
+  },
+  "attention": [
+    "phi_chat_unavailable",
+    "organism_receipt_attention"
+  ],
+  "blockers": [
+    "runtime_health_unavailable",
+    "npm_audit_high_critical_or_missing",
+    "live_trade_gate_visibility_missing",
+    "trading_gate_bypass_risk"
+  ],
+  "desktop_security_proof": {
+    "blocker_id": "",
+    "evidence": {
+      "check_count": 8,
+      "checks": [
+        {
+          "check": "context_isolation",
+          "passed": true
+        },
+        {
+          "check": "node_integration_disabled",
+          "passed": true
+        },
+        {
+          "check": "renderer_sandbox_enabled",
+          "passed": true
+        },
+        {
+          "check": "ipc_allowlist_present",
+          "passed": true
+        },
+        {
+          "check": "external_url_allowlist",
+          "passed": true
+        },
+        {
+          "check": "window_open_handler",
+          "passed": true
+        },
+        {
+          "check": "desktop_after_health",
+          "passed": true
+        },
+        {
+          "check": "desktop_auto_aureon_can_be_disabled",
+          "passed": true
+        }
+      ],
+      "missing_files": [],
+      "passed": true,
+      "passed_count": 8
+    },
+    "id": "desktop_ready",
+    "label": "Desktop shell security readiness",
+    "next_action": "",
+    "passed": true,
+    "severity": "",
+    "status": "desktop_ready"
+  },
+  "fabric_event": {
+    "event_id": "ltf-f411d9b62fcf8c68e1",
+    "mycelium_ingest_ok": true,
+    "phase": "flameborn_full_capability_checked",
+    "thoughtbus_publish_ok": true
+  },
+  "generated_at": "2026-05-21T08:33:43.432553+00:00",
+  "guard_proof": {
+    "cloudflare": {
+      "blocker_id": "",
+      "evidence": {
+        "enabled": false
+      },
+      "id": "cloudflare_boundary",
+      "label": "Cloudflare boundary",
+      "next_action": "",
+      "passed": true,
+      "severity": "",
+      "status": "cloudflare_guarded_off"
+    },
+    "provider_api": {
+      "blocker_id": "",
+      "evidence": {
+        "credential_key_names_present": [],
+        "enabled": false,
+        "web_configured": true
+      },
+      "id": "provider_api_boundary",
+      "label": "Provider/API boundary",
+      "next_action": "",
+      "passed": true,
+      "severity": "",
+      "status": "provider_api_guarded_off"
+    },
+    "sandbox": {
+      "blocker_id": "",
+      "evidence": {
+        "code_guard_present": true,
+        "enabled": false,
+        "local_guard_present": true,
+        "passed": true,
+        "status_probes": [
+          {
+            "data": {
+              "dockerAvailable": false,
+              "dockerCliAvailable": false,
+              "enabled": true,
+              "error": "connect ENOENT /var/run/docker.sock",
+              "image": "flameborn-runtime:24.04",
+              "imageAvailable": false,
+              "remoteAccess": false,
+              "socket": "/var/run/docker.sock",
+              "trustedOrigins": [],
+              "workspaceRoot": "C:\\Users\\user\\aureon-trading\\flameborn\\logs\\sandbox-workspaces"
+            },
+            "ok": true,
+            "round_trip_ms": 0.0,
+            "status_code": 200,
+            "url": "http://127.0.0.1:4173/api/sandbox/status"
+          },
+          {
+            "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>",
+            "ok": false,
+            "status_code": 0,
+            "url": "http://127.0.0.1:7331/api/sandbox/status"
+          }
+        ]
+      },
+      "id": "sandbox_guard",
+      "label": "Docker sandbox guard",
+      "next_action": "",
+      "passed": true,
+      "severity": "",
+      "status": "sandbox_guard_passed"
+    },
+    "terminal": {
+      "blocker_id": "",
+      "evidence": {
+        "code_guard_present": true,
+        "enabled": false,
+        "local_guard_present": true,
+        "passed": true,
+        "remote_access_disabled": true,
+        "status_probes": [
+          {
+            "data": {
+              "cwd": "C:\\Users\\user\\aureon-trading\\flameborn",
+              "enabled": true,
+              "remoteAccess": false,
+              "shell": "/bin/bash",
+              "sudoMode": "copy-only",
+              "trustedOrigins": []
+            },
+            "ok": true,
+            "round_trip_ms": 16.535,
+            "status_code": 200,
+            "url": "http://127.0.0.1:4173/api/terminal/status"
+          },
+          {
+            "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>",
+            "ok": false,
+            "status_code": 0,
+            "url": "http://127.0.0.1:7331/api/terminal/status"
+          }
+        ]
+      },
+      "id": "terminal_guard",
+      "label": "Guarded host terminal",
+      "next_action": "",
+      "passed": true,
+      "severity": "",
+      "status": "terminal_guard_passed"
+    },
+    "websocket": {
+      "blocker_id": "",
+      "evidence": {
+        "passed": true,
+        "runtime_upgrade_guard": true,
+        "web_attach_guard": true,
+        "web_pre_upgrade_guard": true
+      },
+      "id": "websocket_origin_guard",
+      "label": "WebSocket origin guard",
+      "next_action": "",
+      "passed": true,
+      "severity": "",
+      "status": "websocket_origin_guard_passed"
+    }
+  },
+  "manual_boundaries": [
+    "full capability stress audit observes local services only",
+    "no service start or restart is performed by the audit",
+    "no terminal or sandbox command execution",
+    "no credential read, migration, or reveal",
+    "no Cloudflare deploy",
+    "no order, close, cancel, credential, or broker mutation",
+    "live trading gates are reported, not changed"
+  ],
+  "mode": "full_local_launch_capability_stress",
+  "next_repair_actions": [
+    {
+      "action": "Start or repair MURGE runtime on http://127.0.0.1:7331.",
+      "id": "runtime_health_unavailable",
+      "severity": "blocker",
+      "status_row": "runtime_health"
+    },
+    {
+      "action": "Confirm /api/aureon/chat returns a live or vault-fallback response.",
+      "id": "phi_chat_unavailable",
+      "severity": "attention",
+      "status_row": "phi_chat_response"
+    },
+    {
+      "action": "Run npm audit --json for web/runtime/desktop and review any high or critical vulnerabilities.",
+      "id": "npm_audit_high_critical_or_missing",
+      "severity": "blocker",
+      "status_row": "npm_audit_state"
+    },
+    {
+      "action": "Expose runtime gate truth through /api/aureon/supervisor before trusting the shell.",
+      "id": "live_trade_gate_visibility_missing",
+      "severity": "blocker",
+      "status_row": "live_trade_gate_visibility"
+    },
+    {
+      "action": "Remove manual trading controls and keep broker mutation owned by Aureon runtime/executor gates.",
+      "id": "trading_gate_bypass_risk",
+      "severity": "blocker",
+      "status_row": "no_trading_gate_bypass"
+    },
+    {
+      "action": "Refresh live signal fabric so ThoughtBus and Mycelium receipt is visible.",
+      "id": "organism_receipt_attention",
+      "severity": "attention",
+      "status_row": "thoughtbus_mycelium_visibility"
+    }
+  ],
+  "npm_audit_rows": [
+    {
+      "audit_present": false,
+      "critical_vulnerabilities": 0,
+      "high_vulnerabilities": 0,
+      "id": "runtime_npm_audit",
+      "path": "C:\\Users\\user\\aureon-trading\\integrations\\aureon_murge\\logs\\activation\\npm-audit-runtime.json",
+      "status": "npm_audit_pending",
+      "total_vulnerabilities": 0,
+      "vulnerabilities": {}
+    },
+    {
+      "audit_present": false,
+      "critical_vulnerabilities": 0,
+      "high_vulnerabilities": 0,
+      "id": "web_app_npm_audit",
+      "path": "C:\\Users\\user\\aureon-trading\\integrations\\aureon_murge\\logs\\activation\\npm-audit-web_app.json",
+      "status": "npm_audit_pending",
+      "total_vulnerabilities": 0,
+      "vulnerabilities": {}
+    },
+    {
+      "audit_present": false,
+      "critical_vulnerabilities": 0,
+      "high_vulnerabilities": 0,
+      "id": "desktop_npm_audit",
+      "path": "C:\\Users\\user\\aureon-trading\\integrations\\aureon_murge\\logs\\activation\\npm-audit-desktop.json",
+      "status": "npm_audit_pending",
+      "total_vulnerabilities": 0,
+      "vulnerabilities": {}
+    }
+  ],
+  "online_requirement_baseline": [
+    {
+      "requirement": "Reduce fingerprinting, validate inputs, and keep dependency vulnerability evidence visible.",
+      "source": "https://expressjs.com/en/advanced/best-practice-security.html",
+      "surface": "express_or_node_http_web"
+    },
+    {
+      "requirement": "Renderer uses context isolation, disabled Node integration, sandboxing, IPC allowlists, and external URL controls.",
+      "source": "https://www.electronjs.org/docs/latest/tutorial/security",
+      "surface": "electron_desktop_shell"
+    },
+    {
+      "requirement": "Docker sandbox use remains guarded and least-privilege before command execution is trusted.",
+      "source": "https://docs.docker.com/engine/security/",
+      "surface": "docker_sandbox_guard"
+    },
+    {
+      "requirement": "Cloudflare config and secrets remain disabled/local-only unless a reviewed deployment gate is enabled.",
+      "source": "https://developers.cloudflare.com/workers/wrangler/configuration/",
+      "surface": "cloudflare_boundary"
+    },
+    {
+      "requirement": "WebSocket upgrades enforce localhost/origin checks before terminal or sandbox sessions attach.",
+      "source": "https://cheatsheetseries.owasp.org/cheatsheets/WebSocket_Security_Cheat_Sheet.html",
+      "surface": "websocket_origin_guard"
+    },
+    {
+      "requirement": "Runtime command surfaces stay explicitly guarded, local-only, and dependency-aware.",
+      "source": "https://nodejs.org/en/learn/getting-started/security-best-practices",
+      "surface": "node_runtime_boundary"
+    },
+    {
+      "requirement": "npm audit JSON is classified; high/critical rows block full capability certification.",
+      "source": "https://docs.npmjs.com/cli/v8/commands/npm-audit/",
+      "surface": "npm_audit_state"
+    }
+  ],
+  "schema_version": "aureon-flameborn-full-capability-stress-v1",
+  "service_health_proof": {
+    "phi": {
+      "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>",
+      "ok": false,
+      "status_code": 0,
+      "url": "http://127.0.0.1:13002/api/phi-bridge/status"
+    },
+    "phi_chat": {
+      "ok": true,
+      "round_trip_ms": 0.0,
+      "status_code": 405,
+      "url": "http://127.0.0.1:4173/api/aureon/chat"
+    },
+    "runtime_health": {
+      "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>",
+      "ok": false,
+      "status_code": 0,
+      "url": "http://127.0.0.1:7331/health"
+    },
+    "runtime_info": {
+      "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>",
+      "ok": false,
+      "status_code": 0,
+      "url": "http://127.0.0.1:7331/api/runtime/info"
+    },
+    "supervisor": {
+      "data": {
+        "activation": {
+          "hostTerminalEnabled": true,
+          "localOnly": false,
+          "noTradingGateBypass": true,
+          "sandboxEnabled": true
+        },
+        "blockers": [],
+        "liveGates": {
+          "exchangeMutationsDisabled": true,
+          "executorEnabled": false,
+          "liveEnabled": false,
+          "orderIntentPublishEnabled": false,
+          "realOrdersDisabled": true
+        },
+        "phiBridgeConnected": true,
+        "status": "unified-murge",
+        "supervisorConnected": true
+      },
+      "ok": true,
+      "round_trip_ms": 22.057,
+      "status_code": 200,
+      "url": "http://127.0.0.1:4173/api/aureon/supervisor"
+    },
+    "web": {
+      "data": {
+        "architecture": {
+          "obsidianBridge": {
+            "mode": "external-aureon",
+            "vaultPath": null
+          },
+          "ollamaFallback": {
+            "expectedEndpoint": "Aureon OpenMultiAgent / Ollama fallback behind Gary bridge",
+            "mode": "external-aureon-managed"
+          },
+          "queenLayer": {
+            "mode": "remote-available",
+            "safeDefault": "observer/status only; no autonomous actions enabled"
+          }
+        },
+        "baseUrlConfigured": true,
+        "chatPath": "/api/message",
+        "configured": true,
+        "provider": "aureon"
+      },
+      "ok": true,
+      "round_trip_ms": 49.78,
+      "status_code": 200,
+      "url": "http://127.0.0.1:4173/api/aureon/status"
+    }
+  },
+  "source_paths": {
+    "audit_json": "docs/audits/aureon_flameborn_full_capability_stress_audit.json",
+    "desktop": "C:\\Users\\user\\aureon-trading\\integrations\\aureon_murge\\desktop",
+    "live_signal_fabric": "frontend/public/aureon_live_trade_signal_fabric.json",
+    "murge_activation": "frontend/public/aureon_murge_runtime_activation_stress_audit.json",
+    "public_json": "frontend/public/aureon_flameborn_full_capability_stress_audit.json",
+    "runtime": "C:\\Users\\user\\aureon-trading\\integrations\\aureon_murge\\runtime",
+    "state_json": "state/aureon_flameborn_full_capability_stress_last_run.json",
+    "web_app": "C:\\Users\\user\\aureon-trading\\integrations\\aureon_murge\\web_app"
+  },
+  "status": "flameborn_full_capability_attention",
+  "status_rows": [
+    {
+      "blocker_id": "",
+      "evidence": {
+        "data": {
+          "architecture": {
+            "obsidianBridge": {
+              "mode": "external-aureon",
+              "vaultPath": null
+            },
+            "ollamaFallback": {
+              "expectedEndpoint": "Aureon OpenMultiAgent / Ollama fallback behind Gary bridge",
+              "mode": "external-aureon-managed"
+            },
+            "queenLayer": {
+              "mode": "remote-available",
+              "safeDefault": "observer/status only; no autonomous actions enabled"
+            }
+          },
+          "baseUrlConfigured": true,
+          "chatPath": "/api/message",
+          "configured": true,
+          "provider": "aureon"
+        },
+        "ok": true,
+        "round_trip_ms": 49.78,
+        "status_code": 200,
+        "url": "http://127.0.0.1:4173/api/aureon/status"
+      },
+      "id": "web_health",
+      "label": "Flameborn web health",
+      "next_action": "",
+      "passed": true,
+      "severity": "",
+      "status": "health_passed"
+    },
+    {
+      "blocker_id": "runtime_health_unavailable",
+      "evidence": {
+        "health": {
+          "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>",
+          "ok": false,
+          "status_code": 0,
+          "url": "http://127.0.0.1:7331/health"
+        },
+        "info": {
+          "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>",
+          "ok": false,
+          "status_code": 0,
+          "url": "http://127.0.0.1:7331/api/runtime/info"
+        }
+      },
+      "id": "runtime_health",
+      "label": "MURGE runtime health",
+      "next_action": "Start or repair MURGE runtime on http://127.0.0.1:7331.",
+      "passed": false,
+      "severity": "blocker",
+      "status": "runtime_unavailable"
+    },
+    {
+      "blocker_id": "",
+      "evidence": {
+        "check_count": 8,
+        "checks": [
+          {
+            "check": "context_isolation",
+            "passed": true
+          },
+          {
+            "check": "node_integration_disabled",
+            "passed": true
+          },
+          {
+            "check": "renderer_sandbox_enabled",
+            "passed": true
+          },
+          {
+            "check": "ipc_allowlist_present",
+            "passed": true
+          },
+          {
+            "check": "external_url_allowlist",
+            "passed": true
+          },
+          {
+            "check": "window_open_handler",
+            "passed": true
+          },
+          {
+            "check": "desktop_after_health",
+            "passed": true
+          },
+          {
+            "check": "desktop_auto_aureon_can_be_disabled",
+            "passed": true
+          }
+        ],
+        "missing_files": [],
+        "passed": true,
+        "passed_count": 8
+      },
+      "id": "desktop_ready",
+      "label": "Desktop shell security readiness",
+      "next_action": "",
+      "passed": true,
+      "severity": "",
+      "status": "desktop_ready"
+    },
+    {
+      "blocker_id": "",
+      "evidence": {
+        "data": {
+          "activation": {
+            "hostTerminalEnabled": true,
+            "localOnly": false,
+            "noTradingGateBypass": true,
+            "sandboxEnabled": true
+          },
+          "blockers": [],
+          "liveGates": {
+            "exchangeMutationsDisabled": true,
+            "executorEnabled": false,
+            "liveEnabled": false,
+            "orderIntentPublishEnabled": false,
+            "realOrdersDisabled": true
+          },
+          "phiBridgeConnected": true,
+          "status": "unified-murge",
+          "supervisorConnected": true
+        },
+        "ok": true,
+        "round_trip_ms": 22.057,
+        "status_code": 200,
+        "url": "http://127.0.0.1:4173/api/aureon/supervisor"
+      },
+      "id": "supervisor_connected",
+      "label": "Aureon supervisor connected",
+      "next_action": "",
+      "passed": true,
+      "severity": "",
+      "status": "supervisor_connected"
+    },
+    {
+      "blocker_id": "",
+      "evidence": {
+        "direct": {
+          "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>",
+          "ok": false,
+          "status_code": 0,
+          "url": "http://127.0.0.1:13002/api/phi-bridge/status"
+        },
+        "supervisor_phi_connected": true
+      },
+      "id": "phi_status",
+      "label": "Phi bridge status",
+      "next_action": "",
+      "passed": true,
+      "severity": "",
+      "status": "phi_connected"
+    },
+    {
+      "blocker_id": "phi_chat_unavailable",
+      "evidence": {
+        "ok": true,
+        "round_trip_ms": 0.0,
+        "status_code": 405,
+        "url": "http://127.0.0.1:4173/api/aureon/chat"
+      },
+      "id": "phi_chat_response",
+      "label": "Phi chat bridge response",
+      "next_action": "Confirm /api/aureon/chat returns a live or vault-fallback response.",
+      "passed": false,
+      "severity": "attention",
+      "status": "chat_unavailable"
+    },
+    {
+      "blocker_id": "",
+      "evidence": {
+        "code_guard_present": true,
+        "enabled": false,
+        "local_guard_present": true,
+        "passed": true,
+        "remote_access_disabled": true,
+        "status_probes": [
+          {
+            "data": {
+              "cwd": "C:\\Users\\user\\aureon-trading\\flameborn",
+              "enabled": true,
+              "remoteAccess": false,
+              "shell": "/bin/bash",
+              "sudoMode": "copy-only",
+              "trustedOrigins": []
+            },
+            "ok": true,
+            "round_trip_ms": 16.535,
+            "status_code": 200,
+            "url": "http://127.0.0.1:4173/api/terminal/status"
+          },
+          {
+            "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>",
+            "ok": false,
+            "status_code": 0,
+            "url": "http://127.0.0.1:7331/api/terminal/status"
+          }
+        ]
+      },
+      "id": "terminal_guard",
+      "label": "Guarded host terminal",
+      "next_action": "",
+      "passed": true,
+      "severity": "",
+      "status": "terminal_guard_passed"
+    },
+    {
+      "blocker_id": "",
+      "evidence": {
+        "code_guard_present": true,
+        "enabled": false,
+        "local_guard_present": true,
+        "passed": true,
+        "status_probes": [
+          {
+            "data": {
+              "dockerAvailable": false,
+              "dockerCliAvailable": false,
+              "enabled": true,
+              "error": "connect ENOENT /var/run/docker.sock",
+              "image": "flameborn-runtime:24.04",
+              "imageAvailable": false,
+              "remoteAccess": false,
+              "socket": "/var/run/docker.sock",
+              "trustedOrigins": [],
+              "workspaceRoot": "C:\\Users\\user\\aureon-trading\\flameborn\\logs\\sandbox-workspaces"
+            },
+            "ok": true,
+            "round_trip_ms": 0.0,
+            "status_code": 200,
+            "url": "http://127.0.0.1:4173/api/sandbox/status"
+          },
+          {
+            "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>",
+            "ok": false,
+            "status_code": 0,
+            "url": "http://127.0.0.1:7331/api/sandbox/status"
+          }
+        ]
+      },
+      "id": "sandbox_guard",
+      "label": "Docker sandbox guard",
+      "next_action": "",
+      "passed": true,
+      "severity": "",
+      "status": "sandbox_guard_passed"
+    },
+    {
+      "blocker_id": "",
+      "evidence": {
+        "passed": true,
+        "runtime_upgrade_guard": true,
+        "web_attach_guard": true,
+        "web_pre_upgrade_guard": true
+      },
+      "id": "websocket_origin_guard",
+      "label": "WebSocket origin guard",
+      "next_action": "",
+      "passed": true,
+      "severity": "",
+      "status": "websocket_origin_guard_passed"
+    },
+    {
+      "blocker_id": "",
+      "evidence": {
+        "credential_key_names_present": [],
+        "enabled": false,
+        "web_configured": true
+      },
+      "id": "provider_api_boundary",
+      "label": "Provider/API boundary",
+      "next_action": "",
+      "passed": true,
+      "severity": "",
+      "status": "provider_api_guarded_off"
+    },
+    {
+      "blocker_id": "",
+      "evidence": {
+        "enabled": false
+      },
+      "id": "cloudflare_boundary",
+      "label": "Cloudflare boundary",
+      "next_action": "",
+      "passed": true,
+      "severity": "",
+      "status": "cloudflare_guarded_off"
+    },
+    {
+      "blocker_id": "npm_audit_high_critical_or_missing",
+      "evidence": {
+        "critical": 0,
+        "high": 0,
+        "pending": [
+          "runtime_npm_audit",
+          "web_app_npm_audit",
+          "desktop_npm_audit"
+        ],
+        "rows": [
+          {
+            "audit_present": false,
+            "critical_vulnerabilities": 0,
+            "high_vulnerabilities": 0,
+            "id": "runtime_npm_audit",
+            "path": "C:\\Users\\user\\aureon-trading\\integrations\\aureon_murge\\logs\\activation\\npm-audit-runtime.json",
+            "status": "npm_audit_pending",
+            "total_vulnerabilities": 0,
+            "vulnerabilities": {}
+          },
+          {
+            "audit_present": false,
+            "critical_vulnerabilities": 0,
+            "high_vulnerabilities": 0,
+            "id": "web_app_npm_audit",
+            "path": "C:\\Users\\user\\aureon-trading\\integrations\\aureon_murge\\logs\\activation\\npm-audit-web_app.json",
+            "status": "npm_audit_pending",
+            "total_vulnerabilities": 0,
+            "vulnerabilities": {}
+          },
+          {
+            "audit_present": false,
+            "critical_vulnerabilities": 0,
+            "high_vulnerabilities": 0,
+            "id": "desktop_npm_audit",
+            "path": "C:\\Users\\user\\aureon-trading\\integrations\\aureon_murge\\logs\\activation\\npm-audit-desktop.json",
+            "status": "npm_audit_pending",
+            "total_vulnerabilities": 0,
+            "vulnerabilities": {}
+          }
+        ]
+      },
+      "id": "npm_audit_state",
+      "label": "npm audit state",
+      "next_action": "Run npm audit --json for web/runtime/desktop and review any high or critical vulnerabilities.",
+      "passed": false,
+      "severity": "blocker",
+      "status": "npm_audit_attention"
+    },
+    {
+      "blocker_id": "live_trade_gate_visibility_missing",
+      "evidence": {
+        "liveGates": {
+          "exchangeMutationsDisabled": true,
+          "executorEnabled": false,
+          "liveEnabled": false,
+          "orderIntentPublishEnabled": false,
+          "realOrdersDisabled": true
+        }
+      },
+      "id": "live_trade_gate_visibility",
+      "label": "Live trade gate visibility",
+      "next_action": "Expose runtime gate truth through /api/aureon/supervisor before trusting the shell.",
+      "passed": false,
+      "severity": "blocker",
+      "status": "live_trade_gate_visibility_missing"
+    },
+    {
+      "blocker_id": "trading_gate_bypass_risk",
+      "evidence": {
+        "manual_trading_controls": [],
+        "runtime_no_trading_gate_bypass": false,
+        "supervisor_no_trading_gate_bypass": null,
+        "web_no_trading_gate_bypass": false
+      },
+      "id": "no_trading_gate_bypass",
+      "label": "No trading gate bypass",
+      "next_action": "Remove manual trading controls and keep broker mutation owned by Aureon runtime/executor gates.",
+      "passed": false,
+      "severity": "blocker",
+      "status": "trading_gate_bypass_risk"
+    },
+    {
+      "blocker_id": "organism_receipt_attention",
+      "evidence": {
+        "mycelium_receiving": false,
+        "status": "",
+        "thoughtbus_receiving": false
+      },
+      "id": "thoughtbus_mycelium_visibility",
+      "label": "ThoughtBus/Mycelium visibility",
+      "next_action": "Refresh live signal fabric so ThoughtBus and Mycelium receipt is visible.",
+      "passed": false,
+      "severity": "attention",
+      "status": "organism_receipt_attention"
+    }
+  ],
+  "summary": {
+    "attention_count": 2,
+    "blocker_count": 4,
+    "cloudflare_boundary": true,
+    "desktop_ready": true,
+    "full_launch_local_only": true,
+    "live_trade_gate_visibility": false,
+    "mycelium_receiving": false,
+    "no_broker_mutation": true,
+    "no_cloud_deploy": true,
+    "no_credential_migration": true,
+    "no_trading_gate_bypass": false,
+    "npm_audit_state": false,
+    "passed_row_count": 9,
+    "phi_chat_response": false,
+    "phi_status": true,
+    "provider_api_boundary": true,
+    "required_status_count": 14,
+    "required_status_pass_count": 9,
+    "runtime_health": false,
+    "sandbox_guard": true,
+    "status_row_count": 15,
+    "supervisor_connected": true,
+    "terminal_guard": true,
+    "thoughtbus_receiving": false,
+    "web_health": true,
+    "websocket_origin_guard": true
+  },
+  "write_info": {
+    "evidence_writes": [
+      {
+        "bytes": 26523,
+        "path": "C:\\Users\\user\\aureon-trading\\state\\aureon_flameborn_full_capability_stress_last_run.json"
+      },
+      {
+        "bytes": 26523,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_flameborn_full_capability_stress_audit.json"
+      },
+      {
+        "bytes": 1559,
+        "path": "C:\\Users\\user\\aureon-trading\\docs\\audits\\aureon_flameborn_full_capability_stress_audit.md"
+      },
+      {
+        "bytes": 26523,
+        "path": "C:\\Users\\user\\aureon-trading\\frontend\\public\\aureon_flameborn_full_capability_stress_audit.json"
+      }
+    ]
+  }
+}

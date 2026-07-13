@@ -1,0 +1,682 @@
+{
+  "schema_version": "aureon-company-research-evidence-pack-v1",
+  "generated_at": "2026-07-11T07:47:47.617163+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "company_research_evidence_pack",
+  "result": "COMPANY_RESEARCH_EVIDENCE_PACK_GENERATED_NO_ROUTE_UNLOCK",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "source_artifacts": {
+    "ifs_grant_ready_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+    "grant_ready_metadata": "grant_ready_metadata_20260705.json",
+    "grant_ready_metadata_expanded": "grant_ready_metadata_expanded_20260705.json",
+    "public_profile_evidence_index": "applications/PUBLIC_PROFILE_EVIDENCE_INDEX_20260710_230641.json",
+    "uk_swiss_completion_workbook": "applications/IFS_UK_SWISS_CRD_R3_10210100_COMPLETION_WORKBOOK_20260710.json",
+    "uk_swiss_review_submit_disabled": "applications/IFS_UK_SWISS_REVIEW_SUBMIT_DISABLED_20260711_072508.json",
+    "master_work_index": "MASTER_WORK_INDEX_20260705.md",
+    "work_corpus_index": "AUREON_WORK_CORPUS_INDEX_20260705.md",
+    "unified_work_corpus": "AUREON_UNIFIED_WORK_CORPUS_20260709.md",
+    "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_230645.json"
+  },
+  "evidence_items": [
+    {
+      "id": "company_identity_governance",
+      "claim_class": "A_OFFICIAL_PUBLIC_REGISTER",
+      "generated_evidence": [
+        "Applicant organisation: R&A Consulting and Brokerage Services Ltd",
+        "Company number: NI696693",
+        "Lead contact / owner: Gary Leckey",
+        "Jurisdiction: Northern Ireland, United Kingdom"
+      ],
+      "source_artifacts": [
+        "grant_ready_metadata_expanded_20260705.json",
+        "grant_ready_metadata_20260705.json",
+        "applications/PUBLIC_PROFILE_EVIDENCE_INDEX_20260710_230641.json"
+      ],
+      "grant_use": [
+        "Applicant identity and governance background.",
+        "Q2 applicant location/company identity support.",
+        "Clarification responses and eligibility narrative where a company register fact is requested."
+      ],
+      "exclusions": [
+        "Does not evidence Swiss partner commitment, budget, permits, export-control status, financial capacity, Project Impact, or award-term acceptance.",
+        "Companies House confirmation-statement risk must remain separately managed where relevant."
+      ]
+    },
+    {
+      "id": "open_source_software_evidence",
+      "claim_class": "A_B_PUBLIC_REPOSITORY_AND_LOCAL_REPO",
+      "generated_evidence": [
+        "Aureon evidence automation is supported by the local operator repository and public RA-CONSULTING GitHub organisation/repository pointers.",
+        "Use as software implementation and reproducible workflow evidence, not as proof of commercial traction or validated performance."
+      ],
+      "source_artifacts": [
+        "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+        "data/research/grants/AUREON_UNIFIED_WORK_CORPUS_20260709.md",
+        "applications/PUBLIC_PROFILE_EVIDENCE_INDEX_20260710_230641.json"
+      ],
+      "grant_use": [
+        "Q8-Q16 narrative support for evidence architecture, audit trails, source-grounded claim controls, and reproducible workflow records.",
+        "Appendix and clarification support for the UK Aureon Evidence OS work package."
+      ],
+      "exclusions": [
+        "Does not evidence partner site access, hardware/facility access, partner budget, customer adoption, or measurable performance without separate proof."
+      ]
+    },
+    {
+      "id": "research_profile_and_persistent_identifier",
+      "claim_class": "B_C_PUBLIC_PROFILE_WITH_CAVEATS",
+      "generated_evidence": [
+        "ORCID, ResearchGate, Academia, and applicant-controlled public research page pointers support researcher identity and public dissemination footprint.",
+        "ResearchGate live readback was previously indexed as showing a public profile and publication catalogue; ORCID and Academia remain profile pointers where direct extraction was limited."
+      ],
+      "source_artifacts": [
+        "applications/PUBLIC_PROFILE_EVIDENCE_INDEX_20260710_230641.json",
+        "grant_ready_metadata_20260705.json",
+        "grant_ready_metadata_expanded_20260705.json"
+      ],
+      "source_quality": {
+        "orcid": "B_PUBLIC_PROFILE_SELF_ASSERTED_WITH_PERSISTENT_ID",
+        "researchgate": "B_C_PUBLIC_PROFILE",
+        "academia": "C_PUBLIC_PROFILE_SUPPLEMENTARY"
+      },
+      "grant_use": [
+        "Researcher identity, public dissemination, open-research routing, and capability narrative.",
+        "Supports Q10 team/resources and research-output context if framed with claim controls."
+      ],
+      "exclusions": [
+        "Not independent peer review by itself.",
+        "Not IFS eligibility, finance, legal/export, partner, or award-terms evidence."
+      ]
+    },
+    {
+      "id": "research_corpus_and_papers",
+      "claim_class": "B_C_LOCAL_RESEARCH_OUTPUTS_REQUIRE_VALIDATION",
+      "generated_evidence": [
+        "Local AureonResearch inventory includes whitepapers, PDFs, DOCX files, markdown research notes, validation materials, and public/dissemination routes.",
+        "Selected research-output inventory indexed in this pack: 36 files.",
+        "Themes include HNC/coherence, EPAS/Project Druid, LIDAR, LuminaCell, validation, symbolic emergence, and related feasibility concepts."
+      ],
+      "source_artifacts": [
+        "MASTER_WORK_INDEX_20260705.md",
+        "AUREON_WORK_CORPUS_INDEX_20260705.md",
+        "AUREON_UNIFIED_WORK_CORPUS_20260709.md",
+        "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_230645.json"
+      ],
+      "grant_use": [
+        "Narrative support for R&D capability, feasibility framing, validation plan, and dissemination footprint.",
+        "Use for Q8 need, Q9 approach, Q10 team/resources, Q12 outcomes, Q13 wider impacts, Q15 risks, and academic/partner outreach packs."
+      ],
+      "exclusions": [
+        "Do not state proof of defence, energy, sensing, biomedical, or hardware capability unless independently validated.",
+        "Do not rely on internal papers to satisfy partner eligibility, export-control, permits/licences, budget, finance, or terms gates."
+      ]
+    },
+    {
+      "id": "claim_control_and_funder_safe_language",
+      "claim_class": "A_INTERNAL_CONTROL",
+      "generated_evidence": [
+        "Claim-class controls are available for class A verified software/company/portal/file evidence; class B public profile/open-source evidence; class C feasibility/prototype claims; and excluded internal/metaphorical language.",
+        "The evidence pack converts internal Aureon language into formal funder-safe phrasing and keeps unsupported claims out of grant answers."
+      ],
+      "source_artifacts": [
+        "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+        "grant_ready_metadata_expanded_20260705.json"
+      ],
+      "grant_use": [
+        "Use across all drafted sections and appendices to keep claims source-grounded and auditable.",
+        "Useful for review, resubmission, assessor clarification, and partner due-diligence responses."
+      ],
+      "exclusions": [
+        "Claim controls do not create missing factual evidence."
+      ]
+    }
+  ],
+  "portal_section_support": [
+    {
+      "section": "Q2. Applicant location",
+      "workbook_status": "PARTIAL_READY",
+      "draft_available": true,
+      "status_after_pack": "EVIDENCE_READY_COMPANY_METADATA_PARTNER_DETAILS_STILL_REQUIRED",
+      "support": "Company identity, company number, registered office, and lead contact can be supported from company metadata.",
+      "remaining_gate": "Partner and subcontractor names/addresses still require route evidence.",
+      "can_complete_from_company_research_evidence_alone": true
+    },
+    {
+      "section": "Q3. Animal testing",
+      "workbook_status": "READY_IF_SCOPE_UNCHANGED",
+      "draft_available": true,
+      "status_after_pack": "READY_IF_FINAL_SCOPE_UNCHANGED",
+      "support": "Current Aureon software/evidence automation work package has no animal testing component.",
+      "remaining_gate": "Must be rechecked if partner technical scope introduces animal work.",
+      "can_complete_from_company_research_evidence_alone": true
+    },
+    {
+      "section": "Q8. Need or challenge",
+      "workbook_status": "DRAFT_READY_PARTNER_DETAIL_REQUIRED",
+      "draft_available": true,
+      "status_after_pack": "NARRATIVE_SUPPORT_READY_PARTNER_DETAIL_REQUIRED",
+      "support": "Company/research evidence supports audit-trail, evidence-control, and cross-border R&D need narrative.",
+      "remaining_gate": "Partner-specific technical need and market evidence still required.",
+      "can_complete_from_company_research_evidence_alone": false
+    },
+    {
+      "section": "Q9. Approach and innovation",
+      "workbook_status": "DRAFT_READY_PARTNER_DETAIL_REQUIRED",
+      "draft_available": true,
+      "status_after_pack": "NARRATIVE_SUPPORT_READY_PARTNER_DETAIL_REQUIRED",
+      "support": "Aureon Evidence OS, local repo, GitHub, and research corpus support the assurance/reproducibility work package.",
+      "remaining_gate": "Partner technical module, demonstrator, and freedom-to-operate basis still required.",
+      "can_complete_from_company_research_evidence_alone": false
+    },
+    {
+      "section": "Q10. Team and resources",
+      "workbook_status": "DRAFT_READY_PARTNER_DETAIL_REQUIRED",
+      "draft_available": true,
+      "status_after_pack": "NARRATIVE_SUPPORT_READY_PARTNER_DETAIL_REQUIRED",
+      "support": "Gary/Aureon public profile, local research corpus, and software evidence support UK team capability narrative.",
+      "remaining_gate": "Named Swiss partner team, research institute or waiver, facilities, datasets, and resource commitments still required.",
+      "can_complete_from_company_research_evidence_alone": false
+    },
+    {
+      "section": "Q11. Market awareness",
+      "workbook_status": "DRAFT_READY_PARTNER_DETAIL_REQUIRED",
+      "draft_available": true,
+      "status_after_pack": "NARRATIVE_SUPPORT_READY_PARTNER_DETAIL_REQUIRED",
+      "support": "Evidence-workflow need can be framed; applicant-controlled and public profile sources support dissemination context.",
+      "remaining_gate": "Selected theme market data and partner target market still required.",
+      "can_complete_from_company_research_evidence_alone": false
+    },
+    {
+      "section": "Q12. Outcomes and route to market",
+      "workbook_status": "DRAFT_READY_PARTNER_DETAIL_REQUIRED",
+      "draft_available": true,
+      "status_after_pack": "NARRATIVE_SUPPORT_READY_PARTNER_DETAIL_REQUIRED",
+      "support": "Aureon outputs can be evidenced as registers, claim maps, reproducible workflows, risk logs, and reporting packs.",
+      "remaining_gate": "Partner product/service, exploitation route, IP/data plan, and route-to-market evidence still required.",
+      "can_complete_from_company_research_evidence_alone": false
+    },
+    {
+      "section": "Q13. Wider impacts",
+      "workbook_status": "DRAFT_READY_PARTNER_DETAIL_REQUIRED",
+      "draft_available": true,
+      "status_after_pack": "NARRATIVE_SUPPORT_READY_PARTNER_DETAIL_REQUIRED",
+      "support": "Evidence transparency, reviewability, reproducibility, and governance impacts can be stated qualitatively.",
+      "remaining_gate": "Quantified partner-specific economic, environmental, regional, social, and skills impacts still required.",
+      "can_complete_from_company_research_evidence_alone": false
+    },
+    {
+      "section": "Q14. Project management",
+      "workbook_status": "DRAFT_READY_PARTNER_DETAIL_REQUIRED",
+      "draft_available": true,
+      "status_after_pack": "NARRATIVE_SUPPORT_READY_PARTNER_DETAIL_REQUIRED",
+      "support": "Aureon supports evidence register, milestone reporting, risk review, and change-control narrative.",
+      "remaining_gate": "Work-package costs, partner leads, responsibilities, and balanced UK/Swiss plan still required.",
+      "can_complete_from_company_research_evidence_alone": false
+    },
+    {
+      "section": "Q15. Risks",
+      "workbook_status": "DRAFT_READY_PARTNER_DETAIL_REQUIRED",
+      "draft_available": true,
+      "status_after_pack": "NARRATIVE_SUPPORT_READY_PARTNER_DETAIL_REQUIRED",
+      "support": "Claim controls and evidence gates support a clear risk register for unsupported claims, scope uncertainty, and evidence delay.",
+      "remaining_gate": "Partner-specific technical, commercial, regulatory, ethical, and data risks still required.",
+      "can_complete_from_company_research_evidence_alone": false
+    },
+    {
+      "section": "Q16. Added value",
+      "workbook_status": "DRAFT_READY_PARTNER_DETAIL_REQUIRED",
+      "draft_available": true,
+      "status_after_pack": "NARRATIVE_SUPPORT_READY_PARTNER_DETAIL_REQUIRED",
+      "support": "Funding added value can be framed around early evidence assurance, risk reduction, and cross-border reproducibility.",
+      "remaining_gate": "Partner funding position and alternative-investment evidence still required.",
+      "can_complete_from_company_research_evidence_alone": false
+    },
+    {
+      "section": "(UK applicants only) Permits and licences (not scored)",
+      "live_ifs_incomplete": true,
+      "status_after_pack": "NOT_GENERATED_ROUTE_EVIDENCE_REQUIRED",
+      "support": "Company metadata and research papers do not create the factual declaration required for this section.",
+      "remaining_gate": "Requires route-specific partner, legal/export, cost, finance, impact, or action-time acceptance evidence before completion.",
+      "can_complete_from_company_research_evidence_alone": false
+    },
+    {
+      "section": "Export licence (not scored)",
+      "live_ifs_incomplete": true,
+      "status_after_pack": "NOT_GENERATED_ROUTE_EVIDENCE_REQUIRED",
+      "support": "Company metadata and research papers do not create the factual declaration required for this section.",
+      "remaining_gate": "Requires route-specific partner, legal/export, cost, finance, impact, or action-time acceptance evidence before completion.",
+      "can_complete_from_company_research_evidence_alone": false
+    },
+    {
+      "section": "Costs and value for money",
+      "live_ifs_incomplete": true,
+      "status_after_pack": "NOT_GENERATED_ROUTE_EVIDENCE_REQUIRED",
+      "support": "Company metadata and research papers do not create the factual declaration required for this section.",
+      "remaining_gate": "Requires route-specific partner, legal/export, cost, finance, impact, or action-time acceptance evidence before completion.",
+      "can_complete_from_company_research_evidence_alone": false
+    },
+    {
+      "section": "Finances summary",
+      "live_ifs_incomplete": true,
+      "status_after_pack": "NOT_GENERATED_ROUTE_EVIDENCE_REQUIRED",
+      "support": "Company metadata and research papers do not create the factual declaration required for this section.",
+      "remaining_gate": "Requires route-specific partner, legal/export, cost, finance, impact, or action-time acceptance evidence before completion.",
+      "can_complete_from_company_research_evidence_alone": false
+    },
+    {
+      "section": "R&A Consulting and Brokerage Services Ltd organisation finances",
+      "live_ifs_incomplete": true,
+      "status_after_pack": "NOT_GENERATED_ROUTE_EVIDENCE_REQUIRED",
+      "support": "Company metadata and research papers do not create the factual declaration required for this section.",
+      "remaining_gate": "Requires route-specific partner, legal/export, cost, finance, impact, or action-time acceptance evidence before completion.",
+      "can_complete_from_company_research_evidence_alone": false
+    },
+    {
+      "section": "Project impact",
+      "live_ifs_incomplete": true,
+      "status_after_pack": "NOT_GENERATED_ROUTE_EVIDENCE_REQUIRED",
+      "support": "Company metadata and research papers do not create the factual declaration required for this section.",
+      "remaining_gate": "Requires route-specific partner, legal/export, cost, finance, impact, or action-time acceptance evidence before completion.",
+      "can_complete_from_company_research_evidence_alone": false
+    },
+    {
+      "section": "Partner status for R&A Consulting and Brokerage Services Ltd (Lead)",
+      "live_ifs_incomplete": true,
+      "status_after_pack": "NOT_GENERATED_ROUTE_EVIDENCE_REQUIRED",
+      "support": "Company metadata and research papers do not create the factual declaration required for this section.",
+      "remaining_gate": "Requires route-specific partner, legal/export, cost, finance, impact, or action-time acceptance evidence before completion.",
+      "can_complete_from_company_research_evidence_alone": false
+    },
+    {
+      "section": "Award terms and conditions",
+      "live_ifs_incomplete": true,
+      "status_after_pack": "NOT_GENERATED_ROUTE_EVIDENCE_REQUIRED",
+      "support": "Company metadata and research papers do not create the factual declaration required for this section.",
+      "remaining_gate": "Requires route-specific partner, legal/export, cost, finance, impact, or action-time acceptance evidence before completion.",
+      "can_complete_from_company_research_evidence_alone": false
+    }
+  ],
+  "funder_safe_text_blocks": [
+    {
+      "id": "applicant_identity",
+      "use": "Company/applicant identity support",
+      "text": "R&A Consulting and Brokerage Services Ltd is the UK applicant organisation, company number NI696693, with Gary Anthony Leckey as lead contact. This evidence supports applicant identity and governance context only; it does not evidence route-specific partner, budget, finance, permits, export-control, or award-term decisions."
+    },
+    {
+      "id": "aureon_capability",
+      "use": "Q8-Q16 narrative support",
+      "text": "Aureon Evidence OS is framed as a local-first evidence and workflow assurance layer for source inventories, claim-to-source mapping, reproducible records, risk tagging, partner review packs, and funder-ready audit trails."
+    },
+    {
+      "id": "research_outputs",
+      "use": "Research and dissemination evidence",
+      "text": "The Aureon research corpus and public profile pointers support a research and dissemination footprint around HNC/coherence, evidence routing, validation planning, EPAS/Project Druid, LIDAR, LuminaCell, and related feasibility concepts. These outputs must be described as public research outputs, hypotheses, or feasibility material unless independently validated."
+    },
+    {
+      "id": "claim_control",
+      "use": "Funder-safe claim discipline",
+      "text": "Formal grant language should use source-grounded evidence, measurable validation plans, human review gates, and risk controls. Avoid certainty claims, unsupported defence/energy/sensing claims, legal or tax advice, autonomous submission claims, and partner/customer claims without evidence."
+    },
+    {
+      "id": "remaining_gate_notice",
+      "use": "Portal completion boundary",
+      "text": "This company/research evidence pack improves applicant capability and narrative support, but it does not unlock the live IFS UK-Switzerland submission gates for partner status, permits/licences, export licence, costs/value for money, finances, Project Impact, or award terms."
+    }
+  ],
+  "research_paper_inventory": [
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\04_Engineering_Hardware\\whitepapers\\HNC_Harmonic_LIDAR_WhitePaper_Leckey_2026.docx",
+      "file_name": "HNC_Harmonic_LIDAR_WhitePaper_Leckey_2026.docx",
+      "extension": ".docx",
+      "size_bytes": 3534231,
+      "modified_at": "2026-04-08T20:44:19.028613+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\04_Engineering_Hardware\\whitepapers\\HNC_Harmonic_LIDAR_v2_AluminiumFluid_Leckey.docx",
+      "file_name": "HNC_Harmonic_LIDAR_v2_AluminiumFluid_Leckey.docx",
+      "extension": ".docx",
+      "size_bytes": 5605518,
+      "modified_at": "2026-04-08T20:44:18.962725+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\HNC_Project_Druid_EPAS_Technical_Framework.docx",
+      "file_name": "HNC_Project_Druid_EPAS_Technical_Framework.docx",
+      "extension": ".docx",
+      "size_bytes": 596873,
+      "modified_at": "2026-04-08T20:43:15.480421+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\EPAS_Unified_Architecture_Project_Druid.pdf",
+      "file_name": "EPAS_Unified_Architecture_Project_Druid.pdf",
+      "extension": ".pdf",
+      "size_bytes": 144120,
+      "modified_at": "2026-04-08T20:43:15.081281+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\Harmonic_Nexus_Theory_Part_2_Validation.pdf",
+      "file_name": "Harmonic_Nexus_Theory_Part_2_Validation.pdf",
+      "extension": ".pdf",
+      "size_bytes": 508109,
+      "modified_at": "2026-04-08T20:42:59.888908+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\HNC_Aureon_Unified_WhitePaper.pdf",
+      "file_name": "HNC_Aureon_Unified_WhitePaper.pdf",
+      "extension": ".pdf",
+      "size_bytes": 339007,
+      "modified_at": "2026-04-08T20:42:58.795229+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\Lumina_Subsystem_Integrated_Quantum_Amplifier.pdf",
+      "file_name": "Lumina_Subsystem_Integrated_Quantum_Amplifier.pdf",
+      "extension": ".pdf",
+      "size_bytes": 175662,
+      "modified_at": "2026-04-08T20:42:59.613225+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\The_Harmonic_Nexus_Core_HNC_A_Unified_Framework.pdf",
+      "file_name": "The_Harmonic_Nexus_Core_HNC_A_Unified_Framework.pdf",
+      "extension": ".pdf",
+      "size_bytes": 1270763,
+      "modified_at": "2026-04-08T20:42:58.625551+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\EPAS_Unified_Architecture_WhitePaper_Lec.docx",
+      "file_name": "EPAS_Unified_Architecture_WhitePaper_Lec.docx",
+      "extension": ".docx",
+      "size_bytes": 26221,
+      "modified_at": "2026-04-08T20:43:15.669761+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\EPAS_Unified_Architecture_WhitePaper_Leckey.docx",
+      "file_name": "EPAS_Unified_Architecture_WhitePaper_Leckey.docx",
+      "extension": ".docx",
+      "size_bytes": 26221,
+      "modified_at": "2026-04-08T20:43:15.228393+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\HNC_Grand_Unified_v2_PrimarySource_Leckey_2026.docx",
+      "file_name": "HNC_Grand_Unified_v2_PrimarySource_Leckey_2026.docx",
+      "extension": ".docx",
+      "size_bytes": 44067,
+      "modified_at": "2026-04-08T20:43:00.194585+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\HNC_Grand_Unified_v2_PrimarySource_Leckey_2026_rev2.docx",
+      "file_name": "HNC_Grand_Unified_v2_PrimarySource_Leckey_2026_rev2.docx",
+      "extension": ".docx",
+      "size_bytes": 39487,
+      "modified_at": "2026-04-08T20:42:58.515233+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\HNC_MYCELIUM_WHITEPAPER.docx",
+      "file_name": "HNC_MYCELIUM_WHITEPAPER.docx",
+      "extension": ".docx",
+      "size_bytes": 21916,
+      "modified_at": "2026-04-08T20:43:00.069473+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\HNC_MYCELIUM_WHITEPAPER_1 (1).docx",
+      "file_name": "HNC_MYCELIUM_WHITEPAPER_1 (1).docx",
+      "extension": ".docx",
+      "size_bytes": 21916,
+      "modified_at": "2026-04-08T20:43:00.441638+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\The_Source_Oscillator_Constraint_Whitepaper.docx",
+      "file_name": "The_Source_Oscillator_Constraint_Whitepaper.docx",
+      "extension": ".docx",
+      "size_bytes": 21817,
+      "modified_at": "2026-04-08T20:43:00.000520+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\HNC_WHITEPAPER_VERIFIED.md",
+      "file_name": "HNC_WHITEPAPER_VERIFIED.md",
+      "extension": ".md",
+      "size_bytes": 19059,
+      "modified_at": "2026-04-08T20:42:38.110327+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\A_Dynamic_Systems_Model_of_Coherence_Growth.pdf",
+      "file_name": "A_Dynamic_Systems_Model_of_Coherence_Growth.pdf",
+      "extension": ".pdf",
+      "size_bytes": 118042,
+      "modified_at": "2026-04-08T20:42:59.941881+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\05_Validation_Verification\\Coherence_Maintenance_Evidence.pdf",
+      "file_name": "Coherence_Maintenance_Evidence.pdf",
+      "extension": ".pdf",
+      "size_bytes": 3562,
+      "modified_at": "2026-04-08T20:44:34.094025+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\05_Validation_Verification\\Experimental_Validation_Plan_UTRE.pdf",
+      "file_name": "Experimental_Validation_Plan_UTRE.pdf",
+      "extension": ".pdf",
+      "size_bytes": 8783,
+      "modified_at": "2026-04-08T20:44:34.196875+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\Harmonic_Nexus_Theory_of_Becoming.pdf",
+      "file_name": "Harmonic_Nexus_Theory_of_Becoming.pdf",
+      "extension": ".pdf",
+      "size_bytes": 564861,
+      "modified_at": "2026-04-08T20:42:59.836817+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\Harmonic_Reality_Framework_and_the_Master.pdf",
+      "file_name": "Harmonic_Reality_Framework_and_the_Master.pdf",
+      "extension": ".pdf",
+      "size_bytes": 232953,
+      "modified_at": "2026-04-08T20:42:59.784128+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\05_Validation_Verification\\HNC_Claims_to_Evidence_Traceability.pdf",
+      "file_name": "HNC_Claims_to_Evidence_Traceability.pdf",
+      "extension": ".pdf",
+      "size_bytes": 26433,
+      "modified_at": "2026-04-08T20:44:34.244866+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\HNC_Evolutionary_Framework.pdf",
+      "file_name": "HNC_Evolutionary_Framework.pdf",
+      "extension": ".pdf",
+      "size_bytes": 20588,
+      "modified_at": "2026-04-08T20:42:58.741514+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\HNC_Grand_Unified_Framework_Leckey_2026.pdf",
+      "file_name": "HNC_Grand_Unified_Framework_Leckey_2026.pdf",
+      "extension": ".pdf",
+      "size_bytes": 671043,
+      "modified_at": "2026-04-08T20:42:58.399861+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\05_Validation_Verification\\HNC_Methodology_Summary.pdf",
+      "file_name": "HNC_Methodology_Summary.pdf",
+      "extension": ".pdf",
+      "size_bytes": 3534,
+      "modified_at": "2026-04-08T20:44:34.292205+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\05_Validation_Verification\\HNC_Replication_Process_System.pdf",
+      "file_name": "HNC_Replication_Process_System.pdf",
+      "extension": ".pdf",
+      "size_bytes": 4453,
+      "modified_at": "2026-04-08T20:44:34.341548+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\HNC_research_paper_2026-04-07.md.pdf",
+      "file_name": "HNC_research_paper_2026-04-07.md.pdf",
+      "extension": ".pdf",
+      "size_bytes": 213640,
+      "modified_at": "2026-04-08T20:42:38.174120+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\05_Validation_Verification\\HNC_VERIFICATION_AUDIT_v2_2026-04-07.md.pdf",
+      "file_name": "HNC_VERIFICATION_AUDIT_v2_2026-04-07.md.pdf",
+      "extension": ".pdf",
+      "size_bytes": 166918,
+      "modified_at": "2026-04-08T20:44:34.947799+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\Leckey_HNC_Evolutionary_Framework_arXiv.pdf",
+      "file_name": "Leckey_HNC_Evolutionary_Framework_arXiv.pdf",
+      "extension": ".pdf",
+      "size_bytes": 22821,
+      "modified_at": "2026-04-08T20:42:58.681831+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\02_Cosmic_Intelligence\\whitepapers\\Project_Druid_Technical_Architecture.pdf",
+      "file_name": "Project_Druid_Technical_Architecture.pdf",
+      "extension": ".pdf",
+      "size_bytes": 151224,
+      "modified_at": "2026-04-08T20:43:15.410420+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\Quantum_Gravity_in_the_Act_A_Two_Stage.pdf",
+      "file_name": "Quantum_Gravity_in_the_Act_A_Two_Stage.pdf",
+      "extension": ".pdf",
+      "size_bytes": 48992,
+      "modified_at": "2026-04-08T20:42:59.504442+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\Quantum_Gravity_in_the_Act_QGITA_Lighthouse.pdf",
+      "file_name": "Quantum_Gravity_in_the_Act_QGITA_Lighthouse.pdf",
+      "extension": ".pdf",
+      "size_bytes": 115018,
+      "modified_at": "2026-04-08T20:42:59.560596+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\05_Validation_Verification\\Replication_Guidelines_HNC.pdf",
+      "file_name": "Replication_Guidelines_HNC.pdf",
+      "extension": ".pdf",
+      "size_bytes": 3508,
+      "modified_at": "2026-04-08T20:44:34.584433+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\The_Harmonic_Nexus_Core_and_Auris_Conjecture.pdf",
+      "file_name": "The_Harmonic_Nexus_Core_and_Auris_Conjecture.pdf",
+      "extension": ".pdf",
+      "size_bytes": 1060036,
+      "modified_at": "2026-04-08T20:42:58.569870+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\04_Engineering_Hardware\\whitepapers\\The_HNC_and_the_Aureon_Trading_Framework.pdf",
+      "file_name": "The_HNC_and_the_Aureon_Trading_Framework.pdf",
+      "extension": ".pdf",
+      "size_bytes": 170952,
+      "modified_at": "2026-04-08T20:44:19.083241+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    },
+    {
+      "path": "C:\\Users\\user\\AureonResearch\\01_Theory\\whitepapers\\The_LuminaCell_v2_Architecture.pdf",
+      "file_name": "The_LuminaCell_v2_Architecture.pdf",
+      "extension": ".pdf",
+      "size_bytes": 915172,
+      "modified_at": "2026-04-08T20:42:59.671289+01:00",
+      "evidence_use": "Research-corpus output pointer; use for narrative, dissemination, feasibility, and validation-plan support after claim-class review.",
+      "claim_control": "Do not cite as independent validation or route-specific eligibility without primary external review."
+    }
+  ],
+  "summary": {
+    "evidence_items_generated": 5,
+    "research_papers_or_outputs_indexed": 36,
+    "portal_sections_supported": 19,
+    "sections_can_complete_from_company_research_evidence_alone": 2,
+    "live_ifs_incomplete_sections_preserved": 8,
+    "direct_ifs_submissions_unlocked": 0,
+    "new_browser_submissions_available": 0
+  },
+  "decision": {
+    "direct_submit_ready": false,
+    "safe_portal_action_now": false,
+    "provider_verified_submitted": false,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false,
+    "why_no_route_unlock": "Company metadata and research papers support applicant identity, capability, research/dissemination, and Q8-Q16 narrative, but do not supply Swiss partner, research institute/waiver, costs, finance, export, permit, Project Impact, partner-status, or award-term evidence."
+  },
+  "controls": [
+    "No plaintext passwords, tokens, private keys, bank data, raw ledgers, or tax records were copied into this pack.",
+    "No IFS portal mutation, upload, partner invite, email send, contact-form submission, award-term acceptance, or final submission was performed.",
+    "Research papers are indexed as local/public research outputs and feasibility evidence, not independent validation unless a separate source proves that status.",
+    "Public profile evidence is used for identity, dissemination, and capability narrative only.",
+    "Missing legal/export/finance/partner/terms evidence remains explicitly gated."
+  ]
+}

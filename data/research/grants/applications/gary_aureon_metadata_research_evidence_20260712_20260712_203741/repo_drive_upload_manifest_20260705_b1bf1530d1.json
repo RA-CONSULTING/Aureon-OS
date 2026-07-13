@@ -1,0 +1,182 @@
+﻿{
+    "created_at":  "2026-07-05",
+    "purpose":  "Aureon repository/source preservation upload to Google Drive",
+    "upload_bundle":  {
+                          "path":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\AureonReposDriveBundle_SANITIZED_20260705.tar",
+                          "name":  "AureonReposDriveBundle_SANITIZED_20260705.tar",
+                          "bytes":  1527144960,
+                          "sha256":  "CDA331A830559F6D46D16DBDB91E2BA0F9EEE676FEB4FC4E6DCF1EEB7162BDAC",
+                          "entries":  25,
+                          "includes":  [
+                                           "local_source_snapshots",
+                                           "github_mirror_bundles",
+                                           "metadata",
+                                           "README_AUREON_REPO_DRIVE_BUNDLE_20260705.md"
+                                       ],
+                          "excludes":  [
+                                           "local_git_bundles",
+                                           "runtime logs/state/cache folders",
+                                           "secret filename patterns"
+                                       ]
+                      },
+    "drive_target_folder":  {
+                                "title":  "Aureon Grant War Room - 2026-07-04",
+                                "id":  "1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr",
+                                "url":  "https://drive.google.com/drive/folders/1UBtVIJku0Ax9PyH9D0Lt9q7WwB3zVHIr"
+                            },
+    "local_raw_git_bundles_staged_not_uploaded":  [
+                                                      {
+                                                          "Name":  "aureon-trading-clean_local_allrefs_20260705.bundle",
+                                                          "bytes":  162297928,
+                                                          "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_git_bundles\\aureon-trading-clean_local_allrefs_20260705.bundle"
+                                                      },
+                                                      {
+                                                          "Name":  "aureon-trading-github-latest-20260701_local_allrefs_20260705.bundle",
+                                                          "bytes":  278021189,
+                                                          "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_git_bundles\\aureon-trading-github-latest-20260701_local_allrefs_20260705.bundle"
+                                                      },
+                                                      {
+                                                          "Name":  "aureon-trading-integrated-main-20260508_local_allrefs_20260705.bundle",
+                                                          "bytes":  261799914,
+                                                          "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_git_bundles\\aureon-trading-integrated-main-20260508_local_allrefs_20260705.bundle"
+                                                      },
+                                                      {
+                                                          "Name":  "aureon-trading-latest_local_allrefs_20260705.bundle",
+                                                          "bytes":  269697705,
+                                                          "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_git_bundles\\aureon-trading-latest_local_allrefs_20260705.bundle"
+                                                      },
+                                                      {
+                                                          "Name":  "aureon-trading_local_allrefs_20260705.bundle",
+                                                          "bytes":  269692996,
+                                                          "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_git_bundles\\aureon-trading_local_allrefs_20260705.bundle"
+                                                      }
+                                                  ],
+    "uploadable_files":  [
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots",
+                                 "Name":  "aureon-json-backup_source_snapshot_sanitized_20260705.tar.gz",
+                                 "bytes":  118376,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\aureon-json-backup_source_snapshot_sanitized_20260705.tar.gz"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots",
+                                 "Name":  "aureon-trading-clean_source_snapshot_sanitized_20260705.tar.gz",
+                                 "bytes":  47303329,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\aureon-trading-clean_source_snapshot_sanitized_20260705.tar.gz"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots",
+                                 "Name":  "aureon-trading-github-latest-20260701_source_snapshot_sanitized_20260705.tar.gz",
+                                 "bytes":  247906901,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\aureon-trading-github-latest-20260701_source_snapshot_sanitized_20260705.tar.gz"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots",
+                                 "Name":  "aureon-trading-integrated-main-20260508_source_snapshot_sanitized_20260705.tar.gz",
+                                 "bytes":  355222385,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\aureon-trading-integrated-main-20260508_source_snapshot_sanitized_20260705.tar.gz"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots",
+                                 "Name":  "aureon-trading-latest_source_snapshot_sanitized_20260705.tar.gz",
+                                 "bytes":  53578016,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\aureon-trading-latest_source_snapshot_sanitized_20260705.tar.gz"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots",
+                                 "Name":  "aureon-trading-loveavblr_source_snapshot_sanitized_20260705.tar.gz",
+                                 "bytes":  31037286,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\aureon-trading-loveavblr_source_snapshot_sanitized_20260705.tar.gz"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots",
+                                 "Name":  "aureon-trading_source_snapshot_sanitized_20260705.tar.gz",
+                                 "bytes":  263396225,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\aureon-trading_source_snapshot_sanitized_20260705.tar.gz"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots",
+                                 "Name":  "aureon-update-preservation-20260508_source_snapshot_sanitized_20260705.tar.gz",
+                                 "bytes":  42781,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\aureon-update-preservation-20260508_source_snapshot_sanitized_20260705.tar.gz"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots",
+                                 "Name":  "AureonObsidianVault_source_snapshot_sanitized_20260705.tar.gz",
+                                 "bytes":  16364,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\AureonObsidianVault_source_snapshot_sanitized_20260705.tar.gz"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots",
+                                 "Name":  "AureonResearch_source_snapshot_sanitized_20260705.tar.gz",
+                                 "bytes":  62631376,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\AureonResearch_source_snapshot_sanitized_20260705.tar.gz"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots",
+                                 "Name":  "project-rainbow_source_snapshot_sanitized_20260705.tar.gz",
+                                 "bytes":  98575011,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\project-rainbow_source_snapshot_sanitized_20260705.tar.gz"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots",
+                                 "Name":  "substack_posts_source_snapshot_sanitized_20260705.tar.gz",
+                                 "bytes":  22380,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\local_source_snapshots\\substack_posts_source_snapshot_sanitized_20260705.tar.gz"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\github_mirror_bundles",
+                                 "Name":  "AUREON-QUANTUM-TRADING-SYSTEM-AQTS-_github_mirror_allrefs_20260705.bundle",
+                                 "bytes":  876526,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\github_mirror_bundles\\AUREON-QUANTUM-TRADING-SYSTEM-AQTS-_github_mirror_allrefs_20260705.bundle"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\github_mirror_bundles",
+                                 "Name":  "aureon-trading_github_mirror_allrefs_20260705.bundle",
+                                 "bytes":  278349517,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\github_mirror_bundles\\aureon-trading_github_mirror_allrefs_20260705.bundle"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\github_mirror_bundles",
+                                 "Name":  "NEXUS-LIVE-FEED-_github_mirror_allrefs_20260705.bundle",
+                                 "bytes":  87582108,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\github_mirror_bundles\\NEXUS-LIVE-FEED-_github_mirror_allrefs_20260705.bundle"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\metadata",
+                                 "Name":  "github_mirror_bundle_results_20260705.json",
+                                 "bytes":  71168,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\metadata\\github_mirror_bundle_results_20260705.json"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\metadata",
+                                 "Name":  "local_git_bundle_results_20260705.json",
+                                 "bytes":  30948,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\metadata\\local_git_bundle_results_20260705.json"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\metadata",
+                                 "Name":  "local_repo_inventory_20260705.json",
+                                 "bytes":  356260,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\metadata\\local_repo_inventory_20260705.json"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\metadata",
+                                 "Name":  "ra-consulting_github_repos_20260705.json",
+                                 "bytes":  2052,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\metadata\\ra-consulting_github_repos_20260705.json"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\metadata",
+                                 "Name":  "source_snapshot_results_20260705.json",
+                                 "bytes":  4727,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\metadata\\source_snapshot_results_20260705.json"
+                             },
+                             {
+                                 "DirectoryName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\metadata",
+                                 "Name":  "supporting_content_inventory_20260705.json",
+                                 "bytes":  809,
+                                 "FullName":  "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\metadata\\supporting_content_inventory_20260705.json"
+                             }
+                         ]
+}

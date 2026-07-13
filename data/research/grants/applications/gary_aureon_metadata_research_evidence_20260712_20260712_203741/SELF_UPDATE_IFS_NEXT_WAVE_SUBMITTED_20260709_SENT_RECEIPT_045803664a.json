@@ -1,0 +1,14 @@
+{
+  "schema_version": "aureon-email-send-receipt-v1",
+  "generated_at": "2026-07-09T04:44:49+01:00",
+  "message_type": "self_update",
+  "to": "gaxlec@gmail.com",
+  "from": "gaxlec@gmail.com",
+  "subject": "Aureon grant operator update - IFS Next Wave submitted",
+  "status": "SENT_OBSERVED_IN_GMAIL_UI",
+  "observed_message": "Message sent",
+  "draft_file": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\SELF_UPDATE_IFS_NEXT_WAVE_SUBMITTED_20260709.eml",
+  "attachment": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\IFS_NEXT_WAVE_SUBMISSION_RECEIPT_20260709.pdf",
+  "filled_evidence_screenshot": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\rendered\\gmail_ifs_submitted_filled_20260709.png",
+  "sent_evidence_screenshot": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\applications\\rendered\\gmail_ifs_submitted_sent_20260709.png"
+}

@@ -1,0 +1,1359 @@
+{
+  "schema_version": "aureon-ifs-master-grant-ready-metadata-coverage-v1",
+  "generated_at": "2026-07-10T13:49:10+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_master_grant_ready_metadata_coverage",
+  "source_refs": {
+    "formal_language_qa": "applications/IFS_FORMAL_LANGUAGE_QA_20260710_134902.json",
+    "grant_ready_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+    "grant_ready_research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+    "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json"
+  },
+  "summary": {
+    "ifs_applications_reviewed": 20,
+    "submitted_monitor_only": 4,
+    "active_not_submitted": 16,
+    "coverage_counts": {
+      "BASELINE_METADATA_MONITOR_ONLY_SUBMITTED_ROUTE": 4,
+      "BASELINE_METADATA_ONLY_REPAYABLE_FINANCE_HELD": 1,
+      "FORMAL_GRANT_TEXT_AVAILABLE_EVIDENCE_GATED": 15
+    },
+    "baseline_metadata_pack_linked_applications": 20,
+    "research_metadata_refresh_linked_applications": 20,
+    "formal_text_linked_applications": 15,
+    "formal_output_files_available": 21,
+    "internal_language_findings_after_clean": 0,
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "contact_route_submitted": false,
+    "partner_invite_sent": false,
+    "upload_performed": false,
+    "private_finance_files_used": false
+  },
+  "coverage_entries": [
+    {
+      "application_id": "APP-IFS-NEXT-WAVE-10209601",
+      "title": "Aureon Evidence Studio for Createch AI Workflows",
+      "status": "SUBMITTED",
+      "deadline": "2026-08-11T11:00:00+01:00",
+      "route_family": "SUBMITTED_MONITOR",
+      "readiness_class": "SUBMITTED_MONITOR_ONLY",
+      "metadata_coverage_state": "BASELINE_METADATA_MONITOR_ONLY_SUBMITTED_ROUTE",
+      "safe_reuse_rule": "Use for funder follow-up or amendment support only; do not duplicate submitted applications.",
+      "formal_text_outputs": [],
+      "formal_text_output_count": 0,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-NEXT-WAVE-10209601",
+        "portal_application_number": "10209601",
+        "name": "Aureon Evidence Studio for Createch AI Workflows",
+        "status": "SUBMITTED",
+        "ifs_queue_class": "SUBMITTED_MONITOR_ONLY",
+        "route_fit": "Submitted Createch/evidence workflow application; monitor only.",
+        "grant_ready_text_use": "Use Operator OS evidence runtime language only.",
+        "next_action": "Monitor IFS track page and email for assessment/funder correspondence."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-NEXT-WAVE-10209601",
+        "title": "Aureon Evidence Studio for Createch AI Workflows",
+        "status": "SUBMITTED",
+        "deadline": "2026-08-11T11:00:00+01:00",
+        "route_state": "SUBMITTED_MONITOR_ONLY",
+        "metadata_use": "Monitor submitted application and reuse metadata only for funder follow-up.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [],
+      "blocked_claim_categories": [
+        "submitted route monitor-only control"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-FLF-R11-2499-20260709",
+      "title": "Aureon AI Evidence OS - Future Leaders Fellowship Round 11 Pack",
+      "status": "SUBMITTED",
+      "deadline": "2026-11-04T11:00:00+00:00",
+      "route_family": "SUBMITTED_MONITOR",
+      "readiness_class": "SUBMITTED_MONITOR_ONLY",
+      "metadata_coverage_state": "BASELINE_METADATA_MONITOR_ONLY_SUBMITTED_ROUTE",
+      "safe_reuse_rule": "Use for funder follow-up or amendment support only; do not duplicate submitted applications.",
+      "formal_text_outputs": [],
+      "formal_text_output_count": 0,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-FLF-R11-2499-20260709",
+        "portal_application_number": "10209992",
+        "name": "Aureon AI Evidence OS - Future Leaders Fellowship Round 11 Pack",
+        "status": "SUBMITTED",
+        "ifs_queue_class": "SUBMITTED_MONITOR_ONLY",
+        "route_fit": "Submitted Future Leaders/evidence OS application; monitor only.",
+        "grant_ready_text_use": "Use Operator OS plus HNC research-hypothesis language with validation controls.",
+        "next_action": "Monitor IFS track page and email for assessment/funder correspondence."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-FLF-R11-2499-20260709",
+        "title": "Aureon AI Evidence OS - Future Leaders Fellowship Round 11 Pack",
+        "status": "SUBMITTED",
+        "deadline": "2026-11-04T11:00:00+00:00",
+        "route_state": "SUBMITTED_MONITOR_ONLY",
+        "metadata_use": "Monitor submitted application and reuse metadata only for funder follow-up.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [],
+      "blocked_claim_categories": [
+        "submitted route monitor-only control"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+      "title": "Innovation Loans Expression of Interest",
+      "status": "INNOVATION_LOANS_REPAYABLE_FINANCE_CAPACITY_AND_ACTION_APPROVAL_REQUIRED",
+      "deadline": "open-no-submission-deadline",
+      "route_family": "REPAYABLE_FINANCE_HELD_OUTSIDE_GRANT_QUEUE",
+      "readiness_class": "REPAYABLE_FINANCE_HELD_OUTSIDE_GRANT_QUEUE",
+      "metadata_coverage_state": "BASELINE_METADATA_ONLY_REPAYABLE_FINANCE_HELD",
+      "safe_reuse_rule": "Use only if repayable finance is deliberately approved with repayment-capacity evidence.",
+      "formal_text_outputs": [],
+      "formal_text_output_count": 0,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+        "portal_application_number": null,
+        "name": "Innovation Loans Expression of Interest",
+        "status": "NOT_GRANT_FINANCE_RISK_GATED",
+        "ifs_queue_class": "NON_LEAD_OR_EXCLUDED_ROUTE",
+        "route_fit": "Finance/loan route, not grant submit-ready.",
+        "grant_ready_text_use": "Use only after deliberate finance-risk decision.",
+        "next_action": "Do not proceed as grant pipeline unless finance-risk decision is approved."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-INNOVATION-LOANS-EOI-2505-20260709",
+        "title": "Innovation Loans Expression of Interest",
+        "status": "INNOVATION_LOANS_REPAYABLE_FINANCE_CAPACITY_AND_ACTION_APPROVAL_REQUIRED",
+        "deadline": "open-no-submission-deadline",
+        "route_state": "FINANCE_RISK_GATED",
+        "metadata_use": "Use metadata to improve staged materials, but do not submit until the route gate is evidenced.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [
+        "repayable finance approval",
+        "repayment capacity evidence",
+        "cash-flow forecast",
+        "specific action-time approval for loan route"
+      ],
+      "blocked_claim_categories": [
+        "budget, match funding or eligible cost basis",
+        "financial capacity or loan approval"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+      "title": "Aureon Flex Evidence OS: AI Assurance for Consumer-Led Flexibility",
+      "status": "SUBMITTED",
+      "deadline": "2026-08-26T11:00:00+01:00",
+      "route_family": "SUBMITTED_MONITOR",
+      "readiness_class": "SUBMITTED_MONITOR_ONLY",
+      "metadata_coverage_state": "BASELINE_METADATA_MONITOR_ONLY_SUBMITTED_ROUTE",
+      "safe_reuse_rule": "Use for funder follow-up or amendment support only; do not duplicate submitted applications.",
+      "formal_text_outputs": [],
+      "formal_text_output_count": 0,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+        "portal_application_number": "10210032",
+        "name": "Aureon Flex Evidence OS: AI Assurance for Consumer-Led Flexibility",
+        "status": "SUBMITTED",
+        "ifs_queue_class": "SUBMITTED_MONITOR_ONLY",
+        "route_fit": "Submitted clean-energy flexibility assurance application; monitor only.",
+        "grant_ready_text_use": "Use AI assurance, evidence, audit trail, and consumer-protection language.",
+        "next_action": "Monitor IFS track page and email for assessment/funder correspondence."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-CLEAN-ENERGY-FLEX-2509-20260709",
+        "title": "Aureon Flex Evidence OS: AI Assurance for Consumer-Led Flexibility",
+        "status": "SUBMITTED",
+        "deadline": "2026-08-26T11:00:00+01:00",
+        "route_state": "SUBMITTED_MONITOR_ONLY",
+        "metadata_use": "Monitor submitted application and reuse metadata only for funder follow-up.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [],
+      "blocked_claim_categories": [
+        "submitted route monitor-only control"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "title": "UK-Switzerland CR&D Round 3",
+      "status": "IFS_DRAFT_80_PERCENT_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-03T11:00:00+01:00",
+      "route_family": "LIVE_DRAFT_UK_SWISS",
+      "readiness_class": "LIVE_DRAFT_EVIDENCE_GATED",
+      "metadata_coverage_state": "FORMAL_GRANT_TEXT_AVAILABLE_EVIDENCE_GATED",
+      "safe_reuse_rule": "Use formal text only after the route-specific missing evidence is present and classed.",
+      "formal_text_outputs": [
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_UK_SWITZERLAND_CR_D_ROUND_3_20260709.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_UK_SWITZERLAND_CR_D_ROUND_3_20260709_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role",
+            "Work Packages",
+            "Expected Outputs",
+            "Collaboration Structure"
+          ],
+          "internal_language_findings_after_clean": []
+        }
+      ],
+      "formal_text_output_count": 1,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+        "portal_application_number": "10210100",
+        "name": "UK-Switzerland CR&D Round 3",
+        "status": "IFS_DRAFT_EVIDENCE_DISCOVERY_COMPLETE_PARTNER_BUDGET_EVIDENCE_REQUIRED",
+        "ifs_queue_class": "CONVERSION_ROUTE_EVIDENCE_REQUIRED",
+        "route_fit": "Live IFS draft; not submit-ready until partner, research-institute or waiver, budget, IP/data/export-control, TR&I and impact evidence are added.",
+        "grant_ready_text_use": "Use Operator OS, warehouse/back-office evidence automation, or HNC hypothesis language only where partner work package proves fit.",
+        "next_action": "Find or obtain named Swiss implementation partner and budget/person-month evidence before filling partner-dependent answers, costs, award terms, or final submit."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+        "title": "UK-Switzerland CR&D Round 3",
+        "status": "IFS_DRAFT_80_PERCENT_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+        "deadline": "2026-09-03T11:00:00+01:00",
+        "route_state": "LIVE_DRAFT_GATED",
+        "metadata_use": "Use metadata to improve staged materials, but do not submit until the route gate is evidenced.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [
+        "Swiss implementation partner",
+        "research institute or waiver evidence",
+        "partner commitment letter",
+        "partner budget and eligible-cost split",
+        "permit/licence position",
+        "export-control position",
+        "project finances and Project Impact"
+      ],
+      "blocked_claim_categories": [
+        "asset, facility or site access",
+        "budget, match funding or eligible cost basis",
+        "financial capacity or loan approval",
+        "partner commitment",
+        "permits, safety, insurance or export position"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CFI-SEN-2511-20260709",
+      "title": "Aureon SEN Evidence OS: Fair Early Identification Support",
+      "status": "SUBMITTED",
+      "deadline": "2026-08-05T11:00:00+01:00",
+      "route_family": "SUBMITTED_MONITOR",
+      "readiness_class": "SUBMITTED_MONITOR_ONLY",
+      "metadata_coverage_state": "BASELINE_METADATA_MONITOR_ONLY_SUBMITTED_ROUTE",
+      "safe_reuse_rule": "Use for funder follow-up or amendment support only; do not duplicate submitted applications.",
+      "formal_text_outputs": [],
+      "formal_text_output_count": 0,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-CFI-SEN-2511-20260709",
+        "portal_application_number": "10210045",
+        "name": "Aureon SEN Evidence OS: Fair Early Identification Support",
+        "status": "SUBMITTED",
+        "ifs_queue_class": "SUBMITTED_MONITOR_ONLY",
+        "route_fit": "Submitted fair early-identification support application; monitor only.",
+        "grant_ready_text_use": "Use evidence OS, fairness, review, and risk-control language.",
+        "next_action": "Monitor IFS track page and email for assessment/funder correspondence."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-CFI-SEN-2511-20260709",
+        "title": "Aureon SEN Evidence OS: Fair Early Identification Support",
+        "status": "SUBMITTED",
+        "deadline": "2026-08-05T11:00:00+01:00",
+        "route_state": "SUBMITTED_MONITOR_ONLY",
+        "metadata_use": "Monitor submitted application and reuse metadata only for funder follow-up.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [],
+      "blocked_claim_categories": [
+        "submitted route monitor-only control"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+      "title": "Scaling performance of quantum computing hardware: CR&D",
+      "status": "QUANTUM_HARDWARE_LEAD_ACCESS_CONSORTIUM_AND_BUDGET_EVIDENCE_REQUIRED",
+      "deadline": "2026-09-18T11:00:00+01:00",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "readiness_class": "EVIDENCE_GATED_NO_SAFE_PORTAL_ACTION",
+      "metadata_coverage_state": "FORMAL_GRANT_TEXT_AVAILABLE_EVIDENCE_GATED",
+      "safe_reuse_rule": "Use formal text only after the route-specific missing evidence is present and classed.",
+      "formal_text_outputs": [
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_SCALING_PERFORMANCE_OF_QUANTUM_COMPUTING_HARDWARE_CR_D_20260709.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_SCALING_PERFORMANCE_OF_QUANTUM_COMPUTING_HARDWARE_CR_D_20260709_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role",
+            "Work Packages",
+            "Expected Outputs",
+            "Collaboration Structure"
+          ],
+          "internal_language_findings_after_clean": []
+        }
+      ],
+      "formal_text_output_count": 1,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+        "portal_application_number": null,
+        "name": "Scaling performance of quantum computing hardware: CR&D",
+        "status": "HARDWARE_LEAD_PARTNER_REQUIRED",
+        "ifs_queue_class": "CONVERSION_ROUTE_EVIDENCE_REQUIRED",
+        "route_fit": "Quantum hardware route requires eligible hardware lead partner.",
+        "grant_ready_text_use": "Use scientific compute governance/supporting evidence language only.",
+        "next_action": "Obtain hardware lead partner and validation plan before any draft."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-QUANTUM-HARDWARE-CRD-2523-20260709",
+        "title": "Scaling performance of quantum computing hardware: CR&D",
+        "status": "QUANTUM_HARDWARE_LEAD_ACCESS_CONSORTIUM_AND_BUDGET_EVIDENCE_REQUIRED",
+        "deadline": "2026-09-18T11:00:00+01:00",
+        "route_state": "ELIGIBILITY_OR_PARTNER_GATED",
+        "metadata_use": "Use metadata to improve staged materials, but do not submit until the route gate is evidenced.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [
+        "eligible quantum hardware lead",
+        "facility or hardware access",
+        "consortium commitment",
+        "budget and validation plan"
+      ],
+      "blocked_claim_categories": [
+        "asset, facility or site access",
+        "budget, match funding or eligible cost basis",
+        "eligible lead or host",
+        "partner commitment"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+      "title": "ADOPT Facilitator Support Grant: Round 10",
+      "status": "ADOPT_FACILITATOR_ENGLAND_FARM_BUSINESS_AND_REGISTERED_FACILITATOR_EVIDENCE_REQUIRED",
+      "deadline": "2026-08-12T11:00:00+01:00",
+      "route_family": "P2_NEXT_DEADLINE",
+      "readiness_class": "EVIDENCE_GATED_NO_SAFE_PORTAL_ACTION",
+      "metadata_coverage_state": "FORMAL_GRANT_TEXT_AVAILABLE_EVIDENCE_GATED",
+      "safe_reuse_rule": "Use formal text only after the route-specific missing evidence is present and classed.",
+      "formal_text_outputs": [
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_CLEAN_ADOPT_FACILITATOR_SUPPORT_GRANT_ROUND_10_20260710_134854.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_ADOPT_FACILITATOR_SUPPORT_GRANT_ROUND_10_20260710_134854_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role",
+            "Work Packages",
+            "Expected Outputs",
+            "Collaboration Structure"
+          ],
+          "internal_language_findings_after_clean": []
+        }
+      ],
+      "formal_text_output_count": 1,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+        "portal_application_number": null,
+        "name": "ADOPT Facilitator Support Grant: Round 10",
+        "status": "NOT_ELIGIBLE_DIRECT",
+        "ifs_queue_class": "NON_LEAD_OR_EXCLUDED_ROUTE",
+        "route_fit": "Lead/applicant eligibility gate; not direct-submit ready.",
+        "grant_ready_text_use": "Do not use unless eligible lead evidence is found.",
+        "next_action": "Hold until an eligible lead applicant and role evidence exist."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-ADOPT-FACILITATOR-R10-2520-20260709",
+        "title": "ADOPT Facilitator Support Grant: Round 10",
+        "status": "ADOPT_FACILITATOR_ENGLAND_FARM_BUSINESS_AND_REGISTERED_FACILITATOR_EVIDENCE_REQUIRED",
+        "deadline": "2026-08-12T11:00:00+01:00",
+        "route_state": "ELIGIBILITY_OR_PARTNER_GATED",
+        "metadata_use": "Use metadata to improve staged materials, but do not submit until the route gate is evidenced.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [
+        "England farm business context",
+        "registered facilitator evidence",
+        "role and procurement evidence"
+      ],
+      "blocked_claim_categories": [
+        "eligible lead or host"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+      "title": "DRIVE35 Innovation Fund: Collaborate 3",
+      "status": "DRIVE35_COLLAB3_ZEV_PARTNER_MATCH_FUNDING_AND_TIER1_EVIDENCE_REQUIRED",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "readiness_class": "EVIDENCE_GATED_NO_SAFE_PORTAL_ACTION",
+      "metadata_coverage_state": "FORMAL_GRANT_TEXT_AVAILABLE_EVIDENCE_GATED",
+      "safe_reuse_rule": "Use formal text only after the route-specific missing evidence is present and classed.",
+      "formal_text_outputs": [
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_DRIVE35_INNOVATION_FUND_COLLABORATE_3_20260709.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_DRIVE35_INNOVATION_FUND_COLLABORATE_3_20260709_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role",
+            "Work Packages",
+            "Expected Outputs",
+            "Collaboration Structure"
+          ],
+          "internal_language_findings_after_clean": []
+        }
+      ],
+      "formal_text_output_count": 1,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+        "portal_application_number": null,
+        "name": "DRIVE35 Innovation Fund: Collaborate 3",
+        "status": "AUTOMOTIVE_ZEV_PARTNER_REQUIRED",
+        "ifs_queue_class": "CONVERSION_ROUTE_EVIDENCE_REQUIRED",
+        "route_fit": "Automotive ZEV partner route; not direct-submit ready.",
+        "grant_ready_text_use": "Use evidence automation as supporting work package only after eligible lead partner evidence.",
+        "next_action": "Obtain eligible automotive/ZEV lead partner and project work package evidence."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-DRIVE35-COLLAB3-2522-20260709",
+        "title": "DRIVE35 Innovation Fund: Collaborate 3",
+        "status": "DRIVE35_COLLAB3_ZEV_PARTNER_MATCH_FUNDING_AND_TIER1_EVIDENCE_REQUIRED",
+        "deadline": "2026-09-16T11:00:00+01:00",
+        "route_state": "ELIGIBILITY_OR_PARTNER_GATED",
+        "metadata_use": "Use metadata to improve staged materials, but do not submit until the route gate is evidenced.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [
+        "vehicle manufacturer or Tier 1 partner",
+        "ZEV work package",
+        "match funding evidence",
+        "eligible budget and consortium role"
+      ],
+      "blocked_claim_categories": [
+        "budget, match funding or eligible cost basis",
+        "partner commitment"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+      "title": "DRIVE35: Scale Up Fund",
+      "status": "DRIVE35_SCALEUP_ZEV_MANUFACTURING_FACILITY_AND_COINVESTMENT_EVIDENCE_REQUIRED",
+      "deadline": "open-no-submission-deadline",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "readiness_class": "EVIDENCE_GATED_NO_SAFE_PORTAL_ACTION",
+      "metadata_coverage_state": "FORMAL_GRANT_TEXT_AVAILABLE_EVIDENCE_GATED",
+      "safe_reuse_rule": "Use formal text only after the route-specific missing evidence is present and classed.",
+      "formal_text_outputs": [
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_CLEAN_DRIVE35_SCALE_UP_FUND_20260710_134854.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_DRIVE35_SCALE_UP_FUND_20260710_134854_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role",
+            "Work Packages",
+            "Expected Outputs",
+            "Collaboration Structure"
+          ],
+          "internal_language_findings_after_clean": []
+        }
+      ],
+      "formal_text_output_count": 1,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+        "portal_application_number": null,
+        "name": "DRIVE35: Scale Up Fund",
+        "status": "MANUFACTURING_FACILITY_EVIDENCE_REQUIRED",
+        "ifs_queue_class": "NON_LEAD_OR_EXCLUDED_ROUTE",
+        "route_fit": "Manufacturing facility evidence required; not direct-submit ready.",
+        "grant_ready_text_use": "Use productivity/evidence workflow language only if facility evidence exists.",
+        "next_action": "Obtain eligible manufacturing facility/site evidence and scale-up budget."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-DRIVE35-SCALE-UP-2445-20260709",
+        "title": "DRIVE35: Scale Up Fund",
+        "status": "DRIVE35_SCALEUP_ZEV_MANUFACTURING_FACILITY_AND_COINVESTMENT_EVIDENCE_REQUIRED",
+        "deadline": "open-no-submission-deadline",
+        "route_state": "ELIGIBILITY_OR_PARTNER_GATED",
+        "metadata_use": "Use metadata to improve staged materials, but do not submit until the route gate is evidenced.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [
+        "ZEV manufacturing facility or site",
+        "co-investment evidence",
+        "eligible GBP5m plus project cost basis",
+        "manufacturing scale-up plan"
+      ],
+      "blocked_claim_categories": [
+        "asset, facility or site access",
+        "budget, match funding or eligible cost basis"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+      "title": "Full ADOPT Grant: Round 8",
+      "status": "ADOPT_FULL_FARMING_LEAD_AND_PARTNER_EVIDENCE_REQUIRED",
+      "deadline": "2026-07-29T11:00:00+01:00",
+      "route_family": "P2_NEXT_DEADLINE",
+      "readiness_class": "EVIDENCE_GATED_NO_SAFE_PORTAL_ACTION",
+      "metadata_coverage_state": "FORMAL_GRANT_TEXT_AVAILABLE_EVIDENCE_GATED",
+      "safe_reuse_rule": "Use formal text only after the route-specific missing evidence is present and classed.",
+      "formal_text_outputs": [
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_CLEAN_FULL_ADOPT_GRANT_ROUND_8_20260710_134854.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_FULL_ADOPT_GRANT_ROUND_8_20260710_134854_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role",
+            "Work Packages",
+            "Expected Outputs",
+            "Collaboration Structure"
+          ],
+          "internal_language_findings_after_clean": []
+        }
+      ],
+      "formal_text_output_count": 1,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "portal_application_number": null,
+        "name": "Full ADOPT Grant: Round 8",
+        "status": "FARMING_LEAD_REQUIRED",
+        "ifs_queue_class": "NON_LEAD_OR_EXCLUDED_ROUTE",
+        "route_fit": "Lead/applicant eligibility gate; not direct-submit ready.",
+        "grant_ready_text_use": "Do not use unless eligible lead evidence is found.",
+        "next_action": "Hold until an eligible lead applicant and role evidence exist."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-FULL-ADOPT-R8-2491-20260709",
+        "title": "Full ADOPT Grant: Round 8",
+        "status": "ADOPT_FULL_FARMING_LEAD_AND_PARTNER_EVIDENCE_REQUIRED",
+        "deadline": "2026-07-29T11:00:00+01:00",
+        "route_state": "ELIGIBILITY_OR_PARTNER_GATED",
+        "metadata_use": "Use metadata to improve staged materials, but do not submit until the route gate is evidenced.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [
+        "England farming, growing or forestry lead",
+        "collaborating farm business",
+        "farm problem statement",
+        "facilitator or support role evidence"
+      ],
+      "blocked_claim_categories": [
+        "asset, facility or site access",
+        "eligible lead or host"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+      "title": "ACTASAP Pilot Phase 1",
+      "status": "ACTASAP_ACADEMIC_LEAD_AND_TTO_EVIDENCE_REQUIRED",
+      "deadline": "2026-07-28T11:00:00+01:00",
+      "route_family": "P2_NEXT_DEADLINE",
+      "readiness_class": "EVIDENCE_GATED_NO_SAFE_PORTAL_ACTION",
+      "metadata_coverage_state": "FORMAL_GRANT_TEXT_AVAILABLE_EVIDENCE_GATED",
+      "safe_reuse_rule": "Use formal text only after the route-specific missing evidence is present and classed.",
+      "formal_text_outputs": [
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_CLEAN_ACTASAP_PILOT_PHASE_1_20260710_134854.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_ACTASAP_PILOT_PHASE_1_20260710_134854_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role",
+            "Work Packages",
+            "Expected Outputs",
+            "Collaboration Structure"
+          ],
+          "internal_language_findings_after_clean": []
+        }
+      ],
+      "formal_text_output_count": 1,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+        "portal_application_number": null,
+        "name": "ACTASAP Pilot Phase 1",
+        "status": "ACADEMIC_LEAD_REQUIRED",
+        "ifs_queue_class": "NON_LEAD_OR_EXCLUDED_ROUTE",
+        "route_fit": "Academic lead required; not direct-submit ready.",
+        "grant_ready_text_use": "Use research hypothesis/supporting tool language only after academic lead evidence.",
+        "next_action": "Obtain eligible academic lead and project role evidence."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-ACTASAP-PILOT-2502-20260709",
+        "title": "ACTASAP Pilot Phase 1",
+        "status": "ACTASAP_ACADEMIC_LEAD_AND_TTO_EVIDENCE_REQUIRED",
+        "deadline": "2026-07-28T11:00:00+01:00",
+        "route_state": "ELIGIBILITY_OR_PARTNER_GATED",
+        "metadata_use": "Use metadata to improve staged materials, but do not submit until the route gate is evidenced.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [
+        "eligible UK academic institution lead",
+        "TTO or authorised research-office contact",
+        "scope and validation work package",
+        "budget and commitment evidence"
+      ],
+      "blocked_claim_categories": [
+        "budget, match funding or eligible cost basis",
+        "eligible lead or host",
+        "partner commitment"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-AKT6-2473-20260709",
+      "title": "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+      "status": "AKT6_KNOWLEDGE_BASE_LEAD_AND_4FTE_EVIDENCE_REQUIRED",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "route_family": "P1_NEAREST_DEADLINE",
+      "readiness_class": "EVIDENCE_GATED_NO_SAFE_PORTAL_ACTION",
+      "metadata_coverage_state": "FORMAL_GRANT_TEXT_AVAILABLE_EVIDENCE_GATED",
+      "safe_reuse_rule": "Use formal text only after the route-specific missing evidence is present and classed.",
+      "formal_text_outputs": [
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_CLEAN_ACCELERATED_KNOWLEDGE_TRANSFER_PARTNERSHIPS_6_AKT6_20260710_134854.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_ACCELERATED_KNOWLEDGE_TRANSFER_PARTNERSHIPS_6_AKT6_20260710_134854_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role",
+            "Work Packages",
+            "Expected Outputs",
+            "Collaboration Structure"
+          ],
+          "internal_language_findings_after_clean": []
+        }
+      ],
+      "formal_text_output_count": 1,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-AKT6-2473-20260709",
+        "portal_application_number": null,
+        "name": "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+        "status": "ACADEMIC_RTO_CATAPULT_LEAD_AND_4FTE_GATE",
+        "ifs_queue_class": "NON_LEAD_OR_EXCLUDED_ROUTE",
+        "route_fit": "Academic/RTO/Catapult lead and 4FTE gate; not direct-submit ready.",
+        "grant_ready_text_use": "Use knowledge-transfer support language only after eligible lead and staffing evidence.",
+        "next_action": "Obtain eligible lead and confirm 4FTE gate before draft."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-AKT6-2473-20260709",
+        "title": "Accelerated Knowledge Transfer Partnerships 6 (AKT 6)",
+        "status": "AKT6_KNOWLEDGE_BASE_LEAD_AND_4FTE_EVIDENCE_REQUIRED",
+        "deadline": "2026-07-15T11:00:00+01:00",
+        "route_state": "ELIGIBILITY_OR_PARTNER_GATED",
+        "metadata_use": "Use metadata to improve staged materials, but do not submit until the route gate is evidenced.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [
+        "eligible UK knowledge-base lead",
+        "TTO or authorised lead contact",
+        "UK business four-FTE evidence",
+        "work package, budget and signed role confirmation"
+      ],
+      "blocked_claim_categories": [
+        "budget, match funding or eligible cost basis",
+        "eligible lead or host"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+      "title": "Commercialising Knowledge Assets Fund (CKAF) Autumn",
+      "status": "CKAF_PUBLIC_SECTOR_RESEARCH_ORG_AND_KNOWLEDGE_ASSET_EVIDENCE_REQUIRED",
+      "deadline": "2026-09-01T11:00:00+01:00",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "readiness_class": "EVIDENCE_GATED_NO_SAFE_PORTAL_ACTION",
+      "metadata_coverage_state": "FORMAL_GRANT_TEXT_AVAILABLE_EVIDENCE_GATED",
+      "safe_reuse_rule": "Use formal text only after the route-specific missing evidence is present and classed.",
+      "formal_text_outputs": [
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_CLEAN_COMMERCIALISING_KNOWLEDGE_ASSETS_FUND_AUTUMN_20260710_134854.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_COMMERCIALISING_KNOWLEDGE_ASSETS_FUND_AUTUMN_20260710_134854_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role",
+            "Work Packages",
+            "Expected Outputs",
+            "Collaboration Structure"
+          ],
+          "internal_language_findings_after_clean": []
+        }
+      ],
+      "formal_text_output_count": 1,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+        "portal_application_number": null,
+        "name": "Commercialising Knowledge Assets Fund (CKAF) Autumn",
+        "status": "PUBLIC_SECTOR_RESEARCH_ORG_REQUIRED",
+        "ifs_queue_class": "NON_LEAD_OR_EXCLUDED_ROUTE",
+        "route_fit": "Public-sector research organisation route; not direct-submit ready.",
+        "grant_ready_text_use": "Use public research commercialisation language only through eligible partner.",
+        "next_action": "Obtain eligible public-sector research organisation lead."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-CKAF-AUTUMN-2478-20260709",
+        "title": "Commercialising Knowledge Assets Fund (CKAF) Autumn",
+        "status": "CKAF_PUBLIC_SECTOR_RESEARCH_ORG_AND_KNOWLEDGE_ASSET_EVIDENCE_REQUIRED",
+        "deadline": "2026-09-01T11:00:00+01:00",
+        "route_state": "ELIGIBILITY_OR_PARTNER_GATED",
+        "metadata_use": "Use metadata to improve staged materials, but do not submit until the route gate is evidenced.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [
+        "eligible public-sector research organisation lead",
+        "knowledge-asset ownership evidence",
+        "senior support or authorised lead evidence",
+        "Aureon support/procurement role"
+      ],
+      "blocked_claim_categories": [
+        "asset, facility or site access",
+        "eligible lead or host"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+      "title": "Zero Emission Vessels and Infrastructure 2: Energy Efficiency",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "readiness_class": "EVIDENCE_GATED_NO_SAFE_PORTAL_ACTION",
+      "metadata_coverage_state": "FORMAL_GRANT_TEXT_AVAILABLE_EVIDENCE_GATED",
+      "safe_reuse_rule": "Use formal text only after the route-specific missing evidence is present and classed.",
+      "formal_text_outputs": [
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ENERGY_EFFICIENCY_20260709.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ENERGY_EFFICIENCY_20260709_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role",
+            "Work Packages",
+            "Expected Outputs",
+            "Collaboration Structure"
+          ],
+          "internal_language_findings_after_clean": []
+        },
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ENERGY_EFFICIENCY_20260710.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ENERGY_EFFICIENCY_20260710_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role"
+          ],
+          "internal_language_findings_after_clean": []
+        }
+      ],
+      "formal_text_output_count": 2,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+        "portal_application_number": null,
+        "name": "Zero Emission Vessels and Infrastructure 2: Energy Efficiency",
+        "status": "MARITIME_CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+        "ifs_queue_class": "CONVERSION_ROUTE_EVIDENCE_REQUIRED",
+        "route_fit": "Maritime conversion pack route; partner-led only without vessel/port/shipyard/permit/safety/budget evidence.",
+        "grant_ready_text_use": "Use assurance, audit trail, deployment evidence, and risk-control language only as a supporting work package.",
+        "next_action": "Find or obtain named UK maritime partner, asset/site, budget, permissions, safety case, and deployment plan before portal draft or submit."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-ZEVI2-ENERGY-EFFICIENCY-2436-20260709",
+        "title": "Zero Emission Vessels and Infrastructure 2: Energy Efficiency",
+        "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+        "deadline": "2026-09-16T11:00:00+01:00",
+        "route_state": "PARTNER_LED_CONVERSION_PACK_READY",
+        "metadata_use": "Use metadata to improve staged materials, but do not submit until the route gate is evidenced.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [
+        "UK maritime lead",
+        "vessel/infrastructure asset",
+        "three-year demonstration commitment",
+        "eligible budget and permissions"
+      ],
+      "blocked_claim_categories": [
+        "asset, facility or site access",
+        "budget, match funding or eligible cost basis",
+        "eligible lead or host",
+        "partner commitment",
+        "permits, safety, insurance or export position"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+      "title": "Zero Emission Vessels and Infrastructure 2: Electric Power",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "readiness_class": "EVIDENCE_GATED_NO_SAFE_PORTAL_ACTION",
+      "metadata_coverage_state": "FORMAL_GRANT_TEXT_AVAILABLE_EVIDENCE_GATED",
+      "safe_reuse_rule": "Use formal text only after the route-specific missing evidence is present and classed.",
+      "formal_text_outputs": [
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ELECTRIC_POWER_20260709.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ELECTRIC_POWER_20260709_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role",
+            "Work Packages",
+            "Expected Outputs",
+            "Collaboration Structure"
+          ],
+          "internal_language_findings_after_clean": []
+        },
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ELECTRIC_POWER_20260710.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ELECTRIC_POWER_20260710_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role"
+          ],
+          "internal_language_findings_after_clean": []
+        }
+      ],
+      "formal_text_output_count": 2,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+        "portal_application_number": null,
+        "name": "Zero Emission Vessels and Infrastructure 2: Electric Power",
+        "status": "MARITIME_CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+        "ifs_queue_class": "CONVERSION_ROUTE_EVIDENCE_REQUIRED",
+        "route_fit": "Maritime conversion pack route; partner-led only without vessel/port/shipyard/permit/safety/budget evidence.",
+        "grant_ready_text_use": "Use assurance, audit trail, deployment evidence, and risk-control language only as a supporting work package.",
+        "next_action": "Find or obtain named UK maritime partner, asset/site, budget, permissions, safety case, and deployment plan before portal draft or submit."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-ZEVI2-ELECTRIC-POWER-2435-20260709",
+        "title": "Zero Emission Vessels and Infrastructure 2: Electric Power",
+        "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+        "deadline": "2026-09-16T11:00:00+01:00",
+        "route_state": "PARTNER_LED_CONVERSION_PACK_READY",
+        "metadata_use": "Use metadata to improve staged materials, but do not submit until the route gate is evidenced.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [
+        "UK maritime lead",
+        "electric-power vessel or infrastructure asset",
+        "three-year demonstration commitment",
+        "eligible budget and permissions"
+      ],
+      "blocked_claim_categories": [
+        "asset, facility or site access",
+        "budget, match funding or eligible cost basis",
+        "eligible lead or host",
+        "partner commitment",
+        "permits, safety, insurance or export position"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+      "title": "Zero Emission Vessels and Infrastructure 2: Alternative Fuels",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-09-16T11:00:00+01:00",
+      "route_family": "REMAINING_EVIDENCE_GATED",
+      "readiness_class": "EVIDENCE_GATED_NO_SAFE_PORTAL_ACTION",
+      "metadata_coverage_state": "FORMAL_GRANT_TEXT_AVAILABLE_EVIDENCE_GATED",
+      "safe_reuse_rule": "Use formal text only after the route-specific missing evidence is present and classed.",
+      "formal_text_outputs": [
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ALTERNATIVE_FUELS_20260709.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ALTERNATIVE_FUELS_20260709_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role",
+            "Work Packages",
+            "Expected Outputs",
+            "Collaboration Structure"
+          ],
+          "internal_language_findings_after_clean": []
+        },
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ALTERNATIVE_FUELS_20260710.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ALTERNATIVE_FUELS_20260710_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role"
+          ],
+          "internal_language_findings_after_clean": []
+        }
+      ],
+      "formal_text_output_count": 2,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+        "portal_application_number": null,
+        "name": "Zero Emission Vessels and Infrastructure 2: Alternative Fuels",
+        "status": "MARITIME_CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+        "ifs_queue_class": "CONVERSION_ROUTE_EVIDENCE_REQUIRED",
+        "route_fit": "Maritime conversion pack route; partner-led only without vessel/port/shipyard/permit/safety/budget evidence.",
+        "grant_ready_text_use": "Use assurance, audit trail, deployment evidence, and risk-control language only as a supporting work package.",
+        "next_action": "Find or obtain named UK maritime partner, asset/site, budget, permissions, safety case, and deployment plan before portal draft or submit."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-ZEVI2-ALTERNATIVE-FUELS-2434-20260709",
+        "title": "Zero Emission Vessels and Infrastructure 2: Alternative Fuels",
+        "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+        "deadline": "2026-09-16T11:00:00+01:00",
+        "route_state": "PARTNER_LED_CONVERSION_PACK_READY",
+        "metadata_use": "Use metadata to improve staged materials, but do not submit until the route gate is evidenced.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [
+        "UK maritime lead",
+        "alternative-fuel vessel or infrastructure asset",
+        "three-year demonstration commitment",
+        "eligible budget and permissions"
+      ],
+      "blocked_claim_categories": [
+        "asset, facility or site access",
+        "budget, match funding or eligible cost basis",
+        "eligible lead or host",
+        "partner commitment",
+        "permits, safety, insurance or export position"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "title": "Clean Maritime Demonstration Competition 7: Pre-deployment trials",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "route_family": "P1_NEAREST_DEADLINE",
+      "readiness_class": "EVIDENCE_GATED_NO_SAFE_PORTAL_ACTION",
+      "metadata_coverage_state": "FORMAL_GRANT_TEXT_AVAILABLE_EVIDENCE_GATED",
+      "safe_reuse_rule": "Use formal text only after the route-specific missing evidence is present and classed.",
+      "formal_text_outputs": [
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_PRE_DEPLOYMENT_TRIALS_20260709.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_PRE_DEPLOYMENT_TRIALS_20260709_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role",
+            "Work Packages",
+            "Expected Outputs",
+            "Collaboration Structure"
+          ],
+          "internal_language_findings_after_clean": []
+        },
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_PRE_DEPLOYMENT_TRIALS_20260710.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_PRE_DEPLOYMENT_TRIALS_20260710_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role"
+          ],
+          "internal_language_findings_after_clean": []
+        }
+      ],
+      "formal_text_output_count": 2,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+        "portal_application_number": null,
+        "name": "Clean Maritime Demonstration Competition 7: Pre-deployment trials",
+        "status": "MARITIME_CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+        "ifs_queue_class": "CONVERSION_ROUTE_EVIDENCE_REQUIRED",
+        "route_fit": "Maritime conversion pack route; partner-led only without vessel/port/shipyard/permit/safety/budget evidence.",
+        "grant_ready_text_use": "Use assurance, audit trail, deployment evidence, and risk-control language only as a supporting work package.",
+        "next_action": "Find or obtain named UK maritime partner, asset/site, budget, permissions, safety case, and deployment plan before portal draft or submit."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+        "title": "Clean Maritime Demonstration Competition 7: Pre-deployment trials",
+        "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+        "deadline": "2026-07-15T11:00:00+01:00",
+        "route_state": "PARTNER_LED_CONVERSION_PACK_READY",
+        "metadata_use": "Use metadata to improve staged materials, but do not submit until the route gate is evidenced.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [
+        "UK maritime lead",
+        "vessel or port/shipyard asset",
+        "trial site permissions",
+        "safety case, permits and insurance basis",
+        "eligible budget and deployment plan"
+      ],
+      "blocked_claim_categories": [
+        "asset, facility or site access",
+        "budget, match funding or eligible cost basis",
+        "eligible lead or host",
+        "permits, safety, insurance or export position"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "title": "Clean Maritime Demonstration Competition 7: Feasibility studies",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "route_family": "P1_NEAREST_DEADLINE",
+      "readiness_class": "EVIDENCE_GATED_NO_SAFE_PORTAL_ACTION",
+      "metadata_coverage_state": "FORMAL_GRANT_TEXT_AVAILABLE_EVIDENCE_GATED",
+      "safe_reuse_rule": "Use formal text only after the route-specific missing evidence is present and classed.",
+      "formal_text_outputs": [
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_FEASIBILITY_STUDIES_20260709.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_FEASIBILITY_STUDIES_20260709_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role",
+            "Work Packages",
+            "Expected Outputs",
+            "Collaboration Structure"
+          ],
+          "internal_language_findings_after_clean": []
+        },
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_FEASIBILITY_STUDIES_20260710.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_FEASIBILITY_STUDIES_20260710_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role"
+          ],
+          "internal_language_findings_after_clean": []
+        }
+      ],
+      "formal_text_output_count": 2,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+        "portal_application_number": null,
+        "name": "Clean Maritime Demonstration Competition 7: Feasibility studies",
+        "status": "MARITIME_CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+        "ifs_queue_class": "CONVERSION_ROUTE_EVIDENCE_REQUIRED",
+        "route_fit": "Maritime conversion pack route; partner-led only without vessel/port/shipyard/permit/safety/budget evidence.",
+        "grant_ready_text_use": "Use assurance, audit trail, deployment evidence, and risk-control language only as a supporting work package.",
+        "next_action": "Find or obtain named UK maritime partner, asset/site, budget, permissions, safety case, and deployment plan before portal draft or submit."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+        "title": "Clean Maritime Demonstration Competition 7: Feasibility studies",
+        "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+        "deadline": "2026-07-15T11:00:00+01:00",
+        "route_state": "PARTNER_LED_CONVERSION_PACK_READY",
+        "metadata_use": "Use metadata to improve staged materials, but do not submit until the route gate is evidenced.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [
+        "UK maritime lead",
+        "feasibility partner and asset context",
+        "scope, budget and work package",
+        "partner commitment evidence"
+      ],
+      "blocked_claim_categories": [
+        "asset, facility or site access",
+        "budget, match funding or eligible cost basis",
+        "eligible lead or host",
+        "partner commitment"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "title": "Clean Maritime Demonstration Competition 7: Deployment trials",
+      "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+      "deadline": "2026-07-15T11:00:00+01:00",
+      "route_family": "P1_NEAREST_DEADLINE",
+      "readiness_class": "EVIDENCE_GATED_NO_SAFE_PORTAL_ACTION",
+      "metadata_coverage_state": "FORMAL_GRANT_TEXT_AVAILABLE_EVIDENCE_GATED",
+      "safe_reuse_rule": "Use formal text only after the route-specific missing evidence is present and classed.",
+      "formal_text_outputs": [
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_DEPLOYMENT_TRIALS_20260709.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_DEPLOYMENT_TRIALS_20260709_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role",
+            "Work Packages",
+            "Expected Outputs",
+            "Collaboration Structure"
+          ],
+          "internal_language_findings_after_clean": []
+        },
+        {
+          "source": "applications/IFS_PORTAL_READY_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_DEPLOYMENT_TRIALS_20260710.md",
+          "formal_output": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_DEPLOYMENT_TRIALS_20260710_20260710_134902.md",
+          "included_sections": [
+            "Competition",
+            "Public Description",
+            "Project Summary",
+            "Innovation",
+            "Project Need",
+            "Aureon Role"
+          ],
+          "internal_language_findings_after_clean": []
+        }
+      ],
+      "formal_text_output_count": 2,
+      "baseline_metadata_pack": "applications/AUREON_IFS_GRANT_READY_METADATA_PACK_20260710_080246.json",
+      "research_metadata_refresh": "applications/IFS_GRANT_READY_RESEARCH_METADATA_REFRESH_20260710_111313.json",
+      "metadata_route_fit": {
+        "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+        "portal_application_number": null,
+        "name": "Clean Maritime Demonstration Competition 7: Deployment trials",
+        "status": "MARITIME_CONVERSION_PACK_READY_PARTNER_EVIDENCE_REQUIRED",
+        "ifs_queue_class": "CONVERSION_ROUTE_EVIDENCE_REQUIRED",
+        "route_fit": "Maritime conversion pack route; partner-led only without vessel/port/shipyard/permit/safety/budget evidence.",
+        "grant_ready_text_use": "Use assurance, audit trail, deployment evidence, and risk-control language only as a supporting work package.",
+        "next_action": "Find or obtain named UK maritime partner, asset/site, budget, permissions, safety case, and deployment plan before portal draft or submit."
+      },
+      "research_route_metadata": {
+        "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+        "title": "Clean Maritime Demonstration Competition 7: Deployment trials",
+        "status": "MARITIME_PARTNER_EVIDENCE_REQUEST_PDF_PACK_READY_NO_UNLOCK",
+        "deadline": "2026-07-15T11:00:00+01:00",
+        "route_state": "PARTNER_LED_CONVERSION_PACK_READY",
+        "metadata_use": "Use metadata to improve staged materials, but do not submit until the route gate is evidenced.",
+        "claim_discipline": "Use only Class A/B/C evidence as labelled; remove internal metaphor and certainty language.",
+        "direct_submit_ready_from_metadata": false,
+        "portal_change_required_now": false
+      },
+      "master_submission_readiness_ledger": "applications/IFS_MASTER_SUBMISSION_READINESS_LEDGER_20260710_133816.json",
+      "required_before_portal_action": [
+        "UK maritime deployment lead",
+        "deployment asset or site",
+        "permissions and safety case",
+        "partner budget and deployment schedule"
+      ],
+      "blocked_claim_categories": [
+        "asset, facility or site access",
+        "budget, match funding or eligible cost basis",
+        "eligible lead or host",
+        "partner commitment",
+        "permits, safety, insurance or export position"
+      ],
+      "direct_submit_ready": false,
+      "safe_portal_action_now": false,
+      "new_browser_submission_available": false
+    }
+  ],
+  "operator_rules": [
+    "Treat baseline metadata as proposal support, not proof that an IFS route is submit-ready.",
+    "Use formal text only with the matching route and only after missing evidence is present.",
+    "Do not add partners, facilities, assets, budgets or eligible leads unless the evidence is in the record.",
+    "Do not send email, upload, invite, accept terms, submit Project Impact or submit an IFS application from this coverage pass."
+  ],
+  "result": "IFS_MASTER_GRANT_READY_METADATA_COVERAGE_READY_NO_NEW_SUBMIT_READY_ROUTE"
+}

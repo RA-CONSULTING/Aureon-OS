@@ -1,0 +1,248 @@
+{
+  "schema_version": "aureon-ifs-drive-current-evidence-action-queue-refresh-v1",
+  "generated_at": "2026-07-12T12:00:01+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_drive_current_evidence_action_queue_refresh",
+  "result": "IFS_DRIVE_CURRENT_EVIDENCE_ACTION_QUEUE_REFRESH_NO_UNLOCK_ACTION_QUEUE_READY",
+  "priority_application_ids": [
+    "APP-IFS-AKT6-2473-20260709",
+    "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+    "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+    "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+    "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+    "APP-PRIVATE-INVESTOR-OPENOCEAN-FIFTH-WAVE-20260711"
+  ],
+  "drive_searches": [
+    {
+      "query": "AKT6",
+      "result_count": 0,
+      "classification": "no_drive_result"
+    },
+    {
+      "query": "QUB KTP",
+      "result_count": 0,
+      "classification": "no_drive_result"
+    },
+    {
+      "query": "Ulster KTP",
+      "result_count": 2,
+      "classification": "old_grant_logs_only_not_partner_reply",
+      "results": [
+        {
+          "title": "AUREON_GRANT_OPERATING_LOG.md",
+          "url": "https://drive.google.com/file/d/18RIGlvCCNBx_GH_Mdo-37QSImZ-SXkfg"
+        },
+        {
+          "title": "AUREON_GRANT_OPERATING_LOG_REFRESHED_20260705.md",
+          "url": "https://drive.google.com/file/d/1AgBUZhuDzRZl-7RaDrm5zoGHZ1C2Npbf"
+        }
+      ]
+    },
+    {
+      "query": "CMDC7",
+      "result_count": 0,
+      "classification": "no_drive_result"
+    },
+    {
+      "query": "Clean Maritime",
+      "result_count": 5,
+      "classification": "unrelated_markdown_skill_files_not_partner_reply",
+      "results": [
+        {
+          "title": "recommend-ecommerce-strategy.md",
+          "url": "https://drive.google.com/file/d/1z3sn4N3i2IwWmOk7F-X9oP5QX1bP2ToY"
+        },
+        {
+          "title": "SKILL.md",
+          "url": "https://drive.google.com/file/d/1a0iC0oP6PWHnPfayUFjEOLkjXLb1_eri"
+        },
+        {
+          "title": "prompting.md",
+          "url": "https://drive.google.com/file/d/1Stf13DIgY20sw9eIxy7jsF1f0ZYA2a6L"
+        }
+      ]
+    },
+    {
+      "query": "Belfast Harbour",
+      "result_count": 5,
+      "classification": "bank_statement_and_research_docs_not_partner_reply",
+      "results": [
+        {
+          "title": "Statement__GBP_20240701-20240731.pdf",
+          "url": "https://drive.google.com/file/d/1rityOJNM6YA7JstHS3-ULheZIvlTFTA9"
+        },
+        {
+          "title": "Statement__GBP_20241101-20241130.pdf",
+          "url": "https://drive.google.com/file/d/1kYdQqeKi_q9LVhfxY5dD5669WImQBRrd"
+        },
+        {
+          "title": "Statement__GBP_20250301-20250331.pdf",
+          "url": "https://drive.google.com/file/d/103eaUlVZ1BIprkuNH37zypGoz7OFZHFF"
+        },
+        {
+          "title": "The_Arctic_Threshold_v.docx",
+          "url": "https://drive.google.com/file/d/1qG2iDurG02O5NPkQw7fws9GvGcsWSDmT"
+        }
+      ]
+    },
+    {
+      "query": "Navantia",
+      "result_count": 0,
+      "classification": "no_drive_result"
+    },
+    {
+      "query": "Artemis",
+      "result_count": 0,
+      "classification": "no_drive_result"
+    },
+    {
+      "query": "NI Maritime",
+      "result_count": 5,
+      "classification": "research_docs_not_maritime_partner_reply",
+      "results": [
+        {
+          "title": "Atlantic_Seaboard_Substrate_v.docx",
+          "url": "https://drive.google.com/file/d/1gt25FWYhVMAzynVz2Bk5DXBNtmqyPBe0"
+        },
+        {
+          "title": "Atlantic_Seaboard_Substrate_v1.pdf",
+          "url": "https://drive.google.com/file/d/1iGa_lBbxNsxAYqRiHbD-A2mU2wfyD-Zt"
+        },
+        {
+          "title": "Atlantic_Seaboard_Substrate_v1.docx",
+          "url": "https://drive.google.com/file/d/1L9s1BiWyBeBkGUTz29qCwWZr_dXb7qVm"
+        }
+      ]
+    },
+    {
+      "query": "OpenOcean",
+      "result_count": 3,
+      "classification": "research_docs_not_new_investor_reply",
+      "results": [
+        {
+          "title": "The_Arctic_Threshold_v.docx",
+          "url": "https://drive.google.com/file/d/1qG2iDurG02O5NPkQw7fws9GvGcsWSDmT"
+        },
+        {
+          "title": "The_Arctic_Threshold_v (1).docx",
+          "url": "https://drive.google.com/file/d/1bfCnYNGva0QwhsYVFMkq0LLxYo9HesoA"
+        },
+        {
+          "title": "The_Arctic_Threshold_v1.docx",
+          "url": "https://drive.google.com/file/d/1WqKTUQW5OUSntLX-Xq_AoGYuLLlybfD8"
+        }
+      ]
+    },
+    {
+      "query": "Swiss partner",
+      "result_count": 5,
+      "classification": "stale_grant_war_room_and_logs_not_partner_confirmation",
+      "results": [
+        {
+          "title": "Aureon Grant War Room - 2026-07-04",
+          "url": "https://docs.google.com/spreadsheets/d/1Nk5TwzX0PJcAlhoi9V0zOLEKsVN127roApdMjXNtgdM"
+        },
+        {
+          "title": "Aureon Grant War Room - 2026-07-04.xlsx",
+          "url": "https://drive.google.com/file/d/1Ow2nKdM-mG2p9LiaduSvr97F2Q19NBXs"
+        },
+        {
+          "title": "AUREON_GRANT_OPERATING_LOG.md",
+          "url": "https://drive.google.com/file/d/18RIGlvCCNBx_GH_Mdo-37QSImZ-SXkfg"
+        }
+      ]
+    },
+    {
+      "query": "Project Impact",
+      "result_count": 5,
+      "classification": "internal_research_docs_not_provider_support_reply",
+      "results": [
+        {
+          "title": "EPAS_Unified_Architecture_Project_Druid.md",
+          "url": "https://drive.google.com/file/d/1R8AeTruKOcVxPk8-6fVXemizp9qW91f-"
+        },
+        {
+          "title": "project-decision.md",
+          "url": "https://drive.google.com/file/d/1buzSnqMcU3waqIqgmyL0kxaW1OYahfJU"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "priority_routes_checked": 6,
+    "drive_searches_run": 12,
+    "drive_results_reviewed": 30,
+    "confirmed_unlock_evidence_count": 0,
+    "direct_submit_ready_routes": 0,
+    "safe_portal_actions_now": 0,
+    "new_browser_submissions_available": 0,
+    "ready_not_sent_external_actions": 2,
+    "grant_provider_support_emails_ready_not_sent": 1,
+    "investor_pitch_emails_ready_not_sent": 1
+  },
+  "external_action_queue": {
+    "artifact": "applications/AUREON_EXTERNAL_ACTION_QUEUE_20260712_20260712_114554.json",
+    "result": "AUREON_EXTERNAL_ACTION_QUEUE_READY_CONFIRMATION_REQUIRED",
+    "queue": [
+      {
+        "id": "ACTION-IFS-UK-SWISS-PROJECT-IMPACT-SUPPORT-20260712",
+        "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+        "route_type": "grant_provider_support_email",
+        "destination": "support@iuk.ukri.org",
+        "email_package": "applications/IFS_UK_SWISS_PROJECT_IMPACT_SUPPORT_REFRESH_DRAFT_20260712_20260712_114526.eml",
+        "ready_status": "READY_NOT_SENT",
+        "action_time_confirmation_required": true,
+        "send_performed": false,
+        "external_submission_performed": false
+      },
+      {
+        "id": "ACTION-OPENOCEAN-PITCH-SUBMISSION-20260712",
+        "application_id": "APP-PRIVATE-INVESTOR-OPENOCEAN-FIFTH-WAVE-20260711",
+        "route_type": "investor_pitch_email",
+        "destination": "info@openocean.vc",
+        "email_package": "applications/OPENOCEAN_PITCH_SUBMISSION_EMAIL_PACKAGE_20260712_20260712_111305.eml",
+        "ready_status": "READY_NOT_SENT",
+        "action_time_confirmation_required": true,
+        "send_performed": false,
+        "external_submission_performed": false
+      }
+    ]
+  },
+  "route_decisions": [
+    {
+      "application_id": "APP-IFS-AKT6-2473-20260709",
+      "decision": "No Knowledge Base reply or four-FTE/budget unlock evidence found in current Drive search; keep waiting-reply status."
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-DEPLOYMENT-2414-20260709",
+      "decision": "No maritime lead, vessel/site, permission or budget reply found in current Drive search; keep waiting-reply status."
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-FEASIBILITY-2416-20260709",
+      "decision": "No maritime lead, vessel/site, permission or budget reply found in current Drive search; keep waiting-reply status."
+    },
+    {
+      "application_id": "APP-IFS-CMDC7-PREDEPLOYMENT-2415-20260709",
+      "decision": "No maritime lead, vessel/site, permission or budget reply found in current Drive search; keep waiting-reply status."
+    },
+    {
+      "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+      "decision": "No Swiss partner confirmation or provider support reply found in current Drive search; support email package remains ready-not-sent."
+    },
+    {
+      "application_id": "APP-PRIVATE-INVESTOR-OPENOCEAN-FIFTH-WAVE-20260711",
+      "decision": "No new OpenOcean reply file found in current Drive search; pitch email package remains ready-not-sent."
+    }
+  ],
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false,
+  "upload_performed": false,
+  "contact_route_submitted": false,
+  "outputs": {
+    "json": "applications/IFS_DRIVE_CURRENT_EVIDENCE_ACTION_QUEUE_REFRESH_20260712_120001.json",
+    "markdown": "applications/IFS_DRIVE_CURRENT_EVIDENCE_ACTION_QUEUE_REFRESH_20260712_120001.md",
+    "pipeline_report": "pipelines/pipeline_report_20260712_120001_ifs_drive_current_evidence_action_queue_refresh.json"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": "aureon-pipeline-report-v1",
+  "generated_at": "2026-07-10T14:59:06+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_repayable_finance_hold_audit",
+  "artifact": "applications/IFS_REPAYABLE_FINANCE_HOLD_AUDIT_20260710_145906.json",
+  "markdown": "applications/IFS_REPAYABLE_FINANCE_HOLD_AUDIT_20260710_145906.md",
+  "report": "pipelines/pipeline_report_20260710_145906_ifs_repayable_finance_hold_audit.json",
+  "result": "IFS_REPAYABLE_FINANCE_HOLD_AUDIT_ROUTE_HELD_OUTSIDE_GRANT_QUEUE",
+  "repayable_finance_routes_reviewed": 1,
+  "grant_routes_created": 0,
+  "direct_submit_ready_routes": 0,
+  "new_browser_submissions_available": 0,
+  "safe_portal_actions_available": 0,
+  "route_held_outside_grant_queue": true,
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false,
+  "contact_route_submitted": false,
+  "partner_invite_sent": false,
+  "upload_performed": false
+}

@@ -1,0 +1,1 @@
+symbol,epic,instrument_name,asset_class,instrument_type,market_status,currency,snapshot_status,bid,ask,mid_price,spread,spread_pct,minimum_deal_size,min_notional_estimate,margin_factor_pct,margin_required_for_min_deal,leverage_estimate,can_buy,can_sell,trade_ready,blockers,buy_call,sell_call

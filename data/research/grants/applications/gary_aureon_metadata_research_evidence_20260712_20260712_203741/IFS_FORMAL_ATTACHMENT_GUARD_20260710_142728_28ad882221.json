@@ -1,0 +1,321 @@
+{
+  "schema_version": "aureon-ifs-formal-attachment-guard-v1",
+  "generated_at": "2026-07-10T14:27:28+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_formal_attachment_guard",
+  "source_refs": {
+    "formal_language_qa": "applications/IFS_FORMAL_LANGUAGE_QA_20260710_134902.json",
+    "live_drive_route_unlock_readback": "applications/IFS_LIVE_DRIVE_ROUTE_UNLOCK_READBACK_20260710_142308.json",
+    "targeted_local_unlock_recheck": "applications/IFS_TARGETED_UNLOCK_EVIDENCE_RECHECK_20260710_141910.json",
+    "current_grant_board": "applications/IFS_CURRENT_GRANT_BOARD_20260710_142400.json"
+  },
+  "summary": {
+    "allowlisted_formal_files": 41,
+    "missing_allowlisted_files": 0,
+    "excluded_source_classes": 4,
+    "linked_active_ifs_applications": 16,
+    "formal_upload_ready_from_guard": false,
+    "direct_submit_ready_routes": 0,
+    "new_browser_submissions_available": 0,
+    "portal_changed": false,
+    "external_submission_performed": false,
+    "email_sent": false,
+    "upload_performed": false
+  },
+  "allowlisted_formal_files": [
+    {
+      "path": "funder_ready/FORMAL_ATTACHMENT_INDEX_20260709.pdf",
+      "use": "Index for the current external-review attachment package.",
+      "exists": true,
+      "size": 4606
+    },
+    {
+      "path": "funder_ready/AUREON_MASTER_SUPPORTING_EVIDENCE_20260709.pdf",
+      "use": "Cross-route applicant capability, public profile and due-diligence summary.",
+      "exists": true,
+      "size": 8613
+    },
+    {
+      "path": "funder_ready/AIRR_SUPPORTING_EVIDENCE_SUMMARY_20260709.pdf",
+      "use": "AIRR compute-submission supporting evidence.",
+      "exists": true,
+      "size": 6136
+    },
+    {
+      "path": "funder_ready/IFS_NEXT_WAVE_10209601_SUPPORTING_EVIDENCE_SUMMARY_20260709.pdf",
+      "use": "IFS Next Wave submitted application supporting evidence.",
+      "exists": true,
+      "size": 6444
+    },
+    {
+      "path": "funder_ready/IFS_FUTURE_LEADERS_R11_SUPPORTING_EVIDENCE_20260709.pdf",
+      "use": "Future Leaders Round 11 staged evidence pack.",
+      "exists": true,
+      "size": 7428
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_ACCELERATED_KNOWLEDGE_TRANSFER_PARTNERSHIPS_6_AKT6_20260710_134854_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4530
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_ACTASAP_PILOT_PHASE_1_20260710_134854_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4458
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_ADOPT_FACILITATOR_SUPPORT_GRANT_ROUND_10_20260710_134854_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4476
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_COMMERCIALISING_KNOWLEDGE_ASSETS_FUND_AUTUMN_20260710_134854_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4545
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_DRIVE35_SCALE_UP_FUND_20260710_134854_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4493
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_FULL_ADOPT_GRANT_ROUND_8_20260710_134854_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4469
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_DEPLOYMENT_TRIALS_20260709_20260710_125157.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4171
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_DEPLOYMENT_TRIALS_20260709_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4171
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_DEPLOYMENT_TRIALS_20260710_20260710_125157.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 2897
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_DEPLOYMENT_TRIALS_20260710_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 2897
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_FEASIBILITY_STUDIES_20260709_20260710_125157.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4177
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_FEASIBILITY_STUDIES_20260709_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4177
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_FEASIBILITY_STUDIES_20260710_20260710_125157.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 2901
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_FEASIBILITY_STUDIES_20260710_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 2901
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_PRE_DEPLOYMENT_TRIALS_20260709_20260710_125157.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4182
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_PRE_DEPLOYMENT_TRIALS_20260709_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4182
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_PRE_DEPLOYMENT_TRIALS_20260710_20260710_125157.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 2909
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_CLEAN_MARITIME_DEMONSTRATION_COMPETITION_7_PRE_DEPLOYMENT_TRIALS_20260710_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 2909
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_DRIVE35_INNOVATION_FUND_COLLABORATE_3_20260709_20260710_125157.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4168
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_DRIVE35_INNOVATION_FUND_COLLABORATE_3_20260709_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4168
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_SCALING_PERFORMANCE_OF_QUANTUM_COMPUTING_HARDWARE_CR_D_20260709_20260710_125157.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4213
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_SCALING_PERFORMANCE_OF_QUANTUM_COMPUTING_HARDWARE_CR_D_20260709_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4213
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_UK_SWITZERLAND_CR_D_ROUND_3_20260709_20260710_125157.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4184
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_UK_SWITZERLAND_CR_D_ROUND_3_20260709_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4184
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ALTERNATIVE_FUELS_20260709_20260710_125157.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4235
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ALTERNATIVE_FUELS_20260709_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4235
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ALTERNATIVE_FUELS_20260710_20260710_125157.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 2896
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ALTERNATIVE_FUELS_20260710_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 2896
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ELECTRIC_POWER_20260709_20260710_125157.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4223
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ELECTRIC_POWER_20260709_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4223
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ELECTRIC_POWER_20260710_20260710_125157.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 2926
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ELECTRIC_POWER_20260710_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 2926
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ENERGY_EFFICIENCY_20260709_20260710_125157.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4214
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ENERGY_EFFICIENCY_20260709_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 4214
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ENERGY_EFFICIENCY_20260710_20260710_125157.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 2893
+    },
+    {
+      "path": "applications/formal_ifs_texts/IFS_FORMAL_PORTAL_TEXT_ZERO_EMISSION_VESSELS_AND_INFRASTRUCTURE_2_ENERGY_EFFICIENCY_20260710_20260710_134902.md",
+      "use": "Route-specific sanitized portal text; copy into fields only after route eligibility evidence exists.",
+      "exists": true,
+      "size": 2893
+    }
+  ],
+  "missing_allowlisted_files": [],
+  "excluded_source_classes": [
+    {
+      "class": "drive_war_room_or_source_dump",
+      "examples": [
+        "Aureon Grant War Room - 2026-07-04",
+        "RA_Grant_War_Room_Package.md",
+        "RA_Grant_War_Room_Package.pdf",
+        "aureon_complete_codex.md"
+      ],
+      "reason": "Contains planning notes, historical draft claims or private fields; use only as source material for sanitized formal outputs."
+    },
+    {
+      "class": "internal_ledgers_and_audit_artifacts",
+      "examples": [
+        "applications/IFS_CURRENT_ACTION_REGISTER_*.json",
+        "applications/IFS_CURRENT_GRANT_BOARD_*.json",
+        "applications/IFS_LIVE_DRIVE_ROUTE_UNLOCK_READBACK_*.json",
+        "applications/IFS_TARGETED_UNLOCK_EVIDENCE_RECHECK_*.json"
+      ],
+      "reason": "Operational records for Aureon audit, not funder attachments."
+    },
+    {
+      "class": "outreach_payloads",
+      "examples": [
+        "applications/outreach_payloads/*.md"
+      ],
+      "reason": "Reusable correspondence drafts; not application attachments unless converted into signed support evidence or approved correspondence."
+    },
+    {
+      "class": "private_finance_or_compliance_sources",
+      "examples": [
+        "bank statements",
+        "tax identifiers",
+        "bank identifiers",
+        "raw management accounts"
+      ],
+      "reason": "Use only in specific finance sections when the route requires it and the exact field is approved."
+    }
+  ],
+  "rules": [
+    "Attach only allowlisted formal files unless a route-specific artifact is generated and scanned.",
+    "Do not attach Drive war-room, source-dump, internal ledger, raw finance, or outreach-draft files.",
+    "Portal text files can be copied into IFS fields only after route eligibility gates are satisfied.",
+    "This guard does not make any route submit-ready by itself."
+  ],
+  "result": "IFS_FORMAL_ATTACHMENT_GUARD_READY_NO_EXTERNAL_UPLOAD"
+}

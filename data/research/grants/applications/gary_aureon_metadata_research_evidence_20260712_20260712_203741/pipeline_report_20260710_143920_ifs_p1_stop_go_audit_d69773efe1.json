@@ -1,0 +1,23 @@
+{
+  "schema_version": "aureon-pipeline-report-v1",
+  "generated_at": "2026-07-10T14:39:20+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_p1_stop_go_audit",
+  "artifact": "applications/IFS_P1_STOP_GO_AUDIT_20260710_143920.json",
+  "markdown": "applications/IFS_P1_STOP_GO_AUDIT_20260710_143920.md",
+  "report": "pipelines/pipeline_report_20260710_143920_ifs_p1_stop_go_audit.json",
+  "result": "IFS_P1_STOP_GO_AUDIT_NO_GO_ALL_P1_ROUTES",
+  "p1_routes_reviewed": 4,
+  "go_routes": 0,
+  "no_go_routes": 4,
+  "direct_submit_ready_routes": 0,
+  "new_browser_submissions_available": 0,
+  "safe_portal_actions_available": 0,
+  "portal_changed": false,
+  "external_submission_performed": false,
+  "email_sent": false,
+  "contact_route_submitted": false,
+  "partner_invite_sent": false,
+  "upload_performed": false
+}

@@ -1,0 +1,1387 @@
+{
+  "civilization": "Pythagorean",
+  "last_updated": "2025-12-30T18:30:14.783363",
+  "version": "1.0.0",
+  "sources": [
+    "hardcoded",
+    "wikipedia"
+  ],
+  "core_principles": {
+    "all_is_number": {
+      "description": "The universe is fundamentally mathematical - numbers are the essence of reality",
+      "trading_application": "Quantitative analysis as path to market truth",
+      "confidence": 0.95
+    },
+    "harmonia": {
+      "description": "Mathematical ratios create harmony in music, cosmos, and soul",
+      "trading_application": "Harmonic patterns, Fibonacci relationships",
+      "confidence": 0.9
+    },
+    "tetraktys": {
+      "description": "Sacred triangular figure of 10 dots (1+2+3+4) representing cosmic order",
+      "trading_application": "Layered analysis: point, line, plane, solid",
+      "confidence": 0.85
+    },
+    "metempsychosis": {
+      "description": "Transmigration of souls - eternal cycles of existence",
+      "trading_application": "Market patterns eternally recurring in new forms",
+      "confidence": 0.75
+    }
+  },
+  "sacred_mathematics": {
+    "ratios": {
+      "octave": {
+        "ratio": "2:1",
+        "description": "Perfect doubling, fundamental harmony"
+      },
+      "fifth": {
+        "ratio": "3:2",
+        "description": "Strong consonance, stability"
+      },
+      "fourth": {
+        "ratio": "4:3",
+        "description": "Pure harmony, balance"
+      }
+    },
+    "fibonacci_sequence": {
+      "sequence": [
+        1,
+        1,
+        2,
+        3,
+        5,
+        8,
+        13,
+        21,
+        34,
+        55,
+        89,
+        144,
+        233,
+        377,
+        610
+      ],
+      "golden_ratio": 1.618033988749,
+      "trading_levels": [
+        0.236,
+        0.382,
+        0.5,
+        0.618,
+        0.786,
+        1.0,
+        1.272,
+        1.618,
+        2.618
+      ]
+    },
+    "perfect_numbers": {
+      "values": [
+        6,
+        28,
+        496,
+        8128
+      ],
+      "property": "Sum of proper divisors equals the number",
+      "significance": "Divine perfection in mathematics"
+    },
+    "triangular_numbers": {
+      "sequence": [
+        1,
+        3,
+        6,
+        10,
+        15,
+        21,
+        28,
+        36,
+        45,
+        55
+      ],
+      "formula": "n(n+1)/2"
+    }
+  },
+  "number_meanings": {
+    "1": {
+      "name": "Monad",
+      "meaning": "Unity, source, the One"
+    },
+    "2": {
+      "name": "Dyad",
+      "meaning": "Duality, opposition, division"
+    },
+    "3": {
+      "name": "Triad",
+      "meaning": "Harmony, completion, first odd prime"
+    },
+    "4": {
+      "name": "Tetrad",
+      "meaning": "Stability, square, material world"
+    },
+    "5": {
+      "name": "Pentad",
+      "meaning": "Life, health, marriage of 2+3"
+    },
+    "6": {
+      "name": "Hexad",
+      "meaning": "First perfect number, creation"
+    },
+    "7": {
+      "name": "Heptad",
+      "meaning": "Fortune, wisdom, Virgin number"
+    },
+    "8": {
+      "name": "Ogdoad",
+      "meaning": "Justice, first cube"
+    },
+    "9": {
+      "name": "Ennead",
+      "meaning": "Completion, first odd square"
+    },
+    "10": {
+      "name": "Decad",
+      "meaning": "Tetraktys sum, universe, perfection"
+    }
+  },
+  "geometric_principles": {
+    "platonic_solids": {
+      "tetrahedron": {
+        "faces": 4,
+        "element": "Fire",
+        "market": "Volatility"
+      },
+      "cube": {
+        "faces": 6,
+        "element": "Earth",
+        "market": "Stability"
+      },
+      "octahedron": {
+        "faces": 8,
+        "element": "Air",
+        "market": "Movement"
+      },
+      "dodecahedron": {
+        "faces": 12,
+        "element": "Aether",
+        "market": "Higher order"
+      },
+      "icosahedron": {
+        "faces": 20,
+        "element": "Water",
+        "market": "Flow"
+      }
+    },
+    "golden_spiral": "Fibonacci spiral approaching golden ratio - nature's growth pattern"
+  },
+  "musical_harmony": {
+    "description": "Music of the spheres - planetary movements create cosmic harmony",
+    "application": "Market cycles as harmonic oscillations"
+  },
+  "wikipedia_topics": [
+    "Pythagoreanism",
+    "Pythagorean theorem",
+    "Golden ratio",
+    "Fibonacci sequence",
+    "Tetraktys",
+    "Musica universalis",
+    "Pythagorean tuning",
+    "Sacred geometry",
+    "Platonic solid",
+    "Perfect number"
+  ],
+  "learned_insights": [
+    {
+      "source": "Sacred-Texts",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "This section contains texts from ancient Greece and Rome,\n primarily about Classical Pagan beliefs.\n However, any text which has survived from this period of\n antiquity is, by definition, a classic.\n Many of these texts were only saved from the flames of the\n dark ages in locations remote from Rome and Athens,\n such as the legendary city of Timbuktu in central Africa, \n Irish monastaries, and by I",
+      "relevance_score": 0.6855988709666105,
+      "trading_application": "Ancient pythagorean wisdom for market understanding",
+      "timestamp": "2025-12-15T10:21:27.542448",
+      "content_hash": "af0097ab86eecf2e7993f8c87c9d6f49"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "HOMERWorks of Homer:The Iliad of Homer,Samuel Butlertranslator [1898]The Odyssey of Homer,Samuel Butlertranslator [1900]The Homeric Hymn to DemeterThe Iliad and Odyssey of Homer in Greek",
+      "relevance_score": 0.8308768941342988,
+      "trading_application": "Ancient pythagorean wisdom for market understanding",
+      "timestamp": "2025-12-15T10:21:27.542471",
+      "content_hash": "eea834c0f1bddcd95c3c64049608d896"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "The Authoress of the Odyssey,\n bySamuel Butler[1922]Men are from the Iliad, Women are from the Odyssey...",
+      "relevance_score": 0.6307756381327235,
+      "trading_application": "Ancient pythagorean wisdom for market understanding",
+      "timestamp": "2025-12-15T10:21:27.542477",
+      "content_hash": "c6caa46001b5a9b7ff83a3215c941ca2"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "HESIODWorks of Hesiod:Hesiod's TheogonyWorks and Days",
+      "relevance_score": 0.6841152281725102,
+      "trading_application": "Ancient pythagorean wisdom for market understanding",
+      "timestamp": "2025-12-15T10:21:27.542481",
+      "content_hash": "60e52e7064b3bfc52bae620078a436aa"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "PRE-SOCRATIC PHILOSOPHERSAncilla to the Pre-Socratic PhilosophersbyKathleen Freeman[1948]The framentary textual remains of the oldest ancient Greek philosophers.",
+      "relevance_score": 0.8967834449414693,
+      "trading_application": "Ancient pythagorean wisdom for market understanding",
+      "timestamp": "2025-12-15T10:21:27.542485",
+      "content_hash": "40a529b4728a35a7942c3f99d5072253"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "Pythagoras was already well known in ancient times for his supposed mathematical achievement of the Pythagorean theorem. Pythagoras had been credited with discovering that in a right-angled triangle the square of the hypotenuse is equal to the sum of the squares of the other two sides. In ancient times Pythagoras was also noted for his discovery that music had mathematical foundations. Antique sources that credit Pythagoras as the philosopher who first discovered music intervals also credit him ",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:29:54.422402",
+      "content_hash": "994ed8aeaf11a45592e986ddf58c8b96"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "Empedocles described Pythagoras as \"a man of surpassing knowledge, master especially of all kinds of wise works, who had acquired the upmost wealth of understanding\". In the 4th century BC the Sophist Alcidamas wrote that Pythagoras was widely honored by Italians.\nToday scholars typically distinguish two periods of Pythagoreanism: early-Pythagoreanism, from the 6th until the 5th century BC, and late-Pythagoreanism, from the 4th until the 3rd century BC. The Spartan colony of Taranto in Italy bec",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:29:54.422631",
+      "content_hash": "433b30e5d9c18b588b40a9566c16178b"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "This section contains texts from ancient Greece and Rome,\n primarily about Classical Pagan beliefs.\n However, any text which has survived from this period of\n antiquity is, by definition, a classic.\n Many of these texts were only saved from the flames of the\n dark ages in locations remote from Rome and Athens,\n such as the legendary city of Timbuktu in central Africa, \n Irish monastaries, and by I",
+      "relevance_score": 0.7397740113292935,
+      "trading_application": "Ancient pythagorean wisdom for market understanding",
+      "timestamp": "2025-12-15T10:29:56.513914",
+      "content_hash": "af0097ab86eecf2e7993f8c87c9d6f49"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "HOMERWorks of Homer:The Iliad of Homer,Samuel Butlertranslator [1898]The Odyssey of Homer,Samuel Butlertranslator [1900]The Homeric Hymn to DemeterThe Iliad and Odyssey of Homer in Greek",
+      "relevance_score": 0.71639985481882,
+      "trading_application": "Ancient pythagorean wisdom for market understanding",
+      "timestamp": "2025-12-15T10:29:56.513936",
+      "content_hash": "eea834c0f1bddcd95c3c64049608d896"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "The Authoress of the Odyssey,\n bySamuel Butler[1922]Men are from the Iliad, Women are from the Odyssey...",
+      "relevance_score": 0.7052874001002558,
+      "trading_application": "Ancient pythagorean wisdom for market understanding",
+      "timestamp": "2025-12-15T10:29:56.513941",
+      "content_hash": "c6caa46001b5a9b7ff83a3215c941ca2"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "HESIODWorks of Hesiod:Hesiod's TheogonyWorks and Days",
+      "relevance_score": 0.8440031467158198,
+      "trading_application": "Ancient pythagorean wisdom for market understanding",
+      "timestamp": "2025-12-15T10:29:56.513945",
+      "content_hash": "60e52e7064b3bfc52bae620078a436aa"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "PRE-SOCRATIC PHILOSOPHERSAncilla to the Pre-Socratic PhilosophersbyKathleen Freeman[1948]The framentary textual remains of the oldest ancient Greek philosophers.",
+      "relevance_score": 0.6079354367373011,
+      "trading_application": "Ancient pythagorean wisdom for market understanding",
+      "timestamp": "2025-12-15T10:29:56.513949",
+      "content_hash": "40a529b4728a35a7942c3f99d5072253"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagorean theorem",
+      "content": "In mathematics, the Pythagorean theorem or Pythagoras's theorem is a fundamental relation in Euclidean geometry between the three sides of a right triangle. It states that the area of the square whose side is the hypotenuse (the side opposite the right angle) is equal to the sum of the areas of the squares on the other two sides.\nThe theorem can be written as an equation relating the lengths of the sides a, b and the hypotenuse c, sometimes called the Pythagorean equation:",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:29:59.751799",
+      "content_hash": "17e53ed15c34a8fa0671a744592dac18"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagorean theorem",
+      "content": "The theorem is named for the Greek philosopher Pythagoras, born around 570 BC. The theorem has been proved numerous times by many different methods – possibly the most for any mathematical theorem. The proofs are diverse, including both geometric proofs and algebraic proofs, with some dating back thousands of years.\nWhen Euclidean space is represented by a Cartesian coordinate system in analytic geometry, Euclidean distance satisfies the Pythagorean relation: the squared distance between two poi",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from pythagorean tradition",
+      "timestamp": "2025-12-15T10:29:59.751880",
+      "content_hash": "1e4024be77d1e2695ee7fe424b187bcf"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagorean theorem",
+      "content": "=== Rearrangement proofs ===\nIn one rearrangement proof, two squares are used whose sides have a measure of \n  \n    \n      \n        a\n        +\n        b\n      \n    \n    {\\displaystyle a+b}\n  \n and which contain four right triangles whose sides are a, b and c, with the hypotenuse being c. In the square on the right side, the triangles are placed such that the corners of the square correspond to the corners of the right angle in the triangles, forming a square in the center whose sides are length",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:29:59.751949",
+      "content_hash": "f1728afe09c08ae02776527893f3bd0c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagorean theorem",
+      "content": "This proof is based on the proportionality of the sides of three similar triangles, that is, upon the fact that the ratio of any two corresponding sides of similar triangles is the same regardless of the size of the triangles.\nLet ABC represent a right triangle, with the right angle located at C, as shown on the figure. Draw the altitude from point C, and call H its intersection with the side AB. Point H divides the length of the hypotenuse c into parts d and e. The new triangle, ACH, is similar",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:29:59.752064",
+      "content_hash": "4b771f4276cdc92ca993e449e8344905"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "In mathematics, the Fibonacci sequence is a sequence in which each element is the sum of the two elements that precede it. Numbers that are part of the Fibonacci sequence are known as Fibonacci numbers, commonly denoted Fn . Many writers begin the sequence with 0 and 1, although some authors start it from 1 and 1 and some (as did Fibonacci) from 1 and 2. Starting from 0 and 1, the sequence begins",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:09.961988",
+      "content_hash": "2bcc2f927258d1043acc06996aa0f48b"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "The Fibonacci numbers were first described in Indian mathematics as early as 200 BC in work by Pingala on enumerating possible patterns of Sanskrit poetry formed from syllables of two lengths. They are named after the Italian mathematician Leonardo of Pisa, also known as Fibonacci, who introduced the sequence to Western European mathematics in his 1202 book Liber Abaci.\nFibonacci numbers appear unexpectedly often in mathematics, so much so that there is an entire journal dedicated to their study",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:09.962042",
+      "content_hash": "ee0872bc990bdb2047039c631392d545"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "for n > 1.\nUnder some older definitions, the value \n  \n    \n      \n        \n          F\n          \n            0\n          \n        \n        =\n        0\n      \n    \n    {\\displaystyle F_{0}=0}\n  \n is omitted, so that the sequence starts with \n  \n    \n      \n        \n          F\n          \n            1\n          \n        \n        =\n        \n          F\n          \n            2\n          \n        \n        =\n        1\n        ,\n      \n    \n    {\\displaystyle F_{1}=F_{2}=1,}\n  \n and the recurrence ",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:09.962088",
+      "content_hash": "a1007f02023e0a272913ceff7eeb1ec3"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "The Fibonacci sequence can be extended to negative integer indices by following the same recurrence relation in the negative direction (sequence A039834 in the OEIS): ⁠\n  \n    \n      \n        \n          F\n          \n            1\n          \n        \n        =\n        1\n      \n    \n    {\\displaystyle F_{1}=1}\n  \n⁠, ⁠\n  \n    \n      \n        \n          F\n          \n            0\n          \n        \n        =\n        0\n      \n    \n    {\\displaystyle F_{0}=0}\n  \n⁠, and ⁠\n  \n    \n      \n        \n     ",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:09.962124",
+      "content_hash": "26b4e775ade89fd0977d1066d74c6e81"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "The Fibonacci sequence appears in Indian mathematics, in connection with Sanskrit prosody. In the Sanskrit poetic tradition, there was interest in enumerating all patterns of long (L) syllables of 2 units duration, juxtaposed with short (S) syllables of 1 unit duration. Counting the different patterns of successive L and S with a given total duration results in the Fibonacci numbers: the number of patterns of duration m units is Fm+1.\nKnowledge of the Fibonacci sequence was expressed as early as",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:09.962170",
+      "content_hash": "7196ae9aae2922816a52c354b8a5fbdf"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "Variations of two earlier meters [is the variation] ...  For example, for [a meter of length] four, variations of meters of two [and] three being mixed, five happens. [works out examples 8, 13, 21] ... In this way, the process should be followed in all mātrā-vṛttas [prosodic combinations].\nHemachandra (c. 1150) is credited with knowledge of the sequence as well, writing that \"the sum of the last and the one before the last is the number ... of the next mātrā-vṛtta.\"",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:09.962195",
+      "content_hash": "86de959206d3ca34a604a41841a2f145"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "The Fibonacci sequence first appears in the book Liber Abaci (The Book of Calculation, 1202) by Fibonacci, where it is used to calculate the growth of rabbit populations. Fibonacci considers the growth of an idealized (biologically unrealistic) rabbit population, assuming that: a newly born breeding pair of rabbits are put in a field; each breeding pair mates at the age of one month, and at the end of their second month they always produce another pair of rabbits; and rabbits never die, but cont",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from pythagorean tradition",
+      "timestamp": "2025-12-15T10:30:09.962226",
+      "content_hash": "4c01f9b6d59348caca2ee177913f974c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "At the end of the first month, they mate, but there is still only 1 pair.\nAt the end of the second month they produce a new pair, so there are 2 pairs in the field.\nAt the end of the third month, the original pair produce a second pair, but the second pair only mate to gestate for a month, so there are 3 pairs in all.\nAt the end of the fourth month, the original pair has produced yet another new pair, and the pair born two months ago also produces their first pair, making 5 pairs.\nAt the end of ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:09.962259",
+      "content_hash": "2330e9a9e40a9325d7014c6fad0c2f81"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "=== Closed-form expression ===\nLike every sequence defined by a homogeneous linear recurrence with constant coefficients, the Fibonacci numbers have a closed-form expression. It has become known as Binet's formula, named after French mathematician Jacques Philippe Marie Binet, though it was already known by Abraham de Moivre and Daniel Bernoulli:",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:09.962277",
+      "content_hash": "f2f5c0b0ceed30f1b5e8a596ff10132f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "where ⁠\n  \n    \n      \n        φ\n      \n    \n    {\\displaystyle \\varphi }\n  \n⁠ is the golden ratio and ⁠\n  \n    \n      \n        ψ\n      \n    \n    {\\displaystyle \\psi }\n  \n⁠ is its conjugate,",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:09.962308",
+      "content_hash": "65be9d4f100af2a74d6a71612c11c376"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Musica universalis",
+      "content": "The musica universalis (literally universal music), also called music of the spheres or harmony of the spheres, is a philosophical concept that regards proportions in the movements of celestial bodies—the Sun, Moon, and planets—as a form of music. The theory, originating in ancient Greece, was a tenet of Pythagoreanism, and was later developed by 16th-century astronomer Johannes Kepler. Kepler did not believe this \"music\" to be audible, but felt that it could nevertheless be heard by the soul. T",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:30:20.619975",
+      "content_hash": "c896d09ceeda0f97e3fa578e473578f0"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Musica universalis",
+      "content": "The concept of the \"music of the spheres\" incorporates the metaphysical principle that mathematical relationships express qualities or \"tones\" of energy that manifests in numbers, visual angles, shapes and sounds—all connected within a pattern of proportion. Pythagoras first identified that the pitch of a musical note is an inverse proportion to the length of the string that produces it, and that intervals between harmonious sound frequencies form simple numerical ratios. Pythagoras proposed tha",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:20.620028",
+      "content_hash": "c8f2d842a818d91125f5d6d3272dd716"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Musica universalis",
+      "content": "Some thinkers suppose that the motion of bodies of that size must produce a noise, since on our earth the motion of bodies far inferior in size and in speed of movement has that effect. Also, when the sun and the moon, they say, and all the stars, so great in number and in size, are moving with so rapid a motion, how should they not produce a sound immensely great? Starting from this argument and from the observation that their speeds, as measured by their distances, are in the same ratios as mu",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:20.620071",
+      "content_hash": "2c34d0d875cce566d192d706598c6759"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Musica universalis",
+      "content": "musica mundana (sometimes referred to as musica universalis)\nmusica humana (the internal music of the human body)\nmusica quae in quibusdam constituta est instrumentis (sounds made by singers and instrumentalists)\nBoethius believed that musica mundana could only be discovered through the intellect, but that the order found within it was the same as that found in audible music, and that both reflect the beauty of God.",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:30:20.620093",
+      "content_hash": "32a221242da90c9e9b0495a0cee8a6a3"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Musica universalis",
+      "content": "Musica universalis—which had existed as a metaphysical concept since the time of the Greeks—was often taught in quadrivium, and this intriguing connection between music and astronomy stimulated the imagination of Johannes Kepler as he devoted much of his time after publishing the Mysterium Cosmographicum (Mystery of the Cosmos), looking over tables and trying to fit the data to what he believed to be the true nature of the cosmos as it relates to musical sound. In 1619, Kepler published Harmonic",
+      "relevance_score": 0.8,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:30:20.620141",
+      "content_hash": "eb9d86e5ae1e72cd8200e05d0788eca4"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Musica universalis",
+      "content": "Harmonices is split into five books, or chapters. The first and second books give a brief discussion on regular polyhedra and their congruences, reiterating the idea he introduced in Mysterium that the five regular solids known about since antiquity define the orbits of the planets and their distances from the sun. Book three focuses on defining musical harmonies, including consonance and dissonance, intervals (including the problems of just tuning), their relations to string length which was a ",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:20.620272",
+      "content_hash": "f900a44e768f26c4acfee57ca2732323"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Musica universalis",
+      "content": "For there is a musicke where-ever there is a harmony, order or proportion; and thus farre we may maintain the musick of the spheres; for those well ordered motions, and regular paces, though they give no sound unto the eare, yet to the understanding they strike a note most full of harmony. Whatsoever is harmonically composed, delights in harmony.",
+      "relevance_score": 0.6,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:30:20.620300",
+      "content_hash": "f782ccc79f5f2c7a348c2e47e01c89e5"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagorean tuning",
+      "content": "Pythagorean tuning is a system of musical tuning in which the frequency ratios of all intervals are determined by choosing a sequence of  fifths which are \"pure\" or perfect, with ratio \n  \n    \n      \n        3\n        :\n        2\n      \n    \n    {\\displaystyle 3:2}\n  \n. This is chosen because it is the next harmonic of a vibrating string, after the octave (which is the ratio \n  \n    \n      \n        2\n        :\n        1\n      \n    \n    {\\displaystyle 2:1}\n  \n), and hence is the next most conson",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:25.550754",
+      "content_hash": "c38c295c5a3b427474ef94ded09073ff"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagorean tuning",
+      "content": "== Method ==\n12-tone Pythagorean temperament is based on a sequence of perfect fifths, each tuned in the ratio 3:2, the next simplest ratio after 2:1 (the octave). Starting from D for example (D-based tuning), six other notes are produced by moving six times a ratio 3:2 up, and the remaining ones by moving the same ratio down:",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:25.550789",
+      "content_hash": "71b29c8edf148b42ec9c2e16104ce367"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "Sacred geometry ascribes symbolic and sacred meanings to certain geometric shapes and certain geometric proportions. It is associated with the belief of a divine creator of the universal geometer. The geometry used in the design and construction of religious structures such as churches, temples, mosques, religious monuments, altars, and tabernacles has sometimes been considered sacred. The concept applies also to sacred spaces such as temenoi, sacred groves, village greens, pagodas and holy well",
+      "relevance_score": 0.6,
+      "trading_application": "Wisdom integration from pythagorean tradition",
+      "timestamp": "2025-12-15T10:30:30.428409",
+      "content_hash": "c0b3a9629d1020a8ef328c46dc6678f6"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "According to Stephen Skinner, the study of sacred geometry has its roots in the study of nature, and the mathematical principles at work therein. Many forms observed in nature can be related to geometry; for example, the chambered nautilus grows at a constant rate and so its shell forms a logarithmic spiral to accommodate that growth without changing shape. Also, honeybees construct hexagonal cells to hold their honey.  These and other correspondences are sometimes interpreted in terms of sacred",
+      "relevance_score": 0.6,
+      "trading_application": "Wisdom integration from pythagorean tradition",
+      "timestamp": "2025-12-15T10:30:30.428478",
+      "content_hash": "164fc7b951601ae2692ffbca7a1036ae"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "Geometric ratios, and geometric figures were often employed in the designs of ancient Egyptian, ancient Indian, Greek and Roman architecture. Medieval European cathedrals also incorporated symbolic geometry. Indian and Himalayan spiritual communities often constructed temples and fortifications on design plans of mandala and yantra. Mandala Vaatikas or Sacred Gardens were designed using the same principles.\nMany of the sacred geometry principles of the human body and of ancient architecture were",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:30.428512",
+      "content_hash": "b0c2d1d1e2d15114196e0688368d2b27"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "Mandalas are made up of a compilation of geometric shapes. In Buddhism, it is made up of concentric circles and squares that are equally placed from the center. Located within the geometric configurations are deities or suggestions of the deity, such as in the form of a symbol. This is because Buddhists believe that deities can actually manifest inside the mandala. Mandalas can be created with a variety of mediums. Tibetan Buddhists create mandalas out of sand that are then ritually destroyed. I",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:30.428558",
+      "content_hash": "ca98c3a995408981f897857b153ea4f7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "=== In Chinese spiritual traditions ===\nOne of the cornerstones of Chinese folk religion is the relationship between man and nature. This is epitomized in feng shui, which are architectural principles outlining the design plans of buildings in order to optimize the harmony of man and nature through the movement of Chi, or \"life-generating energy.\" In order to maximize the flow of Chi throughout a building, its design plan must utilize specific shapes. Rectangles and squares are considered to be ",
+      "relevance_score": 1.0,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:30:30.428620",
+      "content_hash": "f1e95b59d4e1a750e16a5a44629f3254"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "=== In Islam ===\nThe geometric designs in Islamic art are often built on combinations of repeated squares and circles, which may be overlapped and interlaced, as can arabesques (with which they are often combined), to form intricate and complex patterns, including a wide variety of tessellations. These may constitute the entire decoration, may form a framework for floral or calligraphic embellishments, or may retreat into the background around other motifs. The complexity and variety of patterns",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:30.428665",
+      "content_hash": "036d4598ede7b2208f58184fb40a21ac"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "==== Hindu temples ====\nThe symbolic representation of the cosmic model is then projected onto Hindu temples using the Vastu Shastra principle of Sukha Darshan, which states that smaller parts of the temple should be self-similar and a replica of the whole. The repetition of these replication parts symbolizes the natural phenomena of fractal patterns found in nature. These patterns make up the exterior of Hindu temples. Each element and detail are proportional to each other, this occurrence is a",
+      "relevance_score": 0.8,
+      "trading_application": "Wisdom integration from pythagorean tradition",
+      "timestamp": "2025-12-15T10:30:30.428721",
+      "content_hash": "e0b345af4bd167147f03124d507e2a0c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "=== In Christianity ===\nThe construction of Medieval European cathedrals was often based on geometries intended to make the viewer see the world through mathematics, and through this understanding, gain a better understanding of the divine. These churches frequently featured a Latin Cross floor-plan.\nIn the High Middle Ages, leading Christian philosophers explained the layout of the universe in terms of a microcosm analogy. In her book describing the divine visions she witnessed, Hildegard of Bi",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:30.428785",
+      "content_hash": "0c04977203200cb4c442d76e14c0f979"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "== See also ==\nCircle dance\nGolden Ratio\nLey line\nLu Ban and Feng shui\nMagic circle\nHarmony of the spheres\nNumerology\nShield of the Trinity\nYantra\n108 (number)",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:30.428815",
+      "content_hash": "d85148379674a3c240582c0e7b734e7a"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Platonic solid",
+      "content": "In geometry, a Platonic solid is a convex, regular polyhedron in three-dimensional Euclidean space. Being a regular polyhedron means that the faces are congruent (identical in shape and size) regular polygons (all angles congruent and all edges congruent), and the same number of faces meet at each vertex. There are only five such polyhedra: a tetrahedron (four triangular faces), a cube (six square faces), an octahedron (eight triangular faces), a dodecahedron (twelve pentagonal faces), and an ic",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:35.287298",
+      "content_hash": "446d035057d29b5ab39fa864fc855d19"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Platonic solid",
+      "content": "The Platonic solids are prominent in the philosophy of Plato, their namesake. Plato wrote about them in the dialogue Timaeus c. 360 B.C. in which he associated each of the four classical elements (earth, air, water, and fire) with a regular solid. Earth was associated with the cube, air with the octahedron, water with the icosahedron, and fire with the tetrahedron. Of the fifth Platonic solid, the dodecahedron, Plato obscurely remarked, \"...the god used [it] for arranging the constellations on t",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:35.287390",
+      "content_hash": "d6bc2a4772f098dd1cad9a350c595f02"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Platonic solid",
+      "content": "In the 16th century, the German astronomer Johannes Kepler attempted to relate the five extraterrestrial planets known at that time to the five Platonic solids. In Mysterium Cosmographicum, published in 1596, Kepler proposed a model of the Solar System in which the five solids were set inside one another and separated by a series of inscribed and circumscribed spheres. Kepler proposed that the distance relationships between the six planets known at that time could be understood in terms of the f",
+      "relevance_score": 0.6,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-15T10:30:35.287441",
+      "content_hash": "be2743d7a0dda7b71519e6beaef7af84"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Platonic solid",
+      "content": "== Cartesian coordinates ==\nFor Platonic solids centered at the origin, simple Cartesian coordinates of the vertices are given below. The Greek letter \n  \n    \n      \n        φ\n      \n    \n    {\\displaystyle \\varphi }\n  \n is used to represent the golden ratio \n  \n    \n      \n        \n          \n            \n              1\n              +\n              \n                \n                  5\n                \n              \n            \n            2\n          \n        \n        ≈\n        1.6180\n   ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:35.287467",
+      "content_hash": "a3851afa52e208dad488786e4ad9ff34"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Platonic solid",
+      "content": "=== As a configuration ===\nThe elements of a polyhedron can be expressed in a configuration matrix. The rows and columns correspond to vertices, edges, and faces. The diagonal numbers say how many of each element occur in the whole polyhedron. The nondiagonal numbers say how many of the column's element occur in or at the row's element. Dual pairs of polyhedra have their configuration matrices rotated 180 degrees from each other.",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:35.287575",
+      "content_hash": "ded9d9843affdbc9f32a00fba71659fc"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Perfect number",
+      "content": "== History ==\nIn about 300 BC Euclid showed that if 2p − 1 is prime then 2p−1(2p − 1) is perfect.\nThe first four perfect numbers were the only ones known to early Greek mathematics, and the mathematician Nicomachus noted 8128 as early as around AD 100. In modern language, Nicomachus states without proof that every perfect number is of the form \n  \n    \n      \n        \n          2\n          \n            n\n            −\n            1\n          \n        \n        (\n        \n          2\n          \n  ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-15T10:30:40.420100",
+      "content_hash": "bbd114d24db338f9eb79c63776680e50"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "This section contains texts from ancient Greece and Rome,\n primarily about Classical Pagan beliefs.\n However, any text which has survived from this period of\n antiquity is, by definition, a classic.\n Many of these texts were only saved from the flames of the\n dark ages in locations remote from Rome and Athens,\n such as the legendary city of Timbuktu in central Africa, \n Irish monastaries, and by I",
+      "relevance_score": 0.7607037661189989,
+      "trading_application": "Ancient pythagorean wisdom for market understanding",
+      "timestamp": "2025-12-25T19:38:02.654622",
+      "content_hash": "af0097ab86eecf2e7993f8c87c9d6f49"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "HOMERWorks of Homer:The Iliad of Homer,Samuel Butlertranslator [1898]The Odyssey of Homer,Samuel Butlertranslator [1900]The Homeric Hymn to DemeterThe Iliad and Odyssey of Homer in Greek",
+      "relevance_score": 0.7959801466001373,
+      "trading_application": "Ancient pythagorean wisdom for market understanding",
+      "timestamp": "2025-12-25T19:38:02.654644",
+      "content_hash": "eea834c0f1bddcd95c3c64049608d896"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "The Authoress of the Odyssey,\n bySamuel Butler[1922]Men are from the Iliad, Women are from the Odyssey...",
+      "relevance_score": 0.7059737564378264,
+      "trading_application": "Ancient pythagorean wisdom for market understanding",
+      "timestamp": "2025-12-25T19:38:02.654649",
+      "content_hash": "c6caa46001b5a9b7ff83a3215c941ca2"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "HESIODWorks of Hesiod:Hesiod's TheogonyWorks and Days",
+      "relevance_score": 0.6267879532624869,
+      "trading_application": "Ancient pythagorean wisdom for market understanding",
+      "timestamp": "2025-12-25T19:38:02.654654",
+      "content_hash": "60e52e7064b3bfc52bae620078a436aa"
+    },
+    {
+      "source": "Sacred-Texts",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "PRE-SOCRATIC PHILOSOPHERSAncilla to the Pre-Socratic PhilosophersbyKathleen Freeman[1948]The framentary textual remains of the oldest ancient Greek philosophers.",
+      "relevance_score": 0.7606199917759415,
+      "trading_application": "Ancient pythagorean wisdom for market understanding",
+      "timestamp": "2025-12-25T19:38:02.654658",
+      "content_hash": "40a529b4728a35a7942c3f99d5072253"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "Pythagoras was already well known in ancient times for his supposed mathematical achievement of the Pythagorean theorem. Pythagoras had been credited with discovering that in a right-angled triangle the square of the hypotenuse is equal to the sum of the squares of the other two sides. In ancient times Pythagoras was also noted for his discovery that music had mathematical foundations. Antique sources that credit Pythagoras as the philosopher who first discovered music intervals also credit him ",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:42.625706",
+      "content_hash": "994ed8aeaf11a45592e986ddf58c8b96"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagoreanism",
+      "content": "Empedocles described Pythagoras as \"a man of surpassing knowledge, master especially of all kinds of wise works, who had acquired the upmost wealth of understanding\". In the 4th century BC the Sophist Alcidamas wrote that Pythagoras was widely honored by Italians.\nToday scholars typically distinguish two periods of Pythagoreanism: early-Pythagoreanism, from the 6th until the 5th century BC, and late-Pythagoreanism, from the 4th until the 3rd century BC. The Spartan colony of Taranto in Italy bec",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:42.625894",
+      "content_hash": "433b30e5d9c18b588b40a9566c16178b"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagorean theorem",
+      "content": "In mathematics, the Pythagorean theorem or Pythagoras's theorem is a fundamental relation in Euclidean geometry between the three sides of a right triangle. It states that the area of the square whose side is the hypotenuse (the side opposite the right angle) is equal to the sum of the areas of the squares on the other two sides.\nThe theorem can be written as an equation relating the lengths of the sides a, b and the hypotenuse c, sometimes called the Pythagorean equation:",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:47.858512",
+      "content_hash": "17e53ed15c34a8fa0671a744592dac18"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagorean theorem",
+      "content": "The theorem is named for the Greek philosopher Pythagoras, born around 570 BC. The theorem has been proved numerous times by many different methods – possibly the most for any mathematical theorem. The proofs are diverse, including both geometric proofs and algebraic proofs, with some dating back thousands of years.\nWhen Euclidean space is represented by a Cartesian coordinate system in analytic geometry, Euclidean distance satisfies the Pythagorean relation: the squared distance between two poi",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from pythagorean tradition",
+      "timestamp": "2025-12-25T19:47:47.858579",
+      "content_hash": "1e4024be77d1e2695ee7fe424b187bcf"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagorean theorem",
+      "content": "There is debate whether the Pythagorean theorem was discovered once, or many times in many places, and the date of first discovery is uncertain, as is the date of the first proof. The history of the theorem can be divided into four parts: knowledge of Pythagorean triples, knowledge of the relationship among the sides of a right triangle, knowledge of the relationships among adjacent angles, and proofs of the theorem within some deductive system.\nWritten c. 1800 BC, the Egyptian Middle Kingdom Be",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:47.858643",
+      "content_hash": "b32543bb77c9f8b928f30ff195759f92"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagorean theorem",
+      "content": "Byzantine Neoplatonic philosopher and mathematician Proclus, writing in the fifth century AD, states two arithmetic rules, \"one of them attributed to Plato, the other to Pythagoras\", for generating special Pythagorean triples. The rule attributed to Pythagoras (c. 570 – c. 495 BC) starts from an odd number and produces a triple with leg and hypotenuse differing by one unit; the rule attributed to Plato (428/427 or 424/423 – 348/347 BC) starts from an even number and produces a triple with leg an",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:47.858715",
+      "content_hash": "eb58df8a7b11dd41b73475ed34b33b35"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagorean theorem",
+      "content": "=== Rearrangement proofs ===\nIn one rearrangement proof, two squares are used whose sides have a measure of \n  \n    \n      \n        a\n        +\n        b\n      \n    \n    {\\displaystyle a+b}\n  \n and which contain four right triangles whose sides are a, b and c, with the hypotenuse being c. In the square on the right side, the triangles are placed such that the corners of the square correspond to the corners of the right angle in the triangles, forming a square in the center whose sides are length",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:47.858785",
+      "content_hash": "29c121a3f57a0d046445191259abb848"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "In mathematics, the Fibonacci sequence is a sequence in which each element is the sum of the two elements that precede it. Numbers that are part of the Fibonacci sequence are known as Fibonacci numbers, commonly denoted Fn . Many writers begin the sequence with 0 and 1, although some authors start it from 1 and 1 and some (as did Fibonacci) from 1 and 2. Starting from 0 and 1, the sequence begins",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:57.434212",
+      "content_hash": "2bcc2f927258d1043acc06996aa0f48b"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "The Fibonacci numbers were first described in Indian mathematics as early as 200 BC in work by Pingala on enumerating possible patterns of Sanskrit poetry formed from syllables of two lengths. They are named after the Italian mathematician Leonardo of Pisa, also known as Fibonacci, who introduced the sequence to Western European mathematics in his 1202 book Liber Abaci.\nFibonacci numbers appear unexpectedly often in mathematics, so much so that there is an entire journal dedicated to their study",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:57.434267",
+      "content_hash": "ee0872bc990bdb2047039c631392d545"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "for n > 1.\nUnder some older definitions, the value \n  \n    \n      \n        \n          F\n          \n            0\n          \n        \n        =\n        0\n      \n    \n    {\\displaystyle F_{0}=0}\n  \n is omitted, so that the sequence starts with \n  \n    \n      \n        \n          F\n          \n            1\n          \n        \n        =\n        \n          F\n          \n            2\n          \n        \n        =\n        1\n        ,\n      \n    \n    {\\displaystyle F_{1}=F_{2}=1,}\n  \n and the recurrence ",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:57.434316",
+      "content_hash": "a1007f02023e0a272913ceff7eeb1ec3"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "The Fibonacci sequence can be extended to negative integer indices by following the same recurrence relation in the negative direction (sequence A039834 in the OEIS): ⁠\n  \n    \n      \n        \n          F\n          \n            1\n          \n        \n        =\n        1\n      \n    \n    {\\displaystyle F_{1}=1}\n  \n⁠, ⁠\n  \n    \n      \n        \n          F\n          \n            0\n          \n        \n        =\n        0\n      \n    \n    {\\displaystyle F_{0}=0}\n  \n⁠, and ⁠\n  \n    \n      \n        \n     ",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:57.434352",
+      "content_hash": "26b4e775ade89fd0977d1066d74c6e81"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "The Fibonacci sequence appears in Indian mathematics, in connection with Sanskrit prosody. In the Sanskrit poetic tradition, there was interest in enumerating all patterns of long (L) syllables of 2 units duration, juxtaposed with short (S) syllables of 1 unit duration. Counting the different patterns of successive L and S with a given total duration results in the Fibonacci numbers: the number of patterns of duration m units is Fm+1.\nKnowledge of the Fibonacci sequence was expressed as early as",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:57.434401",
+      "content_hash": "7196ae9aae2922816a52c354b8a5fbdf"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "Variations of two earlier meters [is the variation] ...  For example, for [a meter of length] four, variations of meters of two [and] three being mixed, five happens. [works out examples 8, 13, 21] ... In this way, the process should be followed in all mātrā-vṛttas [prosodic combinations].\nHemachandra (c. 1150) is credited with knowledge of the sequence as well, writing that \"the sum of the last and the one before the last is the number ... of the next mātrā-vṛtta.\"",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:57.434427",
+      "content_hash": "86de959206d3ca34a604a41841a2f145"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "The Fibonacci sequence first appears in the book Liber Abaci (The Book of Calculation, 1202) by Fibonacci, where it is used to calculate the growth of rabbit populations. Fibonacci considers the growth of an idealized (biologically unrealistic) rabbit population, assuming that: a newly born breeding pair of rabbits are put in a field; each breeding pair mates at the age of one month, and at the end of their second month they always produce another pair of rabbits; and rabbits never die, but cont",
+      "relevance_score": 0.4,
+      "trading_application": "Wisdom integration from pythagorean tradition",
+      "timestamp": "2025-12-25T19:47:57.434460",
+      "content_hash": "4c01f9b6d59348caca2ee177913f974c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "At the end of the first month, they mate, but there is still only 1 pair.\nAt the end of the second month they produce a new pair, so there are 2 pairs in the field.\nAt the end of the third month, the original pair produce a second pair, but the second pair only mate to gestate for a month, so there are 3 pairs in all.\nAt the end of the fourth month, the original pair has produced yet another new pair, and the pair born two months ago also produces their first pair, making 5 pairs.\nAt the end of ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:57.434495",
+      "content_hash": "2330e9a9e40a9325d7014c6fad0c2f81"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "=== Closed-form expression ===\nLike every sequence defined by a homogeneous linear recurrence with constant coefficients, the Fibonacci numbers have a closed-form expression. It has become known as Binet's formula, named after French mathematician Jacques Philippe Marie Binet, though it was already known by Abraham de Moivre and Daniel Bernoulli:",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:57.434514",
+      "content_hash": "f2f5c0b0ceed30f1b5e8a596ff10132f"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Fibonacci sequence",
+      "content": "where ⁠\n  \n    \n      \n        φ\n      \n    \n    {\\displaystyle \\varphi }\n  \n⁠ is the golden ratio and ⁠\n  \n    \n      \n        ψ\n      \n    \n    {\\displaystyle \\psi }\n  \n⁠ is its conjugate,",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:47:57.434546",
+      "content_hash": "65be9d4f100af2a74d6a71612c11c376"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Tetraktys",
+      "content": "The tetractys (Greek: τετρακτύς), or tetrad, or the tetractys of the decad is a triangular figure consisting of ten points arranged in four rows: one, two, three, and four points in each row, which is the geometrical representation of the fourth triangular number. As a mystical symbol, it was very important to the secret worship of Pythagoreanism. There were four seasons, and the number was also associated with planetary motions and music.",
+      "relevance_score": 0.4,
+      "trading_application": "Cyclical pattern recognition for market timing",
+      "timestamp": "2025-12-25T19:48:02.665784",
+      "content_hash": "f08c2f8131996943336adf2e3a8d0c8c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Tetraktys",
+      "content": "== Pythagorean symbol ==\nThe first four numbers symbolize the musica universalis and the Cosmos as:\nMonad – Unity\nDyad – Power – Limit/Unlimited (peras/apeiron)\nTriad – Harmony\nTetrad – Kosmos\nThe four rows add up to ten, which was unity of a higher order (The Dekad).\nThe Tetractys symbolizes the four classical elements—air, fire, water, and earth.\nThe Tetractys represented the organization of space:\nthe first row represented zero dimensions (a point)\nthe second row represented one dimension (a ",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:02.665838",
+      "content_hash": "c1b62df3cfd58fe10fd7d378f80492a9"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Tetraktys",
+      "content": "The Tetractys [also known as the decad] is an equilateral triangle formed from the sequence of the first ten numbers aligned in four rows. It is both a mathematical idea and a metaphysical symbol that embraces within itself—in seedlike form—the principles of the natural world, the harmony of the cosmos, the ascent to the divine, and the mysteries of the divine realm. So revered was this ancient symbol that it inspired ancient philosophers to swear by the name of the one who brought this gift to ",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:02.665927",
+      "content_hash": "be378fdc8c6dd3815a983631b497d1b4"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Tetraktys",
+      "content": "== Further reading ==\nvon Franz, Marie-Louise.  Number and Time:  Reflections Leading Towards a Unification of Psychology and Physics.  Rider & Company, London, 1974.  ISBN 0-09-121020-8\nFideler, D. ed. The Pythagorean Sourcebook and Library Archived 2015-05-09 at the Wayback Machine. Phanes Press, 1987.\nThe Theoretic Arithmetic of the Pythagoreans – Thomas Taylor",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:02.666000",
+      "content_hash": "dd12814c00fde23c40f8acb3a2943838"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Musica universalis",
+      "content": "The musica universalis (literally universal music), also called music of the spheres or harmony of the spheres, is a philosophical concept that regards proportions in the movements of celestial bodies—the Sun, Moon, and planets—as a form of music. The theory, originating in ancient Greece, was a tenet of Pythagoreanism, and was later developed by 16th-century astronomer Johannes Kepler. Kepler did not believe this \"music\" to be audible, but felt that it could nevertheless be heard by the soul. T",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:48:07.431648",
+      "content_hash": "c896d09ceeda0f97e3fa578e473578f0"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Musica universalis",
+      "content": "The concept of the \"music of the spheres\" incorporates the metaphysical principle that mathematical relationships express qualities or \"tones\" of energy that manifests in numbers, visual angles, shapes and sounds—all connected within a pattern of proportion. Pythagoras first identified that the pitch of a musical note is an inverse proportion to the length of the string that produces it, and that intervals between harmonious sound frequencies form simple numerical ratios. Pythagoras proposed tha",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:07.431703",
+      "content_hash": "c8f2d842a818d91125f5d6d3272dd716"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Musica universalis",
+      "content": "Some thinkers suppose that the motion of bodies of that size must produce a noise, since on our earth the motion of bodies far inferior in size and in speed of movement has that effect. Also, when the sun and the moon, they say, and all the stars, so great in number and in size, are moving with so rapid a motion, how should they not produce a sound immensely great? Starting from this argument and from the observation that their speeds, as measured by their distances, are in the same ratios as mu",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:07.431747",
+      "content_hash": "2c34d0d875cce566d192d706598c6759"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Musica universalis",
+      "content": "musica mundana (sometimes referred to as musica universalis)\nmusica humana (the internal music of the human body)\nmusica quae in quibusdam constituta est instrumentis (sounds made by singers and instrumentalists)\nBoethius believed that musica mundana could only be discovered through the intellect, but that the order found within it was the same as that found in audible music, and that both reflect the beauty of God.",
+      "relevance_score": 0.4,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:48:07.431771",
+      "content_hash": "32a221242da90c9e9b0495a0cee8a6a3"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Musica universalis",
+      "content": "Musica universalis—which had existed as a metaphysical concept since the time of the Greeks—was often taught in quadrivium, and this intriguing connection between music and astronomy stimulated the imagination of Johannes Kepler as he devoted much of his time after publishing the Mysterium Cosmographicum (Mystery of the Cosmos), looking over tables and trying to fit the data to what he believed to be the true nature of the cosmos as it relates to musical sound. In 1619, Kepler published Harmonic",
+      "relevance_score": 0.8,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:48:07.431820",
+      "content_hash": "eb9d86e5ae1e72cd8200e05d0788eca4"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Musica universalis",
+      "content": "Harmonices is split into five books, or chapters. The first and second books give a brief discussion on regular polyhedra and their congruences, reiterating the idea he introduced in Mysterium that the five regular solids known about since antiquity define the orbits of the planets and their distances from the sun. Book three focuses on defining musical harmonies, including consonance and dissonance, intervals (including the problems of just tuning), their relations to string length which was a ",
+      "relevance_score": 1.0,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:07.431965",
+      "content_hash": "f900a44e768f26c4acfee57ca2732323"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Musica universalis",
+      "content": "For there is a musicke where-ever there is a harmony, order or proportion; and thus farre we may maintain the musick of the spheres; for those well ordered motions, and regular paces, though they give no sound unto the eare, yet to the understanding they strike a note most full of harmony. Whatsoever is harmonically composed, delights in harmony.",
+      "relevance_score": 0.6,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:48:07.431994",
+      "content_hash": "f782ccc79f5f2c7a348c2e47e01c89e5"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagorean tuning",
+      "content": "Pythagorean tuning is a system of musical tuning in which the frequency ratios of all intervals are determined by choosing a sequence of  fifths which are \"pure\" or perfect, with ratio \n  \n    \n      \n        3\n        :\n        2\n      \n    \n    {\\displaystyle 3:2}\n  \n. This is chosen because it is the next harmonic of a vibrating string, after the octave (which is the ratio \n  \n    \n      \n        2\n        :\n        1\n      \n    \n    {\\displaystyle 2:1}\n  \n), and hence is the next most conson",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:12.242970",
+      "content_hash": "c38c295c5a3b427474ef94ded09073ff"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Pythagorean tuning",
+      "content": "== Method ==\n12-tone Pythagorean temperament is based on a sequence of perfect fifths, each tuned in the ratio 3:2, the next simplest ratio after 2:1 (the octave). Starting from D for example (D-based tuning), six other notes are produced by moving six times a ratio 3:2 up, and the remaining ones by moving the same ratio down:",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:12.243015",
+      "content_hash": "71b29c8edf148b42ec9c2e16104ce367"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "Sacred geometry ascribes symbolic and sacred meanings to certain geometric shapes and certain geometric proportions. It is associated with the belief of a divine creator of the universal geometer. The geometry used in the design and construction of religious structures such as churches, temples, mosques, religious monuments, altars, and tabernacles has sometimes been considered sacred. The concept applies also to sacred spaces such as temenoi, sacred groves, village greens, pagodas and holy well",
+      "relevance_score": 0.6,
+      "trading_application": "Wisdom integration from pythagorean tradition",
+      "timestamp": "2025-12-25T19:48:17.100372",
+      "content_hash": "c0b3a9629d1020a8ef328c46dc6678f6"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "According to Stephen Skinner, the study of sacred geometry has its roots in the study of nature, and the mathematical principles at work therein. Many forms observed in nature can be related to geometry; for example, the chambered nautilus grows at a constant rate and so its shell forms a logarithmic spiral to accommodate that growth without changing shape. Also, honeybees construct hexagonal cells to hold their honey.  These and other correspondences are sometimes interpreted in terms of sacred",
+      "relevance_score": 0.6,
+      "trading_application": "Wisdom integration from pythagorean tradition",
+      "timestamp": "2025-12-25T19:48:17.100439",
+      "content_hash": "164fc7b951601ae2692ffbca7a1036ae"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "Geometric ratios, and geometric figures were often employed in the designs of ancient Egyptian, ancient Indian, Greek and Roman architecture. Medieval European cathedrals also incorporated symbolic geometry. Indian and Himalayan spiritual communities often constructed temples and fortifications on design plans of mandala and yantra. Mandala Vaatikas or Sacred Gardens were designed using the same principles.\nMany of the sacred geometry principles of the human body and of ancient architecture were",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:17.100472",
+      "content_hash": "b0c2d1d1e2d15114196e0688368d2b27"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "Mandalas are made up of a compilation of geometric shapes. In Buddhism, it is made up of concentric circles and squares that are equally placed from the center. Located within the geometric configurations are deities or suggestions of the deity, such as in the form of a symbol. This is because Buddhists believe that deities can actually manifest inside the mandala. Mandalas can be created with a variety of mediums. Tibetan Buddhists create mandalas out of sand that are then ritually destroyed. I",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:17.100517",
+      "content_hash": "ca98c3a995408981f897857b153ea4f7"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "=== In Chinese spiritual traditions ===\nOne of the cornerstones of Chinese folk religion is the relationship between man and nature. This is epitomized in feng shui, which are architectural principles outlining the design plans of buildings in order to optimize the harmony of man and nature through the movement of Chi, or \"life-generating energy.\" In order to maximize the flow of Chi throughout a building, its design plan must utilize specific shapes. Rectangles and squares are considered to be ",
+      "relevance_score": 1.0,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:48:17.100578",
+      "content_hash": "f1e95b59d4e1a750e16a5a44629f3254"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "=== In Islam ===\nThe geometric designs in Islamic art are often built on combinations of repeated squares and circles, which may be overlapped and interlaced, as can arabesques (with which they are often combined), to form intricate and complex patterns, including a wide variety of tessellations. These may constitute the entire decoration, may form a framework for floral or calligraphic embellishments, or may retreat into the background around other motifs. The complexity and variety of patterns",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:17.100621",
+      "content_hash": "036d4598ede7b2208f58184fb40a21ac"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "==== Hindu temples ====\nThe symbolic representation of the cosmic model is then projected onto Hindu temples using the Vastu Shastra principle of Sukha Darshan, which states that smaller parts of the temple should be self-similar and a replica of the whole. The repetition of these replication parts symbolizes the natural phenomena of fractal patterns found in nature. These patterns make up the exterior of Hindu temples. Each element and detail are proportional to each other, this occurrence is a",
+      "relevance_score": 0.8,
+      "trading_application": "Wisdom integration from pythagorean tradition",
+      "timestamp": "2025-12-25T19:48:17.100675",
+      "content_hash": "e0b345af4bd167147f03124d507e2a0c"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "=== In Christianity ===\nThe construction of Medieval European cathedrals was often based on geometries intended to make the viewer see the world through mathematics, and through this understanding, gain a better understanding of the divine. These churches frequently featured a Latin Cross floor-plan.\nIn the High Middle Ages, leading Christian philosophers explained the layout of the universe in terms of a microcosm analogy. In her book describing the divine visions she witnessed, Hildegard of Bi",
+      "relevance_score": 0.6,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:17.100736",
+      "content_hash": "0c04977203200cb4c442d76e14c0f979"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Sacred geometry",
+      "content": "== See also ==\nCircle dance\nGolden Ratio\nLey line\nLu Ban and Feng shui\nMagic circle\nHarmony of the spheres\nNumerology\nShield of the Trinity\nYantra\n108 (number)",
+      "relevance_score": 0.8,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:17.100765",
+      "content_hash": "d85148379674a3c240582c0e7b734e7a"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Platonic solid",
+      "content": "In geometry, a Platonic solid is a convex, regular polyhedron in three-dimensional Euclidean space. Being a regular polyhedron means that the faces are congruent (identical in shape and size) regular polygons (all angles congruent and all edges congruent), and the same number of faces meet at each vertex. There are only five such polyhedra: a tetrahedron (four triangular faces), a cube (six square faces), an octahedron (eight triangular faces), a dodecahedron (twelve pentagonal faces), and an ic",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:22.020210",
+      "content_hash": "446d035057d29b5ab39fa864fc855d19"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Platonic solid",
+      "content": "The Platonic solids are prominent in the philosophy of Plato, their namesake. Plato wrote about them in the dialogue Timaeus c. 360 B.C. in which he associated each of the four classical elements (earth, air, water, and fire) with a regular solid. Earth was associated with the cube, air with the octahedron, water with the icosahedron, and fire with the tetrahedron. Of the fifth Platonic solid, the dodecahedron, Plato obscurely remarked, \"...the god used [it] for arranging the constellations on t",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:22.020304",
+      "content_hash": "d6bc2a4772f098dd1cad9a350c595f02"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Platonic solid",
+      "content": "In the 16th century, the German astronomer Johannes Kepler attempted to relate the five extraterrestrial planets known at that time to the five Platonic solids. In Mysterium Cosmographicum, published in 1596, Kepler proposed a model of the Solar System in which the five solids were set inside one another and separated by a series of inscribed and circumscribed spheres. Kepler proposed that the distance relationships between the six planets known at that time could be understood in terms of the f",
+      "relevance_score": 0.6,
+      "trading_application": "Risk management and portfolio equilibrium",
+      "timestamp": "2025-12-25T19:48:22.020355",
+      "content_hash": "be2743d7a0dda7b71519e6beaef7af84"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Platonic solid",
+      "content": "== Cartesian coordinates ==\nFor Platonic solids centered at the origin, simple Cartesian coordinates of the vertices are given below. The Greek letter \n  \n    \n      \n        φ\n      \n    \n    {\\displaystyle \\varphi }\n  \n is used to represent the golden ratio \n  \n    \n      \n        \n          \n            \n              1\n              +\n              \n                \n                  5\n                \n              \n            \n            2\n          \n        \n        ≈\n        1.6180\n   ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:22.020384",
+      "content_hash": "a3851afa52e208dad488786e4ad9ff34"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Platonic solid",
+      "content": "=== As a configuration ===\nThe elements of a polyhedron can be expressed in a configuration matrix. The rows and columns correspond to vertices, edges, and faces. The diagonal numbers say how many of each element occur in the whole polyhedron. The nondiagonal numbers say how many of the column's element occur in or at the row's element. Dual pairs of polyhedra have their configuration matrices rotated 180 degrees from each other.",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:22.020493",
+      "content_hash": "ded9d9843affdbc9f32a00fba71659fc"
+    },
+    {
+      "source": "Wikipedia",
+      "civilization": "pythagorean",
+      "topic": "Perfect number",
+      "content": "== History ==\nIn about 300 BC Euclid showed that if 2p − 1 is prime then 2p−1(2p − 1) is perfect.\nThe first four perfect numbers were the only ones known to early Greek mathematics, and the mathematician Nicomachus noted 8128 as early as around AD 100. In modern language, Nicomachus states without proof that every perfect number is of the form \n  \n    \n      \n        \n          2\n          \n            n\n            −\n            1\n          \n        \n        (\n        \n          2\n          \n  ",
+      "relevance_score": 0.4,
+      "trading_application": "Quantitative analysis and Fibonacci relationships",
+      "timestamp": "2025-12-25T19:48:27.124173",
+      "content_hash": "bbd114d24db338f9eb79c63776680e50"
+    }
+  ],
+  "scan_history": [
+    {
+      "timestamp": "2025-12-15T10:22:05.788178",
+      "insights_found": 5,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-15T10:30:44.424993",
+      "insights_found": 45,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:38:40.863001",
+      "insights_found": 5,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-25T19:48:31.127617",
+      "insights_found": 45,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:13:07.843353",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:27:59.496370",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-26T00:32:52.952497",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T14:52:48.439351",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:02:44.596587",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-27T16:51:04.050431",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T12:32:57.409649",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T13:47:33.771115",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-29T14:41:39.906826",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T11:28:40.113777",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T12:03:48.850264",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:22:13.530960",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T13:38:22.785574",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T14:05:09.609662",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T14:58:55.448074",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:27:08.696682",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T15:43:49.674601",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T16:12:38.027649",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T17:22:58.998834",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2025-12-30T18:30:14.783363",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    }
+  ]
+}

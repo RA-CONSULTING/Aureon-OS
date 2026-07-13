@@ -1,0 +1,85 @@
+{
+  "created_at": "2026-07-05",
+  "basis_files": [
+    "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\MASTER_WORK_INDEX_20260705.md",
+    "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\drive_work_discovery_20260705.json",
+    "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\grant_ready_metadata_20260705.json"
+  ],
+  "grant_ready_identity": {
+    "person": "Gary Anthony Leckey",
+    "organisation": "R&A Consulting and Brokerage Services Ltd",
+    "research_brand": "Aureon Institute",
+    "company_number": "NI696693",
+    "jurisdiction": "Northern Ireland, United Kingdom",
+    "public_company_url": "https://find-and-update.company-information.service.gov.uk/company/NI696693",
+    "compliance_note": "Companies House public readback on 2026-07-05 shows active status but a confirmation statement overdue warning. Resolve or manage before competitive submissions."
+  },
+  "core_grant_thesis": "Aureon is a local-first evidence operating system and research automation environment for high-risk AI workflows, reproducible scientific discovery, SME back-office automation, warehouse/productivity automation, and validation-led research communications.",
+  "high_priority_packages": [
+    {
+      "id": "operator_os",
+      "title": "Aureon Evidence OS for Safe Local AI Operations",
+      "claim_class": "A/B",
+      "best_routes": ["AIRR AI Open Access", "Invest NI Innovation Funding Advisory Service", "Next Wave only if Createch fit is confirmed"],
+      "plain_description": "A local-first AI workflow and evidence runtime for controlled, auditable operation of high-risk business and research processes.",
+      "next_evidence": ["sanitized demo screenshots or video", "operator workflow benchmark", "governance and risk note"]
+    },
+    {
+      "id": "hnc_ai_logic",
+      "title": "HNC Coherence Framework for AI-Driven Scientific Discovery",
+      "claim_class": "B/C",
+      "best_routes": ["AIRR AI Open Access", "academic validation sprint", "future UKRI via eligible host partner"],
+      "plain_description": "A hypothesis-driven software and research framework for coherence scoring, signal processing, evidence routing, and reproducible AI workflows.",
+      "next_evidence": ["reproducible benchmark plan", "external validation partner", "falsification protocol summary"]
+    },
+    {
+      "id": "hnc_accountant",
+      "title": "AI-Assisted SME Compliance and Evidence Pack Automation",
+      "claim_class": "A/C",
+      "best_routes": ["Invest NI", "InterTradeIreland Innovation Boost"],
+      "plain_description": "A back-office automation route for accounting evidence, compliance support, filing preparation, and auditable SME workflows.",
+      "next_evidence": ["demo workflow", "compliance boundary note", "customer/problem validation"]
+    },
+    {
+      "id": "azyra_warehouse",
+      "title": "Warehouse Location and Stock Evidence Automation",
+      "claim_class": "A/C",
+      "best_routes": ["InterTradeIreland Innovation Boost", "Invest NI productivity/digital support"],
+      "plain_description": "A warehouse automation route for stock/location proof, OCR review, batch ledgers, hold reasons, and operator-visible audit trails.",
+      "next_evidence": ["before-after time saving", "error reduction estimate", "sanitized batch ledger"]
+    },
+    {
+      "id": "epas_druid_lidar",
+      "title": "Feasibility Study for Harmonic Remote Sensing and Signal-Processing Concepts",
+      "claim_class": "C",
+      "best_routes": ["AIRR if narrowed to AI-driven discovery", "DASA/UK Space Agency only after partner scoping", "EIC Pathfinder-style partner route later"],
+      "plain_description": "Early-stage simulation and proof-of-principle research for remote sensing, signal processing, materials/energy concepts, and space/defence-adjacent sensing.",
+      "next_evidence": ["external technical partner", "narrow testable use case", "TRL and risk register"]
+    }
+  ],
+  "claim_rules": {
+    "safe_to_state_directly": [
+      "Company registration facts verified from Companies House",
+      "Public GitHub organisation and repository existence",
+      "Local and Drive archive preservation with readback",
+      "Existence of local research corpus and Drive evidence packs"
+    ],
+    "state_with_caveats": [
+      "ResearchGate, Academia, and ORCID as public profile/dissemination sources",
+      "HNC, EPAS, Druid, LIDAR, Atlantic Substrate, Sagittarius, Doorbell, and Walgidee as research outputs or hypotheses",
+      "Backtests, numerical matches, and empirical audit claims pending independent review"
+    ],
+    "do_not_use": [
+      "Guaranteed returns or 100 percent success claims",
+      "Energy extraction, defence shielding, or sensing capability stated as proven",
+      "Reality engineering as literal product language",
+      "Bank statements, account records, raw ledgers, or tax records without exact Gary approval"
+    ]
+  },
+  "ready_files": {
+    "master_index": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\MASTER_WORK_INDEX_20260705.md",
+    "drive_discovery_json": "C:\\Users\\user\\aureon-trading\\data\\research\\grants\\drive_work_discovery_20260705.json",
+    "airr_pack_zip": "C:\\Users\\user\\outputs\\aureon_grants_20260704\\AureonAIRRPortalPack_20260705.zip",
+    "repo_archive_readback": "C:\\Users\\user\\outputs\\aureon_repo_drive_20260705\\drive_publish_full\\AureonRepoArchives_DRIVE_READBACK_20260705.json"
+  }
+}

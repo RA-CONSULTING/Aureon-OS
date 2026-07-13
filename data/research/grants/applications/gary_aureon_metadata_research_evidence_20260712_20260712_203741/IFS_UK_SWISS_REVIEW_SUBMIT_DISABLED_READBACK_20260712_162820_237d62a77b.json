@@ -1,0 +1,55 @@
+{
+  "schema_version": "aureon-ifs-uk-swiss-review-submit-disabled-readback-v1",
+  "generated_at": "2026-07-12T16:28:20+01:00",
+  "operator": "Aureon",
+  "mode": "IFS_ONLY",
+  "event": "ifs_uk_swiss_review_submit_disabled_readback",
+  "result": "LIVE_IFS_REVIEW_SUBMIT_DISABLED_PROJECT_IMPACT_AND_AWARD_TERMS_REQUIRED",
+  "application_id": "APP-IFS-UK-SWISS-CRD-R3-2512-20260709",
+  "portal_application_number": "10210100",
+  "competition": "UK-Switzerland CR&D Round 3",
+  "review_url": "https://apply-for-innovation-funding.service.gov.uk/application/10210100/review-and-submit",
+  "live_review_readback": {
+    "project_details": "Complete",
+    "application_questions_1_to_17": "Complete",
+    "finances_summary": "Complete",
+    "supporting_information_project_impact": "Incomplete",
+    "award_terms_and_conditions": "Incomplete",
+    "submit_application_button_disabled": true,
+    "submit_application_pressed": false
+  },
+  "funding_breakdown_readback": {
+    "organisation": "R&A CONSULTING AND BROKERAGE SERVICES LTD",
+    "organisation_status": "Complete",
+    "total_costs_gbp": 216194,
+    "funding_level_percent": 70.0,
+    "funding_sought_gbp": 151336,
+    "contribution_to_project_gbp": 64858,
+    "other_public_sector_funding_gbp": 0,
+    "labour_gbp": 180162,
+    "overheads_gbp": 36032,
+    "other_costs_gbp": 0
+  },
+  "partner_status_readback": {
+    "lead_organisation_partner_status": "Incomplete",
+    "terms_status": "Not yet accepted",
+    "funding_rules": "Subsidy control",
+    "terms_label": "Innovate UK - Subsidy control"
+  },
+  "evidence": {
+    "screenshot": "applications/rendered/ifs_uk_swiss_10210100_review_submit_disabled_public_data_finance_20260712_1527_viewport.png",
+    "source_finance_live_update": "applications/IFS_UK_SWISS_PUBLIC_DATA_FINANCE_LIVE_UPDATE_20260712_122339.json",
+    "source_project_impact_support_after_finance_update": "applications/IFS_UK_SWISS_PROJECT_IMPACT_SUPPORT_AFTER_FINANCE_UPDATE_20260712_122456.json"
+  },
+  "controls": [
+    "No Project Impact Submit was pressed because required numeric values did not persist on the provider review page.",
+    "No award terms were accepted.",
+    "No final IFS submission was performed.",
+    "No email was sent from this readback."
+  ],
+  "outputs": {
+    "json": "applications/IFS_UK_SWISS_REVIEW_SUBMIT_DISABLED_READBACK_20260712_162820.json",
+    "markdown": "applications/IFS_UK_SWISS_REVIEW_SUBMIT_DISABLED_READBACK_20260712_162820.md",
+    "pipeline_report": "pipelines/pipeline_report_20260712_162820_ifs_uk_swiss_review_submit_disabled_readback.json"
+  }
+}
