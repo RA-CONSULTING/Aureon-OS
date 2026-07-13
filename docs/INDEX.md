@@ -17,6 +17,7 @@ Master table of contents for all project documentation.
 | File-level repo index | [Repo Navigation Index](repo_navigation_index.json) | Generated `git ls-files` index with categories, zones, capability IDs, and frontend public mirror |
 | Directory organization tree | [Repo Organization Tree](repo_organization_tree.json) | Generated tracked-directory hierarchy with parent paths, categories, zones, capability IDs, and frontend public mirror |
 | Navigation readiness audit | [Repo Navigation Readiness](repo_navigation_readiness.json) | Generated pass/fail audit for sitemap freshness, capability routing, system mapping, public mirrors, and SaaS blockers |
+| Navigation completion audit | [Repo Navigation Completion Audit](repo_navigation_completion_audit.json) | Generated requirement-by-requirement proof for repo-wide navigation, capability routing, system mapping, and SaaS integration readiness |
 | Capability access matrix | [Capability Access Matrix](capability_access_matrix.json) | Generated route matrix binding every current capability to end-user start points, systems, runtime/API surfaces, and safety gates |
 | Capability registry manifest | [Capability Registry Manifest](capability_registry.json) | Generated capability contract mirrored to the frontend public folder |
 | System integration manifest | [System Integration Manifest](system_integration_map.json) | Generated system-to-capability integration contract mirrored to the frontend public folder |
@@ -41,6 +42,7 @@ Master table of contents for all project documentation.
 | [Repo Navigation Index](repo_navigation_index.json) | File-level repo index generated from `git ls-files` for searchable navigation |
 | [Repo Organization Tree](repo_organization_tree.json) | Directory hierarchy generated from `git ls-files` for structural navigation |
 | [Repo Navigation Readiness](repo_navigation_readiness.json) | Public readiness audit generated from the repo navigation and SaaS contracts |
+| [Repo Navigation Completion Audit](repo_navigation_completion_audit.json) | Completion proof generated from the sitemap, organization tree, access matrix, system map, readiness audit, and SaaS handoff |
 | [Capability Access Matrix](capability_access_matrix.json) | End-user route matrix for every current capability in `CAPABILITIES.md` |
 | [Capability Registry Manifest](capability_registry.json) | Machine-readable capability registry used by the frontend repo map |
 | [System Integration Manifest](system_integration_map.json) | Machine-readable system integration contract generated from repo maps |

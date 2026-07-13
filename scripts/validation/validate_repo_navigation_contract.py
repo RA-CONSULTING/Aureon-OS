@@ -19,6 +19,7 @@ DOCS_CAPABILITY_REGISTRY = REPO_ROOT / "docs" / "capability_registry.json"
 DOCS_NAVIGATION_INDEX = REPO_ROOT / "docs" / "repo_navigation_index.json"
 DOCS_ORGANIZATION_TREE = REPO_ROOT / "docs" / "repo_organization_tree.json"
 DOCS_NAVIGATION_READINESS = REPO_ROOT / "docs" / "repo_navigation_readiness.json"
+DOCS_NAVIGATION_COMPLETION_AUDIT = REPO_ROOT / "docs" / "repo_navigation_completion_audit.json"
 DOCS_SYSTEM_INTEGRATION = REPO_ROOT / "docs" / "system_integration_map.json"
 DOCS_SAAS_HANDOFF = REPO_ROOT / "docs" / "saas_integration_handoff.json"
 DOCS_SAAS_MANIFEST = REPO_ROOT / "docs" / "saas_integration_manifest.json"
@@ -30,6 +31,7 @@ PUBLIC_CAPABILITY_REGISTRY = REPO_ROOT / "frontend" / "public" / "aureon_capabil
 PUBLIC_NAVIGATION_INDEX = REPO_ROOT / "frontend" / "public" / "aureon_repo_navigation_index.json"
 PUBLIC_ORGANIZATION_TREE = REPO_ROOT / "frontend" / "public" / "aureon_repo_organization_tree.json"
 PUBLIC_NAVIGATION_READINESS = REPO_ROOT / "frontend" / "public" / "aureon_repo_navigation_readiness.json"
+PUBLIC_NAVIGATION_COMPLETION_AUDIT = REPO_ROOT / "frontend" / "public" / "aureon_repo_navigation_completion_audit.json"
 PUBLIC_SYSTEM_INTEGRATION = REPO_ROOT / "frontend" / "public" / "aureon_system_integration_map.json"
 PUBLIC_SAAS_HANDOFF = REPO_ROOT / "frontend" / "public" / "aureon_saas_integration_handoff.json"
 PUBLIC_SAAS_MANIFEST = REPO_ROOT / "frontend" / "public" / "aureon_saas_integration_manifest.json"
@@ -62,6 +64,7 @@ REQUIRED_PATHS = [
     "docs/repo_navigation_index.json",
     "docs/repo_organization_tree.json",
     "docs/repo_navigation_readiness.json",
+    "docs/repo_navigation_completion_audit.json",
     "docs/system_integration_map.json",
     "docs/saas_integration_handoff.json",
     "docs/saas_integration_manifest.json",
@@ -80,6 +83,7 @@ REQUIRED_PATHS = [
     "frontend/public/aureon_repo_navigation_index.json",
     "frontend/public/aureon_repo_organization_tree.json",
     "frontend/public/aureon_repo_navigation_readiness.json",
+    "frontend/public/aureon_repo_navigation_completion_audit.json",
     "frontend/public/aureon_system_integration_map.json",
     "frontend/public/aureon_saas_integration_handoff.json",
     "frontend/public/aureon_saas_integration_manifest.json",
@@ -93,6 +97,7 @@ REQUIRED_PATHS = [
     "scripts/validation/generate_repo_navigation_index.py",
     "scripts/validation/generate_repo_organization_tree.py",
     "scripts/validation/generate_repo_navigation_readiness.py",
+    "scripts/validation/generate_repo_navigation_completion_audit.py",
     "scripts/validation/generate_capability_registry.py",
     "scripts/validation/generate_system_integration_map.py",
     "scripts/validation/generate_saas_integration_handoff.py",
@@ -332,6 +337,7 @@ def main() -> int:
     docs_navigation_index = load_json(DOCS_NAVIGATION_INDEX)
     docs_organization_tree = load_json(DOCS_ORGANIZATION_TREE)
     docs_navigation_readiness = load_json(DOCS_NAVIGATION_READINESS)
+    docs_navigation_completion_audit = load_json(DOCS_NAVIGATION_COMPLETION_AUDIT)
     docs_system_integration = load_json(DOCS_SYSTEM_INTEGRATION)
     docs_saas_handoff = load_json(DOCS_SAAS_HANDOFF)
     docs_saas_manifest = load_json(DOCS_SAAS_MANIFEST)
@@ -343,6 +349,7 @@ def main() -> int:
     public_navigation_index = load_json(PUBLIC_NAVIGATION_INDEX)
     public_organization_tree = load_json(PUBLIC_ORGANIZATION_TREE)
     public_navigation_readiness = load_json(PUBLIC_NAVIGATION_READINESS)
+    public_navigation_completion_audit = load_json(PUBLIC_NAVIGATION_COMPLETION_AUDIT)
     public_system_integration = load_json(PUBLIC_SYSTEM_INTEGRATION)
     public_saas_handoff = load_json(PUBLIC_SAAS_HANDOFF)
     public_saas_manifest = load_json(PUBLIC_SAAS_MANIFEST)
@@ -484,6 +491,22 @@ def main() -> int:
         "frontend public sitemap does not expose the repo navigation readiness audit",
     )
     expect(
+        docs_repo.get("end_user_access", {}).get("repo_navigation_completion_audit") == "docs/repo_navigation_completion_audit.json",
+        failures,
+        "repo sitemap does not expose the docs repo navigation completion audit",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("frontend_public_repo_navigation_completion_audit")
+        == "frontend/public/aureon_repo_navigation_completion_audit.json",
+        failures,
+        "repo sitemap does not expose the public repo navigation completion audit",
+    )
+    expect(
+        public_repo.get("repo_navigation_completion_audit") == "frontend/public/aureon_repo_navigation_completion_audit.json",
+        failures,
+        "frontend public sitemap does not expose the repo navigation completion audit",
+    )
+    expect(
         docs_repo.get("end_user_access", {}).get("system_integration_map") == "docs/system_integration_map.json",
         failures,
         "repo sitemap does not expose the docs system integration map",
@@ -569,6 +592,7 @@ def main() -> int:
     expect(docs_navigation_index == public_navigation_index, failures, "repo navigation index docs/public mirrors differ")
     expect(docs_organization_tree == public_organization_tree, failures, "repo organization tree docs/public mirrors differ")
     expect(docs_navigation_readiness == public_navigation_readiness, failures, "repo navigation readiness docs/public mirrors differ")
+    expect(docs_navigation_completion_audit == public_navigation_completion_audit, failures, "repo navigation completion audit docs/public mirrors differ")
     expect(docs_system_integration == public_system_integration, failures, "system integration map docs/public mirrors differ")
     expect(docs_saas_handoff == public_saas_handoff, failures, "SaaS integration handoff docs/public mirrors differ")
     capability_registry_rows = docs_capability_registry.get("capabilities", []) if isinstance(docs_capability_registry, dict) else []
@@ -984,6 +1008,74 @@ def main() -> int:
         failures,
         "repo navigation readiness public contract must not contain secrets",
     )
+    completion_summary = docs_navigation_completion_audit.get("summary", {}) if isinstance(docs_navigation_completion_audit, dict) else {}
+    completion_requirements = docs_navigation_completion_audit.get("requirements", []) if isinstance(docs_navigation_completion_audit, dict) else []
+    expect(
+        completion_summary.get("completion_status") == "complete",
+        failures,
+        "repo navigation completion audit is not complete",
+    )
+    expect(
+        completion_summary.get("tracked_file_count") == tracked_total,
+        failures,
+        "repo navigation completion audit tracked_file_count is stale",
+    )
+    expect(
+        completion_summary.get("current_capability_count") == len(capability_registry_rows),
+        failures,
+        "repo navigation completion audit current_capability_count differs from capability registry",
+    )
+    expect(
+        completion_summary.get("routed_capability_count") == len(capability_registry_rows),
+        failures,
+        "repo navigation completion audit routed_capability_count differs from capability registry",
+    )
+    expect(
+        completion_summary.get("system_mapped_capability_count") == len(capability_registry_rows),
+        failures,
+        "repo navigation completion audit system_mapped_capability_count differs from capability registry",
+    )
+    expect(
+        completion_summary.get("unmapped_capability_count") == 0,
+        failures,
+        "repo navigation completion audit reports unmapped capabilities",
+    )
+    expect(
+        completion_summary.get("readiness_status") == readiness_summary.get("readiness_status"),
+        failures,
+        "repo navigation completion audit readiness_status differs from readiness audit",
+    )
+    expect(
+        completion_summary.get("supabase_production_blocker_count") == hardening_summary.get("production_blocker_count"),
+        failures,
+        "repo navigation completion audit Supabase blocker count differs from hardening manifest",
+    )
+    expect(
+        completion_summary.get("handoff_status") == handoff_summary.get("handoff_status"),
+        failures,
+        "repo navigation completion audit handoff_status differs from SaaS handoff",
+    )
+    expect(
+        completion_summary.get("requirement_count") == len(completion_requirements),
+        failures,
+        "repo navigation completion audit requirement_count differs from requirement rows",
+    )
+    expect(
+        completion_summary.get("incomplete_requirement_count") == 0
+        and all(isinstance(item, dict) and item.get("status") == "complete" for item in completion_requirements),
+        failures,
+        "repo navigation completion audit has incomplete requirements",
+    )
+    expect(
+        docs_navigation_completion_audit.get("public_contract", {}).get("contains_file_contents") is False,
+        failures,
+        "repo navigation completion audit public contract must not contain file contents",
+    )
+    expect(
+        docs_navigation_completion_audit.get("public_contract", {}).get("contains_secrets") is False,
+        failures,
+        "repo navigation completion audit public contract must not contain secrets",
+    )
 
     autonomous_public_manifests: list[tuple[str, object]] = []
     for manifest_name in AUTONOMOUS_FRONTEND_MANIFESTS:
@@ -1012,6 +1104,7 @@ def main() -> int:
         ("frontend/public/aureon_repo_navigation_index.json", public_navigation_index),
         ("frontend/public/aureon_repo_organization_tree.json", public_organization_tree),
         ("frontend/public/aureon_repo_navigation_readiness.json", public_navigation_readiness),
+        ("frontend/public/aureon_repo_navigation_completion_audit.json", public_navigation_completion_audit),
         ("frontend/public/aureon_system_integration_map.json", public_system_integration),
         ("frontend/public/aureon_saas_integration_handoff.json", public_saas_handoff),
         ("frontend/public/aureon_saas_integration_manifest.json", public_saas_manifest),
@@ -1036,6 +1129,7 @@ def main() -> int:
     print(f"OK repo_navigation_index_entries={len(navigation_entries)}")
     print(f"OK repo_organization_directories={len(organization_directories)}")
     print(f"OK repo_navigation_readiness={readiness_summary.get('readiness_status')}")
+    print(f"OK repo_navigation_completion_audit={completion_summary.get('completion_status')}")
     print(f"OK system_integration_systems={len(system_rows)}")
     print(f"OK saas_integration_handoff={handoff_summary.get('handoff_status')}")
     print(f"OK saas_env_variable_count={len(env_names)}")

@@ -13,6 +13,8 @@ Directory organization tree: [`repo_organization_tree.json`](repo_organization_t
 [`../frontend/public/aureon_repo_organization_tree.json`](../frontend/public/aureon_repo_organization_tree.json).
 Navigation readiness audit: [`repo_navigation_readiness.json`](repo_navigation_readiness.json), mirrored to
 [`../frontend/public/aureon_repo_navigation_readiness.json`](../frontend/public/aureon_repo_navigation_readiness.json).
+Navigation completion audit: [`repo_navigation_completion_audit.json`](repo_navigation_completion_audit.json), mirrored to
+[`../frontend/public/aureon_repo_navigation_completion_audit.json`](../frontend/public/aureon_repo_navigation_completion_audit.json).
 Capability access matrix: [`capability_access_matrix.json`](capability_access_matrix.json), mirrored to
 [`../frontend/public/aureon_capability_access_matrix.json`](../frontend/public/aureon_capability_access_matrix.json).
 System integration map: [`SYSTEM_INTEGRATION_MAP.md`](SYSTEM_INTEGRATION_MAP.md)
@@ -55,6 +57,7 @@ Navigation contract validator, from repo root:
 | Search the tracked repo index | [`repo_navigation_index.json`](repo_navigation_index.json) | File-level categories, zones, capability IDs, and public frontend mirror |
 | Browse the directory hierarchy | [`repo_organization_tree.json`](repo_organization_tree.json), frontend `#repo-map` | Parent paths, child directories, category, zone, capability IDs, and file counts |
 | Audit navigation readiness | [`repo_navigation_readiness.json`](repo_navigation_readiness.json), frontend `#repo-map` | Pass/fail gates for sitemap freshness, capability routing, system mapping, public mirrors, and SaaS blockers |
+| Prove navigation completion | [`repo_navigation_completion_audit.json`](repo_navigation_completion_audit.json), frontend `#repo-map` | Requirement-by-requirement proof that the repo map, organization tree, capability routes, related systems, and SaaS handoff satisfy the navigation objective |
 | Integrate as SaaS | [`SAAS_INTEGRATION_READINESS.md`](SAAS_INTEGRATION_READINESS.md), [`saas_integration_manifest.json`](saas_integration_manifest.json), [`saas_integration_handoff.json`](saas_integration_handoff.json), [`SUPABASE_HARDENING_REVIEW.md`](SUPABASE_HARDENING_REVIEW.md) | Env variable names, deployment surfaces, Supabase auth posture, hardening blockers, public manifests, release steps, and production gates |
 | Inspect all docs | [`INDEX.md`](INDEX.md) | Existing deep-dive docs by audience |
 | Integrate as a product surface | [`SAAS_INTEGRATION_READINESS.md`](SAAS_INTEGRATION_READINESS.md) | `frontend/`, `api/`, `server/`, `functions/`, `supabase/`, `netlify/`, `deploy/`, `production/` |
@@ -88,9 +91,9 @@ The repo should be read in five zones:
 | [`daemon_codes/`](../daemon_codes/) | 36 | Background automation code. | Service/background route review. |
 | [`data/`](../data/) | 3,526 | Research, grants, datasets, copied evidence. | Evidence and funder review. |
 | [`deploy/`](../deploy/) | 14 | Deployment scripts and service configs. | Infrastructure setup. |
-| [`docs/`](../docs/) | 394 | Documentation, runbooks, research, architecture. | Primary reading system. |
+| [`docs/`](../docs/) | 395 | Documentation, runbooks, research, architecture. | Primary reading system. |
 | [`flameborn/`](../flameborn/) | 59 | Companion UI/runtime material. | Product surface review. |
-| [`frontend/`](../frontend/) | 4,303 | React/Vite console and public artifacts. | End-user browser experience. |
+| [`frontend/`](../frontend/) | 4,304 | React/Vite console and public artifacts. | End-user browser experience. |
 | [`functions/`](../functions/) | 1 | Serverless function surface. | Hosted integration route. |
 | [`imports/`](../imports/) | 1,242 | Imported historical/source bundles. | Migration and provenance review. |
 | [`integrations/`](../integrations/) | 21 | External integration support. | Connector review. |
@@ -100,7 +103,7 @@ The repo should be read in five zones:
 | [`packaging/`](../packaging/) | 2 | Package/build helpers. | Release packaging. |
 | [`production/`](../production/) | 15 | Production install/runtime assets. | Product deployment path. |
 | [`public/`](../public/) | 58 | Public static assets. | Browser/static publishing. |
-| [`scripts/`](../scripts/) | 312 | Diagnostics, runners, reports, validation scripts. | Operator and maintainer tasks. |
+| [`scripts/`](../scripts/) | 313 | Diagnostics, runners, reports, validation scripts. | Operator and maintainer tasks. |
 | [`server/`](../server/) | 7 | Node/server bridge surface. | Backend integration route. |
 | [`skills/`](../skills/) | 12 | Local skill registries and interactions. | Capability extension route. |
 | [`supabase/`](../supabase/) | 160 | Supabase config, migrations, functions. | SaaS data/backend integration. |
@@ -154,7 +157,7 @@ The repo should be read in five zones:
 | Database/backend-as-a-service | `supabase/config.toml`, `supabase/migrations/`, `supabase/functions/` | SaaS data plane and edge-function surface. Treat migrations as schema authority and resolve the Supabase hardening review before production. |
 | Deployment | `deploy/`, `production/`, `.do/`, `Dockerfile`, `docker-compose.yml`, `app.yaml`, `Procfile` | Multiple deployment paths exist; pick one target and document env vars before production. |
 | Generated state | `state/` paths named in docs, runtime manifests, audit JSON | Often generated locally and intentionally not tracked. Do not assume absent generated files are missing source code. |
-| Public generated mirrors | `frontend/public/` | Tracked adaptive skills, repo-navigation manifests, file-level navigation index, directory organization tree, capability access matrix, capability registry, system integration map, SaaS integration manifest, SaaS integration handoff, Supabase hardening manifest, and autonomous frontend manifests exist here; runtime JSON mirrors may be generated here during local operation. |
+| Public generated mirrors | `frontend/public/` | Tracked adaptive skills, repo-navigation manifests, file-level navigation index, directory organization tree, navigation completion audit, capability access matrix, capability registry, system integration map, SaaS integration manifest, SaaS integration handoff, Supabase hardening manifest, and autonomous frontend manifests exist here; runtime JSON mirrors may be generated here during local operation. |
 | Security and controls | `docs/SECURITY.md`, guarded runtime routes, tests | Keep credentials out of tracked docs; live actions remain operator-controlled. |
 
 Detailed readiness checklist: [`SAAS_INTEGRATION_READINESS.md`](SAAS_INTEGRATION_READINESS.md).
@@ -163,6 +166,7 @@ Supabase hardening blocker list: [`SUPABASE_HARDENING_REVIEW.md`](SUPABASE_HARDE
 System capability binding map: [`SYSTEM_INTEGRATION_MAP.md`](SYSTEM_INTEGRATION_MAP.md).
 Current capability registry: [`CAPABILITY_REGISTRY.md`](CAPABILITY_REGISTRY.md).
 Task-based access map: [`END_USER_ACCESS_MAP.md`](END_USER_ACCESS_MAP.md).
+Completion audit: [`repo_navigation_completion_audit.json`](repo_navigation_completion_audit.json).
 
 ## End-User Navigation Paths
 
@@ -198,11 +202,13 @@ Task-based access map: [`END_USER_ACCESS_MAP.md`](END_USER_ACCESS_MAP.md).
   regenerating navigation, capability, system, SaaS, or hardening manifests.
   Run `python scripts/validation/generate_saas_integration_handoff.py` after
   regenerating readiness, SaaS, or hardening manifests.
+  Run `python scripts/validation/generate_repo_navigation_completion_audit.py`
+  after regenerating readiness or handoff manifests.
   Then run
   `python scripts/validation/validate_repo_navigation_contract.py` after changing
   navigation docs, public manifests, file indexes, capability registries,
-  system-integration maps, SaaS manifests, handoff manifests, hardening
-  manifests, or Supabase function auth settings.
+  system-integration maps, SaaS manifests, handoff manifests, completion-audit
+  manifests, hardening manifests, or Supabase function auth settings.
 - Preserve historical language under `archive/`, `docs/archive/`, or `imports/`.
 - Treat `state/`, `docs/audits/`, and named runtime JSON files as generated
   outputs unless they are present in `git ls-files`.

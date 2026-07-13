@@ -35,6 +35,9 @@ Directory organization tree:
 Navigation readiness audit:
 [`repo_navigation_readiness.json`](repo_navigation_readiness.json), mirrored to
 [`../frontend/public/aureon_repo_navigation_readiness.json`](../frontend/public/aureon_repo_navigation_readiness.json).
+Navigation completion audit:
+[`repo_navigation_completion_audit.json`](repo_navigation_completion_audit.json), mirrored to
+[`../frontend/public/aureon_repo_navigation_completion_audit.json`](../frontend/public/aureon_repo_navigation_completion_audit.json).
 Capability access matrix:
 [`capability_access_matrix.json`](capability_access_matrix.json), mirrored to
 [`../frontend/public/aureon_capability_access_matrix.json`](../frontend/public/aureon_capability_access_matrix.json).
@@ -54,6 +57,7 @@ Manifest generation and validation, from repo root:
 `python scripts/validation/generate_capability_registry.py`, then
 `python scripts/validation/generate_repo_navigation_readiness.py`, then
 `python scripts/validation/generate_saas_integration_handoff.py`, then
+`python scripts/validation/generate_repo_navigation_completion_audit.py`, then
 `python scripts/validation/validate_repo_navigation_contract.py`.
 
 ## Canonical Integration Shape
@@ -83,7 +87,7 @@ gated.
 | Browse all capabilities | [`../CAPABILITIES.md`](../CAPABILITIES.md), [`REPO_SITEMAP.md`](REPO_SITEMAP.md) | `aureon/`, `frontend/`, `data/`, `Kings_Accounting_Suite/` | Public docs | Keep capability status current. |
 | Run locally | [`../RUNNING.md`](../RUNNING.md) | Root launchers, `aureon/`, `frontend/` | Local operator | Validate `.env` and dry-run/live flags. |
 | Use the web console | `frontend/` | `frontend/src/`, `frontend/public/`, `public/` | Browser app | Confirm build env and runtime data source. |
-| Navigate capabilities in a SaaS shell | [`END_USER_ACCESS_MAP.md`](END_USER_ACCESS_MAP.md), [`repo_navigation_index.json`](repo_navigation_index.json), [`repo_organization_tree.json`](repo_organization_tree.json), [`capability_access_matrix.json`](capability_access_matrix.json), [`capability_registry.json`](capability_registry.json), [`system_integration_map.json`](system_integration_map.json), [`saas_integration_manifest.json`](saas_integration_manifest.json), [`saas_integration_handoff.json`](saas_integration_handoff.json), [`supabase_hardening_manifest.json`](supabase_hardening_manifest.json), frontend `#repo-map` | `docs/`, `docs/audits/`, `frontend/public/`, `frontend/src/components/RepoNavigationPanel.tsx` | Static JSON manifests, file-level index, directory tree, capability access matrix, capability registry, system integration map, SaaS integration contract, integration handoff, Supabase hardening contract, autonomous frontend manifests, and console tab | Keep public manifests secret-free. |
+| Navigate capabilities in a SaaS shell | [`END_USER_ACCESS_MAP.md`](END_USER_ACCESS_MAP.md), [`repo_navigation_index.json`](repo_navigation_index.json), [`repo_organization_tree.json`](repo_organization_tree.json), [`repo_navigation_completion_audit.json`](repo_navigation_completion_audit.json), [`capability_access_matrix.json`](capability_access_matrix.json), [`capability_registry.json`](capability_registry.json), [`system_integration_map.json`](system_integration_map.json), [`saas_integration_manifest.json`](saas_integration_manifest.json), [`saas_integration_handoff.json`](saas_integration_handoff.json), [`supabase_hardening_manifest.json`](supabase_hardening_manifest.json), frontend `#repo-map` | `docs/`, `docs/audits/`, `frontend/public/`, `frontend/src/components/RepoNavigationPanel.tsx` | Static JSON manifests, file-level index, directory tree, completion audit, capability access matrix, capability registry, system integration map, SaaS integration contract, integration handoff, Supabase hardening contract, autonomous frontend manifests, and console tab | Keep public manifests secret-free. |
 | Read runtime state | `http://127.0.0.1:8791/api/terminal-state` | `aureon/exchanges/`, status server | Local HTTP | Do not expose publicly without auth and redaction. |
 | Read thought/action state | `http://127.0.0.1:13002/api/thoughts` | Mind hub, self-questioning loop | Local HTTP | Do not expose publicly without auth and redaction. |
 | Trigger coding workflow | `/api/coding/prompt` and `/api/coding/status` | `aureon/autonomous/`, `aureon/code_architect/`, `skills/` | Local operator/API | Keep code proposals review-gated. |
@@ -169,7 +173,7 @@ Public endpoint production gates:
 |---|---|---|
 | Source docs | `README.md`, `docs/REPO_SITEMAP.md`, `docs/SAAS_INTEGRATION_READINESS.md` | Tracked and reviewed. |
 | Public static/generated assets | `frontend/public/` | Tracked when intentionally published; runtime mirrors may be generated. |
-| Public navigation manifests | `frontend/public/aureon_repo_sitemap.json`, `frontend/public/aureon_end_user_access_map.json`, `frontend/public/aureon_capability_access_matrix.json`, `frontend/public/aureon_capability_registry.json`, `frontend/public/aureon_repo_navigation_index.json`, `frontend/public/aureon_repo_organization_tree.json`, `frontend/public/aureon_repo_navigation_readiness.json`, `frontend/public/aureon_system_integration_map.json`, `frontend/public/aureon_saas_integration_manifest.json`, `frontend/public/aureon_saas_integration_handoff.json`, `frontend/public/aureon_supabase_hardening_manifest.json`, `frontend/public/aureon_saas_system_inventory.json`, `frontend/public/aureon_frontend_unification_plan.json`, `frontend/public/aureon_frontend_evolution_queue.json`, `frontend/public/aureon_organism_runtime_status.json`, `frontend/public/aureon_autonomous_capability_switchboard.json` | Tracked, secret-free access contracts, capability access matrix, capability registry, file-level index, directory tree, navigation readiness audit, system integration map covering all current implementation capabilities, SaaS integration manifest, SaaS integration handoff, Supabase hardening manifest, SaaS inventory, frontend unification plan, evolution queue, organism status, and capability switchboard for UI/SaaS shells. |
+| Public navigation manifests | `frontend/public/aureon_repo_sitemap.json`, `frontend/public/aureon_end_user_access_map.json`, `frontend/public/aureon_capability_access_matrix.json`, `frontend/public/aureon_capability_registry.json`, `frontend/public/aureon_repo_navigation_index.json`, `frontend/public/aureon_repo_organization_tree.json`, `frontend/public/aureon_repo_navigation_readiness.json`, `frontend/public/aureon_repo_navigation_completion_audit.json`, `frontend/public/aureon_system_integration_map.json`, `frontend/public/aureon_saas_integration_manifest.json`, `frontend/public/aureon_saas_integration_handoff.json`, `frontend/public/aureon_supabase_hardening_manifest.json`, `frontend/public/aureon_saas_system_inventory.json`, `frontend/public/aureon_frontend_unification_plan.json`, `frontend/public/aureon_frontend_evolution_queue.json`, `frontend/public/aureon_organism_runtime_status.json`, `frontend/public/aureon_autonomous_capability_switchboard.json` | Tracked, secret-free access contracts, capability access matrix, capability registry, file-level index, directory tree, navigation readiness audit, completion audit, system integration map covering all current implementation capabilities, SaaS integration manifest, SaaS integration handoff, Supabase hardening manifest, SaaS inventory, frontend unification plan, evolution queue, organism status, and capability switchboard for UI/SaaS shells. |
 | Runtime state | `state/aureon_wake_up_manifest.json`, `state/aureon_data_ocean_status.json`, local SQLite registries | Generated locally unless explicitly committed. Do not treat absence from git as missing source. |
 | Audit outputs | `docs/audits/*` named in run docs | Generated by runtime/audit jobs; commit only curated public-safe outputs. |
 | Private evidence | Screenshots, customer data, credentials, transaction records, local live ledgers | Keep private unless redacted and intentionally published. |
@@ -206,10 +210,13 @@ Before calling a hosted deployment production-ready, complete these gates:
    regenerating navigation, capability, system, SaaS, or hardening manifests.
    Run `python scripts/validation/generate_saas_integration_handoff.py` after
    regenerating readiness, SaaS, or hardening manifests.
+   Run `python scripts/validation/generate_repo_navigation_completion_audit.py`
+   after regenerating readiness or handoff manifests.
    Then run
    `python scripts/validation/validate_repo_navigation_contract.py` after
    navigation, public manifest, file-index, capability-registry,
    system-integration-map, SaaS-manifest, handoff-manifest,
-   hardening-manifest, or Supabase auth-setting changes.
+   completion-audit-manifest, hardening-manifest, or Supabase auth-setting
+   changes.
 8. Run the relevant local checks in `RUNNING.md` and the target deployment smoke
    checks before publishing an external URL.

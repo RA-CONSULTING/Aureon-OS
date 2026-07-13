@@ -42,6 +42,7 @@ def public_assets(public_sitemap: dict) -> list[dict]:
         "navigation_index": "File-level navigation index",
         "organization_tree": "Directory hierarchy",
         "repo_navigation_readiness": "Navigation/readiness gate rollup",
+        "repo_navigation_completion_audit": "Requirement-level completion audit",
         "system_integration_map": "System-to-capability integration map",
         "saas_integration_manifest": "SaaS deploy/env/auth contract",
         "supabase_hardening_manifest": "Supabase hardening and auth review",

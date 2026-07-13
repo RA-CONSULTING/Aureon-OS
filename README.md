@@ -28,6 +28,7 @@ preserved unchanged at
 | File-level repo index | [`docs/repo_navigation_index.json`](docs/repo_navigation_index.json) | Generated `git ls-files` index mirrored to the frontend public folder for searchable repo navigation. |
 | Directory organization tree | [`docs/repo_organization_tree.json`](docs/repo_organization_tree.json) | Generated hierarchy of tracked directories, parent paths, categories, zones, and capability IDs. |
 | Navigation readiness audit | [`docs/repo_navigation_readiness.json`](docs/repo_navigation_readiness.json) | Generated pass/fail audit for sitemap freshness, capability routing, system mapping, public mirrors, and SaaS blockers. |
+| Navigation completion audit | [`docs/repo_navigation_completion_audit.json`](docs/repo_navigation_completion_audit.json) | Generated requirement-by-requirement proof that the repo map, organizational tree, capabilities, systems, and SaaS handoff satisfy the navigation objective. |
 | SaaS integration manifest | [`docs/saas_integration_manifest.json`](docs/saas_integration_manifest.json) | Generated env-name, deployment-surface, Supabase auth, and production-gate contract for SaaS shells. |
 | SaaS integration handoff | [`docs/saas_integration_handoff.json`](docs/saas_integration_handoff.json) | Generated implementer handoff that binds public manifests, deployment surfaces, env names, Supabase hardening, readiness gates, and release steps. |
 | SaaS integration readiness | [`docs/SAAS_INTEGRATION_READINESS.md`](docs/SAAS_INTEGRATION_READINESS.md) | End-user access matrix, env/config inventory, deploy surfaces, auth boundaries, and production gates. |
@@ -124,24 +125,26 @@ this front-door README.
    [`docs/repo_organization_tree.json`](docs/repo_organization_tree.json).
 11. Review the generated navigation readiness audit:
    [`docs/repo_navigation_readiness.json`](docs/repo_navigation_readiness.json).
-12. Review the generated SaaS integration manifest:
+12. Review the generated navigation completion audit:
+   [`docs/repo_navigation_completion_audit.json`](docs/repo_navigation_completion_audit.json).
+13. Review the generated SaaS integration manifest:
    [`docs/saas_integration_manifest.json`](docs/saas_integration_manifest.json).
-13. Review the generated SaaS integration handoff:
+14. Review the generated SaaS integration handoff:
    [`docs/saas_integration_handoff.json`](docs/saas_integration_handoff.json).
-14. Review the Supabase hardening review and manifest:
+15. Review the Supabase hardening review and manifest:
    [`docs/SUPABASE_HARDENING_REVIEW.md`](docs/SUPABASE_HARDENING_REVIEW.md) and
    [`docs/supabase_hardening_manifest.json`](docs/supabase_hardening_manifest.json).
-15. Review SaaS integration readiness:
+16. Review SaaS integration readiness:
    [`docs/SAAS_INTEGRATION_READINESS.md`](docs/SAAS_INTEGRATION_READINESS.md).
-16. Review architecture and capability evidence:
+17. Review architecture and capability evidence:
    [`SYSTEM_OVERVIEW.md`](SYSTEM_OVERVIEW.md),
    [`CAPABILITIES.md`](CAPABILITIES.md), and
    [`DATA_FLOW.md`](DATA_FLOW.md).
-17. Review claims and validation:
+18. Review claims and validation:
    [`docs/CLAIMS_AND_EVIDENCE.md`](docs/CLAIMS_AND_EVIDENCE.md),
    [`AUDIT_SUMMARY.md`](AUDIT_SUMMARY.md), and
    [`LIVE_PROOF.md`](LIVE_PROOF.md).
-18. Regenerate and validate the navigation contract:
+19. Regenerate and validate the navigation contract:
    `python scripts/validation/generate_repo_navigation_index.py`, then
    `python scripts/validation/generate_repo_organization_tree.py`, then
    `python scripts/validation/generate_capability_registry.py`, then
@@ -152,8 +155,9 @@ this front-door README.
    `python scripts/validation/generate_supabase_hardening_manifest.py`, then
    `python scripts/validation/generate_repo_navigation_readiness.py`, then
    `python scripts/validation/generate_saas_integration_handoff.py`, then
+   `python scripts/validation/generate_repo_navigation_completion_audit.py`, then
    `python scripts/validation/validate_repo_navigation_contract.py`.
-19. Inspect preserved historical context:
+20. Inspect preserved historical context:
    [`docs/archive/README_legacy_20260712.md`](docs/archive/README_legacy_20260712.md).
 
 ## Preservation Note
