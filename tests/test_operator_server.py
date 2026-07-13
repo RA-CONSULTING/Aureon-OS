@@ -105,8 +105,12 @@ def test_api_requires_bearer_when_key_set():
 
 def test_api_rate_limited_returns_429():
     c = _client(AUREON_LLM_OFFLINE="1", AUREON_OPERATOR_RATE_RPS="0.5", AUREON_OPERATOR_RATE_BURST="1")
-    assert c.post("/api/cognition/reason", json={"prompt": "hi"}).status_code == 200
-    r = c.post("/api/cognition/reason", json={"prompt": "hi"})
+    # Use a fast /api endpoint: the rate gate fires in before_request (ahead of
+    # the view), so a lightweight route exercises it deterministically. Avoid a
+    # view that builds cognition — its latency would let the 0.5 rps bucket refill
+    # between the two calls and mask the limit.
+    assert c.get("/api/billing/status").status_code == 200
+    r = c.get("/api/billing/status")
     assert r.status_code == 429
     assert r.headers.get("Retry-After") is not None
     assert r.get_json()["error"]["code"] == 429
