@@ -83,7 +83,8 @@ import time
 import logging
 import json
 import os
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
+import asyncio
 from typing import Dict, List, Optional, Any, Tuple, Callable
 from collections import deque
 from datetime import datetime
@@ -7407,8 +7408,8 @@ I will NOT sell at a loss when the market is down. 👑
         dream_vision['positive_signals'] = positive_signals
         
         # � SNOWBALL MODE CHECK - Don't dream of victory if snowball blocks!
-        snowball_blocked = opp_data.get('snowball_blocked', False)
-        snowball_reason = opp_data.get('snowball_reason', '')
+        snowball_blocked = (opportunity or {}).get('snowball_blocked', False)
+        snowball_reason = (opportunity or {}).get('snowball_reason', '')
         
         # 🎯 ENHANCED TIMELINE DETERMINATION - More decisive thresholds!
         # Path score has VETO power if it's a known losing path

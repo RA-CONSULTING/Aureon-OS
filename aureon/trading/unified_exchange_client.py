@@ -786,9 +786,9 @@ class UnifiedExchangeClient:
         
         elif self.exchange_id == "alpaca":
             try:
-                quotes = self.client.get_latest_crypto_quotes([norm])
-                if norm in quotes:
-                    q = quotes[norm]
+                quotes = self.client.get_latest_crypto_quotes([symbol])
+                if symbol in quotes:
+                    q = quotes[symbol]
                     bid = float(q.get('bp', 0))
                     ask = float(q.get('ap', 0))
                     price = (bid + ask) / 2

@@ -222,8 +222,12 @@ for mod in NOISY_MODULES:
 import os
 import argparse
 # import time
-# import asyncio
+import asyncio
 import threading
+try:
+    from aureon.data_feeds.unified_market_cache import UnifiedMarketCache
+except Exception:  # cache is optional — ticker path falls through without it
+    UnifiedMarketCache = None
 from typing import List, Dict, Optional, Tuple, Any, Union
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -6460,7 +6464,7 @@ class OrcaKillCycle:
         if self.luck_mapper:
             try:
                 # Calculate volatility proxy from change
-                _ = min(1.0, abs(change_pct) / 10.0)
+                volatility = min(1.0, abs(change_pct) / 10.0)
                 luck_reading = self.luck_mapper.read_field(
                     price=price,
                     volatility=volatility,
@@ -16746,8 +16750,6 @@ class OrcaKillCycle:
                                             _qb_boost = 1.0 + (conf - 0.5) * 0.4
                                             if timing == 'LIGHTHOUSE':
                                                 _qb_boost *= 1.1  # Extra boost for optimal window
-                                            for opp in opportunities:
-                                                pass  # Boost will be applied below via _timeline_multiplier
                                             _timeline_multiplier = max(_timeline_multiplier, _qb_boost)
                                             print(f"     QUANTUM BRAIN: LONG (conf={conf:.0%}, timing={timing}) → {_qb_boost:.2f}x global")
                                         elif direction == 'SHORT':
