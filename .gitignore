@@ -238,3 +238,7 @@ dist/
 alpaca_fee_tracker_state.json
 learning_archive_*.json
 aureon/bots_intelligence/orca_state.json
+
+# Stray env dump — removed from tracking (contained live keys; rotate them)
+.env1.txt
+.env*.txt
