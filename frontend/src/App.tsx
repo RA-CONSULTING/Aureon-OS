@@ -8599,8 +8599,8 @@ function OrderLifecycleStressPanel({
           ].map(([label, ok]) => (
             <div key={String(label)} className="rounded-md border border-border/40 bg-muted/10 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">{String(label)}</div>
-              <div className={`mt-1 font-mono text-sm font-semibold ${Boolean(ok) ? "text-green-300" : "text-yellow-200"}`}>
-                {Boolean(ok) ? "proven" : "held"}
+              <div className={`mt-1 font-mono text-sm font-semibold ${ok ? "text-green-300" : "text-yellow-200"}`}>
+                {ok ? "proven" : "held"}
               </div>
             </div>
           ))}
@@ -8631,7 +8631,7 @@ function OrderLifecycleStressPanel({
                 <div key={String(item.id || item.label)} className="rounded-md border border-border/40 bg-black/20 px-3 py-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium">{String(item.label || item.id || "case")}</span>
-                    <Pill label={String(item.state || (Boolean(item.passed) ? "passed" : "held")).replace(/_/g, " ")} tone={Boolean(item.passed) ? statusTone.wired : statusTone.orphaned} />
+                    <Pill label={String(item.state || (item.passed ? "passed" : "held")).replace(/_/g, " ")} tone={item.passed ? statusTone.wired : statusTone.orphaned} />
                   </div>
                   <div className="mt-1 truncate text-muted-foreground">{String(item.venue || "all")} {String(item.latest_status || "")}</div>
                 </div>
@@ -8672,7 +8672,7 @@ function OrderLifecycleStressPanel({
                 <div key={String(item.id || item.label)} className="rounded-md border border-border/40 bg-black/20 px-3 py-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium">{String(item.label || item.id || "sandbox case")}</span>
-                    <Pill label={String(item.state || (Boolean(item.passed) ? "passed" : "held")).replace(/_/g, " ")} tone={Boolean(item.passed) ? statusTone.wired : statusTone.orphaned} />
+                    <Pill label={String(item.state || (item.passed ? "passed" : "held")).replace(/_/g, " ")} tone={item.passed ? statusTone.wired : statusTone.orphaned} />
                   </div>
                   <div className="mt-1 line-clamp-2 text-muted-foreground">
                     {String(firstGuard.broker_environment || item.venue || "sandbox")} / {String(firstGuard.operation || "proof")} / {String(firstGuard.endpoint_url || "guarded")}
@@ -8691,8 +8691,8 @@ function OrderLifecycleStressPanel({
           <div className="flex items-center justify-between gap-2">
             <div className="text-xs uppercase text-muted-foreground">Venue requirement matrix</div>
             <Pill
-              label={Boolean(summary.broker_requirement_matrix_complete) ? "matrix complete" : "matrix attention"}
-              tone={Boolean(summary.broker_requirement_matrix_complete) ? statusTone.wired : statusTone.orphaned}
+              label={summary.broker_requirement_matrix_complete ? "matrix complete" : "matrix attention"}
+              tone={summary.broker_requirement_matrix_complete ? statusTone.wired : statusTone.orphaned}
             />
           </div>
           <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-5">
