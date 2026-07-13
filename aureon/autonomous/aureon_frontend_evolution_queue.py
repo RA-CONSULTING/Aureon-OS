@@ -78,6 +78,8 @@ LOW_VALUE_FRONTEND_FILES = {
 }
 
 
+_MD_PIPE = "\\|"  # markdown-escaped pipe (kept out of f-string expressions for 3.11)
+
 @dataclass
 class EvolutionWorkOrder:
     id: str
@@ -399,7 +401,7 @@ def render_markdown(queue: FrontendEvolutionQueue) -> str:
     for order in queue.work_orders[:200]:
         lines.append(
             f"| {order.priority} | `{order.status}` | `{order.target_screen}` | `{order.source_path}` | "
-            f"{order.frontend_action.replace('|', '\\|')} |"
+            f"{order.frontend_action.replace('|', _MD_PIPE)} |"
         )
     if len(queue.work_orders) > 200:
         lines.append(f"| ... | ... | ... | `{len(queue.work_orders) - 200} more work orders in JSON` | ... |")

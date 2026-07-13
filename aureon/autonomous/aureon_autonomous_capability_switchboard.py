@@ -55,6 +55,8 @@ HNC_GATES = (
 )
 
 
+_MD_PIPE = "\\|"  # markdown-escaped pipe (kept out of f-string expressions for 3.11)
+
 @dataclass
 class CapabilityMode:
     id: str
@@ -703,13 +705,13 @@ def render_markdown(switchboard: AutonomousCapabilitySwitchboard) -> str:
     for mode in switchboard.capability_modes:
         lines.append(
             f"| `{mode.status}` | `{mode.domain}` | `{mode.authority_level}` | {mode.title} | "
-            f"{mode.next_action.replace('|', '\\|')} |"
+            f"{mode.next_action.replace('|', _MD_PIPE)} |"
         )
     lines.extend(["", "## Presentation Intents", "", "| Priority | Status | Display | Target | Intent |", "| ---: | --- | --- | --- | --- |"])
     for intent in switchboard.presentation_intents[:80]:
         lines.append(
             f"| {intent.priority} | `{intent.status}` | `{intent.display_mode}` | `{intent.target_screen}` | "
-            f"{intent.title.replace('|', '\\|')} |"
+            f"{intent.title.replace('|', _MD_PIPE)} |"
         )
     lines.extend(["", "## HNC Control Contract", "", "```json", json.dumps(switchboard.hnc_control_contract, indent=2, sort_keys=True), "```"])
     lines.extend(["", "## Safety Contract", ""])

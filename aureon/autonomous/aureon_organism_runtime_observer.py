@@ -22,6 +22,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional, Sequence
 
+_MD_PIPE = "\\|"  # markdown-escaped pipe (kept out of f-string expressions for 3.11)
+
 
 SCHEMA_VERSION = "aureon-organism-runtime-status-v1"
 DEFAULT_OUTPUT_MD = Path("docs/audits/aureon_organism_runtime_status.md")
@@ -1152,8 +1154,8 @@ def render_markdown(status: OrganismRuntimeStatus) -> str:
         lines.append("| --- | --- | --- | --- |")
         for item in status.blind_spots[:200]:
             lines.append(
-                f"| `{item.severity}` | `{item.domain}` | {item.issue.replace('|', '\\|')} | "
-                f"{item.next_action.replace('|', '\\|')} |"
+                f"| `{item.severity}` | `{item.domain}` | {item.issue.replace('|', _MD_PIPE)} | "
+                f"{item.next_action.replace('|', _MD_PIPE)} |"
             )
     else:
         lines.append("- No blind spots detected in this observer pass.")

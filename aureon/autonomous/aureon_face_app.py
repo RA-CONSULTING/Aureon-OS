@@ -1462,7 +1462,7 @@ def api_live_panel():
         <div>Positions: <b>{positions}</b> open</div>
         <div>ψ={psi:.2f} | Γ=0.{int(psi*100):02d}</div>
     </div>
-    {"<div style='margin-top:8px;padding:6px;background:#0f172a;border-radius:6px;'><span style=\"color:#60a5fa;\">Energy Field:</span> " + str(energy_instruments) + " instruments | acc:" + str(energy_acc) + " dist:" + str(energy_dist) + (" | <b style='color:#34d399;'>" + energy_signal + "</b>" if energy_signal else "") + "</div>" if energy_instruments else ""}
+    {"<div style='margin-top:8px;padding:6px;background:#0f172a;border-radius:6px;'><span style='color:#60a5fa;'>Energy Field:</span> " + str(energy_instruments) + " instruments | acc:" + str(energy_acc) + " dist:" + str(energy_dist) + (" | <b style='color:#34d399;'>" + energy_signal + "</b>" if energy_signal else "") + "</div>" if energy_instruments else ""}
     <div style="margin-top:6px;text-align:center;color:#6b7280;font-size:10px;">
         Live data | {time.strftime('%H:%M:%S')} | IF YOU DON'T QUIT, YOU CAN'T LOSE
     </div>
