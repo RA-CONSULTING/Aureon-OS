@@ -222,6 +222,16 @@ def _build_from_spec(spec) -> LLMAdapter | None:
     try:
         if kind == "openai":
             return AureonOpenAIAdapter(model=spec.model or None)
+        if kind == "openai_compat":
+            # Any OpenAI-compatible vendor (DeepSeek, Mistral, Groq, OpenRouter,
+            # Perplexity, …). Reuse the OpenAI adapter but bind it to THIS spec's
+            # own key/base-URL env vars, so each provider is independent.
+            api_key = os.environ.get(spec.key_env or "", "")
+            base_url = os.environ.get(spec.base_url_env or "", "") or None
+            adapter = AureonOpenAIAdapter(
+                api_key=api_key, base_url=base_url, model=spec.model or None
+            )
+            return adapter if adapter.health_check() else None
         if kind == "grok":
             return AureonGrokAdapter(model=spec.model or None)
         if kind == "gemini":

@@ -128,7 +128,7 @@ class ModelSpec:
     """One row of the switchboard registry — a model that *may* be dialled."""
 
     name: str
-    kind: str                       # openai | grok | gemini | anthropic | local | recorded | stub
+    kind: str                       # openai | openai_compat | grok | gemini | anthropic | local | recorded | stub
     model: str = ""
     key_env: str | None = None   # env var that must be set for this line to be live
     base_url_env: str | None = None
@@ -150,6 +150,18 @@ DEFAULT_REGISTRY: Tuple[ModelSpec, ...] = (
     ModelSpec("gemini", "gemini", "gemini-1.5-flash", key_env="GEMINI_API_KEY", base_url_env="GEMINI_BASE_URL"),
     ModelSpec("anthropic", "anthropic", "claude-3-5-sonnet-latest", key_env="ANTHROPIC_API_KEY"),
     ModelSpec("local", "local", "", key_env=None, base_url_env="AUREON_LLM_BASE_URL", enabled=False),
+    # OpenAI-compatible providers — each reads ITS OWN key/base-URL env (see
+    # providers._build_from_spec). Key-gated: skipped at assembly until a key is set.
+    ModelSpec("deepseek", "openai_compat", "deepseek-chat",
+              key_env="DEEPSEEK_API_KEY", base_url_env="DEEPSEEK_BASE_URL"),
+    ModelSpec("mistral", "openai_compat", "mistral-large-latest",
+              key_env="MISTRAL_API_KEY", base_url_env="MISTRAL_BASE_URL"),
+    ModelSpec("groq", "openai_compat", "llama-3.3-70b-versatile",
+              key_env="GROQ_API_KEY", base_url_env="GROQ_BASE_URL"),
+    ModelSpec("openrouter", "openai_compat", "openai/gpt-4o-mini",
+              key_env="OPENROUTER_API_KEY", base_url_env="OPENROUTER_BASE_URL"),
+    ModelSpec("perplexity", "openai_compat", "sonar",
+              key_env="PERPLEXITY_API_KEY", base_url_env="PERPLEXITY_BASE_URL"),
 )
 
 
@@ -166,6 +178,12 @@ def default_registry() -> List[ModelSpec]:
         for i, spec in enumerate(specs):
             if spec.kind == "local":
                 specs[i] = replace(spec, enabled=True, model=model or spec.model)
+    # Per-provider model override (set by the keystore / Providers UI as
+    # AUREON_MODEL_<NAME>) — flows uniformly through spec.model for every kind.
+    for i, spec in enumerate(specs):
+        override = str(os.environ.get(f"AUREON_MODEL_{spec.name.upper()}", "") or "").strip()
+        if override:
+            specs[i] = replace(specs[i], model=override)
     return specs
 
 

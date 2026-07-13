@@ -48,6 +48,14 @@ def _load_env_file() -> None:
         load_dotenv(override=False)
     except Exception:  # noqa: BLE001
         pass
+    # Then let the encrypted provider keystore (Providers UI) populate env — it
+    # is the control plane for UI-set keys and takes precedence over .env.
+    try:  # pragma: no cover - best effort
+        from aureon.operator import keystore
+
+        keystore.apply_to_env()
+    except Exception:  # noqa: BLE001
+        pass
 
 try:
     from flask import Flask, Response, jsonify, request, send_from_directory
@@ -81,6 +89,55 @@ def _json_safe(obj: Any) -> Any:
     if isinstance(obj, (list, tuple)):
         return [_json_safe(v) for v in obj]
     return obj
+
+
+def _test_provider_adapter(info: Any, api_key: str, base_url: Any, model: str) -> Dict[str, Any]:
+    """Construct a fresh adapter for ``info`` with the given key and do ONE real
+    ``prompt()`` round-trip. Never raises; returns a compact verdict (no secrets)."""
+    import time
+
+    try:
+        kind = info.kind
+        if kind in ("openai", "openai_compat"):
+            from aureon.operator.providers import AureonOpenAIAdapter
+
+            adapter = AureonOpenAIAdapter(api_key=api_key, base_url=base_url, model=model)
+        elif kind == "grok":
+            from aureon.operator.providers import AureonGrokAdapter
+
+            adapter = AureonGrokAdapter(api_key=api_key, base_url=base_url, model=model)
+        elif kind == "gemini":
+            from aureon.operator.providers import AureonGeminiAdapter
+
+            adapter = AureonGeminiAdapter(api_key=api_key, model=model, base_url=base_url)
+        elif kind == "anthropic":
+            from aureon.inhouse_ai.llm_adapter import AureonAnthropicAdapter
+
+            adapter = AureonAnthropicAdapter(api_key=api_key, model=model)
+        else:  # local / self-hosted (Ollama)
+            from aureon.inhouse_ai.llm_adapter import AureonLocalAdapter
+
+            adapter = AureonLocalAdapter(api_key=api_key, base_url=base_url, model=model)
+
+        t0 = time.perf_counter()
+        resp = adapter.prompt(
+            [{"role": "user", "content": "Reply with exactly: OK"}], max_tokens=16
+        )
+        elapsed = int((time.perf_counter() - t0) * 1000)
+        text = str(getattr(resp, "text", "") or "")
+        stop = str(getattr(resp, "stop_reason", "") or "")
+        ok = bool(text) and not text.startswith("[ERROR]") and stop != "error"
+        return {
+            "ok": ok,
+            "latency_ms": elapsed,
+            "model": model,
+            "sample": text[:80],
+            "error": "" if ok else (text[:160] or "no response"),
+        }
+    except Exception as exc:  # noqa: BLE001 — a failed test is a verdict, not a 500
+        return {"ok": False, "latency_ms": 0, "model": model, "sample": "",
+                "error": f"{type(exc).__name__}: {str(exc)[:140]}"}
+
 
 PAGE = """<!doctype html>
 <html lang="en">
@@ -392,6 +449,89 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
         if not prompt:
             return jsonify({"error": "missing prompt"}), 400
         return jsonify(_get_cognition().reason(prompt, session_id=body.get("session_id")).to_dict())
+
+    # ── Provider API-key management (instance-owned, encrypted keystore) ────────
+    # BYO keys for every model. Keys are stored encrypted (keystore.py), masked on
+    # read, never logged; writes hot-rebuild the switchboard (no restart).
+    from aureon.operator import keystore as _keystore
+    from aureon.operator.provider_catalog import CATALOG, get_provider
+
+    def _rebuild_switchboard() -> None:
+        _keystore.apply_to_env()
+        _operator.providers = build_provider_set()
+        _cognition["engine"] = None  # rebuilt lazily on next cognition call
+
+    def _mask_env(value: str) -> str:
+        value = str(value or "")
+        if not value:
+            return ""
+        return ("•" * 4) + value[-4:] if len(value) > 4 else "•" * len(value)
+
+    def _provider_view() -> list:
+        stored = _keystore.masked_view()
+        live_names = {p["name"] for p in describe_provider_set(_operator.providers)}
+        out = []
+        for info in CATALOG:
+            s = stored.get(info.id, {})
+            env_key = os.environ.get(info.key_env, "") if info.key_env else ""
+            has_key = bool(s.get("has_key")) or bool(env_key)
+            key_masked = s.get("key_masked") or (_mask_env(env_key) if env_key else "")
+            source = "keystore" if s.get("has_key") else ("env" if env_key else "none")
+            out.append({
+                **info.to_public_dict(),
+                "model": s.get("model") or info.default_model,
+                "base_url": s.get("base_url") or info.default_base_url,
+                "has_key": has_key,
+                "key_masked": key_masked,
+                "key_source": source,
+                "enabled": bool(s.get("enabled", True)) if s else True,
+                "live": info.registry_name in live_names,
+            })
+        return out
+
+    @app.get("/api/providers")
+    def providers_list():
+        return jsonify({"providers": _provider_view()})
+
+    @app.post("/api/providers/<provider_id>")
+    def providers_set(provider_id: str):
+        if get_provider(provider_id) is None:
+            return _err(404, f"unknown provider: {provider_id}")
+        body: Dict[str, Any] = request.get_json(silent=True) or {}
+        try:
+            _keystore.save_provider(
+                provider_id,
+                api_key=body.get("api_key"),
+                base_url=body.get("base_url"),
+                model=body.get("model"),
+                enabled=body.get("enabled"),
+            )
+        except KeyError:
+            return _err(404, f"unknown provider: {provider_id}")
+        _rebuild_switchboard()
+        view = next((p for p in _provider_view() if p["id"] == provider_id), None)
+        return jsonify({"ok": True, "provider": view})
+
+    @app.delete("/api/providers/<provider_id>")
+    def providers_delete(provider_id: str):
+        if get_provider(provider_id) is None:
+            return _err(404, f"unknown provider: {provider_id}")
+        _keystore.delete_provider(provider_id)
+        _rebuild_switchboard()
+        return jsonify({"ok": True, "provider_id": provider_id})
+
+    @app.post("/api/providers/<provider_id>/test")
+    def providers_test(provider_id: str):
+        info = get_provider(provider_id)
+        if info is None:
+            return _err(404, f"unknown provider: {provider_id}")
+        body: Dict[str, Any] = request.get_json(silent=True) or {}
+        stored = _keystore.load().get(provider_id, {})
+        api_key = body.get("api_key") or stored.get("api_key") or os.environ.get(info.key_env, "")
+        base_url = body.get("base_url") or stored.get("base_url") or info.default_base_url or None
+        model = body.get("model") or stored.get("model") or info.default_model
+        result = _test_provider_adapter(info, api_key, base_url, model)
+        return jsonify(result)
 
     # ── SaaS platform surface (catalog / domains / status) ─────────────────────
     try:
