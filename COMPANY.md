@@ -64,9 +64,10 @@ and Belfast Charitable Society.
 
 ## What the company builds
 
-Aureon is R&A Consulting's flagship platform: a grounded AI operating layer for evidence-heavy,
-high-control workflows — spanning trading research, an autonomous operator with a conscience in
-the loop, a planetary/HNC research fabric, and a self-building coding organism. See the
+**Aureon OS** (powered by the Harmonic Nexus Core) is R&A Consulting's flagship platform: a
+grounded AI operating layer for evidence-heavy, high-control workflows — spanning trading
+research, an autonomous operator with a conscience in the loop, a planetary/HNC research fabric,
+and a self-building coding organism. See the
 [README](README.md) for the platform overview and the
 [investor guide](docs/investor/README.md) for the diligence path.
 
@@ -75,7 +76,7 @@ the loop, a planetary/HNC research fabric, and a self-building coding organism. 
 ## Contact
 
 - **Website** — [aureonzorzatechnologies.pl](https://aureonzorzatechnologies.pl)
-- **Repository** — [github.com/RA-CONSULTING/aureon-trading](https://github.com/RA-CONSULTING/aureon-trading)
+- **Repository** — [github.com/RA-CONSULTING/aureon-os](https://github.com/RA-CONSULTING/aureon-os)
 - **License** — [MIT](LICENSE) · © 2025 R&A Consulting and Brokerage Services Ltd
 
 ---

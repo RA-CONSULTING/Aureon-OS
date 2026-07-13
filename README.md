@@ -2,9 +2,11 @@
 
 <img src="docs/images/aureon_zorza_logo.jpg" alt="Aureon Zorza Technologies" width="720" />
 
-# Aureon
+# Aureon OS
 
-**A grounded AI operating layer for evidence-heavy, high-control workflows.**
+### — Harmonic Nexus Core —
+
+**The operating system for evidence-heavy, high-control work: a grounded AI operating layer.**
 Trading research · autonomous operator · planetary/HNC research · a coding organism — one auditable system.
 
 ![Strict tier: passing](https://img.shields.io/badge/strict%20tier-passing-brightgreen.svg)
@@ -19,9 +21,10 @@ Trading research · autonomous operator · planetary/HNC research · a coding or
 
 ---
 
-## What Aureon is
+## What Aureon OS is
 
-Aureon is a **local-first operating layer** that lets a human operator run, inspect, and
+Aureon OS is a **local-first operating layer** — powered by the Harmonic Nexus Core — that
+lets a human operator run, inspect, and
 ground evidence-heavy automation across several domains from one place. It is built to be
 *auditable first*: code, ledgers, audits, generated interfaces, and research artifacts are
 kept together so a reviewer can always see what exists, what is experimental, and what is
@@ -152,8 +155,8 @@ that verified state.
 The hosted GitHub Actions status badges below turn green once Actions is enabled on the
 organization (they reflect hosted runs, not the local gate):
 
-[![Operator CI](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/operator-ci.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/operator-ci.yml)
-[![Aureon CI](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/main_ci.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/main_ci.yml)
+[![Operator CI](https://github.com/RA-CONSULTING/aureon-os/actions/workflows/operator-ci.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-os/actions/workflows/operator-ci.yml)
+[![Aureon CI](https://github.com/RA-CONSULTING/aureon-os/actions/workflows/main_ci.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-os/actions/workflows/main_ci.yml)
 
 ```bash
 # reproduce the gate locally
@@ -175,5 +178,5 @@ evidence are not published in this repository.
 ---
 
 <div align="center">
-<sub>Aureon · Harmonic Nexus Core — a product of R&A Consulting and Brokerage Services Ltd, trading as Aureon Zorza Technologies.</sub>
+<sub>Aureon OS · Harmonic Nexus Core — a product of R&A Consulting and Brokerage Services Ltd, trading as Aureon Zorza Technologies.</sub>
 </div>

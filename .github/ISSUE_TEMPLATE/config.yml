@@ -1,7 +1,7 @@
 blank_issues_enabled: true
 contact_links:
   - name: Security vulnerability (private)
-    url: https://github.com/RA-CONSULTING/aureon-trading/security/advisories/new
+    url: https://github.com/RA-CONSULTING/aureon-os/security/advisories/new
     about: Report security issues privately — do not open a public issue.
   - name: R&A Consulting / Aureon Zorza Technologies
     url: https://aureonzorzatechnologies.pl
