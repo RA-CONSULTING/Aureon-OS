@@ -62,6 +62,39 @@ Connections UI  →  POST /api/connections/<id>
   endpoint; keyed → an authenticated call) and reports latency or the exact error.
   It never persists.
 
+## How keys reach the daemons
+
+Storing a key in the UI (or `.env`) is only half the job — the long-running HNC
+processes have to *receive* it. They all call one shared bootstrap at start-up,
+`bootstrap_credentials()` in `aureon/core/aureon_env.py`, which:
+
+1. loads `.env` across every candidate path, **decodes HNC env-packets**, and
+   applies the credential aliases (`load_aureon_environment`), then
+2. layers the encrypted keystore on top (`keystore.apply_to_env()`) — so a key
+   set in the Providers/Connections UI reaches the engine exactly like a `.env` one.
+
+It returns a **presence-only** self-check (booleans, never values) that each
+daemon logs at boot, e.g. `credentials: NASA=on NOAA=on USGS=on … AUREON=on`.
+The entrypoints that call it: the operator server (`operator_server`), the HNC
+live daemon (`hnc-live-daemon`), and the organism daemon (`aureon-organism`).
+Before this, only the operator loaded keys — the HNC daemons ran without them, so
+`NASA_API_KEY` (DONKI enrichment) and the NOAA/USGS keys were invisible to their
+fetchers. Now every process sees every key.
+
+### Live science sources that consume the keys
+
+Two keyed feeds flow straight into the HNC Λ(t) pipeline as live sources
+(registered in `hnc_live_daemon._wire_default_sources`; both **degrade to a
+neutral, zero-confidence reading when unkeyed**, so a keyless deploy still boots):
+
+| Source | Env var | Endpoint (auth header) | Cadence |
+|---|---|---|---|
+| NOAA NCEI Climate Data Online | `NOAA_API_KEY` | `ncei.noaa.gov/cdo-web/api/v2/datasets` (`token`) | 60 min |
+| USGS Water Data | `USGS_API_KEY` | `api.waterdata.usgs.gov/ogcapi/v0/collections` (`X-Api-Key`) | 30 min |
+
+(The keyless NOAA SWPC space-weather feed and the keyless USGS earthquake feed are
+unchanged — these are the *keyed* NCEI/Water-Data services, distinct endpoints.)
+
 ## Endpoints
 
 | Method | Path | Purpose |

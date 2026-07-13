@@ -35,6 +35,12 @@ The keystore is the control plane: a key set here overrides the same variable in
 `.env`. Disable a provider and its key is removed from the environment (the line
 drops out) but kept in the store so you can re-enable it. **Clear** forgets it.
 
+The same `keystore.apply_to_env()` step runs inside the shared
+`bootstrap_credentials()` that **every** long-running HNC process calls at
+start-up (operator, `hnc-live-daemon`, `aureon-organism`), so keys you set in the
+UI reach the whole engine, not just the operator — see
+[CONNECTIONS.md § How keys reach the daemons](./CONNECTIONS.md#how-keys-reach-the-daemons).
+
 ## What you see vs. what's stored
 
 - The API returns keys **masked** (`••••1234`, last four only) — the full key is
