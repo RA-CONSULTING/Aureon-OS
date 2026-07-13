@@ -1,56 +1,42 @@
 name: Aureon CI
 
+# Repo-wide smoke gate: the whole tree compiles, and the product-surface test
+# suite passes offline (no keys, no network). The deep strict tier (ruff + mypy)
+# lives in operator-ci.yml; this workflow is the broad "does it import and run"
+# signal. Runs on GitHub-hosted Actions once enabled on the org.
+
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: aureon-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  smoke-test:
+  smoke:
+    name: compile + offline test suite
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.12"]
-
+    env:
+      AUREON_LLM_OFFLINE: "1"
+      AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS: "1"
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        pip install pytest unittest-xml-reporting prometheus_client numpy requests
-
-    - name: Run Smoke Tests
-      run: |
-        python -m unittest tests/test_smoke_core.py
-
-    - name: Run Unit Tests
-      run: |
-        python -m unittest tests/test_unit_core_math.py
-
-    - name: Run Integration Tests
-      run: |
-        python -m unittest tests/test_integration_flow.py
-
-  # Existing typecheck if any
-  typecheck:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.12"
-    - name: Install dependencies
-      run: pip install mypy types-requests types-ujson numpy
-    - name: Run mypy (soft)
-      run: |
-        # Only run on core files to check for obvious errors, dont fail yet
-        mypy aureon_quantum_mirror_scanner.py aureon_timeline_oracle.py || true
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install (operator + dev extras)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[operator,dev]'
+      - name: Compile-all (whole package parses on 3.12)
+        run: python -m compileall -q aureon/ -x "(__pycache__|imports|archive)"
+      - name: Offline test suite (product surface)
+        run: pytest tests/test_operator_server.py tests/test_operator_cognition.py tests/test_operator_production.py tests/test_aureon_operator.py tests/test_saas_catalog.py tests/test_saas_gateway.py tests/test_saas_billing.py tests/test_connectome.py -q

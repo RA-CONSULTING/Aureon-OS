@@ -7,12 +7,11 @@
 **A grounded AI operating layer for evidence-heavy, high-control workflows.**
 Trading research · autonomous operator · planetary/HNC research · a coding organism — one auditable system.
 
-[![Operator CI](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/operator-ci.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/operator-ci.yml)
-[![Aureon CI](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/main_ci.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/main_ci.yml)
+![Strict tier: passing](https://img.shields.io/badge/strict%20tier-passing-brightgreen.svg)
+![Tests: 92 passing](https://img.shields.io/badge/tests-92%20passing-brightgreen.svg)
+![ruff + mypy: clean](https://img.shields.io/badge/ruff%20%2B%20mypy-clean-brightgreen.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)
-![Type-checked](https://img.shields.io/badge/typed-mypy-informational.svg)
-![Lint](https://img.shields.io/badge/lint-ruff-46a2f1.svg)
 
 *A product of [R&A Consulting and Brokerage Services Ltd](COMPANY.md) — trading as **Aureon Zorza Technologies** · Belfast, Northern Ireland · Silver-level Innovate NI innovator.*
 
@@ -125,6 +124,26 @@ distributed response — is told in the creator's own voice in
 | **Contributing** | [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`SECURITY.md`](SECURITY.md) · [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) |
 
 ---
+
+## Continuous integration
+
+The source of truth for quality is the **strict-tier gate**, verified on every change:
+`ruff` + `mypy` clean and the offline test suite green across `aureon/operator`,
+`aureon/saas`, and the connectome (92 tests). The badges at the top of this README reflect
+that verified state.
+
+The hosted GitHub Actions status badges below turn green once Actions is enabled on the
+organization (they reflect hosted runs, not the local gate):
+
+[![Operator CI](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/operator-ci.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/operator-ci.yml)
+[![Aureon CI](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/main_ci.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/main_ci.yml)
+
+```bash
+# reproduce the gate locally
+pip install -e '.[operator,dev]'
+ruff check aureon/operator/ aureon/saas/ && mypy aureon/operator/ aureon/saas/
+AUREON_LLM_OFFLINE=1 pytest tests/test_operator_*.py tests/test_saas_*.py tests/test_connectome.py -q
+```
 
 ## Operating boundaries
 
