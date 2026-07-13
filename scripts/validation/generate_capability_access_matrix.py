@@ -38,6 +38,17 @@ def system_lookup(system_map: dict) -> dict[str, dict]:
     return {system["path"]: system for system in system_map.get("systems", []) if isinstance(system, dict) and system.get("path")}
 
 
+def capability_system_paths(system_map: dict) -> dict[str, list[str]]:
+    lookup: dict[str, list[str]] = {}
+    for system in system_map.get("systems", []):
+        if not isinstance(system, dict) or not system.get("path"):
+            continue
+        system_path = str(system["path"])
+        for capability_id in system.get("capability_ids", []):
+            lookup.setdefault(str(capability_id), []).append(system_path)
+    return {capability_id: sorted(set(paths)) for capability_id, paths in lookup.items()}
+
+
 def route_payload(route: dict) -> dict:
     return {
         "id": route.get("id", ""),
@@ -93,6 +104,7 @@ def build_matrix() -> dict:
     system_map = load_json(DOCS_SYSTEM_INTEGRATION)
     routes_by_id = route_lookup(access_map)
     systems_by_path = system_lookup(system_map)
+    systems_by_capability = capability_system_paths(system_map)
 
     rows = []
     routed_capability_count = 0
@@ -102,9 +114,11 @@ def build_matrix() -> dict:
     route_binding_count = 0
 
     for capability in capability_registry.get("capabilities", []):
+        capability_id = capability.get("id", "")
         route_ids = capability.get("access_route_ids", [])
         routes = [route_payload(routes_by_id[route_id]) for route_id in route_ids if route_id in routes_by_id]
-        systems = [system_payload(path, systems_by_path.get(path)) for path in capability.get("system_paths", [])]
+        system_paths = unique([*capability.get("system_paths", []), *systems_by_capability.get(capability_id, [])])
+        systems = [system_payload(path, systems_by_path.get(path)) for path in system_paths]
         start_points = unique(
             [
                 *[doc for route in routes for doc in route.get("primary_docs", [])],

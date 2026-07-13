@@ -1,6 +1,6 @@
 # Aureon End-User Access Map
 
-Current tracked snapshot: 2026-07-12.
+Current tracked snapshot: 2026-07-13.
 
 This map connects end-user needs to the repo systems, docs, runtime surfaces,
 frontend-public manifests, and safety gates that make each capability accessible.
@@ -20,6 +20,9 @@ File-level public index:
 Directory organization tree:
 [`repo_organization_tree.json`](repo_organization_tree.json) and
 [`../frontend/public/aureon_repo_organization_tree.json`](../frontend/public/aureon_repo_organization_tree.json).
+Navigation readiness audit:
+[`repo_navigation_readiness.json`](repo_navigation_readiness.json) and
+[`../frontend/public/aureon_repo_navigation_readiness.json`](../frontend/public/aureon_repo_navigation_readiness.json).
 Capability access matrix:
 [`capability_access_matrix.json`](capability_access_matrix.json) and
 [`../frontend/public/aureon_capability_access_matrix.json`](../frontend/public/aureon_capability_access_matrix.json).
@@ -60,7 +63,7 @@ Contract validation command, from repo root:
 | Capability | End-user action | Primary docs | Related systems | Runtime or API surface | Safety gate |
 |---|---|---|---|---|---|
 | Product overview | Understand what Aureon is and where to start. | [`../README.md`](../README.md), [`REPO_SITEMAP.md`](REPO_SITEMAP.md) | `docs/`, `docs/investor/` | Public docs and frontend public manifest | Claims must remain evidence-backed. |
-| Repo navigation | Browse all systems and how they relate. | [`REPO_SITEMAP.md`](REPO_SITEMAP.md), [`SYSTEM_INTEGRATION_MAP.md`](SYSTEM_INTEGRATION_MAP.md), [`CAPABILITY_REGISTRY.md`](CAPABILITY_REGISTRY.md), [`INDEX.md`](INDEX.md), [`repo_navigation_index.json`](repo_navigation_index.json), [`repo_organization_tree.json`](repo_organization_tree.json), [`capability_access_matrix.json`](capability_access_matrix.json), [`system_integration_map.json`](system_integration_map.json), [`capability_registry.json`](capability_registry.json) | `docs/`, root docs, `frontend/public/`, `frontend/src/components/RepoNavigationPanel.tsx` | `#repo-map`, `frontend/public/aureon_repo_sitemap.json`, `frontend/public/aureon_repo_navigation_index.json`, `frontend/public/aureon_repo_organization_tree.json`, `frontend/public/aureon_capability_access_matrix.json`, `frontend/public/aureon_system_integration_map.json`, `frontend/public/aureon_capability_registry.json` | Keep generated counts current after major moves. |
+| Repo navigation | Browse all systems and how they relate. | [`REPO_SITEMAP.md`](REPO_SITEMAP.md), [`SYSTEM_INTEGRATION_MAP.md`](SYSTEM_INTEGRATION_MAP.md), [`CAPABILITY_REGISTRY.md`](CAPABILITY_REGISTRY.md), [`INDEX.md`](INDEX.md), [`repo_navigation_index.json`](repo_navigation_index.json), [`repo_organization_tree.json`](repo_organization_tree.json), [`repo_navigation_readiness.json`](repo_navigation_readiness.json), [`capability_access_matrix.json`](capability_access_matrix.json), [`system_integration_map.json`](system_integration_map.json), [`capability_registry.json`](capability_registry.json) | `docs/`, root docs, `frontend/public/`, `frontend/src/components/RepoNavigationPanel.tsx` | `#repo-map`, `frontend/public/aureon_repo_sitemap.json`, `frontend/public/aureon_repo_navigation_index.json`, `frontend/public/aureon_repo_organization_tree.json`, `frontend/public/aureon_repo_navigation_readiness.json`, `frontend/public/aureon_capability_access_matrix.json`, `frontend/public/aureon_system_integration_map.json`, `frontend/public/aureon_capability_registry.json` | Keep generated counts current after major moves. |
 | SaaS integration | See deploy surfaces, env groups, and auth boundaries. | [`SAAS_INTEGRATION_READINESS.md`](SAAS_INTEGRATION_READINESS.md), [`saas_integration_manifest.json`](saas_integration_manifest.json), [`SUPABASE_HARDENING_REVIEW.md`](SUPABASE_HARDENING_REVIEW.md), [`supabase_hardening_manifest.json`](supabase_hardening_manifest.json) | `frontend/`, `supabase/`, `api/`, `server/`, `functions/`, `netlify/`, `deploy/`, `production/` | `docs/repo_sitemap.json`, `frontend/public/aureon_saas_integration_manifest.json`, `frontend/public/aureon_supabase_hardening_manifest.json`, frontend public manifests | Public endpoints require review before production. |
 | Local runtime | Start and validate the local operator runtime. | [`../RUNNING.md`](../RUNNING.md), [`../QUICK_START.md`](../QUICK_START.md) | Root launchers, `aureon/`, `scripts/` | `http://127.0.0.1:8791/api/terminal-state` | Validate env and dry-run/live mode first. |
 | Operator console | Use the browser console and public artifacts. | [`FLAMEBORN_INTEGRATION.md`](FLAMEBORN_INTEGRATION.md), [`dashboards/DASHBOARD_GUIDE.md`](dashboards/DASHBOARD_GUIDE.md) | `frontend/`, `frontend/public/`, `public/`, `templates/` | `http://127.0.0.1:8081/`, `frontend/public/*` | Runtime data must be redacted before public hosting. |
@@ -85,6 +88,7 @@ The frontend can read these static files without needing repo traversal:
 | `frontend/public/aureon_capability_access_matrix.json` | End-user route matrix for every current capability, including start points, related systems, runtime/API surfaces, and safety gates. |
 | `frontend/public/aureon_repo_navigation_index.json` | File-level repo index generated from `git ls-files` for searchable end-user navigation. |
 | `frontend/public/aureon_repo_organization_tree.json` | Directory hierarchy generated from `git ls-files` for parent/child structural navigation. |
+| `frontend/public/aureon_repo_navigation_readiness.json` | Pass/fail readiness audit for sitemap freshness, capability routing, system mapping, public mirrors, and SaaS blockers. |
 | `frontend/public/aureon_system_integration_map.json` | System-to-capability integration map covering all 29 current implementation capabilities, access routes, entrypoints, public artifacts, validation references, readiness status, and safety gates. |
 | `frontend/public/aureon_saas_integration_manifest.json` | SaaS integration contract generated from env examples, deployment config, and Supabase auth settings. |
 | `frontend/public/aureon_supabase_hardening_manifest.json` | Supabase Edge Function hardening contract generated from `supabase/config.toml` and function source presence. |

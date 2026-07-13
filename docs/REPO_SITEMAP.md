@@ -11,6 +11,8 @@ Machine-readable companion: [`repo_sitemap.json`](repo_sitemap.json).
 File-level navigation index: [`repo_navigation_index.json`](repo_navigation_index.json).
 Directory organization tree: [`repo_organization_tree.json`](repo_organization_tree.json), mirrored to
 [`../frontend/public/aureon_repo_organization_tree.json`](../frontend/public/aureon_repo_organization_tree.json).
+Navigation readiness audit: [`repo_navigation_readiness.json`](repo_navigation_readiness.json), mirrored to
+[`../frontend/public/aureon_repo_navigation_readiness.json`](../frontend/public/aureon_repo_navigation_readiness.json).
 Capability access matrix: [`capability_access_matrix.json`](capability_access_matrix.json), mirrored to
 [`../frontend/public/aureon_capability_access_matrix.json`](../frontend/public/aureon_capability_access_matrix.json).
 System integration map: [`SYSTEM_INTEGRATION_MAP.md`](SYSTEM_INTEGRATION_MAP.md)
@@ -50,6 +52,7 @@ Navigation contract validator, from repo root:
 | Route every capability | [`capability_access_matrix.json`](capability_access_matrix.json), frontend `#repo-map` | End-user start points, runtime/API surfaces, related systems, and safety gates for every current capability |
 | Search the tracked repo index | [`repo_navigation_index.json`](repo_navigation_index.json) | File-level categories, zones, capability IDs, and public frontend mirror |
 | Browse the directory hierarchy | [`repo_organization_tree.json`](repo_organization_tree.json), frontend `#repo-map` | Parent paths, child directories, category, zone, capability IDs, and file counts |
+| Audit navigation readiness | [`repo_navigation_readiness.json`](repo_navigation_readiness.json), frontend `#repo-map` | Pass/fail gates for sitemap freshness, capability routing, system mapping, public mirrors, and SaaS blockers |
 | Integrate as SaaS | [`SAAS_INTEGRATION_READINESS.md`](SAAS_INTEGRATION_READINESS.md), [`saas_integration_manifest.json`](saas_integration_manifest.json), [`SUPABASE_HARDENING_REVIEW.md`](SUPABASE_HARDENING_REVIEW.md) | Env variable names, deployment surfaces, Supabase auth posture, hardening blockers, and production gates |
 | Inspect all docs | [`INDEX.md`](INDEX.md) | Existing deep-dive docs by audience |
 | Integrate as a product surface | [`SAAS_INTEGRATION_READINESS.md`](SAAS_INTEGRATION_READINESS.md) | `frontend/`, `api/`, `server/`, `functions/`, `supabase/`, `netlify/`, `deploy/`, `production/` |
@@ -187,7 +190,10 @@ Task-based access map: [`END_USER_ACCESS_MAP.md`](END_USER_ACCESS_MAP.md).
   `python scripts/validation/generate_saas_integration_manifest.py`
   after env or deployment changes. Run
   `python scripts/validation/generate_supabase_hardening_manifest.py` after
-  Supabase auth or function changes. Then run
+  Supabase auth or function changes. Run
+  `python scripts/validation/generate_repo_navigation_readiness.py` after
+  regenerating navigation, capability, system, SaaS, or hardening manifests.
+  Then run
   `python scripts/validation/validate_repo_navigation_contract.py` after changing
   navigation docs, public manifests, file indexes, capability registries,
   system-integration maps, SaaS manifests, hardening manifests, or Supabase

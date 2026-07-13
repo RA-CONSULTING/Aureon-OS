@@ -200,6 +200,40 @@ interface OrganizationTreeManifest {
   directories: OrganizationDirectory[];
 }
 
+interface NavigationReadinessGate {
+  id: string;
+  label: string;
+  status: "pass" | "warn" | "fail";
+  severity: string;
+  actual: unknown;
+  expected: unknown;
+  evidence: string[];
+}
+
+interface NavigationReadinessManifest {
+  name: string;
+  snapshot_date: string;
+  frontend_public_mirror: string;
+  summary: {
+    readiness_status: "pass" | "warn" | "fail";
+    tracked_file_count: number;
+    directory_count: number;
+    top_level_system_count: number;
+    access_route_count: number;
+    current_capability_count: number;
+    routed_capability_count: number;
+    system_mapped_capability_count: number;
+    unmapped_capability_count: number;
+    saas_deployment_surface_count: number;
+    supabase_production_blocker_count: number;
+    gate_count: number;
+    passed_gate_count: number;
+    failed_gate_count: number;
+    warning_gate_count: number;
+  };
+  gates: NavigationReadinessGate[];
+}
+
 interface SystemIntegrationRow {
   path: string;
   category: string;
@@ -352,6 +386,7 @@ export function RepoNavigationPanel() {
   const [capabilityRegistry, setCapabilityRegistry] = useState<CapabilityRegistryManifest | null>(null);
   const [navigationIndex, setNavigationIndex] = useState<NavigationIndexManifest | null>(null);
   const [organizationTree, setOrganizationTree] = useState<OrganizationTreeManifest | null>(null);
+  const [navigationReadiness, setNavigationReadiness] = useState<NavigationReadinessManifest | null>(null);
   const [systemMap, setSystemMap] = useState<SystemIntegrationMapManifest | null>(null);
   const [saasManifest, setSaasManifest] = useState<SaaSIntegrationManifest | null>(null);
   const [hardeningManifest, setHardeningManifest] = useState<SupabaseHardeningManifest | null>(null);
@@ -370,6 +405,7 @@ export function RepoNavigationPanel() {
           capabilityRegistryManifest,
           indexManifest,
           organizationTreeManifest,
+          navigationReadinessManifest,
           systemIntegrationManifest,
           integrationManifest,
           supabaseHardeningManifest,
@@ -380,6 +416,7 @@ export function RepoNavigationPanel() {
           loadJson<CapabilityRegistryManifest>("/aureon_capability_registry.json", controller.signal),
           loadJson<NavigationIndexManifest>("/aureon_repo_navigation_index.json", controller.signal),
           loadJson<OrganizationTreeManifest>("/aureon_repo_organization_tree.json", controller.signal),
+          loadJson<NavigationReadinessManifest>("/aureon_repo_navigation_readiness.json", controller.signal),
           loadJson<SystemIntegrationMapManifest>("/aureon_system_integration_map.json", controller.signal),
           loadJson<SaaSIntegrationManifest>("/aureon_saas_integration_manifest.json", controller.signal),
           loadJson<SupabaseHardeningManifest>("/aureon_supabase_hardening_manifest.json", controller.signal),
@@ -400,6 +437,7 @@ export function RepoNavigationPanel() {
         setCapabilityRegistry(capabilityRegistryManifest);
         setNavigationIndex(indexManifest);
         setOrganizationTree(organizationTreeManifest);
+        setNavigationReadiness(navigationReadinessManifest);
         setSystemMap(systemIntegrationManifest);
         setSaasManifest(integrationManifest);
         setHardeningManifest(supabaseHardeningManifest);
@@ -512,6 +550,30 @@ export function RepoNavigationPanel() {
       : organizationDirectories.filter((directory) => directory.depth <= 2);
     return entries.sort((left, right) => right.file_count - left.file_count).slice(0, 30);
   }, [organizationDirectories, query]);
+
+  const filteredReadinessGates = useMemo(() => {
+    const gates = navigationReadiness?.gates || [];
+    return gates
+      .filter((gate) =>
+        matchesQuery(
+          [
+            gate.id,
+            gate.label,
+            gate.status,
+            gate.severity,
+            JSON.stringify(gate.actual),
+            JSON.stringify(gate.expected),
+            ...gate.evidence,
+          ],
+          query,
+        ),
+      )
+      .sort((left, right) => {
+        const priority = { fail: 0, warn: 1, pass: 2 };
+        return priority[left.status] - priority[right.status] || left.id.localeCompare(right.id);
+      })
+      .slice(0, 10);
+  }, [navigationReadiness, query]);
 
   const topCategories = useMemo(() => {
     return Object.entries(navigationIndex?.summary?.category_counts || {})
@@ -669,6 +731,10 @@ export function RepoNavigationPanel() {
                 <FileJson className="h-4 w-4" />
                 /aureon_repo_organization_tree.json
               </a>
+              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_repo_navigation_readiness.json")} target="_blank" rel="noreferrer">
+                <FileJson className="h-4 w-4" />
+                /aureon_repo_navigation_readiness.json
+              </a>
               <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_system_integration_map.json")} target="_blank" rel="noreferrer">
                 <FileJson className="h-4 w-4" />
                 /aureon_system_integration_map.json
@@ -702,6 +768,73 @@ export function RepoNavigationPanel() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-border/60 bg-card/90">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <ShieldCheck className="h-5 w-5 text-emerald-200" />
+            Navigation Readiness Audit
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">Status</div>
+              <div className="mt-1 text-2xl font-semibold uppercase">{navigationReadiness?.summary?.readiness_status || "pending"}</div>
+            </div>
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">Gates passed</div>
+              <div className="mt-1 text-2xl font-semibold">{(navigationReadiness?.summary?.passed_gate_count || 0).toLocaleString()}</div>
+            </div>
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">Warnings</div>
+              <div className="mt-1 text-2xl font-semibold">{(navigationReadiness?.summary?.warning_gate_count || 0).toLocaleString()}</div>
+            </div>
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">Failed gates</div>
+              <div className="mt-1 text-2xl font-semibold">{(navigationReadiness?.summary?.failed_gate_count || 0).toLocaleString()}</div>
+            </div>
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">Mapped capabilities</div>
+              <div className="mt-1 text-2xl font-semibold">{(navigationReadiness?.summary?.system_mapped_capability_count || 0).toLocaleString()}</div>
+            </div>
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">SaaS blockers</div>
+              <div className="mt-1 text-2xl font-semibold">{(navigationReadiness?.summary?.supabase_production_blocker_count || 0).toLocaleString()}</div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-2">
+            {filteredReadinessGates.map((gate) => (
+              <div key={gate.id} className="rounded-md border border-border/50 bg-background/45 p-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <div className="font-medium">{gate.label}</div>
+                    <div className="mt-1 font-mono text-[10px] text-muted-foreground">{gate.id}</div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={
+                      gate.status === "pass"
+                        ? "w-fit border-emerald-500/30 bg-emerald-500/10 text-emerald-100"
+                        : gate.status === "warn"
+                          ? "w-fit border-yellow-500/30 bg-yellow-500/10 text-yellow-100"
+                          : "w-fit border-red-500/30 bg-red-500/10 text-red-100"
+                    }
+                  >
+                    {gate.status}
+                  </Badge>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {gate.evidence.slice(0, 4).map((path) => (
+                    <PathLink key={`${gate.id}-${path}`} path={path} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="border-border/60 bg-card/90">
         <CardHeader className="pb-3">

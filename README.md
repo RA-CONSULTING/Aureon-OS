@@ -27,6 +27,7 @@ preserved unchanged at
 | Frontend repo map | [`frontend/src/components/RepoNavigationPanel.tsx`](frontend/src/components/RepoNavigationPanel.tsx) | Console tab mounted at `#repo-map` for browsing public repo and capability manifests. |
 | File-level repo index | [`docs/repo_navigation_index.json`](docs/repo_navigation_index.json) | Generated `git ls-files` index mirrored to the frontend public folder for searchable repo navigation. |
 | Directory organization tree | [`docs/repo_organization_tree.json`](docs/repo_organization_tree.json) | Generated hierarchy of tracked directories, parent paths, categories, zones, and capability IDs. |
+| Navigation readiness audit | [`docs/repo_navigation_readiness.json`](docs/repo_navigation_readiness.json) | Generated pass/fail audit for sitemap freshness, capability routing, system mapping, public mirrors, and SaaS blockers. |
 | SaaS integration manifest | [`docs/saas_integration_manifest.json`](docs/saas_integration_manifest.json) | Generated env-name, deployment-surface, Supabase auth, and production-gate contract for SaaS shells. |
 | SaaS integration readiness | [`docs/SAAS_INTEGRATION_READINESS.md`](docs/SAAS_INTEGRATION_READINESS.md) | End-user access matrix, env/config inventory, deploy surfaces, auth boundaries, and production gates. |
 | Supabase hardening review | [`docs/SUPABASE_HARDENING_REVIEW.md`](docs/SUPABASE_HARDENING_REVIEW.md) | Generated public/JWT Edge Function classification, blocker counts, and hardening gates. |
@@ -120,31 +121,35 @@ this front-door README.
    [`docs/repo_navigation_index.json`](docs/repo_navigation_index.json).
 10. Browse the generated directory organization tree:
    [`docs/repo_organization_tree.json`](docs/repo_organization_tree.json).
-11. Review the generated SaaS integration manifest:
+11. Review the generated navigation readiness audit:
+   [`docs/repo_navigation_readiness.json`](docs/repo_navigation_readiness.json).
+12. Review the generated SaaS integration manifest:
    [`docs/saas_integration_manifest.json`](docs/saas_integration_manifest.json).
-12. Review the Supabase hardening review and manifest:
+13. Review the Supabase hardening review and manifest:
    [`docs/SUPABASE_HARDENING_REVIEW.md`](docs/SUPABASE_HARDENING_REVIEW.md) and
    [`docs/supabase_hardening_manifest.json`](docs/supabase_hardening_manifest.json).
-13. Review SaaS integration readiness:
+14. Review SaaS integration readiness:
    [`docs/SAAS_INTEGRATION_READINESS.md`](docs/SAAS_INTEGRATION_READINESS.md).
-14. Review architecture and capability evidence:
+15. Review architecture and capability evidence:
    [`SYSTEM_OVERVIEW.md`](SYSTEM_OVERVIEW.md),
    [`CAPABILITIES.md`](CAPABILITIES.md), and
    [`DATA_FLOW.md`](DATA_FLOW.md).
-15. Review claims and validation:
+16. Review claims and validation:
    [`docs/CLAIMS_AND_EVIDENCE.md`](docs/CLAIMS_AND_EVIDENCE.md),
    [`AUDIT_SUMMARY.md`](AUDIT_SUMMARY.md), and
    [`LIVE_PROOF.md`](LIVE_PROOF.md).
-16. Regenerate and validate the navigation contract:
+17. Regenerate and validate the navigation contract:
    `python scripts/validation/generate_repo_navigation_index.py`, then
    `python scripts/validation/generate_repo_organization_tree.py`, then
+   `python scripts/validation/generate_capability_registry.py`, then
+   `python scripts/validation/generate_system_integration_map.py`, then
+   `python scripts/validation/generate_capability_registry.py`, then
    `python scripts/validation/generate_capability_access_matrix.py`, then
    `python scripts/validation/generate_saas_integration_manifest.py`, then
    `python scripts/validation/generate_supabase_hardening_manifest.py`, then
-   `python scripts/validation/generate_system_integration_map.py`, then
-   `python scripts/validation/generate_capability_registry.py`, then
+   `python scripts/validation/generate_repo_navigation_readiness.py`, then
    `python scripts/validation/validate_repo_navigation_contract.py`.
-17. Inspect preserved historical context:
+18. Inspect preserved historical context:
    [`docs/archive/README_legacy_20260712.md`](docs/archive/README_legacy_20260712.md).
 
 ## Preservation Note

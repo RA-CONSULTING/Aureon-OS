@@ -158,6 +158,7 @@ frontend/public/aureon_*.json
 !frontend/public/aureon_capability_access_matrix.json
 !frontend/public/aureon_repo_navigation_index.json
 !frontend/public/aureon_repo_organization_tree.json
+!frontend/public/aureon_repo_navigation_readiness.json
 !frontend/public/aureon_saas_integration_manifest.json
 !frontend/public/aureon_supabase_hardening_manifest.json
 !frontend/public/aureon_system_integration_map.json

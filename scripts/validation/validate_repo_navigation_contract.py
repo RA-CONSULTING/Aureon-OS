@@ -18,6 +18,7 @@ DOCS_CAPABILITY_ACCESS_MATRIX = REPO_ROOT / "docs" / "capability_access_matrix.j
 DOCS_CAPABILITY_REGISTRY = REPO_ROOT / "docs" / "capability_registry.json"
 DOCS_NAVIGATION_INDEX = REPO_ROOT / "docs" / "repo_navigation_index.json"
 DOCS_ORGANIZATION_TREE = REPO_ROOT / "docs" / "repo_organization_tree.json"
+DOCS_NAVIGATION_READINESS = REPO_ROOT / "docs" / "repo_navigation_readiness.json"
 DOCS_SYSTEM_INTEGRATION = REPO_ROOT / "docs" / "system_integration_map.json"
 DOCS_SAAS_MANIFEST = REPO_ROOT / "docs" / "saas_integration_manifest.json"
 DOCS_SUPABASE_HARDENING = REPO_ROOT / "docs" / "supabase_hardening_manifest.json"
@@ -27,6 +28,7 @@ PUBLIC_CAPABILITY_ACCESS_MATRIX = REPO_ROOT / "frontend" / "public" / "aureon_ca
 PUBLIC_CAPABILITY_REGISTRY = REPO_ROOT / "frontend" / "public" / "aureon_capability_registry.json"
 PUBLIC_NAVIGATION_INDEX = REPO_ROOT / "frontend" / "public" / "aureon_repo_navigation_index.json"
 PUBLIC_ORGANIZATION_TREE = REPO_ROOT / "frontend" / "public" / "aureon_repo_organization_tree.json"
+PUBLIC_NAVIGATION_READINESS = REPO_ROOT / "frontend" / "public" / "aureon_repo_navigation_readiness.json"
 PUBLIC_SYSTEM_INTEGRATION = REPO_ROOT / "frontend" / "public" / "aureon_system_integration_map.json"
 PUBLIC_SAAS_MANIFEST = REPO_ROOT / "frontend" / "public" / "aureon_saas_integration_manifest.json"
 PUBLIC_SUPABASE_HARDENING = REPO_ROOT / "frontend" / "public" / "aureon_supabase_hardening_manifest.json"
@@ -57,6 +59,7 @@ REQUIRED_PATHS = [
     "docs/capability_registry.json",
     "docs/repo_navigation_index.json",
     "docs/repo_organization_tree.json",
+    "docs/repo_navigation_readiness.json",
     "docs/system_integration_map.json",
     "docs/saas_integration_manifest.json",
     "docs/SUPABASE_HARDENING_REVIEW.md",
@@ -73,6 +76,7 @@ REQUIRED_PATHS = [
     "frontend/public/aureon_capability_registry.json",
     "frontend/public/aureon_repo_navigation_index.json",
     "frontend/public/aureon_repo_organization_tree.json",
+    "frontend/public/aureon_repo_navigation_readiness.json",
     "frontend/public/aureon_system_integration_map.json",
     "frontend/public/aureon_saas_integration_manifest.json",
     "frontend/public/aureon_supabase_hardening_manifest.json",
@@ -84,6 +88,7 @@ REQUIRED_PATHS = [
     "scripts/validation/generate_capability_access_matrix.py",
     "scripts/validation/generate_repo_navigation_index.py",
     "scripts/validation/generate_repo_organization_tree.py",
+    "scripts/validation/generate_repo_navigation_readiness.py",
     "scripts/validation/generate_capability_registry.py",
     "scripts/validation/generate_system_integration_map.py",
     "scripts/validation/generate_saas_integration_manifest.py",
@@ -321,6 +326,7 @@ def main() -> int:
     docs_capability_registry = load_json(DOCS_CAPABILITY_REGISTRY)
     docs_navigation_index = load_json(DOCS_NAVIGATION_INDEX)
     docs_organization_tree = load_json(DOCS_ORGANIZATION_TREE)
+    docs_navigation_readiness = load_json(DOCS_NAVIGATION_READINESS)
     docs_system_integration = load_json(DOCS_SYSTEM_INTEGRATION)
     docs_saas_manifest = load_json(DOCS_SAAS_MANIFEST)
     docs_supabase_hardening = load_json(DOCS_SUPABASE_HARDENING)
@@ -330,6 +336,7 @@ def main() -> int:
     public_capability_registry = load_json(PUBLIC_CAPABILITY_REGISTRY)
     public_navigation_index = load_json(PUBLIC_NAVIGATION_INDEX)
     public_organization_tree = load_json(PUBLIC_ORGANIZATION_TREE)
+    public_navigation_readiness = load_json(PUBLIC_NAVIGATION_READINESS)
     public_system_integration = load_json(PUBLIC_SYSTEM_INTEGRATION)
     public_saas_manifest = load_json(PUBLIC_SAAS_MANIFEST)
     public_supabase_hardening = load_json(PUBLIC_SUPABASE_HARDENING)
@@ -454,6 +461,22 @@ def main() -> int:
         "frontend public sitemap does not expose the repo organization tree",
     )
     expect(
+        docs_repo.get("end_user_access", {}).get("repo_navigation_readiness") == "docs/repo_navigation_readiness.json",
+        failures,
+        "repo sitemap does not expose the docs repo navigation readiness audit",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("frontend_public_repo_navigation_readiness")
+        == "frontend/public/aureon_repo_navigation_readiness.json",
+        failures,
+        "repo sitemap does not expose the public repo navigation readiness audit",
+    )
+    expect(
+        public_repo.get("repo_navigation_readiness") == "frontend/public/aureon_repo_navigation_readiness.json",
+        failures,
+        "frontend public sitemap does not expose the repo navigation readiness audit",
+    )
+    expect(
         docs_repo.get("end_user_access", {}).get("system_integration_map") == "docs/system_integration_map.json",
         failures,
         "repo sitemap does not expose the docs system integration map",
@@ -522,6 +545,7 @@ def main() -> int:
     expect(docs_capability_registry == public_capability_registry, failures, "capability registry docs/public mirrors differ")
     expect(docs_navigation_index == public_navigation_index, failures, "repo navigation index docs/public mirrors differ")
     expect(docs_organization_tree == public_organization_tree, failures, "repo organization tree docs/public mirrors differ")
+    expect(docs_navigation_readiness == public_navigation_readiness, failures, "repo navigation readiness docs/public mirrors differ")
     expect(docs_system_integration == public_system_integration, failures, "system integration map docs/public mirrors differ")
     capability_registry_rows = docs_capability_registry.get("capabilities", []) if isinstance(docs_capability_registry, dict) else []
     expected_capability_rows = parse_capabilities_table_count()
@@ -603,9 +627,15 @@ def main() -> int:
     )
     expect(len(matrix_rows) == len(capability_registry_rows), failures, "capability access matrix rows differ from capability registry")
     expect(matrix_ids == registry_ids, failures, "capability access matrix does not cover every registry capability")
+    expect(
+        matrix_summary.get("system_bound_capability_count") == len(capability_registry_rows),
+        failures,
+        "capability access matrix does not bind every current capability to related systems",
+    )
     for row in matrix_rows:
         capability_id = row.get("id", "[missing-id]") if isinstance(row, dict) else "[invalid-row]"
         expect(bool(row.get("access_routes")) if isinstance(row, dict) else False, failures, f"capability access matrix {capability_id} has no access routes")
+        expect(bool(row.get("related_systems")) if isinstance(row, dict) else False, failures, f"capability access matrix {capability_id} has no related systems")
         expect(bool(row.get("end_user_start_points")) if isinstance(row, dict) else False, failures, f"capability access matrix {capability_id} has no end-user start points")
         expect(bool(row.get("safety_gates")) if isinstance(row, dict) else False, failures, f"capability access matrix {capability_id} has no safety gates")
     expect(
@@ -812,6 +842,69 @@ def main() -> int:
         "Supabase hardening manifest public contract must not contain secrets",
     )
 
+    readiness_summary = docs_navigation_readiness.get("summary", {}) if isinstance(docs_navigation_readiness, dict) else {}
+    readiness_gates = docs_navigation_readiness.get("gates", []) if isinstance(docs_navigation_readiness, dict) else []
+    expect(
+        readiness_summary.get("readiness_status") == "pass",
+        failures,
+        "repo navigation readiness audit is not passing",
+    )
+    expect(
+        readiness_summary.get("failed_gate_count") == 0,
+        failures,
+        "repo navigation readiness audit reports failed gates",
+    )
+    expect(
+        readiness_summary.get("tracked_file_count") == tracked_total,
+        failures,
+        "repo navigation readiness tracked_file_count is stale",
+    )
+    expect(
+        readiness_summary.get("directory_count") == actual_directory_count,
+        failures,
+        "repo navigation readiness directory_count is stale",
+    )
+    expect(
+        readiness_summary.get("current_capability_count") == len(capability_registry_rows),
+        failures,
+        "repo navigation readiness current_capability_count differs from capability registry",
+    )
+    expect(
+        readiness_summary.get("routed_capability_count") == len(capability_registry_rows),
+        failures,
+        "repo navigation readiness routed_capability_count differs from capability registry",
+    )
+    expect(
+        readiness_summary.get("system_mapped_capability_count") == len(capability_registry_rows),
+        failures,
+        "repo navigation readiness system_mapped_capability_count differs from capability registry",
+    )
+    expect(
+        readiness_summary.get("unmapped_capability_count") == 0,
+        failures,
+        "repo navigation readiness reports unmapped capabilities",
+    )
+    expect(
+        readiness_summary.get("supabase_production_blocker_count") == 0,
+        failures,
+        "repo navigation readiness reports Supabase production blockers",
+    )
+    expect(
+        readiness_summary.get("gate_count") == len(readiness_gates),
+        failures,
+        "repo navigation readiness gate_count differs from gate rows",
+    )
+    expect(
+        docs_navigation_readiness.get("public_contract", {}).get("contains_file_contents") is False,
+        failures,
+        "repo navigation readiness public contract must not contain file contents",
+    )
+    expect(
+        docs_navigation_readiness.get("public_contract", {}).get("contains_secrets") is False,
+        failures,
+        "repo navigation readiness public contract must not contain secrets",
+    )
+
     autonomous_public_manifests: list[tuple[str, object]] = []
     for manifest_name in AUTONOMOUS_FRONTEND_MANIFESTS:
         docs_label = f"docs/audits/{manifest_name}"
@@ -838,6 +931,7 @@ def main() -> int:
         ("frontend/public/aureon_capability_registry.json", public_capability_registry),
         ("frontend/public/aureon_repo_navigation_index.json", public_navigation_index),
         ("frontend/public/aureon_repo_organization_tree.json", public_organization_tree),
+        ("frontend/public/aureon_repo_navigation_readiness.json", public_navigation_readiness),
         ("frontend/public/aureon_system_integration_map.json", public_system_integration),
         ("frontend/public/aureon_saas_integration_manifest.json", public_saas_manifest),
         ("frontend/public/aureon_supabase_hardening_manifest.json", public_supabase_hardening),
@@ -860,6 +954,7 @@ def main() -> int:
     print(f"OK capability_access_matrix_rows={len(matrix_rows)}")
     print(f"OK repo_navigation_index_entries={len(navigation_entries)}")
     print(f"OK repo_organization_directories={len(organization_directories)}")
+    print(f"OK repo_navigation_readiness={readiness_summary.get('readiness_status')}")
     print(f"OK system_integration_systems={len(system_rows)}")
     print(f"OK saas_env_variable_count={len(env_names)}")
     print(f"OK supabase_auth_counts={supabase_counts}")
