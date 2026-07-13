@@ -57,6 +57,53 @@ interface AccessMapManifest {
   capabilities: CapabilityRoute[];
 }
 
+interface CapabilityAccessMatrixSystem {
+  path: string;
+  category: string;
+  readiness_status: string;
+  access_mode: string;
+  entrypoints: string[];
+  public_artifacts: string[];
+  validation_refs: string[];
+  safety_gate: string;
+}
+
+interface CapabilityAccessMatrixRow {
+  id: string;
+  label: string;
+  description: string;
+  readiness_status: string;
+  access_routes: CapabilityRoute[];
+  related_systems: CapabilityAccessMatrixSystem[];
+  end_user_start_points: string[];
+  runtime_or_api_surfaces: string[];
+  implementation_surfaces: {
+    resolved_paths: string[];
+    runtime_refs: string[];
+    generated_refs: string[];
+    code_symbol_refs: Array<{ ref: string; paths: string[] }>;
+    unresolved_refs: string[];
+    public_artifacts: string[];
+  };
+  safety_gates: string[];
+}
+
+interface CapabilityAccessMatrixManifest {
+  name: string;
+  snapshot_date: string;
+  frontend_public_mirror: string;
+  summary: {
+    capability_count: number;
+    routed_capability_count: number;
+    system_bound_capability_count: number;
+    public_artifact_capability_count: number;
+    unresolved_capability_count: number;
+    route_binding_count: number;
+    access_route_count: number;
+  };
+  capabilities: CapabilityAccessMatrixRow[];
+}
+
 interface CapabilityRegistryRow {
   id: string;
   label: string;
@@ -295,6 +342,7 @@ function ContractPill({ label, clear }: { label: string; clear: boolean }) {
 export function RepoNavigationPanel() {
   const [repoMap, setRepoMap] = useState<RepoSitemapManifest | null>(null);
   const [accessMap, setAccessMap] = useState<AccessMapManifest | null>(null);
+  const [capabilityAccessMatrix, setCapabilityAccessMatrix] = useState<CapabilityAccessMatrixManifest | null>(null);
   const [capabilityRegistry, setCapabilityRegistry] = useState<CapabilityRegistryManifest | null>(null);
   const [navigationIndex, setNavigationIndex] = useState<NavigationIndexManifest | null>(null);
   const [organizationTree, setOrganizationTree] = useState<OrganizationTreeManifest | null>(null);
@@ -312,6 +360,7 @@ export function RepoNavigationPanel() {
         const [
           repoManifest,
           accessManifest,
+          capabilityAccessMatrixManifest,
           capabilityRegistryManifest,
           indexManifest,
           organizationTreeManifest,
@@ -321,6 +370,7 @@ export function RepoNavigationPanel() {
         ] = await Promise.all([
           loadJson<RepoSitemapManifest>("/aureon_repo_sitemap.json", controller.signal),
           loadJson<AccessMapManifest>("/aureon_end_user_access_map.json", controller.signal),
+          loadJson<CapabilityAccessMatrixManifest>("/aureon_capability_access_matrix.json", controller.signal),
           loadJson<CapabilityRegistryManifest>("/aureon_capability_registry.json", controller.signal),
           loadJson<NavigationIndexManifest>("/aureon_repo_navigation_index.json", controller.signal),
           loadJson<OrganizationTreeManifest>("/aureon_repo_organization_tree.json", controller.signal),
@@ -340,6 +390,7 @@ export function RepoNavigationPanel() {
         );
         setRepoMap(repoManifest);
         setAccessMap(accessManifest);
+        setCapabilityAccessMatrix(capabilityAccessMatrixManifest);
         setCapabilityRegistry(capabilityRegistryManifest);
         setNavigationIndex(indexManifest);
         setOrganizationTree(organizationTreeManifest);
@@ -381,6 +432,45 @@ export function RepoNavigationPanel() {
       ),
     );
   }, [accessMap, query]);
+
+  const filteredCapabilityAccessRows = useMemo(() => {
+    const capabilities = capabilityAccessMatrix?.capabilities || [];
+    return capabilities
+      .filter((capability) =>
+        matchesQuery(
+          [
+            capability.id,
+            capability.label,
+            capability.description,
+            capability.readiness_status,
+            ...capability.end_user_start_points,
+            ...capability.runtime_or_api_surfaces,
+            ...capability.safety_gates,
+            ...capability.access_routes.flatMap((route) => [
+              route.id,
+              route.label,
+              route.user_action,
+              route.safety_gate,
+              ...route.primary_docs,
+              ...route.related_systems,
+              ...route.runtime_or_api_surface,
+            ]),
+            ...capability.related_systems.flatMap((system) => [
+              system.path,
+              system.category,
+              system.readiness_status,
+              system.access_mode,
+              system.safety_gate,
+              ...system.entrypoints,
+              ...system.public_artifacts,
+              ...system.validation_refs,
+            ]),
+          ],
+          query,
+        ),
+      )
+      .slice(0, 12);
+  }, [capabilityAccessMatrix, query]);
 
   const indexedEntries = navigationIndex?.entries || [];
   const filteredEntries = useMemo(() => {
@@ -500,8 +590,10 @@ export function RepoNavigationPanel() {
                 <div className="mt-1 text-2xl font-semibold">{(organizationTree?.directory_count || 0).toLocaleString()}</div>
               </div>
               <div className="rounded-md border border-border/50 bg-background/50 p-3">
-                <div className="text-[11px] uppercase text-muted-foreground">Capabilities</div>
-                <div className="mt-1 text-2xl font-semibold">{(capabilityRegistry?.summary?.capability_count || 0).toLocaleString()}</div>
+                <div className="text-[11px] uppercase text-muted-foreground">Routed capabilities</div>
+                <div className="mt-1 text-2xl font-semibold">
+                  {(capabilityAccessMatrix?.summary?.routed_capability_count || capabilityRegistry?.summary?.capability_count || 0).toLocaleString()}
+                </div>
               </div>
               <div className="rounded-md border border-border/50 bg-background/50 p-3">
                 <div className="text-[11px] uppercase text-muted-foreground">Systems mapped</div>
@@ -555,6 +647,10 @@ export function RepoNavigationPanel() {
                 <FileJson className="h-4 w-4" />
                 /aureon_end_user_access_map.json
               </a>
+              <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href="/aureon_capability_access_matrix.json" target="_blank" rel="noreferrer">
+                <FileJson className="h-4 w-4" />
+                /aureon_capability_access_matrix.json
+              </a>
               <a className="inline-flex items-center gap-2 text-cyan-100 hover:text-cyan-50" href={publicUrl("frontend/public/aureon_capability_registry.json")} target="_blank" rel="noreferrer">
                 <FileJson className="h-4 w-4" />
                 /aureon_capability_registry.json
@@ -600,6 +696,90 @@ export function RepoNavigationPanel() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-border/60 bg-card/90">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <BookOpen className="h-5 w-5 text-emerald-200" />
+            Capability Route Matrix
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">Routed capabilities</div>
+              <div className="mt-1 text-2xl font-semibold">{(capabilityAccessMatrix?.summary?.routed_capability_count || 0).toLocaleString()}</div>
+            </div>
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">Route bindings</div>
+              <div className="mt-1 text-2xl font-semibold">{(capabilityAccessMatrix?.summary?.route_binding_count || 0).toLocaleString()}</div>
+            </div>
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">System bound</div>
+              <div className="mt-1 text-2xl font-semibold">{(capabilityAccessMatrix?.summary?.system_bound_capability_count || 0).toLocaleString()}</div>
+            </div>
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">Public artifacts</div>
+              <div className="mt-1 text-2xl font-semibold">{(capabilityAccessMatrix?.summary?.public_artifact_capability_count || 0).toLocaleString()}</div>
+            </div>
+            <div className="rounded-md border border-border/50 bg-background/45 p-3">
+              <div className="text-[11px] uppercase text-muted-foreground">Review needed</div>
+              <div className="mt-1 text-2xl font-semibold">{(capabilityAccessMatrix?.summary?.unresolved_capability_count || 0).toLocaleString()}</div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-2">
+            {filteredCapabilityAccessRows.map((capability) => (
+              <div key={capability.id} className="rounded-md border border-border/50 bg-background/45 p-3">
+                <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                  <div className="min-w-0">
+                    <div className="font-medium">{capability.label}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{capability.description}</div>
+                  </div>
+                  <Badge variant="outline" className="w-fit max-w-full whitespace-normal border-emerald-500/30 bg-emerald-500/10 text-[10px] leading-snug text-emerald-100">
+                    {capability.readiness_status}
+                  </Badge>
+                </div>
+                <div className="mt-3 space-y-2">
+                  {capability.access_routes.slice(0, 3).map((route) => (
+                    <div key={`${capability.id}-route-${route.id}`} className="rounded-md border border-border/40 bg-background/40 p-2">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="text-sm font-medium">{route.label}</div>
+                        <Badge variant="secondary" className="w-fit font-mono text-[10px]">
+                          {route.id}
+                        </Badge>
+                      </div>
+                      <div className="mt-2 text-xs text-muted-foreground">{route.user_action}</div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {route.runtime_or_api_surface.slice(0, 3).map((surface) => (
+                          <Badge key={`${capability.id}-${route.id}-${surface}`} variant="outline" className="max-w-full whitespace-normal font-mono text-[10px] leading-snug">
+                            {surface}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {capability.end_user_start_points.slice(0, 4).map((path) => (
+                    <PathLink key={`${capability.id}-start-${path}`} path={path} />
+                  ))}
+                  {capability.related_systems.slice(0, 3).map((system) => (
+                    <Badge key={`${capability.id}-system-${system.path}`} variant="secondary" className="max-w-full whitespace-normal font-mono text-[10px] leading-snug">
+                      {system.path}
+                    </Badge>
+                  ))}
+                </div>
+                {capability.safety_gates.length ? (
+                  <div className="mt-3 rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-100">
+                    {capability.safety_gates.slice(0, 2).join(" / ")}
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {autonomousManifests.length ? (
         <Card className="border-border/60 bg-card/90">

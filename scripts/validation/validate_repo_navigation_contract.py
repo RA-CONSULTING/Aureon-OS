@@ -14,6 +14,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 DOCS_REPO_SITEMAP = REPO_ROOT / "docs" / "repo_sitemap.json"
 DOCS_ACCESS_MAP = REPO_ROOT / "docs" / "end_user_access_map.json"
+DOCS_CAPABILITY_ACCESS_MATRIX = REPO_ROOT / "docs" / "capability_access_matrix.json"
 DOCS_CAPABILITY_REGISTRY = REPO_ROOT / "docs" / "capability_registry.json"
 DOCS_NAVIGATION_INDEX = REPO_ROOT / "docs" / "repo_navigation_index.json"
 DOCS_ORGANIZATION_TREE = REPO_ROOT / "docs" / "repo_organization_tree.json"
@@ -22,6 +23,7 @@ DOCS_SAAS_MANIFEST = REPO_ROOT / "docs" / "saas_integration_manifest.json"
 DOCS_SUPABASE_HARDENING = REPO_ROOT / "docs" / "supabase_hardening_manifest.json"
 PUBLIC_REPO_SITEMAP = REPO_ROOT / "frontend" / "public" / "aureon_repo_sitemap.json"
 PUBLIC_ACCESS_MAP = REPO_ROOT / "frontend" / "public" / "aureon_end_user_access_map.json"
+PUBLIC_CAPABILITY_ACCESS_MATRIX = REPO_ROOT / "frontend" / "public" / "aureon_capability_access_matrix.json"
 PUBLIC_CAPABILITY_REGISTRY = REPO_ROOT / "frontend" / "public" / "aureon_capability_registry.json"
 PUBLIC_NAVIGATION_INDEX = REPO_ROOT / "frontend" / "public" / "aureon_repo_navigation_index.json"
 PUBLIC_ORGANIZATION_TREE = REPO_ROOT / "frontend" / "public" / "aureon_repo_organization_tree.json"
@@ -51,6 +53,7 @@ REQUIRED_PATHS = [
     "docs/investor/TERMINOLOGY.md",
     "docs/repo_sitemap.json",
     "docs/end_user_access_map.json",
+    "docs/capability_access_matrix.json",
     "docs/capability_registry.json",
     "docs/repo_navigation_index.json",
     "docs/repo_organization_tree.json",
@@ -66,6 +69,7 @@ REQUIRED_PATHS = [
     "frontend/src/components/RepoNavigationPanel.tsx",
     "frontend/public/aureon_repo_sitemap.json",
     "frontend/public/aureon_end_user_access_map.json",
+    "frontend/public/aureon_capability_access_matrix.json",
     "frontend/public/aureon_capability_registry.json",
     "frontend/public/aureon_repo_navigation_index.json",
     "frontend/public/aureon_repo_organization_tree.json",
@@ -77,6 +81,7 @@ REQUIRED_PATHS = [
     "frontend/public/aureon_frontend_evolution_queue.json",
     "frontend/public/aureon_organism_runtime_status.json",
     "frontend/public/aureon_autonomous_capability_switchboard.json",
+    "scripts/validation/generate_capability_access_matrix.py",
     "scripts/validation/generate_repo_navigation_index.py",
     "scripts/validation/generate_repo_organization_tree.py",
     "scripts/validation/generate_capability_registry.py",
@@ -312,6 +317,7 @@ def main() -> int:
 
     docs_repo = load_json(DOCS_REPO_SITEMAP)
     docs_access = load_json(DOCS_ACCESS_MAP)
+    docs_capability_access_matrix = load_json(DOCS_CAPABILITY_ACCESS_MATRIX)
     docs_capability_registry = load_json(DOCS_CAPABILITY_REGISTRY)
     docs_navigation_index = load_json(DOCS_NAVIGATION_INDEX)
     docs_organization_tree = load_json(DOCS_ORGANIZATION_TREE)
@@ -320,6 +326,7 @@ def main() -> int:
     docs_supabase_hardening = load_json(DOCS_SUPABASE_HARDENING)
     public_repo = load_json(PUBLIC_REPO_SITEMAP)
     public_access = load_json(PUBLIC_ACCESS_MAP)
+    public_capability_access_matrix = load_json(PUBLIC_CAPABILITY_ACCESS_MATRIX)
     public_capability_registry = load_json(PUBLIC_CAPABILITY_REGISTRY)
     public_navigation_index = load_json(PUBLIC_NAVIGATION_INDEX)
     public_organization_tree = load_json(PUBLIC_ORGANIZATION_TREE)
@@ -387,6 +394,22 @@ def main() -> int:
         docs_repo.get("end_user_access", {}).get("capability_registry") == "docs/capability_registry.json",
         failures,
         "repo sitemap does not expose the docs capability registry",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("capability_access_matrix") == "docs/capability_access_matrix.json",
+        failures,
+        "repo sitemap does not expose the docs capability access matrix",
+    )
+    expect(
+        docs_repo.get("end_user_access", {}).get("frontend_public_capability_access_matrix")
+        == "frontend/public/aureon_capability_access_matrix.json",
+        failures,
+        "repo sitemap does not expose the public capability access matrix",
+    )
+    expect(
+        public_repo.get("capability_access_matrix") == "frontend/public/aureon_capability_access_matrix.json",
+        failures,
+        "frontend public sitemap does not expose the capability access matrix",
     )
     expect(
         docs_repo.get("end_user_access", {}).get("frontend_public_capability_registry")
@@ -495,6 +518,7 @@ def main() -> int:
         failures,
         "frontend public sitemap does not expose the autonomous frontend manifests",
     )
+    expect(docs_capability_access_matrix == public_capability_access_matrix, failures, "capability access matrix docs/public mirrors differ")
     expect(docs_capability_registry == public_capability_registry, failures, "capability registry docs/public mirrors differ")
     expect(docs_navigation_index == public_navigation_index, failures, "repo navigation index docs/public mirrors differ")
     expect(docs_organization_tree == public_organization_tree, failures, "repo organization tree docs/public mirrors differ")
@@ -567,6 +591,32 @@ def main() -> int:
         docs_capability_registry.get("public_contract", {}).get("contains_secrets") is False,
         failures,
         "capability registry public contract must not contain secrets",
+    )
+    matrix_rows = docs_capability_access_matrix.get("capabilities", []) if isinstance(docs_capability_access_matrix, dict) else []
+    matrix_summary = docs_capability_access_matrix.get("summary", {}) if isinstance(docs_capability_access_matrix, dict) else {}
+    matrix_ids = {row.get("id") for row in matrix_rows if isinstance(row, dict)}
+    registry_ids = {row.get("id") for row in capability_registry_rows if isinstance(row, dict)}
+    expect(
+        matrix_summary.get("capability_count") == len(capability_registry_rows),
+        failures,
+        "capability access matrix capability_count differs from capability registry",
+    )
+    expect(len(matrix_rows) == len(capability_registry_rows), failures, "capability access matrix rows differ from capability registry")
+    expect(matrix_ids == registry_ids, failures, "capability access matrix does not cover every registry capability")
+    for row in matrix_rows:
+        capability_id = row.get("id", "[missing-id]") if isinstance(row, dict) else "[invalid-row]"
+        expect(bool(row.get("access_routes")) if isinstance(row, dict) else False, failures, f"capability access matrix {capability_id} has no access routes")
+        expect(bool(row.get("end_user_start_points")) if isinstance(row, dict) else False, failures, f"capability access matrix {capability_id} has no end-user start points")
+        expect(bool(row.get("safety_gates")) if isinstance(row, dict) else False, failures, f"capability access matrix {capability_id} has no safety gates")
+    expect(
+        docs_capability_access_matrix.get("public_contract", {}).get("contains_file_contents") is False,
+        failures,
+        "capability access matrix public contract must not contain file contents",
+    )
+    expect(
+        docs_capability_access_matrix.get("public_contract", {}).get("contains_secrets") is False,
+        failures,
+        "capability access matrix public contract must not contain secrets",
     )
     navigation_entries = docs_navigation_index.get("entries", [])
     expect(len(navigation_entries) == tracked_total, failures, "repo navigation index entry count differs from git ls-files")
@@ -724,6 +774,7 @@ def main() -> int:
     for label, manifest in (
         ("frontend/public/aureon_repo_sitemap.json", public_repo),
         ("frontend/public/aureon_end_user_access_map.json", public_access),
+        ("frontend/public/aureon_capability_access_matrix.json", public_capability_access_matrix),
         ("frontend/public/aureon_capability_registry.json", public_capability_registry),
         ("frontend/public/aureon_repo_navigation_index.json", public_navigation_index),
         ("frontend/public/aureon_repo_organization_tree.json", public_organization_tree),
@@ -746,6 +797,7 @@ def main() -> int:
     print(f"OK tracked_file_count={tracked_total}")
     print(f"OK capability_count={len(docs_capabilities)}")
     print(f"OK current_capability_registry_count={len(capability_registry_rows)}")
+    print(f"OK capability_access_matrix_rows={len(matrix_rows)}")
     print(f"OK repo_navigation_index_entries={len(navigation_entries)}")
     print(f"OK repo_organization_directories={len(organization_directories)}")
     print(f"OK system_integration_systems={len(system_rows)}")

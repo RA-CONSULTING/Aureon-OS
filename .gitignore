@@ -155,6 +155,7 @@ frontend/public/aureon_*.json
 !frontend/public/aureon_repo_sitemap.json
 !frontend/public/aureon_end_user_access_map.json
 !frontend/public/aureon_capability_registry.json
+!frontend/public/aureon_capability_access_matrix.json
 !frontend/public/aureon_repo_navigation_index.json
 !frontend/public/aureon_repo_organization_tree.json
 !frontend/public/aureon_saas_integration_manifest.json

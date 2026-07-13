@@ -16,6 +16,7 @@ Master table of contents for all project documentation.
 | Frontend repository map | [Repo Navigation Panel](../frontend/src/components/RepoNavigationPanel.tsx) | Console tab mounted at `#repo-map` for the public repo sitemap and end-user access map |
 | File-level repo index | [Repo Navigation Index](repo_navigation_index.json) | Generated `git ls-files` index with categories, zones, capability IDs, and frontend public mirror |
 | Directory organization tree | [Repo Organization Tree](repo_organization_tree.json) | Generated tracked-directory hierarchy with parent paths, categories, zones, capability IDs, and frontend public mirror |
+| Capability access matrix | [Capability Access Matrix](capability_access_matrix.json) | Generated route matrix binding every current capability to end-user start points, systems, runtime/API surfaces, and safety gates |
 | Capability registry manifest | [Capability Registry Manifest](capability_registry.json) | Generated capability contract mirrored to the frontend public folder |
 | System integration manifest | [System Integration Manifest](system_integration_map.json) | Generated system-to-capability integration contract mirrored to the frontend public folder |
 | SaaS integrators | [SaaS Integration Readiness](SAAS_INTEGRATION_READINESS.md) | End-user access matrix, env/config inventory, deploy surfaces, auth boundaries, and production gates |
@@ -37,6 +38,7 @@ Master table of contents for all project documentation.
 | [Repo Navigation Panel](../frontend/src/components/RepoNavigationPanel.tsx) | End-user console surface for the public repo map, capability routes, and navigation contract |
 | [Repo Navigation Index](repo_navigation_index.json) | File-level repo index generated from `git ls-files` for searchable navigation |
 | [Repo Organization Tree](repo_organization_tree.json) | Directory hierarchy generated from `git ls-files` for structural navigation |
+| [Capability Access Matrix](capability_access_matrix.json) | End-user route matrix for every current capability in `CAPABILITIES.md` |
 | [Capability Registry Manifest](capability_registry.json) | Machine-readable capability registry used by the frontend repo map |
 | [System Integration Manifest](system_integration_map.json) | Machine-readable system integration contract generated from repo maps |
 | [SaaS Integration Readiness](SAAS_INTEGRATION_READINESS.md) | End-user access matrix, env/config inventory, deploy surfaces, auth boundaries, and production gates |

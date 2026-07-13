@@ -22,6 +22,7 @@ preserved unchanged at
 | Repo-wide sitemap | [`docs/REPO_SITEMAP.md`](docs/REPO_SITEMAP.md) | Whole-repo organization, capability groups, related systems, and SaaS integration surfaces. |
 | End-user access map | [`docs/END_USER_ACCESS_MAP.md`](docs/END_USER_ACCESS_MAP.md) | Task-based access to capabilities, docs, related systems, runtime surfaces, and safety gates. |
 | System integration map | [`docs/SYSTEM_INTEGRATION_MAP.md`](docs/SYSTEM_INTEGRATION_MAP.md) | System-by-system binding of capabilities, entrypoints, public artifacts, validation references, and safety gates. |
+| Capability access matrix | [`docs/capability_access_matrix.json`](docs/capability_access_matrix.json) | Generated end-user route matrix for every current capability, including start points, systems, runtime/API surfaces, and safety gates. |
 | Capability registry | [`docs/CAPABILITY_REGISTRY.md`](docs/CAPABILITY_REGISTRY.md) | Generated registry of current capabilities from `CAPABILITIES.md`, resolved surfaces, runtime refs, systems, and access routes. |
 | Frontend repo map | [`frontend/src/components/RepoNavigationPanel.tsx`](frontend/src/components/RepoNavigationPanel.tsx) | Console tab mounted at `#repo-map` for browsing public repo and capability manifests. |
 | File-level repo index | [`docs/repo_navigation_index.json`](docs/repo_navigation_index.json) | Generated `git ls-files` index mirrored to the frontend public folder for searchable repo navigation. |
@@ -111,36 +112,39 @@ this front-door README.
    [`docs/SYSTEM_INTEGRATION_MAP.md`](docs/SYSTEM_INTEGRATION_MAP.md).
 6. Use the capability registry:
    [`docs/CAPABILITY_REGISTRY.md`](docs/CAPABILITY_REGISTRY.md).
-7. Use the frontend repo map at `#repo-map`:
+7. Use the capability access matrix:
+   [`docs/capability_access_matrix.json`](docs/capability_access_matrix.json).
+8. Use the frontend repo map at `#repo-map`:
    [`frontend/src/components/RepoNavigationPanel.tsx`](frontend/src/components/RepoNavigationPanel.tsx).
-8. Search the file-level repo index:
+9. Search the file-level repo index:
    [`docs/repo_navigation_index.json`](docs/repo_navigation_index.json).
-9. Browse the generated directory organization tree:
+10. Browse the generated directory organization tree:
    [`docs/repo_organization_tree.json`](docs/repo_organization_tree.json).
-10. Review the generated SaaS integration manifest:
+11. Review the generated SaaS integration manifest:
    [`docs/saas_integration_manifest.json`](docs/saas_integration_manifest.json).
-11. Review the Supabase hardening review and manifest:
+12. Review the Supabase hardening review and manifest:
    [`docs/SUPABASE_HARDENING_REVIEW.md`](docs/SUPABASE_HARDENING_REVIEW.md) and
    [`docs/supabase_hardening_manifest.json`](docs/supabase_hardening_manifest.json).
-12. Review SaaS integration readiness:
+13. Review SaaS integration readiness:
    [`docs/SAAS_INTEGRATION_READINESS.md`](docs/SAAS_INTEGRATION_READINESS.md).
-13. Review architecture and capability evidence:
+14. Review architecture and capability evidence:
    [`SYSTEM_OVERVIEW.md`](SYSTEM_OVERVIEW.md),
    [`CAPABILITIES.md`](CAPABILITIES.md), and
    [`DATA_FLOW.md`](DATA_FLOW.md).
-14. Review claims and validation:
+15. Review claims and validation:
    [`docs/CLAIMS_AND_EVIDENCE.md`](docs/CLAIMS_AND_EVIDENCE.md),
    [`AUDIT_SUMMARY.md`](AUDIT_SUMMARY.md), and
    [`LIVE_PROOF.md`](LIVE_PROOF.md).
-15. Regenerate and validate the navigation contract:
+16. Regenerate and validate the navigation contract:
    `python scripts/validation/generate_repo_navigation_index.py`, then
    `python scripts/validation/generate_repo_organization_tree.py`, then
+   `python scripts/validation/generate_capability_access_matrix.py`, then
    `python scripts/validation/generate_saas_integration_manifest.py`, then
    `python scripts/validation/generate_supabase_hardening_manifest.py`, then
    `python scripts/validation/generate_system_integration_map.py`, then
    `python scripts/validation/generate_capability_registry.py`, then
    `python scripts/validation/validate_repo_navigation_contract.py`.
-16. Inspect preserved historical context:
+17. Inspect preserved historical context:
    [`docs/archive/README_legacy_20260712.md`](docs/archive/README_legacy_20260712.md).
 
 ## Preservation Note
