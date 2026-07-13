@@ -21,7 +21,7 @@ without a cycle.
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import List, Tuple
 
 
@@ -154,7 +154,19 @@ DEFAULT_REGISTRY: Tuple[ModelSpec, ...] = (
 
 
 def default_registry() -> List[ModelSpec]:
-    return list(DEFAULT_REGISTRY)
+    specs = list(DEFAULT_REGISTRY)
+    # Turn the self-hosted / BYO-endpoint line (Ollama, vLLM, llama.cpp, Ollama
+    # Cloud) live whenever a base URL is configured — read at call time so a value
+    # loaded from .env after import still takes effect. Model comes from
+    # AUREON_LLM_MODEL; the optional bearer is AUREON_LLM_API_KEY (used by the
+    # adapter). Unset base URL → the line stays disabled, exactly as before.
+    base_url = str(os.environ.get("AUREON_LLM_BASE_URL", "") or "").strip()
+    if base_url:
+        model = str(os.environ.get("AUREON_LLM_MODEL", "") or "").strip()
+        for i, spec in enumerate(specs):
+            if spec.kind == "local":
+                specs[i] = replace(spec, enabled=True, model=model or spec.model)
+    return specs
 
 
 __all__ = ["OperatorConfig", "ModelSpec", "DEFAULT_REGISTRY", "default_registry"]

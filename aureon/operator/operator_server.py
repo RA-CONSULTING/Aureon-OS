@@ -33,6 +33,22 @@ from typing import Any, Dict
 
 logger = logging.getLogger("aureon.operator.server")
 
+
+def _load_env_file() -> None:
+    """Honour a local ``.env`` so deploy-time credentials/endpoints (e.g. the
+    Ollama base URL, model, and API key for the LLM capability) take effect.
+
+    Called only from the serving entrypoints (``main`` / ``build_boot_app``), not
+    at import — so ``create_app`` stays hermetic for tests. No-op if python-dotenv
+    or the file is absent; never overrides an already-set variable.
+    """
+    try:  # pragma: no cover - trivial best-effort loader
+        from dotenv import load_dotenv
+
+        load_dotenv(override=False)
+    except Exception:  # noqa: BLE001
+        pass
+
 try:
     from flask import Flask, Response, jsonify, request, send_from_directory
 except Exception as exc:  # noqa: BLE001
@@ -403,6 +419,7 @@ def build_boot_app():
     service joins the mycelium mesh + Queen hive at boot, not lazily), and
     returns the app. Used by both main() and the wsgi module entrypoint.
     """
+    _load_env_file()  # deploy-time .env (Ollama base URL / model / key, etc.)
     from aureon.operator.config import OperatorConfig
 
     OperatorConfig.from_env().validate()  # fail-fast on a bad deploy
@@ -431,6 +448,7 @@ def build_boot_app():
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
+    _load_env_file()  # deploy-time .env (Ollama base URL / model / key, etc.)
     port = int(os.environ.get("AUREON_OPERATOR_PORT", "8080"))
     host = os.environ.get("AUREON_OPERATOR_HOST", "0.0.0.0")
     logger.info("Aureon Operator server on %s:%s — lines: %s", host, port,
