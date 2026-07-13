@@ -4,6 +4,22 @@ This guide explains how to review Aureon without needing to interpret every
 legacy term or every historical research section first. It is written for three
 audiences: investors, public GitHub readers, and grant or funder reviewers.
 
+## Company And Recognition
+
+Aureon is developed by **R&A Consulting and Brokerage Services Ltd**, a company
+registered in Northern Ireland (Companies House company number **NI696693**,
+status active), trading as **Aureon Zorza Technologies**. These are verifiable
+facts on the public Companies House register; Aureon Zorza Technologies is a
+trading name of the registered company, not a separately registered entity.
+
+The company holds a **Certificate of Recognition for reaching Silver level on the
+Innovate NI Innovation Framework** (Department for the Economy / Tourism Northern
+Ireland / Innovation NI), signed by the Minister for the Economy and dated
+21 July 2025. See [`../../COMPANY.md`](../../COMPANY.md) for the full record and
+the certificate image. This is an independent, government-backed recognition of
+the company's innovation practice; it is not a financial endorsement, and nothing
+in this guide is an offer of securities or a statement of investment returns.
+
 ## Executive View
 
 Aureon is a local-first evidence automation platform. It combines code,

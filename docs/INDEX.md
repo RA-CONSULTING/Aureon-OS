@@ -8,6 +8,7 @@ Master table of contents for all project documentation.
 | Audience | Document | Description |
 |----------|----------|-------------|
 | Investors | [Investor, Public, And Funder Guide](investor/README.md) | Formal diligence path, capability categories, claim discipline, and review sequence |
+| Company & credentials | [Company Profile](../COMPANY.md) | R&A Consulting (NI696693), Aureon Zorza Technologies brand, Silver-level Innovate NI recognition, website |
 | Public GitHub readers | [Repository README](../README.md) | Current front door with concise repo map and evidence posture |
 | End users and integrators | [Repo-Wide Sitemap](REPO_SITEMAP.md) | Whole-repo organization, capability groups, related systems, and SaaS integration surfaces |
 | End-user task navigation | [End-User Access Map](END_USER_ACCESS_MAP.md) | Task-based access to capabilities, docs, related systems, runtime surfaces, and safety gates |
