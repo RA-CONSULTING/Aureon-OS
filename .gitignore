@@ -231,3 +231,10 @@ uploads/
 *.egg-info/
 build/
 dist/
+
+# Runtime artifacts written when modules are imported/touched (connectome sweep,
+# test imports). Generated, not source.
+/wisdom_cache/
+alpaca_fee_tracker_state.json
+learning_archive_*.json
+aureon/bots_intelligence/orca_state.json
