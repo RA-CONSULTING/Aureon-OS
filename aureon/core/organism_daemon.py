@@ -103,6 +103,17 @@ def main() -> None:
     # this process must never flip trading env vars toward live mode.
     os.environ.setdefault("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "1")
 
+    # Bring every credential into the environment before the organs wake, so any
+    # module the sweep touches sees the keys it expects. Presence-only, never fatal.
+    try:
+        from aureon.core.aureon_env import bootstrap_credentials
+
+        _boot = bootstrap_credentials()
+        _keys = " ".join(f"{k.split('_')[0]}={'on' if v else 'off'}" for k, v in _boot["present"].items())
+        logger.info("🫁 credentials: %s", _keys)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("organism daemon: credential bootstrap skipped (%s)", exc)
+
     organs = boot()
     breath_s = _env_int("AUREON_ORGANISM_BREATH_S", 15)
 

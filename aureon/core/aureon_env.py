@@ -270,6 +270,63 @@ def load_aureon_environment(
     return report
 
 
+# The credentials the long-running HNC processes actually consume. Reported as
+# presence booleans only by ``bootstrap_credentials`` — never their values.
+HNC_RUNTIME_KEYS: tuple[str, ...] = (
+    "NASA_API_KEY",
+    "NOAA_API_KEY",
+    "USGS_API_KEY",
+    "FIRMS_MAP_KEY",
+    "FRED_API_KEY",
+    "AUREON_LLM_API_KEY",
+    "OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "GEMINI_API_KEY",
+    "XAI_API_KEY",
+)
+
+
+def bootstrap_credentials(
+    repo_root: Optional[Path] = None,
+    *,
+    override: bool = False,
+) -> dict:
+    """One call every HNC entrypoint makes so **all keys** reach the process.
+
+    Composes the two credential planes the repo already has:
+
+      1. ``load_aureon_environment`` — the canonical ``.env`` policy (all
+         candidate paths + HNC env-packet decode + credential aliases).
+      2. the encrypted provider keystore (the Providers/Connections UI control
+         plane) — layered on top so UI-stored keys take effect too.
+
+    Returns a small, secret-safe self-check the daemons can log at boot:
+    presence **booleans only** for the runtime keys — never a value, never a
+    length that could leak a short secret. Never raises: a missing keystore or
+    dotenv degrades to "just what's already in the environment".
+    """
+    report = load_aureon_environment(repo_root, override=override)
+
+    keystore_applied = False
+    try:  # best effort — the keystore is optional (needs the operator extra)
+        from aureon.operator import keystore
+
+        keystore.apply_to_env()
+        keystore_applied = True
+    except Exception:  # noqa: BLE001 - a missing/locked keystore must not be fatal
+        keystore_applied = False
+
+    present = {key: bool(info["set"]) for key, info in env_presence(HNC_RUNTIME_KEYS).items()}
+    return {
+        "loaded": report.loaded,
+        "loaded_paths": list(report.loaded_paths),
+        "aliases_applied": len(report.aliases_applied),
+        "packets_decoded": len(report.packets_decoded),
+        "keystore_applied": keystore_applied,
+        "present": present,
+    }
+
+
 def env_truthy(
     name: str,
     environ: Optional[MutableMapping[str, str]] = None,
@@ -328,8 +385,10 @@ __all__ = [
     "CREDENTIAL_ALIASES",
     "EnvLoadReport",
     "EXCHANGE_REQUIRED_ENV",
+    "HNC_RUNTIME_KEYS",
     "KRAKEN_REQUIRED_ENV",
     "apply_env_aliases",
+    "bootstrap_credentials",
     "candidate_env_paths",
     "enabled_credential_groups",
     "decode_hnc_env_packets",

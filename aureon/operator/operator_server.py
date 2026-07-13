@@ -41,19 +41,16 @@ def _load_env_file() -> None:
     Called only from the serving entrypoints (``main`` / ``build_boot_app``), not
     at import — so ``create_app`` stays hermetic for tests. No-op if python-dotenv
     or the file is absent; never overrides an already-set variable.
+
+    Delegates to the repo-canonical ``bootstrap_credentials`` (the same call the
+    HNC daemons make): ``.env`` across all candidate paths + HNC env-packet decode
+    + credential aliases, then the encrypted provider keystore (the Providers UI
+    control plane) layered on top.
     """
-    try:  # pragma: no cover - trivial best-effort loader
-        from dotenv import load_dotenv
+    try:  # pragma: no cover - best-effort loader
+        from aureon.core.aureon_env import bootstrap_credentials
 
-        load_dotenv(override=False)
-    except Exception:  # noqa: BLE001
-        pass
-    # Then let the encrypted provider keystore (Providers UI) populate env — it
-    # is the control plane for UI-set keys and takes precedence over .env.
-    try:  # pragma: no cover - best effort
-        from aureon.operator import keystore
-
-        keystore.apply_to_env()
+        bootstrap_credentials()
     except Exception:  # noqa: BLE001
         pass
 
