@@ -13,6 +13,8 @@ Routes:
   GET  /api/domains/<domain>   one domain: entry point + its systems
   GET  /api/status             live platform health (honest, often degraded)
   GET  /api/organism           connectome coverage + recent pulses + mesh membership
+  GET  /api/cognition          the whole cognitive substrate + provenance + truth roll-up
+  GET  /api/cognition/<part>   one cognitive surface: field·bus·mycelium·connectome·brain
   GET  /api/manifests/<name>   a frontend manifest, rendered live (JSON)
   POST /api/manifests/refresh  rebuild catalog + rewrite frontend manifests
 
@@ -210,6 +212,51 @@ def register_saas_routes(app: Any) -> Any:
     def saas_organism():
         # The connectome's honest coverage of the body + recent breaths + mesh.
         return jsonify(build_organism_payload())
+
+    # ── the cognitive substrate as verified SaaS ──────────────────────────────
+    # The organism's cognitive + meta-cognitive systems (HNC field, thought-bus
+    # links, mycelium mesh, connectome body-map, miner brain) surfaced as
+    # read-only APIs, each response stamped with data provenance. Auto-metered
+    # by the billing after_request hook + behind the same bearer/tenancy gates.
+    from aureon.saas.cognitive import (
+        brain_surface,
+        build_cognitive_payload,
+        bus_surface,
+        connectome_surface,
+        field_surface,
+        mycelium_surface,
+    )
+
+    @app.get("/api/cognition")
+    @_guarded
+    def saas_cognition():
+        # The whole substrate + provenance + truth-status roll-up.
+        return jsonify(build_cognitive_payload())
+
+    @app.get("/api/cognition/field")
+    @_guarded
+    def saas_cognition_field():
+        return jsonify({"surface": "field", "data": field_surface()})
+
+    @app.get("/api/cognition/bus")
+    @_guarded
+    def saas_cognition_bus():
+        return jsonify({"surface": "bus", "data": bus_surface()})
+
+    @app.get("/api/cognition/mycelium")
+    @_guarded
+    def saas_cognition_mycelium():
+        return jsonify({"surface": "mycelium", "data": mycelium_surface()})
+
+    @app.get("/api/cognition/connectome")
+    @_guarded
+    def saas_cognition_connectome():
+        return jsonify({"surface": "connectome", "data": connectome_surface()})
+
+    @app.get("/api/cognition/brain")
+    @_guarded
+    def saas_cognition_brain():
+        return jsonify({"surface": "brain", "data": brain_surface()})
 
     @app.get("/api/manifests/<name>")
     @_guarded
