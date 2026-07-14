@@ -38,6 +38,11 @@ is its own sub-field — so there is no direct self-read amplification.
   every breath (guarded), so the self-assessment runs continuously and feeds back.
 - **Read-only surface**: `GET /api/metacognition` returns `assess()` (never
   `reflect` — no publish from a GET) + provenance. Auto-metered + auth-gated.
+- **Console page**: `frontend/src/shell/pages/MetacognitionPage.tsx` (nav route
+  `/cognition/metacognition`) polls `/api/metacognition` and builds a client-side
+  time series so you can watch the self-assessment *breathe* — self-coherence (Γ),
+  awareness (ψ), and divergence sparklines, plus the per-signal breakdown with each
+  signal's `truth_status`. A dormant monitor shows the honest `no_data` state.
 
 ## SaaS compliance
 

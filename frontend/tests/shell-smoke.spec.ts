@@ -16,6 +16,7 @@ import { test, expect, type Page } from "@playwright/test";
 const ROUTES = [
   { path: "/", label: "Overview" },
   { path: "/ops/connections", label: "Connections" },
+  { path: "/cognition/metacognition", label: "Metacognition" },
   { path: "/cognition/providers", label: "Providers" },
   { path: "/platform/billing", label: "Billing & Support" },
   { path: "/trading/war-room", label: "War Room" },

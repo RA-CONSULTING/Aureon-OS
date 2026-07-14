@@ -182,6 +182,14 @@ export const NAV_SECTIONS: NavSection[] = [
         live: true,
       },
       {
+        path: "/cognition/metacognition",
+        label: "Metacognition",
+        description: "Watch the organism sense itself — self-coherence, ψ & divergence",
+        icon: Activity,
+        Component: lazy(() => import("./pages/MetacognitionPage")),
+        live: true,
+      },
+      {
         path: "/cognition/operator",
         label: "Operator Chat",
         description: "Ask the grounded Aureon cognition anything",
