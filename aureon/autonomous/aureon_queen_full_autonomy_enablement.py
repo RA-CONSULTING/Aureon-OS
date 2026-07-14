@@ -44,19 +44,19 @@ logger = logging.getLogger(__name__)
 # AUTONOMY ENABLEMENT CONSTANTS
 # ═════════════════════════════════════════════════════════════════════════════
 
-# Global environment variables for full autonomy
+# Global environment variables for runtime-gated autonomy.
 AUTONOMY_ENV_VARS = {
-    "AUREON_ENABLE_AUTONOMOUS_CONTROL": "1",      # Enable Queen autonomous control
-    "AUREON_AUTONOMY_LEVEL": "SOVEREIGN",          # Full authority, no approval needed
-    "AUREON_DRY_RUN": "false",                     # LIVE TRADING ONLY
-    "AUREON_EXECUTION_MODE": "AUTONOMOUS",         # Autonomous execution, no human gates
-    "AUREON_TRADE_GATING": "DISABLED",             # No trade gating, full execution
-    "AUREON_APPROVAL_REQUIRED": "0",               # No approval gates
-    "AUREON_QUEEN_VETO": "DISABLED",               # Queen veto disabled (she always executes)
-    "AUREON_SAFETY_CHECKS": "VALIDATION_ONLY",     # Only validation, no blocking
-    "AUREON_EXCHANGE_AUTONOMY": "1",               # Full exchange autonomy
-    "AUREON_CAPITAL_AUTONOMY": "1",                # Full capital control
-    "AUREON_PORTFOLIO_AUTONOMY": "1",              # Full portfolio management
+    "AUREON_ENABLE_AUTONOMOUS_CONTROL": "1",       # Enable autonomous coordination.
+    "AUREON_AUTONOMY_LEVEL": "RUNTIME_GATED",      # Live-capable, executor-gated authority.
+    "AUREON_DRY_RUN": "false",                     # Live profile may leave dry-run mode.
+    "AUREON_EXECUTION_MODE": "INTENT_ONLY_RUNTIME_GATED",
+    "AUREON_TRADE_GATING": "RUNTIME_GATED",        # Never disabled by startup.
+    "AUREON_APPROVAL_REQUIRED": "1",               # Runtime executor approval remains required.
+    "AUREON_QUEEN_VETO": "ENABLED",                # Veto path remains active.
+    "AUREON_SAFETY_CHECKS": "ENFORCED",            # Blocking checks remain enforced.
+    "AUREON_EXCHANGE_AUTONOMY": "1",               # Exchange coordination enabled.
+    "AUREON_CAPITAL_AUTONOMY": "1",                # Capital coordination enabled.
+    "AUREON_PORTFOLIO_AUTONOMY": "1",              # Portfolio coordination enabled.
 }
 
 # Queen systems that require full autonomy
@@ -153,15 +153,15 @@ class QueenAutonomyConfig:
         logger.info("═" * 80)
         
         # 1. Set all environment variables
-        logger.info("\n✅ Setting environment variables for full autonomy...")
+        logger.info("\n✅ Setting environment variables for runtime-gated live autonomy...")
         for key, value in AUTONOMY_ENV_VARS.items():
             os.environ[key] = value
             logger.info(f"   {key} = {value}")
         
         # 2. Enable autonomous execution
         self.autonomy_enabled = True
-        self.sovereignty_level = "SOVEREIGN"
-        self.trading_mode = "AUTONOMOUS_LIVE"
+        self.sovereignty_level = "RUNTIME_GATED"
+        self.trading_mode = "INTENT_ONLY_RUNTIME_GATED_LIVE"
         
         logger.info("\n✅ AUTONOMY STATUS:")
         logger.info(f"   Autonomy Enabled: {self.autonomy_enabled}")
@@ -184,7 +184,7 @@ class QueenAutonomyConfig:
         self.systems_authorized = len(ALL_SYSTEMS)
         
         logger.info("\n" + "═" * 80)
-        logger.info(f"👑 QUEEN FULL AUTONOMY ENABLED: {self.systems_authorized} systems authorized")
+        logger.info(f"👑 QUEEN RUNTIME-GATED AUTONOMY ENABLED: {self.systems_authorized} systems authorized")
         logger.info("═" * 80)
         
         return {

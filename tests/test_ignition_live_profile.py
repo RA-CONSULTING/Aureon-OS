@@ -53,7 +53,7 @@ def test_live_runtime_profile_enables_single_boot_live_flags(monkeypatch):
     assert runtime_mode_snapshot()["AUREON_COGNITIVE_LIVE_MODE"] == "1"
     assert runtime_mode_snapshot()["AUREON_LLM_ORDER_AUTHORITY"] == "0"
     assert runtime_mode_snapshot()["AUREON_LLM_ORDER_INTENT_AUTHORITY"] == "0"
-    assert runtime_mode_snapshot()["AUREON_ORDER_AUTHORITY_MODE"] == "runtime_only"
+    assert runtime_mode_snapshot()["AUREON_ORDER_AUTHORITY_MODE"] == "intent_only_runtime_gated"
 
 
 def test_ignition_live_audit_is_ready_without_booting(monkeypatch):

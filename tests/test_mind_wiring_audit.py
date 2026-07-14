@@ -22,7 +22,12 @@ from aureon.autonomous.mind_wiring_audit import (
     LiveOrderBlocked,
 )
 from aureon.core.aureon_organism_spine import build_organism_manifest, connect_organism
-from aureon.core.aureon_runtime_safety import child_env_for_mode, live_block_reason, real_orders_allowed
+from aureon.core.aureon_runtime_safety import (
+    apply_live_runtime_environment,
+    child_env_for_mode,
+    live_block_reason,
+    real_orders_allowed,
+)
 
 
 def test_resolver_maps_registry_short_name_to_real_package_path():
@@ -143,6 +148,40 @@ def test_queen_autonomy_stays_simulated_in_audit_mode(monkeypatch):
     assert result["trading_mode"] == "AUDIT_DRY_RUN"
     assert os.environ["AUREON_LIVE_TRADING"] == "0"
     assert os.environ["AUREON_DISABLE_REAL_ORDERS"] == "1"
+
+
+def test_queen_autonomy_live_profile_keeps_runtime_order_gates(monkeypatch):
+    for key in (
+        "AUREON_AUDIT_MODE",
+        "AUREON_LIVE_TRADING",
+        "AUREON_DISABLE_REAL_ORDERS",
+        "AUREON_DISABLE_EXCHANGE_MUTATIONS",
+        "AUREON_TRADE_GATING",
+        "AUREON_APPROVAL_REQUIRED",
+        "AUREON_QUEEN_VETO",
+        "AUREON_SAFETY_CHECKS",
+    ):
+        monkeypatch.delenv(key, raising=False)
+
+    apply_live_runtime_environment()
+
+    import aureon.autonomous.aureon_queen_full_autonomy_enablement as autonomy_module
+
+    monkeypatch.setattr(
+        autonomy_module.QueenAutonomyConfig,
+        "verify_autonomy_status",
+        lambda self: {"all_checks_passed": True, "checks": {"unit_test": True}},
+    )
+
+    result = autonomy_module.initialize_queen_autonomy()
+
+    assert result.get("safe_mode") is not True
+    assert result["sovereignty_level"] == "RUNTIME_GATED"
+    assert result["trading_mode"] == "INTENT_ONLY_RUNTIME_GATED_LIVE"
+    assert os.environ["AUREON_TRADE_GATING"] == "RUNTIME_GATED"
+    assert os.environ["AUREON_APPROVAL_REQUIRED"] == "1"
+    assert os.environ["AUREON_QUEEN_VETO"] == "ENABLED"
+    assert os.environ["AUREON_SAFETY_CHECKS"] == "ENFORCED"
 
 
 def test_baton_link_preserves_audit_dry_run_flags(monkeypatch):

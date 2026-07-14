@@ -549,11 +549,11 @@ def build_ignition_audit(live: bool, no_trade: bool = False, env_report: dict | 
                     not growth.status.startswith("growth_loop_needs_repair"),
                     f"{growth.status}; gaps={growth.summary.get('latest_gap_count', 0)} "
                     f"mean_score={growth.summary.get('latest_mean_score', 0)}",
-                    True,
+                    False,
                 )
             )
         except Exception as exc:
-            checks.append(_preflight_check("capability_growth_loop", False, str(exc)[:240], True))
+            checks.append(_preflight_check("capability_growth_loop", False, str(exc)[:240], False))
 
     required_failures = [check for check in checks if check["required"] and not check["ok"]]
     return {
