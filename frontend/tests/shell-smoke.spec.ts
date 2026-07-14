@@ -21,6 +21,7 @@ const ROUTES = [
   { path: "/ops/soul", label: "Soul" },
   { path: "/ops/inner-work", label: "Inner Work" },
   { path: "/ops/pursuit", label: "Pursuit" },
+  { path: "/ops/approvals", label: "Approvals" },
   { path: "/cognition/providers", label: "Providers" },
   { path: "/platform/billing", label: "Billing & Support" },
   { path: "/trading/war-room", label: "War Room" },

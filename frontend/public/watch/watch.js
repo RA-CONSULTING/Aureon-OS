@@ -46,6 +46,31 @@
   function onEnter(name) {
     if (name === "pulse" || name === "organism") refreshPulse();
     if (name === "systems") loadSystems();
+    if (name === "approvals") loadApprovals();
+  }
+
+  // ── APPROVALS (the director's desk — one-tap approve/reject, records only) ─
+  function loadApprovals() {
+    api("/api/approvals").then((d) => {
+      const pend = (d && d.pending) || [];
+      if (!pend.length) { $("appr-list").innerHTML = '<div class="muted">desk clear</div>'; return; }
+      $("appr-list").innerHTML = pend.map((it) =>
+        `<div class="item" data-id="${esc(it.id)}"><div class="t">${esc(it.kind)} · risk ${esc(it.risk)}</div>` +
+        `<div class="s">${esc(it.summary || "")}</div>` +
+        `<div class="apr-btns"><button class="ok" data-d="approve">Approve</button>` +
+        `<button class="no" data-d="reject">Reject</button></div></div>`).join("");
+      $("appr-list").querySelectorAll(".item").forEach((el) => {
+        el.querySelectorAll("button").forEach((b) =>
+          b.addEventListener("click", () => decideApproval(el.getAttribute("data-id"), b.getAttribute("data-d"))));
+      });
+    }).catch(() => { $("appr-list").innerHTML = '<div class="muted">approvals unavailable</div>'; });
+  }
+
+  function decideApproval(id, decision) {
+    api("/api/approvals/" + id, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ decision }),
+    }).then(() => loadApprovals()).catch(() => { /* stays pending */ });
   }
 
   // ── line-up ─────────────────────────────────────────────────────────────

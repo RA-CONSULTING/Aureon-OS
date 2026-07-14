@@ -300,6 +300,14 @@ export const NAV_SECTIONS: NavSection[] = [
         live: true,
       },
       {
+        path: "/ops/approvals",
+        label: "Approvals",
+        description: "The director's desk — big plays Aureon prepared, awaiting your approve/reject",
+        icon: ListChecks,
+        Component: lazy(() => import("./pages/ApprovalsPage")),
+        live: true,
+      },
+      {
         path: "/ops/systems",
         label: "Systems Integration",
         description: "Temporal ladder and hive coherence status",
