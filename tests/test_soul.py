@@ -31,6 +31,7 @@ def _isolate(tmp_path, monkeypatch):
     monkeypatch.setenv("AUREON_RUNTIME_STATUS_PATH", str(tmp_path / "rt.json"))
     monkeypatch.setenv("AUREON_SOUL_INBOX", str(tmp_path / "inbox.jsonl"))
     monkeypatch.setenv("AUREON_SOUL_LOG", str(tmp_path / "soul.jsonl"))
+    monkeypatch.setenv("AUREON_SOUL_CONTRACT_PATH", str(tmp_path / "contracts.json"))
     monkeypatch.delenv("AUREON_SOUL_ACT", raising=False)
     monkeypatch.delenv("AUREON_LOCAL_ACTIONS_ARMED", raising=False)
     # reset every singleton the soul reads so tests are deterministic
@@ -38,11 +39,13 @@ def _isolate(tmp_path, monkeypatch):
     import aureon.core.aureon_thought_bus as tb
     import aureon.core.metacognition_monitor as mm
     import aureon.core.soul as soulmod
+    import aureon.core.soul_company as scmod
 
     monkeypatch.setattr(tb, "_thought_bus_instance", None, raising=False)
     monkeypatch.setattr(am, "_monitor", None, raising=False)
     monkeypatch.setattr(mm, "_monitor", None, raising=False)
     monkeypatch.setattr(soulmod, "_soul", None, raising=False)
+    monkeypatch.setattr(scmod, "_company", None, raising=False)
     try:
         import aureon.queen.queen_conscience as qc
 

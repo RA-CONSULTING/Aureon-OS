@@ -90,6 +90,7 @@ class Determination:
     determination: str = ""              # the self-authored intent, or why it waits
     what_gary_would_say: str | None = None
     proposed_action: dict[str, Any] | None = None
+    plan: dict[str, Any] | None = None       # the company's directed plan (read-only)
     executed: dict[str, Any] | None = None   # bridge result if acted, else None
     mood: str | None = None
     self_coherence: float | None = None
@@ -104,7 +105,8 @@ class Determination:
             "stance": self.stance, "resolved": self.resolved,
             "agreement": self.agreement, "determination": self.determination,
             "what_gary_would_say": self.what_gary_would_say,
-            "proposed_action": self.proposed_action, "executed": self.executed,
+            "proposed_action": self.proposed_action, "plan": self.plan,
+            "executed": self.executed,
             "mood": self.mood, "self_coherence": self.self_coherence,
             "voices": self.voices, "dissent": self.dissent,
             "truth_status": self.truth_status, "ts": self.ts,
@@ -332,8 +334,23 @@ class SoulDeliberation:
             # idle self-determination: "what should I do now, toward the goal?"
             return "continue toward the goal, safely", {}
         text = str(stimulus.get("text") or stimulus.get("intent") or "attend to a stimulus")
-        ctx = {"source": stimulus.get("source", "unknown")}
+        ctx: dict[str, Any] = {"source": stimulus.get("source", "unknown"),
+                               "action": stimulus.get("action"), "params": stimulus.get("params") or {}}
         return text, ctx
+
+    def _company(self) -> Any:
+        """Lazy accessor for the soul's company (workforce + guarded hand)."""
+        from aureon.core.soul_company import get_soul_company
+
+        return get_soul_company()
+
+    def _plan(self, intent: str, ctx: dict[str, Any]) -> Any | None:
+        """Ask the company to decompose the intent into a directed plan (read-only)."""
+        try:
+            return self._company().plan(intent, ctx)
+        except Exception as exc:  # noqa: BLE001 — a missing company never crashes the soul
+            logger.debug("plan skipped: %s", exc)
+            return None
 
     # ── assess (read-only) ──────────────────────────────────────────────────
     def assess(self, stimulus: dict[str, Any] | None = None) -> Determination:
@@ -346,6 +363,12 @@ class SoulDeliberation:
             det.determination = self._self_author(intent, det)
             if det.resolved and stimulus and stimulus.get("action") in _SAFE_VERBS:
                 det.proposed_action = {"action": stimulus["action"], "params": stimulus.get("params") or {}}
+            # when resolved, the company decomposes the intent into a directed plan
+            # of role-assigned work-orders (read-only — it never touches the machine).
+            if det.resolved:
+                plan = self._plan(intent, ctx)
+                if plan is not None:
+                    det.plan = plan.to_dict()
             return det
         except Exception as exc:  # noqa: BLE001
             logger.debug("assess failed: %s", exc)
@@ -365,19 +388,27 @@ class SoulDeliberation:
             return Determination(available=False, truth_status="no_data", ts=time.time())
 
     def _carry_out(self, det: Determination) -> dict[str, Any] | None:
-        """Carry the determination out — ONLY through the guarded hand, and ONLY
-        when doubly armed. Default posture: propose, never touch the machine."""
-        if not (det.resolved and det.proposed_action):
+        """Carry the determination out — the company DIRECTS its plan of role-assigned
+        work-orders through the ONE guarded hand, and ONLY when doubly armed. Default
+        posture: propose, never touch the machine."""
+        if not (det.resolved and (det.proposed_action or det.plan)):
             return None
         if not _truthy("AUREON_SOUL_ACT"):
             return {"carried_out": False, "note": "soul disarmed — set AUREON_SOUL_ACT=1 (proposal only)"}
         try:
-            from aureon.operator.local_action_bridge import get_local_action_bridge
-
-            result = get_local_action_bridge().perform(
-                det.proposed_action["action"], det.proposed_action.get("params") or {},
-                {"origin": "soul"})
-            return {"carried_out": True, "result": result}
+            intent, ctx = self._intent_of(det.stimulus)
+            plan = self._company().plan(intent, ctx)
+            self._company().direct(plan)
+            det.plan = plan.to_dict()
+            out: dict[str, Any] = {"carried_out": True,
+                                   "directed": [wo.to_dict() for wo in plan.work_orders]}
+            # back-compat: surface the authored action's own outcome as `result`
+            if det.proposed_action:
+                for wo in plan.work_orders:
+                    if wo.action == det.proposed_action.get("action"):
+                        out["result"] = wo.outcome or {}
+                        break
+            return out
         except Exception as exc:  # noqa: BLE001 — a bad hand never crashes the soul
             return {"carried_out": False, "error": str(exc)[:200]}
 
