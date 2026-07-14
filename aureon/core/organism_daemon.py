@@ -155,6 +155,21 @@ def breathe(organs: dict[str, Any]) -> None:
         except Exception as exc:  # noqa: BLE001
             logger.debug("pulse skipped: %s", exc)
     breathe_field(organs)
+    # Metacognition: after fusing the whole-body field, the organism reads its
+    # OWN signals and scores its self-coherence, then loops that assessment back
+    # into the field as a sub-field (the β·Λ(t−τ) self-term at the organism
+    # layer). Guarded — a silent breath if the monitor can't read anything.
+    try:
+        from aureon.core.metacognition_monitor import get_metacognition_monitor
+
+        sa = get_metacognition_monitor().reflect()
+        if sa.available:
+            logger.info(
+                "🧠 metacognition — self_coherence=%.3f psi=%.3f divergence=%s level=%s",
+                sa.self_coherence or 0.0, sa.psi or 0.0, sa.divergence, sa.consciousness_level,
+            )
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("metacognition reflect skipped: %s", exc)
 
 
 def main() -> None:
