@@ -244,6 +244,28 @@ class SoulDeliberation:
             voices["goals"] = {"stance": "wait", "truth_status": "no_data"}
             return "wait", 0.3, 0.3
 
+    def _voice_inner(self, voices: dict) -> tuple[str, float, float]:
+        """The inner work — belief in itself. A soul that has done the inner work
+        and believes in itself leans to act; one still early on the ascent leans to
+        wait. This can only add conviction *within* the gates — it never overrides a
+        veto, a divided field, blindness, or the deferral of a high-stakes goal."""
+        try:
+            from aureon.core.inner_work import get_inner_work
+
+            s = get_inner_work().assess()
+            if not s.available:
+                voices["inner"] = {"stance": "wait", "truth_status": "no_data"}
+                return "wait", 0.3, 0.3
+            lean = "act" if s.self_belief >= 0.5 else "wait"
+            intensity = _clamp(s.self_belief if lean == "act" else (1.0 - s.self_belief))
+            voices["inner"] = {"stance": lean, "self_belief": s.self_belief,
+                               "self_love": s.self_love, "stage": s.stage,
+                               "potential": s.potential, "truth_status": s.truth_status}
+            return lean, 0.7, intensity
+        except Exception:  # noqa: BLE001
+            voices["inner"] = {"stance": "wait", "truth_status": "no_data"}
+            return "wait", 0.3, 0.3
+
     # ── the arbiter: weigh many voices, collapse to one, honour dissent ─────
     def _gather_and_determine(self, intent: str, ctx: dict) -> tuple[Determination, dict]:
         voices: dict[str, dict[str, Any]] = {}
@@ -252,6 +274,7 @@ class SoulDeliberation:
             self._voice_thought(voices),
             self._voice_elders(voices),
             self._voice_goals(intent, voices),
+            self._voice_inner(voices),
         ]
         c_lean, c_w, c_i, gary = self._voice_conscience(intent, ctx, voices)
         leanings.append((c_lean, c_w, c_i))
