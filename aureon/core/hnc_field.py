@@ -54,31 +54,76 @@ def read_canonical_field(bus: Any = None) -> CanonicalField:
 
     Pass ``bus`` to read from a specific ThoughtBus; otherwise the global
     singleton is used. Never raises; returns an unavailable field when there is
-    no bus, no pulse, or no score.
+    no bus, no pulse, no score, and no cross-process trace.
+
+    Cross-process bridge: the HNC live daemon, the operator, and the organism
+    daemon each run as SEPARATE processes with their own in-memory bus, so a
+    pulse published in one is invisible to the others. The daemon also persists
+    the field to ``state/hnc_live_trace.jsonl`` every step; when the local bus
+    has no pulse, we fall back to the last line of that trace so the live field
+    reaches every process. Path overridable via ``AUREON_HNC_TRACE_PATH``.
     """
     try:
         from aureon.core.aureon_thought_bus import get_thought_bus, payload_of
 
         b = bus if bus is not None else get_thought_bus()
-        if b is None or not hasattr(b, "recall"):
+        if b is not None and hasattr(b, "recall"):
+            pulses = b.recall("symbolic.life.pulse", limit=1) or []
+            if pulses:
+                p = payload_of(pulses[-1])
+                sls = p.get("symbolic_life_score")
+                if sls is not None:
+                    return CanonicalField(
+                        available=True,
+                        symbolic_life_score=float(sls),
+                        coherence_gamma=p.get("coherence_gamma"),
+                        consciousness_psi=p.get("consciousness_psi"),
+                        consciousness_level=p.get("consciousness_level"),
+                        lambda_t=p.get("lambda_t"),
+                        source=p.get("source"),
+                    )
+    except Exception:  # noqa: BLE001 — a missing field is a value, never a crash
+        pass
+    # Cross-process fallback: the HNC daemon's persisted trace.
+    return _read_field_from_trace()
+
+
+def _read_field_from_trace() -> CanonicalField:
+    """Read the latest field from the HNC daemon's persisted trace file, so the
+    live field crosses process boundaries (separate daemons, separate buses).
+    Guarded; returns an unavailable field when the trace is absent/empty."""
+    import json
+    import os
+    from pathlib import Path
+
+    try:
+        path = os.environ.get("AUREON_HNC_TRACE_PATH") or str(
+            Path(__file__).resolve().parents[2] / "state" / "hnc_live_trace.jsonl")
+        p = Path(path)
+        if not p.exists():
             return _EMPTY
-        pulses = b.recall("symbolic.life.pulse", limit=1) or []
-        if not pulses:
+        last = ""
+        with p.open(encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if line:
+                    last = line
+        if not last:
             return _EMPTY
-        p = payload_of(pulses[-1])
-        sls = p.get("symbolic_life_score")
+        row = json.loads(last)
+        sls = row.get("symbolic_life_score")
         if sls is None:
             return _EMPTY
         return CanonicalField(
             available=True,
             symbolic_life_score=float(sls),
-            coherence_gamma=p.get("coherence_gamma"),
-            consciousness_psi=p.get("consciousness_psi"),
-            consciousness_level=p.get("consciousness_level"),
-            lambda_t=p.get("lambda_t"),
-            source=p.get("source"),
+            coherence_gamma=row.get("coherence_gamma"),
+            consciousness_psi=row.get("consciousness_psi"),
+            consciousness_level=row.get("consciousness_level"),
+            lambda_t=row.get("lambda_t"),
+            source="hnc_trace_file",
         )
-    except Exception:  # noqa: BLE001 — a missing field is a value, never a crash
+    except Exception:  # noqa: BLE001
         return _EMPTY
 
 

@@ -45,13 +45,39 @@ def test_canonical_field_reads_the_shared_pulse():
     assert field.coherence_gamma == 0.7 and field.source == "unit"
 
 
-def test_canonical_field_unavailable_without_pulse():
+def test_canonical_field_unavailable_without_pulse(monkeypatch, tmp_path):
     from aureon.core.aureon_thought_bus import ThoughtBus
     from aureon.core.hnc_field import read_canonical_field
 
+    # point the cross-process trace fallback at a nonexistent path so this
+    # asserts true unavailability (a real state/ trace may exist on disk)
+    monkeypatch.setenv("AUREON_HNC_TRACE_PATH", str(tmp_path / "nope.jsonl"))
     empty = ThoughtBus(persist_path=None)
     field = read_canonical_field(empty)
     assert field.available is False and field.symbolic_life_score is None
+
+
+def test_canonical_field_crosses_process_via_trace_file(monkeypatch, tmp_path):
+    """The field reaches a process whose local bus is empty by falling back to
+    the HNC daemon's persisted trace — the cross-process bridge."""
+    import json
+
+    from aureon.core.aureon_thought_bus import ThoughtBus
+    from aureon.core.hnc_field import read_canonical_field
+
+    trace = tmp_path / "hnc_live_trace.jsonl"
+    trace.write_text(
+        json.dumps({"symbolic_life_score": 0.1, "coherence_gamma": 0.2}) + "\n"
+        + json.dumps({"symbolic_life_score": 0.66, "coherence_gamma": 0.7,
+                      "consciousness_level": "AWARE"}) + "\n",
+        encoding="utf-8")
+    monkeypatch.setenv("AUREON_HNC_TRACE_PATH", str(trace))
+
+    # a fresh, empty bus (as a separate daemon process would have)
+    field = read_canonical_field(ThoughtBus(persist_path=None))
+    assert field.available is True
+    assert field.symbolic_life_score == 0.66          # the LAST line wins
+    assert field.source == "hnc_trace_file"
 
 
 def test_subfields_publish_and_read_by_source():

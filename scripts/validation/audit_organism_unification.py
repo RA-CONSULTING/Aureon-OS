@@ -169,6 +169,32 @@ def run_audit() -> list[dict]:
     results.append(_check("organism_field_breath", bool(breath),
                           f"consensus events={len(breath)}", critical=False))
 
+    # Edge 4h — the field crosses process boundaries via the HNC daemon's trace
+    # file (separate daemons have separate in-memory buses).
+    import json as _json
+    import os as _os2
+    import tempfile as _tf
+
+    from aureon.core.aureon_thought_bus import ThoughtBus as _TB
+    from aureon.core.hnc_field import read_canonical_field as _rcf
+
+    _tmp = _tf.NamedTemporaryFile("w", suffix=".jsonl", delete=False)
+    _tmp.write(_json.dumps({"symbolic_life_score": 0.63, "coherence_gamma": 0.7}) + "\n")
+    _tmp.close()
+    _prev = _os2.environ.get("AUREON_HNC_TRACE_PATH")
+    _os2.environ["AUREON_HNC_TRACE_PATH"] = _tmp.name
+    try:
+        xf = _rcf(_TB(persist_path=None))   # empty bus → must fall back to trace
+    finally:
+        if _prev is None:
+            _os2.environ.pop("AUREON_HNC_TRACE_PATH", None)
+        else:
+            _os2.environ["AUREON_HNC_TRACE_PATH"] = _prev
+        _os2.unlink(_tmp.name)
+    results.append(_check("field_crosses_process",
+                          xf.available and xf.symbolic_life_score == 0.63,
+                          f"sls={xf.symbolic_life_score} source={xf.source}", critical=False))
+
     # Edge 5 — connectome telemetry: baton ear + pulse + auto-weave
     from aureon.core.aureon_connectome import get_connectome
 

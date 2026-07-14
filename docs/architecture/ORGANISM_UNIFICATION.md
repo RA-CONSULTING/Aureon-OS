@@ -145,6 +145,19 @@ so a module that calls `sys.exit()` / raises `SystemExit` at import time is reco
 as `failed` instead of taking the whole sweep — and the organism daemon — down. A
 plain `except Exception` let `SystemExit` through; this closed that hole.
 
+## The field crosses process boundaries
+
+The HNC daemon, the operator, and the organism daemon each run as **separate
+supervisord processes**, and `get_thought_bus()` returns a per-process in-memory
+bus — so a `symbolic.life.pulse` published in one process is invisible to the
+others. The field was unified *within* a process but not *across* the daemons
+(which is why in-process audits passed while production wouldn't share it).
+`read_canonical_field` now falls back to the HNC daemon's persisted trace
+(`state/hnc_live_trace.jsonl`, written every step) when the local bus has no
+pulse — so the live field reaches every process via an artifact that already
+exists. Path overridable with `AUREON_HNC_TRACE_PATH`; guarded and offline-safe.
+This is the bridge that makes the field genuinely whole-organism, not per-process.
+
 ## The organism breathes its field
 
 `blend_field` was pull-only — the gate, cognition, and the conscience-fallback each
