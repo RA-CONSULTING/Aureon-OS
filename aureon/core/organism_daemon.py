@@ -67,11 +67,16 @@ def boot() -> dict[str, Any]:
     connectome = get_connectome()
     organs["connectome"] = connectome
     if _env_flag("AUREON_CONNECTOME_SWEEP"):
+        # weave_batch>0 graduates touched modules to woven (mycelium+Queen) each
+        # cycle, so the body doesn't just get felt — it gets connected. Off →
+        # touch-only (set AUREON_CONNECTOME_WEAVE=0).
+        weave_batch = _env_int("AUREON_CONNECTOME_WEAVE_BATCH", 10) if _env_flag("AUREON_CONNECTOME_WEAVE") else 0
         connectome.start_sweep(
             interval_s=float(_env_int("AUREON_CONNECTOME_INTERVAL_S", 30)),
             batch_size=_env_int("AUREON_CONNECTOME_BATCH", 25),
+            weave_batch=weave_batch,
         )
-        logger.info("🕸️ Connectome sweep started — the organism will feel its whole body")
+        logger.info("🕸️ Connectome sweep started (weave_batch=%s) — the organism feels AND connects its body", weave_batch)
 
     # Dr. Auris Throne — the cosmic gate. Its loop publishes
     # auris.throne.cosmic_state, which the grounded-action gate and several Queen

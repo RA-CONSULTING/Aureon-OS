@@ -238,7 +238,12 @@ class Connectome:
 
     # ── sweep: feel the whole body, batch by batch ───────────────────────────
 
-    def sweep_once(self, batch_size: int = 25, domains: List[str] | None = None) -> Dict[str, Any]:
+    def sweep_once(
+        self,
+        batch_size: int = 25,
+        domains: List[str] | None = None,
+        weave_batch: int = 0,
+    ) -> Dict[str, Any]:
         touched = failed = denied = 0
         for node in self.manifest().nodes:
             if touched + failed + denied >= batch_size:
@@ -255,10 +260,24 @@ class Connectome:
                 denied += 1
             else:
                 failed += 1
+        # Graduate touched modules to woven — join them onto the mycelium mesh +
+        # Queen so the organism is genuinely one body, not just felt. weave()
+        # only ever acts on already-touched modules (denied/failed are skipped),
+        # so the deny-list + import-suppression are honoured transitively. This
+        # is how the Queen's own systems (queen_*.py) become real children over
+        # time, using the existing join_organism gear — no new fabric.
+        woven = 0
+        if weave_batch > 0:
+            for module, rec in list(self._records.items()):
+                if woven >= weave_batch:
+                    break
+                if rec.get("status") == "touched":
+                    if self.weave(module).get("status") == "woven":
+                        woven += 1
         self._save_state()
-        return {"touched": touched, "failed": failed, "denied": denied}
+        return {"touched": touched, "failed": failed, "denied": denied, "woven": woven}
 
-    def start_sweep(self, interval_s: float = 30.0, batch_size: int = 25) -> None:
+    def start_sweep(self, interval_s: float = 30.0, batch_size: int = 25, weave_batch: int = 0) -> None:
         if self._sweep_thread is not None and self._sweep_thread.is_alive():
             return
         self._sweep_stop.clear()
@@ -266,10 +285,10 @@ class Connectome:
         def _run() -> None:
             while not self._sweep_stop.wait(interval_s):
                 try:
-                    result = self.sweep_once(batch_size=batch_size)
+                    result = self.sweep_once(batch_size=batch_size, weave_batch=weave_batch)
                     self.pulse()
                     if not any(result.values()):
-                        logger.info("🕸️ Connectome sweep complete — the whole body has been felt")
+                        logger.info("🕸️ Connectome sweep complete — the whole body has been felt and woven")
                         return
                 except Exception as exc:  # noqa: BLE001 — the sweep must never die
                     logger.warning("connectome sweep error: %s", exc)
