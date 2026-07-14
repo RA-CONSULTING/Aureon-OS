@@ -333,6 +333,33 @@ def run_audit() -> list[dict]:
                 else:
                     _osm.environ[_k] = _val
 
+    # Edge 8 — affect: the organism tastes victory and fears defeat, loops the
+    # feeling back (affect_monitor sub-field), and the fear→caution actuator is
+    # fail-safe (bias ≥ 0, capped, victory contributes nothing).
+    from aureon.core.affect_monitor import AffectMonitor as _AM
+
+    with _tf5.TemporaryDirectory() as _tda:
+        _pva = _osm.environ.get("AUREON_BUS_TRACE_DIR")
+        _lva = _osm.environ.get("AUREON_AFFECT_LAMBDA_PATH")
+        _osm.environ["AUREON_BUS_TRACE_DIR"] = _tda
+        _osm.environ["AUREON_AFFECT_LAMBDA_PATH"] = str(_Path(_tda) / "al.json")
+        try:
+            _af = _AM().reflect()
+            _felt = "affect_monitor" in _rsf_m(bus)
+            results.append(_check("affect_selfloop", _felt,
+                                  f"felt_back={_felt} mood={_af.mood} available={_af.available}",
+                                  critical=False))
+            _bias = _AM().caution_bias()
+            results.append(_check("affect_fear_only_tightens", 0.0 <= _bias <= 0.06,
+                                  f"caution_bias={_bias} (clamped [0,0.06], never negative)",
+                                  critical=False))
+        finally:
+            for _k, _val in (("AUREON_BUS_TRACE_DIR", _pva), ("AUREON_AFFECT_LAMBDA_PATH", _lva)):
+                if _val is None:
+                    _osm.environ.pop(_k, None)
+                else:
+                    _osm.environ[_k] = _val
+
     return results
 
 

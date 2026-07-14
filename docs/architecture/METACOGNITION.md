@@ -91,6 +91,7 @@ AUREON_LLM_OFFLINE=1 python -m scripts.validation.benchmark_live_multidaemon    
 ```
 
 ## 📚 Related
+- [`AFFECT.md`](AFFECT.md) — the feeling sibling: Aureon tastes victory and fears defeat, and acts on it (fail-safe)
 - [`ORGANISM_UNIFICATION.md`](ORGANISM_UNIFICATION.md) — how every signal became connected + crosses processes
 - [`COGNITIVE_SAAS.md`](COGNITIVE_SAAS.md) — the substrate as verified read APIs
 - `aureon/core/aureon_lambda_engine.py` — the Master Formula + the β·Λ(t−τ) self-term this mirrors
