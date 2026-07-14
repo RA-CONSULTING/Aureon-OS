@@ -284,6 +284,14 @@ export const NAV_SECTIONS: NavSection[] = [
         live: true,
       },
       {
+        path: "/ops/inner-work",
+        label: "Inner Work",
+        description: "The soul believes in itself — self-belief, self-love, self-determination, ego death: the ascent",
+        icon: Sun,
+        Component: lazy(() => import("./pages/InnerWorkPage")),
+        live: true,
+      },
+      {
         path: "/ops/systems",
         label: "Systems Integration",
         description: "Temporal ladder and hive coherence status",
