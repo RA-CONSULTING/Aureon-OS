@@ -1,7 +1,7 @@
 {
   "name": "aureon-live-multidaemon-benchmark",
   "schema_version": 1,
-  "wait_s": 18.0,
+  "wait_s": 60.0,
   "summary": {
     "status": "pass",
     "critical_passed": 5,
@@ -14,34 +14,34 @@
     {
       "check": "daemon_boot",
       "ok": true,
-      "detail": "launched ['hnc', 'operator', 'organism'] on port 45203",
+      "detail": "launched ['hnc', 'operator', 'organism'] on port 60739",
       "critical": true,
       "metrics": {
         "pids": {
-          "hnc": 14489,
-          "organism": 14490,
-          "operator": 14491
+          "hnc": 3584,
+          "organism": 3585,
+          "operator": 3586
         }
       }
     },
     {
       "check": "consensus_breathing",
       "ok": true,
-      "detail": "consensus age=1.3s (organism daemon breathed)",
+      "detail": "consensus age=0.9s after 6s (organism daemon breathed)",
       "critical": true,
       "metrics": {
-        "age_s": 1.328887939453125
+        "age_s": 0.8851187229156494,
+        "waited_s": 6.0
       }
     },
     {
       "check": "metacognition_selfloop",
       "ok": true,
-      "detail": "metacognition_monitor sub-field present=True (the daemon read its own signals and looped back); sources=['consciousness_module', 'dr_auris_throne', 'metacognition_monitor']",
+      "detail": "metacognition_monitor sub-field present=True (the daemon read its own signals and looped back); sources=['consciousness_module', 'metacognition_monitor']",
       "critical": true,
       "metrics": {
         "subfield_sources": [
           "consciousness_module",
-          "dr_auris_throne",
           "metacognition_monitor"
         ]
       }
@@ -58,11 +58,11 @@
     {
       "check": "api_metacognition",
       "ok": true,
-      "detail": "/api/metacognition self_coherence=0.7809 truth=real_derived",
+      "detail": "/api/metacognition self_coherence=0.8967 truth=real_derived",
       "critical": false,
       "metrics": {
-        "self_coherence": 0.7809,
-        "psi": 0.1
+        "self_coherence": 0.8967,
+        "psi": 0.0667
       }
     },
     {
@@ -75,10 +75,10 @@
     {
       "check": "hnc_field_flowing",
       "ok": true,
-      "detail": "trace grew 6491\u21929812 bytes; last sls=0.5769037212128891",
+      "detail": "trace grew 10941\u219212155 bytes; last sls=0.5900893783919237",
       "critical": false,
       "metrics": {
-        "sls": 0.5769037212128891
+        "sls": 0.5900893783919237
       }
     },
     {

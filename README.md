@@ -190,6 +190,7 @@ organization (they reflect hosted runs, not the local gate):
 
 [![Operator CI](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/operator-ci.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/operator-ci.yml)
 [![Aureon CI](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/main_ci.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/main_ci.yml)
+[![Nightly benchmark](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/nightly-benchmark.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/nightly-benchmark.yml)
 
 ```bash
 # reproduce the gate locally

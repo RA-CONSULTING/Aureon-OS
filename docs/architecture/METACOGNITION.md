@@ -67,7 +67,19 @@ Writes `docs/research/benchmarks/live_multidaemon_benchmark.{json,md}`.
 
 A recorded run: **5/5 critical + 3/4 informational** — the self-loop closed in a
 real multi-process boot, with `metacognition_monitor` breathing alongside
-`consciousness_module` and `dr_auris_throne`.
+`consciousness_module` and `dr_auris_throne`. The benchmark polls the traces for
+the condition (not a fixed sleep) and exits as soon as the loop closes, so it is a
+true signal rather than a timing race.
+
+### Standing guarantee
+
+`.github/workflows/nightly-benchmark.yml` runs this live benchmark **every night**
+(06:00 UTC; `workflow_dispatch` for on-demand) on a fresh checkout — booting the
+three daemons and re-proving the self-loop closes across processes, uploading the
+report as a build artifact. Per-commit CI gates the in-process audit (22/22 edges)
++ strict tier; only a real multi-process boot can prove the *live* loop, so it runs
+on a schedule. A red nightly means the standing guarantee broke — the loop is
+continuously re-verified, not proven once.
 
 ## Verify
 
