@@ -141,12 +141,27 @@ class LighthousePatternDetector:
     def _emit_event(self, event: LighthouseEvent):
         """Emit an event to all subscribers"""
         self.recent_events.append(event)
-        
+
         for callback in self._subscribers:
             try:
                 callback(event)
             except Exception as e:
                 logger.error(f"Lighthouse event callback error: {e}")
+
+        # Also publish onto the shared ThoughtBus so the clearance signal is a
+        # real organism-wide event, not just a private in-process callback. Any
+        # subscriber to lighthouse.* (cognition, the action gate) can now sense
+        # a coherence-collapse / phase-reset / regime-change the moment it fires.
+        try:
+            from aureon.core.aureon_thought_bus import Thought, get_thought_bus
+
+            get_thought_bus().publish(Thought(
+                source="aureon_lighthouse",
+                topic="lighthouse.event",
+                payload=event.to_dict(),
+            ))
+        except Exception as exc:  # noqa: BLE001 — the bus edge is optional
+            logger.debug(f"lighthouse bus publish skipped: {exc}")
         
         # Log significant events
         if event.severity > 0.5:

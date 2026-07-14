@@ -73,6 +73,21 @@ def boot() -> dict[str, Any]:
         )
         logger.info("🕸️ Connectome sweep started — the organism will feel its whole body")
 
+    # Dr. Auris Throne — the cosmic gate. Its loop publishes
+    # auris.throne.cosmic_state, which the grounded-action gate and several Queen
+    # systems read. Without it started, get_dr_auris_throne() returns a static
+    # fail-open default (gate always open). Guarded; env-toggle to disable.
+    if _env_flag("AUREON_AURIS_AUTOSTART"):
+        try:
+            from aureon.intelligence.dr_auris_throne import get_dr_auris_throne
+
+            throne = get_dr_auris_throne()
+            throne.start()
+            organs["auris_throne"] = throne
+            logger.info("🔭 Dr. Auris Throne started — auris.throne.cosmic_state now flows live")
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Dr. Auris Throne not started: %s", exc)
+
     return organs
 
 
