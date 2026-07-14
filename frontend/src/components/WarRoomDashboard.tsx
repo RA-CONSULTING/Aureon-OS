@@ -1,5 +1,6 @@
 import { useQuantumWarRoom } from '@/hooks/useQuantumWarRoom';
 import { useGlobalState } from '@/hooks/useGlobalState';
+import { useMultiExchangeBalances } from '@/hooks/useMultiExchangeBalances';
 import { QuantumStatePanel } from './warroom/QuantumStatePanel';
 import { HistoricalTimeline } from './warroom/HistoricalTimeline';
 import { LiveStrikeStream } from './warroom/LiveStrikeStream';
@@ -23,28 +24,23 @@ import { LiveTradeStream } from './warroom/LiveTradeStream';
 import { LaunchButton } from './warroom/LaunchButton';
 import { Badge } from '@/components/ui/badge';
 // 🦆 DUCK COMMANDOS - IRA SNIPER MODE
-import { KillConfirmationBanner } from './warroom/KillConfirmationBanner';
 import { SniperLeaderboard } from './warroom/SniperLeaderboard';
 import { DuckCommandoIntel } from './warroom/DuckCommandoIntel';
 
 export default function WarRoomDashboard() {
   const { state, launchAssault, emergencyStop } = useQuantumWarRoom();
   const globalState = useGlobalState();
+  const { exchangeStatuses: liveExchanges } = useMultiExchangeBalances();
 
-  // 🦆 DUCK COMMANDOS - Mock data for demo (replace with real data from hooks)
-  const mockKill = null; // Set to actual kill data when a profitable SELL happens
-  const mockSymbolStats = [
-    { symbol: 'BTC/USD', totalKills: 156, totalPnl: 12.45, avgPnl: 0.08, quickKillRate: 0.94, avgBarsToProfit: 1.8, winRate: 0.98, byExchange: { kraken: { kills: 80, pnl: 6.4 }, binance: { kills: 76, pnl: 6.05 } } },
-    { symbol: 'ETH/USD', totalKills: 142, totalPnl: 10.22, avgPnl: 0.07, quickKillRate: 0.91, avgBarsToProfit: 2.1, winRate: 0.96, byExchange: { kraken: { kills: 70, pnl: 5.1 }, alpaca: { kills: 72, pnl: 5.12 } } },
-    { symbol: 'SOL/USD', totalKills: 98, totalPnl: 8.76, avgPnl: 0.09, quickKillRate: 0.96, avgBarsToProfit: 1.4, winRate: 0.99, byExchange: { binance: { kills: 98, pnl: 8.76 } } },
-    { symbol: 'INJ/USD', totalKills: 87, totalPnl: 7.82, avgPnl: 0.09, quickKillRate: 0.98, avgBarsToProfit: 1.2, winRate: 0.99, byExchange: { kraken: { kills: 45, pnl: 4.05 }, capital: { kills: 42, pnl: 3.77 } } },
-  ];
-  const mockExchangeStatuses = [
-    { exchange: 'kraken', connected: true, activePositions: 3, todayKills: 24, todayPnl: 2.45 },
-    { exchange: 'binance', connected: true, activePositions: 5, todayKills: 31, todayPnl: 3.12 },
-    { exchange: 'alpaca', connected: false, activePositions: 0, todayKills: 0, todayPnl: 0 },
-    { exchange: 'capital', connected: true, activePositions: 2, todayKills: 18, todayPnl: 1.87 },
-  ];
+  // Duck Commando intel = REAL per-exchange connection state from get-user-balances.
+  // Kill/PnL telemetry is intentionally omitted (no real kill-tracking source in the
+  // frontend yet) so the panel shows genuine connection dots, never fabricated stats.
+  const exchangeStatuses = liveExchanges.map((ex) => ({
+    exchange: ex.exchange,
+    connected: ex.connected,
+  }));
+  // Sniper leaderboard has no real telemetry source yet → honest empty state.
+  const symbolStats: never[] = [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -56,7 +52,7 @@ export default function WarRoomDashboard() {
               🦆 QUANTUM QUACKERS WAR ROOM
             </h1>
             <p className="text-muted-foreground mt-1 flex items-center gap-2">
-              Autonomous Trading • Real Quantum Data • Temporal Ladder Connected
+              Autonomous Trading • Live Quantum State • Temporal Ladder
               {globalState.isRunning && (
                 <Badge variant="default" className="bg-green-500 animate-pulse">
                   SYSTEMS ONLINE
@@ -115,13 +111,10 @@ export default function WarRoomDashboard() {
 
         {/* 🦆 DUCK COMMANDOS - IRA SNIPER MODE 🦆 */}
         <div className="space-y-4">
-          {/* Kill Confirmation Banner (shows when a profitable SELL happens) */}
-          {mockKill && <KillConfirmationBanner kill={mockKill} />}
-          
           {/* Duck Intel + Sniper Leaderboard */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <DuckCommandoIntel exchangeStatuses={mockExchangeStatuses} showLore={true} />
-            <SniperLeaderboard symbolStats={mockSymbolStats} sortBy="kills" maxDisplay={10} />
+            <DuckCommandoIntel exchangeStatuses={exchangeStatuses} showLore={true} />
+            <SniperLeaderboard symbolStats={symbolStats} sortBy="kills" maxDisplay={10} />
           </div>
         </div>
 

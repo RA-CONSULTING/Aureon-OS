@@ -25,9 +25,12 @@ import {
 interface ExchangeStatus {
   exchange: string;
   connected: boolean;
-  activePositions: number;
-  todayKills: number;
-  todayPnl: number;
+  // Live sniper telemetry — optional. Omitted until a real kill-tracking source
+  // feeds it; the live-stats block only renders when these are present, so the
+  // panel never shows fabricated or zero-filled kill numbers.
+  activePositions?: number;
+  todayKills?: number;
+  todayPnl?: number;
 }
 
 interface DuckCommandoIntelProps {
@@ -121,8 +124,9 @@ export function DuckCommandoIntel({
                   <span className="text-xs font-semibold text-white uppercase">{duck.exchange}</span>
                 </div>
 
-                {/* Live Stats (if connected) */}
-                {status && (
+                {/* Live sniper telemetry — only when a real kill-tracking source
+                    supplies it (never zero-filled/fabricated). */}
+                {status && status.todayKills !== undefined && (
                   <div className="grid grid-cols-3 gap-1 px-2 py-2 bg-slate-900/50 border-t border-slate-700">
                     <div className="text-center">
                       <span className="block text-xs">🎯</span>
@@ -131,13 +135,13 @@ export function DuckCommandoIntel({
                     </div>
                     <div className="text-center">
                       <span className="block text-xs">📊</span>
-                      <span className="block text-sm font-bold text-white">{status.activePositions}</span>
+                      <span className="block text-sm font-bold text-white">{status.activePositions ?? 0}</span>
                       <span className="block text-[9px] text-gray-500">Active</span>
                     </div>
                     <div className="text-center">
                       <span className="block text-xs">💰</span>
-                      <span className={`block text-sm font-bold ${status.todayPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        ${status.todayPnl.toFixed(2)}
+                      <span className={`block text-sm font-bold ${(status.todayPnl ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        ${(status.todayPnl ?? 0).toFixed(2)}
                       </span>
                       <span className="block text-[9px] text-gray-500">PnL</span>
                     </div>

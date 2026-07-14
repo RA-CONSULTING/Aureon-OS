@@ -13,38 +13,15 @@ export interface TimelineFrame {
 // -----------------------------
 // ZIP Loader for earth-live-data
 // -----------------------------
-export async function loadZipFrames(file: File): Promise<TimelineFrame[]> {
-  try {
-    // For now, return mock data - in real implementation would parse ZIP
-    const frames: TimelineFrame[] = [];
-    
-    // Generate sample frames with realistic Schumann resonance data
-    for (let i = 0; i < 100; i++) {
-      const t = Date.now() + i * 1000 * 60; // 1 minute intervals
-      const baseFreqs = [7.83, 14.3, 20.8, 27.3, 33.8];
-      
-      // Add slight variations to frequencies
-      const schumannHz = baseFreqs.map(f => f + (Math.random() - 0.5) * 0.5);
-      
-      // Generate tensor field data
-      const tensorField: TensorDatum[] = [];
-      for (let j = 0; j < 12; j++) {
-        tensorField.push({
-          phi: Math.random() * Math.PI * 2,
-          kappa: Math.random() * 0.8 + 0.2,
-          psi: Math.random(),
-          TSV: (Math.random() - 0.5) * 2 // -1 to 1
-        });
-      }
-      
-      frames.push({ t, schumannHz, tensorField });
-    }
-    
-    return frames;
-  } catch (error) {
-    console.error('Error loading ZIP frames:', error);
-    return [];
-  }
+export async function loadZipFrames(_file: File): Promise<TimelineFrame[]> {
+  // ZIP parsing is not implemented yet. We deliberately return NO frames rather
+  // than fabricating random data that would render as if it were real
+  // earth-live-data. Use the CSV loader for real frames until ZIP support lands.
+  console.warn(
+    'SchumannDataLoaders.loadZipFrames: ZIP import not implemented — no frames ' +
+    'loaded (returning empty; use a .csv export instead).'
+  );
+  return [];
 }
 
 // -----------------------------
@@ -71,18 +48,12 @@ export async function csvToFrames(file: File): Promise<TimelineFrame[]> {
         parseFloat(cols[4]) || 27.3,
         parseFloat(cols[5]) || 33.8
       ];
-      
-      // Generate tensor field for this frame
+
+      // Tensor field is not present in the CSV schema — leave it empty rather
+      // than fabricating random tensor values. The lattice renders the real
+      // frequency frames; the tensor overlay stays empty until a source supplies it.
       const tensorField: TensorDatum[] = [];
-      for (let i = 0; i < 12; i++) {
-        tensorField.push({
-          phi: Math.random() * Math.PI * 2,
-          kappa: Math.random() * 0.8 + 0.2,
-          psi: Math.random(),
-          TSV: (Math.random() - 0.5) * 2
-        });
-      }
-      
+
       frames.push({ t, schumannHz, tensorField });
     }
     

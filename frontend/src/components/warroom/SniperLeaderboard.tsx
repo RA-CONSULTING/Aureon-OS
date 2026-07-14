@@ -161,7 +161,16 @@ export function SniperLeaderboard({
 
         {/* Leaderboard Table */}
         <ScrollArea className="h-[350px]">
-          <div className="space-y-1">
+          {symbolStats.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-[320px] text-center px-6">
+              <span className="text-3xl mb-2 opacity-60">🎯</span>
+              <p className="text-sm text-gray-300 font-semibold">No sniper telemetry yet</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Awaiting live trades — kill stats populate from real executions as they happen.
+              </p>
+            </div>
+          )}
+          <div className="space-y-1" hidden={symbolStats.length === 0}>
             {/* Table Header */}
             <div className="grid grid-cols-10 gap-1 text-xs text-gray-400 font-semibold uppercase p-2 bg-slate-800/50 rounded sticky top-0">
               <div className="text-center">#</div>
