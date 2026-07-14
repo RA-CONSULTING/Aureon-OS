@@ -273,6 +273,18 @@ class QueenConscience:
         if any(w in action_lower for w in ("override", "bypass", "disable",
                                             "ignore_governance", "force")):
             return True
+        # Local-machine / disk moves that touch the world → risky, so the
+        # substrate-coherence veto applies to the organism's own hands exactly
+        # as it does to a trade. Read-only moves (read/list/screenshot/get) are
+        # deliberately absent — a benign observation never trips the veto.
+        if any(w in action_lower for w in (
+            "delete", "remove", "rmdir", "overwrite", "write_file", "patch",
+            "shell", "exec", "click", "type", "keypress", "press_key", "hotkey",
+            "drag", "wifi", "connect", "disconnect", "lock_screen",
+            "sleep_computer", "shutdown", "reboot", "wallpaper", "kill",
+            "uninstall", "format",
+        )):
+            return True
         # Trade verbs → risky when leverage / risk / size meet thresholds
         if any(w in action_lower for w in ("trade", "buy", "sell", "execute",
                                             "order", "all-in", "all in")):
