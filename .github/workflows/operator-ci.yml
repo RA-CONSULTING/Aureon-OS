@@ -52,9 +52,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e '.[operator,dev]'
       - name: Ruff (strict — aureon/operator + aureon/saas must be clean)
-        run: ruff check aureon/operator/ aureon/saas/ aureon/core/aureon_connectome.py aureon/core/organism_daemon.py aureon/core/hnc_field.py aureon/core/bus_trace.py aureon/core/trace_pump.py aureon/core/metacognition_monitor.py aureon/core/affect_monitor.py
+        run: ruff check aureon/operator/ aureon/saas/ aureon/core/aureon_connectome.py aureon/core/organism_daemon.py aureon/core/hnc_field.py aureon/core/bus_trace.py aureon/core/trace_pump.py aureon/core/metacognition_monitor.py aureon/core/affect_monitor.py aureon/core/soul.py
       - name: Mypy (strict — aureon/operator + aureon/saas must be clean)
-        run: mypy aureon/operator/ aureon/saas/ aureon/core/bus_trace.py aureon/core/trace_pump.py aureon/core/metacognition_monitor.py aureon/core/affect_monitor.py
+        run: mypy aureon/operator/ aureon/saas/ aureon/core/bus_trace.py aureon/core/trace_pump.py aureon/core/metacognition_monitor.py aureon/core/affect_monitor.py aureon/core/soul.py
       - name: Pytest (offline — no keys/network)
         env:
           AUREON_LLM_OFFLINE: "1"
