@@ -52,13 +52,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e '.[operator,dev]'
       - name: Ruff (strict — aureon/operator + aureon/saas must be clean)
-        run: ruff check aureon/operator/ aureon/saas/ aureon/core/aureon_connectome.py aureon/core/organism_daemon.py aureon/core/hnc_field.py aureon/core/bus_trace.py aureon/core/trace_pump.py aureon/core/metacognition_monitor.py aureon/core/affect_monitor.py aureon/core/soul.py aureon/core/soul_company.py aureon/core/soul_benchmark.py aureon/core/inner_work.py
+        run: ruff check aureon/operator/ aureon/saas/ aureon/core/aureon_connectome.py aureon/core/organism_daemon.py aureon/core/hnc_field.py aureon/core/bus_trace.py aureon/core/trace_pump.py aureon/core/metacognition_monitor.py aureon/core/affect_monitor.py aureon/core/soul.py aureon/core/soul_company.py aureon/core/soul_benchmark.py aureon/core/inner_work.py aureon/core/pursuit.py
       - name: Mypy (strict — aureon/operator + aureon/saas must be clean)
-        run: mypy aureon/operator/ aureon/saas/ aureon/core/bus_trace.py aureon/core/trace_pump.py aureon/core/metacognition_monitor.py aureon/core/affect_monitor.py aureon/core/soul.py aureon/core/soul_company.py aureon/core/soul_benchmark.py aureon/core/inner_work.py
+        run: mypy aureon/operator/ aureon/saas/ aureon/core/bus_trace.py aureon/core/trace_pump.py aureon/core/metacognition_monitor.py aureon/core/affect_monitor.py aureon/core/soul.py aureon/core/soul_company.py aureon/core/soul_benchmark.py aureon/core/inner_work.py aureon/core/pursuit.py
       - name: Pytest (offline — no keys/network)
         env:
           AUREON_LLM_OFFLINE: "1"
-        run: pytest tests/test_operator_server.py tests/test_operator_cognition.py tests/test_operator_production.py tests/test_operator_wearable.py tests/test_operator_providers_keys.py tests/test_operator_connections.py tests/test_aureon_operator.py tests/test_saas_catalog.py tests/test_saas_gateway.py tests/test_saas_billing.py tests/test_connectome.py tests/test_credential_bootstrap.py tests/test_world_data_keyed.py tests/test_grounded_action.py tests/test_organism_unification.py tests/test_soul.py tests/test_soul_company.py tests/test_soul_benchmark.py tests/test_inner_work.py -q
+        run: pytest tests/test_operator_server.py tests/test_operator_cognition.py tests/test_operator_production.py tests/test_operator_wearable.py tests/test_operator_providers_keys.py tests/test_operator_connections.py tests/test_aureon_operator.py tests/test_saas_catalog.py tests/test_saas_gateway.py tests/test_saas_billing.py tests/test_connectome.py tests/test_credential_bootstrap.py tests/test_world_data_keyed.py tests/test_grounded_action.py tests/test_organism_unification.py tests/test_soul.py tests/test_soul_company.py tests/test_soul_benchmark.py tests/test_inner_work.py tests/test_pursuit.py -q
       - name: Organism unification audit (all connective edges must be live)
         env:
           AUREON_LLM_OFFLINE: "1"
