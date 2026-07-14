@@ -174,6 +174,14 @@ export const NAV_SECTIONS: NavSection[] = [
     label: "Cognition & LLM",
     items: [
       {
+        path: "/cognition/systems",
+        label: "Cognitive Systems",
+        description: "Field, bus, mycelium, connectome & brain — verified read APIs",
+        icon: Brain,
+        Component: lazy(() => import("./pages/CognitivePage")),
+        live: true,
+      },
+      {
         path: "/cognition/operator",
         label: "Operator Chat",
         description: "Ask the grounded Aureon cognition anything",
