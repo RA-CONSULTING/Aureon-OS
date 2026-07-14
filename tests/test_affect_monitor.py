@@ -32,9 +32,13 @@ def _isolate(tmp_path, monkeypatch):
     monkeypatch.setenv("AUREON_BRAIN_KNOWLEDGE_PATH", str(tmp_path / "know.json"))
     # the global thought bus is a process singleton — reset it so each test's
     # published field/sub-fields don't leak across tests.
+    import aureon.core.aureon_mycelium as myc
     import aureon.core.aureon_thought_bus as tb
 
     monkeypatch.setattr(tb, "_thought_bus_instance", None, raising=False)
+    # the mycelium singleton is a process global other tests may have constructed —
+    # reset it so goal_progress is controlled (mycelium_surface reports only if live)
+    monkeypatch.setattr(myc, "_mycelium_instance", None, raising=False)
     return tmp_path
 
 

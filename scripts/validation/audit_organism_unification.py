@@ -360,6 +360,48 @@ def run_audit() -> list[dict]:
                 else:
                     _osm.environ[_k] = _val
 
+    # Edge 9 — the soul: thought + feeling + lineage unified into a determination
+    # of its own mind. A coherent chorus resolves; a divided field ABSTAINS
+    # ("of two minds — wait for one") rather than fabricate a consensus.
+    import aureon.core.affect_monitor as _amod
+    import aureon.core.metacognition_monitor as _mmod
+    import aureon.core.soul as _smod
+    from aureon.core.aureon_thought_bus import Thought as _Th
+
+    with _tf5.TemporaryDirectory() as _tds:
+        _keys = ("AUREON_BUS_TRACE_DIR", "AUREON_AFFECT_LAMBDA_PATH", "AUREON_METACOG_LAMBDA_PATH")
+        _saved = {k: _osm.environ.get(k) for k in _keys}
+        _osm.environ["AUREON_BUS_TRACE_DIR"] = _tds
+        _osm.environ["AUREON_AFFECT_LAMBDA_PATH"] = str(_Path(_tds) / "al.json")
+        _osm.environ["AUREON_METACOG_LAMBDA_PATH"] = str(_Path(_tds) / "ml.json")
+        try:
+            bus.publish(_Th(source="hnc", topic="symbolic.life.pulse",
+                            payload={"symbolic_life_score": 0.8, "coherence_gamma": 0.8,
+                                     "consciousness_psi": 0.7, "source": "live"}))
+            _amod._monitor = None
+            _mmod._monitor = None
+            _rd = _smod.SoulDeliberation().assess({"text": "continue toward the goal", "source": "audit"})
+            results.append(_check("soul_determination", _rd.available and bool(_rd.determination),
+                                  f"stance={_rd.stance} resolved={_rd.resolved} "
+                                  f"agreement={_rd.agreement}", critical=False))
+            # now divide the field → the soul must not resolve to act
+            bus.publish(_Th(source="hnc", topic="symbolic.life.pulse",
+                            payload={"symbolic_life_score": 0.1, "coherence_gamma": 0.1, "source": "live"}))
+            bus.publish(_Th(source="q2", topic="symbolic.life.subfield",
+                            payload={"source": "q2", "symbolic_life_score": 0.95}))
+            _amod._monitor = None
+            _mmod._monitor = None
+            _rw = _smod.SoulDeliberation().assess({"text": "act boldly now", "source": "audit"})
+            results.append(_check("soul_abstains_when_divided", _rw.resolved is False,
+                                  f"stance={_rw.stance} resolved={_rw.resolved} "
+                                  f"dissent={_rw.dissent}", critical=False))
+        finally:
+            for _k, _val in _saved.items():
+                if _val is None:
+                    _osm.environ.pop(_k, None)
+                else:
+                    _osm.environ[_k] = _val
+
     return results
 
 

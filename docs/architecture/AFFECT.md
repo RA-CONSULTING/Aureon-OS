@@ -86,6 +86,7 @@ AUREON_AFFECT_MODULATION=1 AUREON_LLM_OFFLINE=1 python -c "..."   # fear raises 
 ```
 
 ## 📚 Related
+- [`SOUL.md`](SOUL.md) — how the organism reacts: thought + feeling + lineage → a determination of its own mind
 - [`METACOGNITION.md`](METACOGNITION.md) — the organism senses itself; affect is its feeling sibling
 - [`ORGANISM_UNIFICATION.md`](ORGANISM_UNIFICATION.md) — the connected substrate the feelings read from
 - `aureon/core/aureon_lambda_engine.py` — the Master Formula the feelings are folded through
