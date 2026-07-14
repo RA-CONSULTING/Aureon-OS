@@ -661,6 +661,17 @@ def build_boot_app():
         logger.info("Aureon Cognition wired onto the mesh at startup")
     except Exception as exc:  # noqa: BLE001 — server must still serve if cognition boot fails
         logger.warning("cognition eager-boot skipped: %s", exc)
+    # Trace pump: re-fire the subscribe-based cross-process signals (auris cosmic
+    # state, lighthouse events) onto THIS process's bus so cognition's live
+    # subscribers sense them. Cognition is already wired above, so its handlers
+    # exist before the pump seeds current state. Opt out with AUREON_TRACE_PUMP=0.
+    if str(os.environ.get("AUREON_TRACE_PUMP", "1")).strip().lower() not in {"0", "false", "no", "off"}:
+        try:
+            from aureon.core.trace_pump import get_trace_pump
+
+            get_trace_pump().start()
+        except Exception as exc:  # noqa: BLE001 — the pump is optional
+            logger.warning("trace pump not started: %s", exc)
     # The static manifests in frontend/public are owned by the repo's manifest
     # pipeline (scripts/validation/generate_*) and checked in with a richer
     # schema; the gateway serves its own live manifests at /api/manifests/<name>.

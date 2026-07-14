@@ -364,30 +364,42 @@ class DrAurisThrone:
             return
         try:
             from aureon.core.aureon_thought_bus import Thought
+            cosmic_payload = {
+                "kp_index": state.kp_index,
+                "kp_category": state.kp_category,
+                "solar_wind_speed": state.solar_wind_speed,
+                "bz_component": state.bz_component,
+                "solar_flares_24h": state.solar_flares_24h,
+                "schumann_hz": state.schumann_hz,
+                "schumann_coherence": state.schumann_coherence,
+                "earth_disturbance": state.earth_disturbance,
+                "earth_blessing": state.earth_blessing,
+                "lambda_t": round(state.lambda_t, 4),
+                "consciousness_psi": round(state.consciousness_psi, 4),
+                "consciousness_level": state.consciousness_level,
+                "coherence_gamma": round(state.coherence_gamma, 4),
+                "cosmic_score": round(state.cosmic_score, 4),
+                "gate_open": state.gate_open,
+                "advisory": state.advisory,
+                "reasoning": state.reasoning,
+                "cycle": self._cycle_count,
+            }
             self._thought_bus.publish(Thought(
                 source="dr_auris_throne",
                 topic="auris.throne.cosmic_state",
-                payload={
-                    "kp_index": state.kp_index,
-                    "kp_category": state.kp_category,
-                    "solar_wind_speed": state.solar_wind_speed,
-                    "bz_component": state.bz_component,
-                    "solar_flares_24h": state.solar_flares_24h,
-                    "schumann_hz": state.schumann_hz,
-                    "schumann_coherence": state.schumann_coherence,
-                    "earth_disturbance": state.earth_disturbance,
-                    "earth_blessing": state.earth_blessing,
-                    "lambda_t": round(state.lambda_t, 4),
-                    "consciousness_psi": round(state.consciousness_psi, 4),
-                    "consciousness_level": state.consciousness_level,
-                    "coherence_gamma": round(state.coherence_gamma, 4),
-                    "cosmic_score": round(state.cosmic_score, 4),
-                    "gate_open": state.gate_open,
-                    "advisory": state.advisory,
-                    "reasoning": state.reasoning,
-                    "cycle": self._cycle_count,
-                },
+                payload=cosmic_payload,
             ))
+            # Cross-process bridge: dr-auris runs in the organism process but
+            # cognition subscribes to this topic in the operator process. Mirror
+            # to a dedicated trace so the trace pump can re-fire it there.
+            try:
+                import time as _t
+
+                from aureon.core.bus_trace import append_trace
+
+                append_trace("auris_cosmic_state", {**cosmic_payload, "_ts": _t.time()}, cap=200)
+            except Exception:  # noqa: BLE001
+                pass
 
             # Also publish advisory as a separate topic for quick consumption
             self._thought_bus.publish(Thought(

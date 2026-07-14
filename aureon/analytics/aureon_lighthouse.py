@@ -160,6 +160,17 @@ class LighthousePatternDetector:
                 topic="lighthouse.event",
                 payload=event.to_dict(),
             ))
+            # Cross-process bridge: lighthouse fires in trading/harmonic processes
+            # but cognition subscribes in the operator process. Mirror to a
+            # dedicated trace so the trace pump can re-fire the event there.
+            try:
+                import time as _t
+
+                from aureon.core.bus_trace import append_trace
+
+                append_trace("lighthouse_event", {**event.to_dict(), "_ts": _t.time()}, cap=500)
+            except Exception:  # noqa: BLE001
+                pass
         except Exception as exc:  # noqa: BLE001 — the bus edge is optional
             logger.debug(f"lighthouse bus publish skipped: {exc}")
         
