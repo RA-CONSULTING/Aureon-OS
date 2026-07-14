@@ -71,12 +71,17 @@ work-orders, the goal-capability routes, and the persistent contract stack.
 `aureon/core/soul_company.py` — `SoulCompany`:
 
 - **`plan(intent)`** decomposes a resolved intent into an ordered set of
-  **role-assigned work-orders** — the *RepoCartographer* investigates, the
-  *ImplementationWorker* carries out the authored step, the *SecurityReviewer*
-  checks safety. The workforce is `coder_agent_roles()`; the safe routes are
-  `recommend_goal_routes()` — both consulted **only when the organism is already
-  loaded** (never cold-booting the whole company inside a read path), with a light
-  default workforce otherwise. Planning is **read-only**: it never touches the machine.
+  **role-assigned work-orders**, staffed by a **fitted crew** drawn from Aureon's
+  *whole* company — the 41 roles across 8 departments (`aureon_agent_company_builder`,
+  CEO Goal Steward → Log Janitor), the same org it publishes to the company console
+  and serves at `GET /api/company`. The agency model: every brief gets a temporary
+  crew — a lead who owns it, a specialist fitted to the brief's department (a trading
+  brief pulls a trading specialist; a code brief an engineer; comms the research/PR
+  scout; logs the cleaner), and a reviewer who guards it (`DirectedPlan.crew`). The
+  safe routes come from `recommend_goal_routes()`. Every composed verb still stays in
+  the safe, ascent-gated set — **the crew prepares; the big/irreversible plays route
+  to the approval desk, never to a role**. Planning is **read-only**: it never touches
+  the machine.
 - **`direct(plan)`** carries each work-order out **in order**, through the ONE
   guarded hand (`LocalActionBridge` → `GroundedActionGate`), and **halts on the first
   blocked step** — the company stays of one mind and never pushes past a veto. The
