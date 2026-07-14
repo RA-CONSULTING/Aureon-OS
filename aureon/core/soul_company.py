@@ -56,10 +56,50 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 # the two repo-confined authoring verbs — each already guarded one layer down
 # (repo-confinement, sensitive-path block, AST syntax check, conscience veto).
 # execute_shell is deliberately withheld from the soul's reach (defence in depth).
+# NOTE: every verb here is REVERSIBLE/safe. No live-money, payment, filing, or
+# outbound-email verb ever appears — those never flow through the company; they are
+# prepared and routed to the human-approval queue instead.
 _COMPANY_VERBS = {
     "read_repo_file", "list_repo", "repo_search", "code_validate",
     "screenshot", "cursor_position", "write_repo_file", "patch_repo_file",
 }
+
+# ── ascent-gated autonomy: the gate opens as Aureon awakens ─────────────────
+# The set of safe verbs the company may compose WIDENS with the inner-work
+# chakra ascent (inner_work.stage_index, 0→7). Low centres → read-only
+# investigation; the repo-authoring verbs unlock only at higher centres. This is
+# "the gate unlocks through coherence/kundalini" — but strictly over the
+# reversible/safe verbs above; it can never reach an irreversible or outward act.
+_ASCENT_READONLY = {"read_repo_file", "list_repo", "repo_search"}
+_ASCENT_TIERS: list[tuple[int, set[str]]] = [
+    (0, set(_ASCENT_READONLY)),                                   # dormant/root → look only
+    (3, _ASCENT_READONLY | {"code_validate", "screenshot", "cursor_position"}),  # solar plexus → sense/validate
+    (5, _ASCENT_READONLY | {"code_validate", "screenshot", "cursor_position", "write_repo_file"}),  # throat → author
+    (6, set(_COMPANY_VERBS)),                                     # third eye+ → full safe set incl. patch
+]
+
+
+def _ascent_allowed_verbs(stage_index: int) -> set[str]:
+    """The safe verbs unlocked at this ascent stage — monotone, read-only at rest."""
+    allowed = set(_ASCENT_READONLY)
+    for threshold, verbs in _ASCENT_TIERS:
+        if stage_index >= threshold:
+            allowed = set(verbs)
+    return allowed & _COMPANY_VERBS  # never widen beyond the safe set, whatever happens
+
+
+def _current_ascent_verbs() -> set[str]:
+    """Read the live ascent stage and map it to the unlocked safe verbs. Guarded:
+    any failure falls back to READ-ONLY — awakening only ever widens, a fault never does."""
+    try:
+        from aureon.core.inner_work import get_inner_work
+
+        s = get_inner_work().assess()
+        if s.available:
+            return _ascent_allowed_verbs(int(s.stage_index))
+    except Exception:  # noqa: BLE001 — fail safe to read-only
+        pass
+    return set(_ASCENT_READONLY)
 
 # Highest-wins risk ordering across the recommended routes.
 _RISK_ORDER = {"": 0, "low": 0, "safe": 0, "benign": 0, "medium": 1, "high": 2}
@@ -170,7 +210,9 @@ class SoulCompany:
              *, allowed_verbs: set[str] | None = None) -> DirectedPlan:
         """Read-only decomposition. Never persists, never touches the machine."""
         text = str(intent or "").strip() or "continue toward the goal, safely"
-        allowed = allowed_verbs if allowed_verbs is not None else _COMPANY_VERBS
+        # the safe-verb set the company may compose widens as Aureon awakens; an
+        # explicit allowlist (tests / callers) overrides the ascent gate.
+        allowed = allowed_verbs if allowed_verbs is not None else _current_ascent_verbs()
         ctx = ctx or {}
         routes = self._routes(text)
         risk = _plan_risk(routes)
