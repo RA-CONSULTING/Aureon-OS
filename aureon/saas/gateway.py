@@ -101,10 +101,18 @@ def build_organism_payload() -> Dict[str, Any]:
                 uni["field_flowing"] = False
             uni["edges"] = {
                 topic: len(bus.recall(topic, limit=50) or [])
-                for topic in ("symbolic.life.pulse", "auris.throne.cosmic_state",
-                              "lighthouse.event", "operator.action.verdict",
-                              "cognition.complete", "baton.link")
+                for topic in ("symbolic.life.pulse", "symbolic.life.subfield",
+                              "auris.throne.cosmic_state", "lighthouse.event",
+                              "operator.action.verdict", "cognition.complete", "baton.link")
             }
+            # Local sub-fields the organism can now sense (each producer's field).
+            try:
+                from aureon.core.hnc_field import read_subfields
+
+                sub = read_subfields(bus)
+                uni["subfields"] = {"count": len(sub), "sources": sorted(sub.keys())}
+            except Exception:  # noqa: BLE001
+                uni["subfields"] = {"count": 0, "sources": []}
             payload["unification"] = uni
         except Exception:  # noqa: BLE001
             payload["unification"] = {}

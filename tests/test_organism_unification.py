@@ -54,6 +54,23 @@ def test_canonical_field_unavailable_without_pulse():
     assert field.available is False and field.symbolic_life_score is None
 
 
+def test_subfields_publish_and_read_by_source():
+    from aureon.core.hnc_field import publish_subfield, read_subfields
+
+    b = _bus()
+
+    class _S:
+        symbolic_life_score = 0.44
+        coherence_gamma = 0.6
+        consciousness_level = "AWARE"
+
+    publish_subfield("queen_cortex", _S(), bus=b)
+    publish_subfield("queen_source_law", _S(), bus=b)
+    subs = read_subfields(b)
+    assert "queen_cortex" in subs and "queen_source_law" in subs
+    assert subs["queen_cortex"]["symbolic_life_score"] == 0.44
+
+
 # ── keystone: publish → read the live field, flood-proof ─────────────────────
 
 def test_grounded_gate_reads_live_field_under_flood():

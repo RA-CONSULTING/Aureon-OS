@@ -87,6 +87,19 @@ def run_audit() -> list[dict]:
     except Exception as exc:  # noqa: BLE001
         results.append(_check("lighthouse_to_bus", False, f"error: {exc}"))
 
+    # Edge 4b — sub-field visibility: a producer's local field is sensed
+    from aureon.core.hnc_field import publish_subfield, read_subfields
+
+    class _State:
+        symbolic_life_score = 0.51
+        coherence_gamma = 0.6
+        consciousness_level = "AWARE"
+
+    publish_subfield("queen_cortex", _State(), bus=bus)
+    subs = read_subfields(bus)
+    results.append(_check("subfield_visibility", "queen_cortex" in subs,
+                          f"sources={sorted(subs.keys())}", critical=False))
+
     # Edge 5 — connectome telemetry: baton ear + pulse + auto-weave
     from aureon.core.aureon_connectome import get_connectome
 

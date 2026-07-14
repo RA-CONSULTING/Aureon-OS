@@ -82,4 +82,58 @@ def read_canonical_field(bus: Any = None) -> CanonicalField:
         return _EMPTY
 
 
-__all__ = ["CanonicalField", "read_canonical_field"]
+def publish_subfield(source: str, state: Any, bus: Any = None) -> None:
+    """Publish a producer's LOCAL field as a namespaced sub-field.
+
+    The organism has many legitimate ``LambdaEngine`` producers (the Queen's
+    cortex, source-law, metacognition, sentient loop, mycelium mind, the human
+    loop). Each computes a real local field; reconciling them into one would
+    destroy that. Instead each publishes its field here as
+    ``symbolic.life.subfield`` so the organism can SENSE every sub-field — the
+    fields become connected (visible on the shared bus) without losing their
+    local computation. Guarded / no-op on any error.
+    """
+    try:
+        from aureon.core.aureon_thought_bus import Thought, get_thought_bus
+
+        b = bus if bus is not None else get_thought_bus()
+        if b is None:
+            return
+        b.publish(Thought(
+            source=source, topic="symbolic.life.subfield",
+            payload={
+                "source": source,
+                "symbolic_life_score": getattr(state, "symbolic_life_score", None),
+                "coherence_gamma": getattr(state, "coherence_gamma", None),
+                "consciousness_level": getattr(state, "consciousness_level", None),
+            },
+        ))
+    except Exception:  # noqa: BLE001 — visibility is best-effort, never fatal
+        pass
+
+
+def read_subfields(bus: Any = None) -> dict[str, dict[str, Any]]:
+    """All recently-published local sub-fields, keyed by source — the organism's
+    view of every field its producers are computing."""
+    out: dict[str, dict[str, Any]] = {}
+    try:
+        from aureon.core.aureon_thought_bus import get_thought_bus, payload_of
+
+        b = bus if bus is not None else get_thought_bus()
+        if b is None or not hasattr(b, "recall"):
+            return out
+        for t in b.recall("symbolic.life.subfield", limit=200) or []:
+            p = payload_of(t)
+            src = p.get("source")
+            if src:
+                out[src] = {
+                    "symbolic_life_score": p.get("symbolic_life_score"),
+                    "coherence_gamma": p.get("coherence_gamma"),
+                    "consciousness_level": p.get("consciousness_level"),
+                }
+    except Exception:  # noqa: BLE001
+        pass
+    return out
+
+
+__all__ = ["CanonicalField", "read_canonical_field", "publish_subfield", "read_subfields"]

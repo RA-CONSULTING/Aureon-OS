@@ -358,6 +358,8 @@ class MyceliumMind:
                     SubsystemReading("spawn_rate", min(1.0, len(children) / max(len(spores), 1)), 0.7, "spawning"),
                 ]
                 ls = self._lambda_engine.step(readings, volatility=0.02)
+                from aureon.core.hnc_field import publish_subfield
+                publish_subfield("queen_mycelium_mind", ls)
                 self._psi = ls.consciousness_psi
                 self._lambda_t = ls.lambda_t
 

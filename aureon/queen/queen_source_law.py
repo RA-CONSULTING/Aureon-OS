@@ -347,6 +347,8 @@ class CognitionOutput:
                     for r in readings
                 ]
                 ls = self._lambda_engine.step(lambda_readings, volatility=0.05)
+                from aureon.core.hnc_field import publish_subfield
+                publish_subfield("queen_source_law", ls)
                 result.coherence_gamma = ls.coherence_gamma
                 result.consciousness_psi = ls.consciousness_psi
                 result.consciousness_level = ls.consciousness_level

@@ -85,6 +85,23 @@ the single place to READ the shared field. The gate, cognition, and the conscien
 three copies), so a system that only wants "the current shared coherence" reads the
 one canonical value instead of spinning a private `LambdaEngine`.
 
+## Sub-field visibility
+
+The six `queen_*` producers (cortex, source-law, metacognition, sentient loop,
+mycelium mind, human loop) each compute a real local `LambdaState` — reconciling
+them into one field would destroy that. Instead each publishes its field via
+`publish_subfield(...)` as `symbolic.life.subfield`, so the organism can **sense
+every field** (`read_subfields()` / the `/api/organism` `unification.subfields`
+block) without losing local computation. The fields are connected — visible on the
+shared bus — and a future cycle can blend them.
+
+## Robustness: the sweep survives rogue modules
+
+`Connectome.touch()` catches `BaseException` (re-raising only `KeyboardInterrupt`),
+so a module that calls `sys.exit()` / raises `SystemExit` at import time is recorded
+as `failed` instead of taking the whole sweep — and the organism daemon — down. A
+plain `except Exception` let `SystemExit` through; this closed that hole.
+
 ## Continuous audit
 
 `scripts/validation/audit_organism_unification.py` exercises every revived edge

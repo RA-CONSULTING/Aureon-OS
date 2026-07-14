@@ -391,6 +391,8 @@ class QueenCortex:
                     for name in BAND_NAMES
                 ]
                 ls = self._lambda_engine.step(readings, volatility=0.05)
+                from aureon.core.hnc_field import publish_subfield
+                publish_subfield("queen_cortex", ls)
                 psi = ls.consciousness_psi
                 gamma_field = ls.coherence_gamma
             except Exception:

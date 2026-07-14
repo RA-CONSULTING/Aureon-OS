@@ -593,7 +593,10 @@ class HNCHumanLoop:
                     state=str(intent.get("intent_type", "unknown")),
                 ),
             ]
-            return self._lambda_engine.step(readings=readings, vault=self._vault)
+            _ls = self._lambda_engine.step(readings=readings, vault=self._vault)
+            from aureon.core.hnc_field import publish_subfield
+            publish_subfield("hnc_human_loop", _ls)
+            return _ls
         except Exception as e:
             logger.debug("LambdaEngine.step failed: %s", e)
             return None

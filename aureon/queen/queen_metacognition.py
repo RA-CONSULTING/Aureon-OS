@@ -796,7 +796,9 @@ class QueenMetacognition:
                     SubsystemReading("meta_pattern_pressure", 1.0 - pattern_pressure, 0.8, "pressure"),
                     SubsystemReading("meta_health", health, 0.9, "health"),
                 ]
-                self._lambda_engine.step(readings, volatility=0.03)
+                _ls = self._lambda_engine.step(readings, volatility=0.03)
+                from aureon.core.hnc_field import publish_subfield
+                publish_subfield("queen_metacognition", _ls)
             except Exception:
                 pass
 

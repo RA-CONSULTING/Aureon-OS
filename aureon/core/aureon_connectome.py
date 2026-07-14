@@ -184,7 +184,13 @@ class Connectome:
         os.environ[_SUPPRESS_ENV] = "1"   # the baton's live-mode env flips must never fire from here
         try:
             mod = importlib.import_module(module)
-        except Exception as exc:  # noqa: BLE001 — a failed touch is data, not death
+        except KeyboardInterrupt:
+            raise  # operator Ctrl-C still works
+        except BaseException as exc:  # noqa: BLE001 — a rogue module's sys.exit()/
+            # SystemExit at import must not kill the sweep, the daemon, or the
+            # audit. A failed touch is data, not death — catch even BaseException
+            # (except KeyboardInterrupt) so one misbehaving module can't take the
+            # whole organism sweep down.
             self._record(module, "failed", error=f"{type(exc).__name__}: {exc}"[:300])
             return {"module": module, "status": "failed", "error": f"{type(exc).__name__}: {exc}"[:300]}
         finally:
@@ -271,9 +277,8 @@ class Connectome:
             for module, rec in list(self._records.items()):
                 if woven >= weave_batch:
                     break
-                if rec.get("status") == "touched":
-                    if self.weave(module).get("status") == "woven":
-                        woven += 1
+                if rec.get("status") == "touched" and self.weave(module).get("status") == "woven":
+                    woven += 1
         self._save_state()
         return {"touched": touched, "failed": failed, "denied": denied, "woven": woven}
 
