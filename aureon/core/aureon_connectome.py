@@ -118,11 +118,16 @@ class Connectome:
 
     def _on_baton(self, thought: Any) -> None:
         try:
+            # The baton heartbeat carries the module name under ``payload`` (the
+            # live Thought) or a nested ``payload``/top-level dict (recall's
+            # to_json form). Read all shapes so the 570 baton pings actually
+            # register — historically this read a ``content`` field that the
+            # Thought dataclass does not have, so baton_linked stayed at 0.
             if isinstance(thought, dict):
-                content = thought.get("content", thought)
+                payload = thought.get("payload", thought)
             else:
-                content = getattr(thought, "content", None) or {}
-            module = str(content.get("module", "") or "") if isinstance(content, dict) else ""
+                payload = getattr(thought, "payload", None) or {}
+            module = str(payload.get("module", "") or "") if isinstance(payload, dict) else ""
             if module:
                 with self._lock:
                     self._linked.add(module)
@@ -140,7 +145,15 @@ class Connectome:
             from aureon.core.aureon_mycelium import get_mycelium
 
             status = get_mycelium().get_mesh_status()
-            mesh_member = module.rsplit(".", 1)[-1] in (status.get("connected_systems") or [])
+            # connected_systems is a list of dicts ({name, connected_at, ...}) —
+            # extract the names before the membership test (a raw string-in-list
+            # check against dicts is always False).
+            connected = status.get("connected_systems") or []
+            names = {
+                (c.get("name") if isinstance(c, dict) else str(c))
+                for c in connected
+            }
+            mesh_member = module.rsplit(".", 1)[-1] in names
         except Exception:  # noqa: BLE001
             pass
         return {
@@ -297,7 +310,7 @@ class Connectome:
             get_thought_bus().publish(Thought(
                 topic="organism.connectome.pulse",
                 source="aureon_connectome",
-                content=snapshot,
+                payload=snapshot,
             ))
         except Exception as exc:  # noqa: BLE001 — a silent breath is still a breath
             logger.debug("pulse publish unavailable: %s", exc)

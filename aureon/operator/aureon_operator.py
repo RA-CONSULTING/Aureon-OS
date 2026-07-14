@@ -166,7 +166,19 @@ def broadcast_to_mesh(topic: str, payload: Dict[str, Any]) -> None:
     try:
         from aureon.core.aureon_mycelium import get_mycelium
 
-        get_mycelium().broadcast_signal(topic, dict(payload))
+        mesh = get_mycelium()
+        data = dict(payload)
+        mesh.broadcast_signal(topic, data)
+        # broadcast_signal only records the signal + pokes hives; it never
+        # reaches connected subsystems. propagate_to_all is the method that
+        # actually drives each subsystem's receive_mycelium_message contract, so
+        # a mesh broadcast is genuinely delivered, not just logged.
+        propagate = getattr(mesh, "propagate_to_all", None)
+        if callable(propagate):
+            try:
+                propagate(topic, data)
+            except Exception as exc:  # noqa: BLE001
+                logger.debug("mesh propagate skipped (%s): %s", topic, exc)
     except Exception as exc:  # noqa: BLE001
         logger.debug("mesh broadcast skipped (%s): %s", topic, exc)
 

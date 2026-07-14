@@ -570,3 +570,27 @@ def get_thought_bus(persist_path: Optional[str] = None) -> ThoughtBus:
 
 # Alias for compatibility - ThoughtSignal is just Thought
 ThoughtSignal = Thought
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Shape-agnostic accessors
+# ─────────────────────────────────────────────────────────────────────────────
+# subscribe() handlers receive a live ``Thought`` object, but get_recent()/recall()
+# return ``to_json()`` DICTS. Readers that mixed these up (getattr on a dict) matched
+# nothing silently. These helpers read topic/payload from either shape, so a single
+# consumer works against both a subscription and the ring-buffer history.
+
+def topic_of(thought: Any) -> str:
+    """Return a thought's topic whether it's a Thought object or a to_json dict."""
+    if isinstance(thought, dict):
+        return str(thought.get("topic", "") or "")
+    return str(getattr(thought, "topic", "") or "")
+
+
+def payload_of(thought: Any) -> Dict[str, Any]:
+    """Return a thought's payload whether it's a Thought object or a to_json dict."""
+    if isinstance(thought, dict):
+        val = thought.get("payload")
+    else:
+        val = getattr(thought, "payload", None)
+    return val if isinstance(val, dict) else {}

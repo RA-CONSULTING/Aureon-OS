@@ -601,12 +601,14 @@ class HNCLiveDaemon:
             from aureon.core.aureon_thought_bus import get_thought_bus
             _action_bus = get_thought_bus()
 
+            from aureon.core.aureon_thought_bus import payload_of, topic_of
+
             def _read_action_stats():
                 recent = _action_bus.get_recent(200) or []
                 verdicts = [
-                    getattr(t, "payload", {}) or {}
+                    payload_of(t)
                     for t in recent
-                    if getattr(t, "topic", "") == "operator.action.verdict"
+                    if topic_of(t) == "operator.action.verdict"
                 ]
                 if not verdicts:
                     return {"count": 0}
@@ -675,6 +677,30 @@ class HNCLiveDaemon:
                 state = self.engine.step(readings)
             self._last_state_dict = state.to_dict()
             self._append_trace(self._last_state_dict, readings)
+
+            # Phase 19 — publish the LIVE field on the thought bus so the whole
+            # organism can sense it. The QueenConscience SLS veto, the grounded-
+            # action gate, and four other subscribers all read
+            # ``symbolic.life.pulse``; without this edge the daemon's real field
+            # stayed trapped in the JSONL trace and every consumer degraded to
+            # "unknown" in production. Guarded — a bus hiccup never stops the loop.
+            try:
+                from aureon.core.aureon_thought_bus import Thought, get_thought_bus
+
+                sd = self._last_state_dict
+                get_thought_bus().publish(Thought(
+                    source="hnc_live_daemon", topic="symbolic.life.pulse",
+                    payload={
+                        "symbolic_life_score": sd.get("symbolic_life_score"),
+                        "coherence_gamma": sd.get("coherence_gamma"),
+                        "consciousness_psi": sd.get("consciousness_psi"),
+                        "consciousness_level": sd.get("consciousness_level"),
+                        "lambda_t": sd.get("lambda_t"),
+                        "source": "hnc_live_daemon",
+                    },
+                ))
+            except Exception as exc:
+                logger.debug("symbolic.life.pulse publish failed: %s", exc)
 
             # Feed the engine state into the attached observer. Wrapped
             # so any observer error (numpy missing in sandbox, scipy
