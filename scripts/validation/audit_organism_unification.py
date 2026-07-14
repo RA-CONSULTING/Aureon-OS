@@ -124,6 +124,23 @@ def run_audit() -> list[dict]:
     results.append(_check("divergence_acts", dv.verdict in ("CONCERNED", "VETOED"),
                           f"verdict={dv.verdict} divergence={dv.field_divergence}", critical=False))
 
+    # Edge 4e — the field gates EVERY conscience caller (trade fallback), not
+    # just the local-action gate: a trade with no field context still vetoes
+    # when the live whole-body field (global bus) is divided + off-island.
+    from aureon.queen.queen_conscience import ConscienceVerdict, QueenConscience
+
+    bus.publish(Thought(source="hnc_live_daemon", topic="symbolic.life.pulse",
+                        payload={"symbolic_life_score": 0.30}))   # off-island, newest
+
+    class _Hi:
+        symbolic_life_score = 0.90
+        coherence_gamma = 0.5
+
+    publish_subfield("queen_cortex", _Hi(), bus=bus)   # divergence 0.60 on the global bus
+    w = QueenConscience().ask_why("Execute trade buy BTC", {"symbolic_life_score": 0.30, "risk": 0.1})
+    results.append(_check("field_gates_trades", w.verdict == ConscienceVerdict.VETO,
+                          f"verdict={getattr(w.verdict, 'name', w.verdict)}", critical=False))
+
     # Edge 5 — connectome telemetry: baton ear + pulse + auto-weave
     from aureon.core.aureon_connectome import get_connectome
 

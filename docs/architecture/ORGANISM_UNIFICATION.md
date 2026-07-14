@@ -115,6 +115,13 @@ stability island. A divided field is not a mandate. Backward-compatible: unchang
 when divergence is unknown or below the threshold — divergence only ever tightens
 the veto, never loosens it.
 
+**The field reaches every decision.** The conscience's `_evaluate_substrate_coherence`
+falls back to `blend_field()` when a caller doesn't pass `field_divergence` (mirroring
+the canonical-SLS fallback in `_current_sls`). So **every** risky `ask_why` — trades
+(`queen_orca_bridge`), goals, skills, operator answers — is now gated by the live
+whole-body field, not just the local-action gate that explicitly feeds it. The
+organism's coherence is one shared authority over all its decisions.
+
 ## Robustness: the sweep survives rogue modules
 
 `Connectome.touch()` catches `BaseException` (re-raising only `KeyboardInterrupt`),

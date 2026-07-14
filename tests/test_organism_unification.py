@@ -138,6 +138,27 @@ def test_low_divergence_leaves_a_healthy_move_approved():
     assert v.verdict == "APPROVED" and v.approved is True
 
 
+def test_divided_field_gates_a_trade_via_the_fallback(monkeypatch):
+    """A trade decision passes no field_divergence, yet the live whole-body
+    consensus still gates it — the field now reaches every conscience caller
+    (trades, goals, skills), not just the local-action gate. Hermetic: the live
+    field is injected via a patched blend_field, not the shared bus."""
+    from aureon.core.hnc_field import BlendedField
+    from aureon.queen.queen_conscience import ConscienceVerdict, QueenConscience
+
+    monkeypatch.setattr(
+        "aureon.core.hnc_field.blend_field",
+        lambda bus=None: BlendedField(
+            available=True, symbolic_life_score=0.60, coherence_gamma=0.5,
+            contributors=2, divergence=0.60, sources=("canonical", "queen_cortex")),
+    )
+    c = QueenConscience()
+    # trade context carries NO field_divergence — the fallback must supply it,
+    # and SLS 0.30 is off the island → VETO.
+    whisper = c.ask_why("Execute trade buy BTC", {"symbolic_life_score": 0.30, "risk": 0.1})
+    assert whisper.verdict == ConscienceVerdict.VETO
+
+
 # ── keystone: publish → read the live field, flood-proof ─────────────────────
 
 def test_grounded_gate_reads_live_field_under_flood():

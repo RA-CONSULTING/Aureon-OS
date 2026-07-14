@@ -346,6 +346,19 @@ class QueenConscience:
         # SLS island. A body of two minds should not act boldly. Checked before the
         # SLS thresholds so it can caution even when SLS itself looks healthy.
         divergence = context.get("field_divergence")
+        if divergence is None:
+            # Fall back to the live whole-body consensus so EVERY risky decision
+            # — trades, goals, skills, operator answers, not just local actions —
+            # is gated by the organism's field divergence, even when the caller
+            # didn't pass it. Mirrors the canonical-SLS fallback in _current_sls.
+            try:
+                from aureon.core.hnc_field import blend_field
+
+                bf = blend_field()
+                if bf.available and bf.contributors > 1:
+                    divergence = bf.divergence
+            except Exception:  # noqa: BLE001
+                divergence = None
         try:
             divergence = float(divergence) if divergence is not None else None
         except (TypeError, ValueError):
