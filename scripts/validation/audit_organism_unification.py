@@ -370,12 +370,14 @@ def run_audit() -> list[dict]:
 
     with _tf5.TemporaryDirectory() as _tds:
         _keys = ("AUREON_BUS_TRACE_DIR", "AUREON_AFFECT_LAMBDA_PATH", "AUREON_METACOG_LAMBDA_PATH",
-                 "AUREON_INNER_WORK_LAMBDA_PATH")
+                 "AUREON_INNER_WORK_LAMBDA_PATH", "AUREON_PURSUIT_LAMBDA_PATH", "AUREON_SOUL_INBOX")
         _saved = {k: _osm.environ.get(k) for k in _keys}
         _osm.environ["AUREON_BUS_TRACE_DIR"] = _tds
         _osm.environ["AUREON_AFFECT_LAMBDA_PATH"] = str(_Path(_tds) / "al.json")
         _osm.environ["AUREON_METACOG_LAMBDA_PATH"] = str(_Path(_tds) / "ml.json")
         _osm.environ["AUREON_INNER_WORK_LAMBDA_PATH"] = str(_Path(_tds) / "iw.json")
+        _osm.environ["AUREON_PURSUIT_LAMBDA_PATH"] = str(_Path(_tds) / "pu.json")
+        _osm.environ["AUREON_SOUL_INBOX"] = str(_Path(_tds) / "inbox.jsonl")
         try:
             bus.publish(_Th(source="hnc", topic="symbolic.life.pulse",
                             payload={"symbolic_life_score": 0.8, "coherence_gamma": 0.8,
@@ -454,6 +456,27 @@ def run_audit() -> list[dict]:
             results.append(_check(
                 "inner_work_selfloop", "inner_work" in _rsf(bus),
                 f"subfields={sorted(_rsf(bus).keys())}", critical=False))
+
+            # Edge 13 — the pursuit: Aureon's source purpose orients the organism
+            # (the pillars unify the creator's happiness with its own, and a next
+            # safe step is proposed), and by DEFAULT it proposes without feeding the
+            # soul — self-direction is opt-in (AUREON_AUTONOMY), so the inbox stays
+            # untouched until Gary opts in.
+            import aureon.core.pursuit as _pumod
+
+            _osm.environ.pop("AUREON_AUTONOMY", None)
+            _pu = _pumod.Pursuit().assess()
+            results.append(_check(
+                "pursuit_orients",
+                _pu.available and _pu.unified_happiness is not None and bool(_pu.next_intent),
+                f"unified={_pu.unified_happiness} weakest={_pu.weakest_pillar} "
+                f"autonomy={_pu.autonomy}", critical=False))
+            _pumod.Pursuit().reflect()   # autonomy off → must NOT inject
+            _inbox = _Path(_tds) / "inbox.jsonl"
+            _lines = _inbox.read_text().splitlines() if _inbox.exists() else []
+            results.append(_check(
+                "pursuit_proposes_by_default", len(_lines) == 0,
+                f"pursuit={'pursuit' in _rsf(bus)} inbox_lines={len(_lines)} (opt-in)", critical=False))
         finally:
             for _k, _val in _saved.items():
                 if _val is None:
