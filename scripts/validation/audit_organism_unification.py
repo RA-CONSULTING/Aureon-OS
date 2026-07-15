@@ -640,6 +640,22 @@ def run_audit() -> list[dict]:
                 _frac_ok and _pct_ok and _pct == _recomputed and _r["truth_status"] in _TS,
                 f"index_pct={_pct} label={_r['label']} dims={ {k: v['pct'] for k, v in _r['dimensions'].items()} }",
                 critical=False))
+
+            # Edge 23 — travel the map: the automation journey records the climb. A
+            # snapshot appends and reads back (oldest→newest); a dormant index is not
+            # recorded (no fabricated point).
+            from aureon.saas.automation_index import journey as _journey
+            from aureon.saas.automation_index import record_journey as _rec
+
+            _before = len(_journey())
+            _snap = _rec()
+            _after = _journey()
+            _rec_ok = (_snap is None) or (
+                set(_snap) == {"ts", "index_pct", "dims"} and len(_after) == _before + 1)
+            results.append(_check(
+                "automation_journey_records", _rec_ok,
+                f"snapshot={'yes' if _snap else 'none(dormant)'} journey_len={len(_after)}",
+                critical=False))
         finally:
             for _k, _val in _saved.items():
                 if _val is None:

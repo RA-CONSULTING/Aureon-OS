@@ -247,6 +247,18 @@ def breathe(organs: dict[str, Any]) -> None:
                 logger.info("📬 approvals — notified=%d decisions=%d", sent, len(applied))
     except Exception as exc:  # noqa: BLE001
         logger.debug("approval email loop skipped: %s", exc)
+    # The journey: record one snapshot of the automation progress index so the climb
+    # toward "the whole repo, fully automated" is captured breath by breath as the
+    # connectome weaves more of the body. Read + append only; a dormant index isn't
+    # recorded (no fabricated point). Guarded.
+    try:
+        from aureon.saas.automation_index import record_journey
+
+        snap = record_journey()
+        if snap:
+            logger.info("🗺️ automation — %.1f%% toward fully automated", snap["index_pct"])
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("automation journey skipped: %s", exc)
 
 
 def main() -> None:

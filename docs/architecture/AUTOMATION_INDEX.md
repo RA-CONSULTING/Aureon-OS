@@ -41,6 +41,16 @@ is clamped to `[0,1]`.
   much of each part is automated" is visible, not just the aggregate.
 - **Observational only.** It measures; it changes no behaviour and authorizes nothing.
 
+## The journey — travelling the map
+
+The map is only half the point; the other half is watching it move. `record_journey()` is
+called from the organism daemon's breath and appends one compact snapshot
+(`{ts, index_pct, dims}`) to a bounded trace (`state/automation_journey.jsonl`), so the climb
+toward fully automated is captured breath by breath — chiefly as the connectome weaves more of
+the body. `journey(limit)` reads it back (oldest→newest); it is folded into the
+`/api/automation` payload and drawn as a sparkline on the Overview card. A dormant index is
+**not** recorded (no fabricated point), and a missing journey is simply empty — never a crash.
+
 ## Verify
 
 ```bash

@@ -13,7 +13,13 @@ from __future__ import annotations
 import pytest
 
 from aureon.observer.real_data_contract import TRUTH_STATUSES
-from aureon.saas.automation_index import _WEIGHTS, _compose, automation_index
+from aureon.saas.automation_index import (
+    _WEIGHTS,
+    _compose,
+    automation_index,
+    journey,
+    record_journey,
+)
 
 _DIMS = {"connectivity", "integration", "consciousness", "surfacing"}
 
@@ -88,6 +94,41 @@ def test_dormant_organism_is_no_data(monkeypatch):
     assert r["label"] == "dormant"
     assert r["truth_status"] == "no_data"
     assert all(d["truth_status"] == "no_data" for d in r["dimensions"].values())
+
+
+# ── the journey — the climb is recorded and surfaced ──────────────────────────
+
+@pytest.fixture()
+def _isolated_trace(tmp_path, monkeypatch):
+    monkeypatch.setenv("AUREON_BUS_TRACE_DIR", str(tmp_path))
+    return tmp_path
+
+
+def test_journey_records_and_reads_back(_isolated_trace):
+    assert journey() == []                         # nothing recorded yet
+    s1 = record_journey()
+    s2 = record_journey()
+    assert s1 and s2 and set(s1) == {"ts", "index_pct", "dims"}
+    j = journey()
+    assert len(j) == 2 and all("index_pct" in r for r in j)
+    # oldest → newest ordering preserved
+    assert j[0]["ts"] <= j[-1]["ts"]
+
+
+def test_dormant_index_is_not_recorded(_isolated_trace, monkeypatch):
+    # a dormant organism must not drop a fabricated point onto the journey
+    import aureon.saas.automation_index as ai
+
+    monkeypatch.setattr(ai, "automation_index",
+                        lambda: {"index_pct": None, "dimensions": {}, "ts": 1.0})
+    assert ai.record_journey() is None
+    assert ai.journey() == []
+
+
+def test_index_payload_includes_journey(_isolated_trace):
+    record_journey()
+    r = automation_index()
+    assert isinstance(r["journey"], list) and len(r["journey"]) >= 1
 
 
 # ── the route mounts on a bare Flask app and never 500s ───────────────────────

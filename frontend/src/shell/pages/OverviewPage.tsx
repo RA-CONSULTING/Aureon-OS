@@ -47,7 +47,26 @@ interface AutomationIndex {
   index_pct?: number | null;
   label?: string;
   dimensions?: Record<string, { pct?: number | null; weight?: number; detail?: string }>;
+  journey?: Array<{ ts?: number; index_pct?: number }>;
   truth_status?: string;
+}
+
+/** Dependency-free sparkline over the recorded journey; scales 0–100. */
+function JourneySparkline({ points }: { points: number[] }) {
+  const pts = points.filter((v) => Number.isFinite(v));
+  if (pts.length < 2) return null;
+  const w = 240;
+  const h = 28;
+  const d = pts
+    .map((v, i) => `${(i / (pts.length - 1)) * w},${(h - (Math.max(0, Math.min(100, v)) / 100) * h).toFixed(2)}`)
+    .join(" ");
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="h-7 w-full text-primary/70" preserveAspectRatio="none"
+         role="img" aria-label="automation progress over time">
+      <polyline points={d} fill="none" stroke="currentColor" strokeWidth={1.5}
+                vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  );
 }
 
 const DIM_LABEL: Record<string, string> = {
@@ -161,6 +180,12 @@ export default function OverviewPage() {
                   </div>
                 ))}
               </div>
+              {(automation.journey?.length ?? 0) >= 2 && (
+                <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground">the journey — breath by breath</span>
+                  <JourneySparkline points={(automation.journey ?? []).map((p) => p.index_pct ?? NaN)} />
+                </div>
+              )}
             </>
           )}
         </CardContent>

@@ -190,6 +190,7 @@ def automation_index() -> Dict[str, Any]:
         "included_dimensions": included,
         "dimensions": dimensions,
         "wired_by_category": _wired_by_category(),
+        "journey": journey(60),
         "totals": totals,
         "weights": dict(_WEIGHTS),
         "note": "progress toward the whole repo being connected into the organism and "
@@ -200,4 +201,45 @@ def automation_index() -> Dict[str, Any]:
     }
 
 
-__all__ = ["automation_index", "_compose"]
+_JOURNEY = "automation_journey"
+
+
+def journey(limit: int = 60) -> List[Dict[str, Any]]:
+    """The recorded climb — compact index snapshots over time (oldest→newest), so the
+    progress toward fully automated is visible as a trend, not just a number. Read-only,
+    guarded; empty when nothing has been recorded yet."""
+    try:
+        from aureon.core.bus_trace import read_trace
+
+        rows = read_trace(_JOURNEY, limit=max(1, int(limit)))
+        return [r for r in rows if isinstance(r, dict) and "index_pct" in r]
+    except Exception as exc:  # noqa: BLE001 — a missing journey is empty, never a crash
+        logger.debug("journey read skipped: %s", exc)
+        return []
+
+
+def record_journey(idx: Dict[str, Any] | None = None) -> Dict[str, Any] | None:
+    """Append one compact snapshot of the current index to the journey trace (bounded).
+    Called from the organism daemon's breath so the climb is captured as the connectome
+    weaves more of the repo. Guarded/never-raises; a dormant index (``None``) is not
+    recorded (no fabricated point). Returns the snapshot written, or ``None``."""
+    try:
+        idx = idx if idx is not None else automation_index()
+        pct = idx.get("index_pct")
+        if pct is None:
+            return None
+        snap = {
+            "ts": idx.get("ts") or time.time(),
+            "index_pct": pct,
+            "dims": {k: v.get("pct") for k, v in idx.get("dimensions", {}).items()},
+        }
+        from aureon.core.bus_trace import append_trace
+
+        append_trace(_JOURNEY, snap, cap=500)
+        return snap
+    except Exception as exc:  # noqa: BLE001 — recording is best-effort, never fatal
+        logger.debug("journey record skipped: %s", exc)
+        return None
+
+
+__all__ = ["automation_index", "journey", "record_journey", "_compose"]
