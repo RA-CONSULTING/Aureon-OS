@@ -19,8 +19,10 @@ from the last cycle (its coverage, its progress, its ascent — its DNA), marks 
 
 **The carried DNA** — real reads, `None` when a signal is dormant (never fabricated):
 `coverage_pct` · `woven` · `nodes` (from the connectome), `automation_index` (the % toward
-fully automated), `ascent_stage` (the inner-work chakra ascent). This is what the organism
-brings forward from its last life into this one.
+fully automated), `ascent_stage` (the inner-work chakra ascent), and — the oldest DNA —
+`reproduction_generation` + `reproduction_splits` (the mesh's 10-9-1 budding lineage; see
+[`MYCELIUM.md`](MYCELIUM.md#the-oldest-dna--10-9-1-budding-reproduction)). This is what the
+organism brings forward from its last life into this one.
 
 **The move** — the wake nudges the body to move at once: a bounded `weave_touched(limit=…)`
 (`AUREON_AWAKEN_WEAVE`, default 25, `0` = off — one batch, so boot never spikes) resumes the

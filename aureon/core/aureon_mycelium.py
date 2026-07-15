@@ -2468,6 +2468,39 @@ def publish_mesh_subfield(bus=None) -> bool:
         return False
 
 
+def read_reproduction() -> "Dict[str, Any] | None":
+    """The oldest form of DNA — the mesh's 10-9-1 budding reproduction lineage.
+
+    A hive harvests 10% of its profit and, when it ``can_split()``, buds a child hive
+    with an incremented ``generation`` (the ``split_events`` record). This reads that
+    real lineage from the EXISTING singleton — it **never cold-boots** a network
+    (dormant → ``None``, honest) and returns **only real data**, never a fabricated
+    value. Guarded/never-raises → ``None`` on any error."""
+    inst = _mycelium_instance
+    if inst is None:
+        return None
+    try:
+        hives = list(getattr(inst, "hives", []) or [])
+        gens = [int(getattr(h, "generation", 0) or 0) for h in hives]
+        ready = 0
+        for h in hives:
+            try:
+                if h.can_split():
+                    ready += 1
+            except Exception:  # noqa: BLE001 — a single hive's check never breaks the read
+                continue
+        return {
+            "generation": int(getattr(inst, "generation", 0) or 0),
+            "max_hive_generation": max(gens) if gens else 0,
+            "hives": len(hives),
+            "splits": len(getattr(inst, "split_events", []) or []),
+            "harvested_capital": float(getattr(inst, "total_harvested", 0.0) or 0.0),
+            "ready_to_split": ready,
+        }
+    except Exception:  # noqa: BLE001 — a lineage read is best-effort, never fatal
+        return None
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # MAIN - Demo
 # ═══════════════════════════════════════════════════════════════════════════════

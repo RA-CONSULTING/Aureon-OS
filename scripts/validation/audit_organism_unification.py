@@ -745,6 +745,40 @@ def run_audit() -> list[dict]:
                 "field_producers_map_is_honest", _honest,
                 f"live={_pm['live_count']}/{_pm['intended_count']} live⊆intended={_live <= _intended}",
                 critical=False))
+
+            # Edge 28 — the oldest DNA is sensed and carried: the mesh's 10-9-1 budding
+            # lineage is read from the existing singleton (dormant → None, never
+            # cold-boots) and the awakening genome carries it across cycles.
+            import aureon.core.aureon_mycelium as _rmyc
+            from aureon.core.awakening import _carried_dna as _cdna
+
+            _rprev = _rmyc._mycelium_instance
+            _rmyc._mycelium_instance = None
+            _dormant = _rmyc.read_reproduction()          # dormant → None (no cold-boot)
+            _no_boot = _rmyc._mycelium_instance is None
+
+            class _RNet:
+                generation = 4
+                total_harvested = 0.0
+                split_events = [{"a": 1}, {"a": 2}]
+                hives: list = []
+
+            _rmyc._mycelium_instance = _RNet()
+            try:
+                _repro = _rmyc.read_reproduction()
+                _carried = _cdna()
+                _repro_ok = (
+                    _dormant is None and _no_boot
+                    and isinstance(_repro, dict) and _repro["splits"] == 2 and _repro["generation"] == 4
+                    and _carried.get("reproduction_generation") == 4
+                    and _carried.get("reproduction_splits") == 2
+                )
+            finally:
+                _rmyc._mycelium_instance = _rprev
+            results.append(_check(
+                "reproduction_lineage_is_carried", _repro_ok,
+                f"dormant={_dormant} live_gen={_repro.get('generation') if isinstance(_repro, dict) else None} "
+                f"carried_gen={_carried.get('reproduction_generation')}", critical=False))
         finally:
             for _k, _val in _saved.items():
                 if _val is None:

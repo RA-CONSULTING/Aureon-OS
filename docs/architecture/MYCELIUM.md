@@ -39,6 +39,40 @@ producer. Wired into `organism_daemon.breathe()` **before** the blend, so each b
 mesh's coherence joins the field. This is the literal "the logic is all connected": the
 mesh's own alignment is now sensed by the whole body.
 
+## The oldest DNA — 10-9-1 budding reproduction
+
+Spores are the oldest form of DNA: a body buds a copy of itself and the lineage carries on.
+The mesh does exactly this in real economics — the **10-9-1 budding model**. Each `Hive`
+skims **10%** of its profit into `harvested_capital` (`harvest_capital()`), compounds the rest,
+and when a hive `can_split()` (≥50% of its agents succeeding) the network **buds a child hive
+with an incremented `generation`** (`_check_splits()` → `_spawn_hive()`, recording a
+`split_events` row). This is real, computed lineage — not decoration.
+
+Until now that lineage **died in the mesh** — like the coherence before it, nothing outside the
+mesh could see whether the organism was reproducing. Two honest connections fix that, real data
+or `no_data`, never fabricated:
+
+- **Sensed** — `read_reproduction()` (`aureon/core/aureon_mycelium.py`) reads the lineage from the
+  **existing** singleton (never cold-boots — dormant → `None`): `{generation, max_hive_generation,
+  hives, splits, harvested_capital, ready_to_split}`. `mycelium_surface()` carries it as a
+  `reproduction` block on `GET /api/cognition/mycelium` (and `/api/cognition`).
+- **Carried as DNA** — `awakening._carried_dna()` (Phase 44) now carries `reproduction_generation`
+  + `reproduction_splits` into the genome, so the oldest DNA is part of what the organism **wakes
+  with and broadcasts** on `organism.awakening` each cycle — reproductive lineage carried across
+  the organism's life the way DNA carries across a plant's. `None` when dormant; the read never
+  cold-boots the mesh.
+
+**The honest boundary.** Reproduction is **not** forced into a fabricated field *coherence*.
+Its *cause* — profit growth — already reaches the whole-body coherence field through the affect
+monitor's `victory` signal (`get_growth_stats().net_profit_total`/`growth_percentage`). Its
+*lineage* (generations/splits) belongs in the **DNA/genome**, which is where it now lives —
+consistent with the Phase 45/46 discipline of connecting real signals without inventing one.
+
+The literal-"spore" sibling — `queen_mycelium_mind` (`ThoughtSpore`, thoughts propagating like
+spores with Hebbian pathway learning) — is already a **live field producer** on the Queen/ignition
+boot path (it publishes `queen_mycelium_mind`), so it needs no bridge. (Its docstring's *decay* and
+*germination* are decorative — not implemented; naming, not a broken edge. Staged, not built.)
+
 ## Honest provenance
 
 - **Real:** the neural mesh (hives/agents/synapses/Hebbian learning/Kelly sizing), the weave,

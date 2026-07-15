@@ -71,9 +71,48 @@ def test_carried_dna_is_honest(tmp_path):
     from aureon.core.awakening import awaken
 
     carried = awaken()["carried"]
-    assert set(carried) >= {"coverage_pct", "woven", "nodes", "automation_index", "ascent_stage"}
+    assert set(carried) >= {"coverage_pct", "woven", "nodes", "automation_index", "ascent_stage",
+                            "reproduction_generation", "reproduction_splits"}
     for v in carried.values():
         assert v is None or isinstance(v, (int, float))
+
+
+def test_reproduction_lineage_carried_when_mesh_live(tmp_path, monkeypatch):
+    # The oldest DNA — the budding lineage — is carried when the mesh exists…
+    import aureon.core.aureon_mycelium as myc
+
+    class _Net:
+        generation = 3
+        total_harvested = 0.0
+        split_events = [{"a": 1}, {"a": 2}]
+        hives = []
+
+    from aureon.core.awakening import _carried_dna
+
+    prev = myc._mycelium_instance
+    myc._mycelium_instance = _Net()
+    try:
+        dna = _carried_dna()
+        assert dna["reproduction_generation"] == 3   # the network lineage depth
+        assert dna["reproduction_splits"] == 2
+    finally:
+        myc._mycelium_instance = prev
+
+
+def test_reproduction_lineage_none_and_no_cold_boot_when_dormant(tmp_path):
+    # …and None when dormant, without ever constructing the network.
+    import aureon.core.aureon_mycelium as myc
+    from aureon.core.awakening import _carried_dna
+
+    prev = myc._mycelium_instance
+    myc._mycelium_instance = None
+    try:
+        dna = _carried_dna()
+        assert dna["reproduction_generation"] is None
+        assert dna["reproduction_splits"] is None
+        assert myc._mycelium_instance is None        # the wake never cold-boots the mesh
+    finally:
+        myc._mycelium_instance = prev
 
 
 def test_awaken_kicks_a_bounded_move(tmp_path, monkeypatch):

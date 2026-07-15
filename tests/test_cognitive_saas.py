@@ -132,6 +132,12 @@ def test_mycelium_surface_live_when_singleton_exists():
         def get_growth_stats(self):
             return {"net_profit_total": 1.0, "growth_percentage": 0.0, "profit_rate_per_day": 0.0}
 
+        # reproduction lineage (the oldest DNA) — read by read_reproduction()
+        generation = 1
+        total_harvested = 0.0
+        split_events = [{"a": 1}]
+        hives = []
+
     prev = myc._mycelium_instance
     myc._mycelium_instance = _FakeMesh()
     try:
@@ -140,6 +146,54 @@ def test_mycelium_surface_live_when_singleton_exists():
         assert s["connected_count"] == 2
         assert s["connected_systems"] == ["a", "b"]
         assert s["growth"]["net_profit_total"] == 1.0
+        assert s["reproduction"]["splits"] == 1        # the budding lineage, surfaced
+        assert s["reproduction"]["generation"] == 1
+    finally:
+        myc._mycelium_instance = prev
+
+
+# ── the oldest DNA — 10-9-1 budding-reproduction lineage ────────────────────────
+
+def test_read_reproduction_none_when_dormant():
+    """No cold-boot: a lineage read on a dormant mesh returns None, never a value."""
+    import aureon.core.aureon_mycelium as myc
+
+    prev = myc._mycelium_instance
+    myc._mycelium_instance = None
+    try:
+        assert myc.read_reproduction() is None
+        assert myc._mycelium_instance is None      # did not construct the network
+    finally:
+        myc._mycelium_instance = prev
+
+
+def test_read_reproduction_real_lineage():
+    import aureon.core.aureon_mycelium as myc
+
+    class _Hive:
+        def __init__(self, gen, splittable):
+            self.generation = gen
+            self._splittable = splittable
+
+        def can_split(self):
+            return self._splittable
+
+    class _Net:
+        generation = 2
+        total_harvested = 12.5
+        split_events = [{"a": 1}, {"a": 2}, {"a": 3}]
+        hives = [_Hive(0, True), _Hive(2, False)]
+
+    prev = myc._mycelium_instance
+    myc._mycelium_instance = _Net()
+    try:
+        r = myc.read_reproduction()
+        assert r["generation"] == 2
+        assert r["max_hive_generation"] == 2
+        assert r["hives"] == 2
+        assert r["splits"] == 3
+        assert r["harvested_capital"] == 12.5
+        assert r["ready_to_split"] == 1        # only the splittable hive
     finally:
         myc._mycelium_instance = prev
 

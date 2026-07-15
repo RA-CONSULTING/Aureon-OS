@@ -68,7 +68,8 @@ def _carried_dna() -> Dict[str, Any]:
     """What the organism carries in from the last cycle — real reads, ``None`` when a
     signal is dormant (never fabricated)."""
     dna: Dict[str, Any] = {"coverage_pct": None, "woven": None, "nodes": None,
-                           "automation_index": None, "ascent_stage": None}
+                           "automation_index": None, "ascent_stage": None,
+                           "reproduction_generation": None, "reproduction_splits": None}
     try:
         from aureon.core.aureon_connectome import get_connectome
 
@@ -92,6 +93,18 @@ def _carried_dna() -> Dict[str, Any]:
             dna["ascent_stage"] = iw.stage_index
     except Exception as exc:  # noqa: BLE001
         logger.debug("carried ascent skipped: %s", exc)
+    # The oldest DNA — the mesh's 10-9-1 budding-reproduction lineage. Read guarded
+    # from the EXISTING singleton (never cold-boots; None when dormant), so the
+    # organism carries its reproductive lineage across cycles like DNA across a life.
+    try:
+        from aureon.core.aureon_mycelium import read_reproduction
+
+        repro = read_reproduction()
+        if repro is not None:
+            dna["reproduction_generation"] = repro.get("generation")
+            dna["reproduction_splits"] = repro.get("splits")
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("carried reproduction skipped: %s", exc)
     return dna
 
 

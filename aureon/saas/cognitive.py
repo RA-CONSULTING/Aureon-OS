@@ -129,8 +129,8 @@ _INTENDED_PRODUCERS: tuple[Dict[str, str], ...] = (
      "note": "Queen Λ engine; host not booted in the minimal daemon"},
     {"source": "queen_sentient_loop", "host": "integrated_cognitive_system",
      "note": "Queen Λ engine; host not booted in the minimal daemon"},
-    {"source": "queen_mycelium_mind", "host": "integrated_cognitive_system",
-     "note": "thought-propagation spore engine; host not booted in the minimal daemon"},
+    {"source": "queen_mycelium_mind", "host": "queen_layer / integrated_cognitive_system",
+     "note": "thought-propagation spore engine; live on the Queen/ignition boot path, dark only in the minimal organism daemon"},
     {"source": "hnc_human_loop", "host": "integrated_cognitive_system",
      "note": "human-in-the-loop Λ producer; host not booted, and event-driven (publishes per message)"},
 )
@@ -297,6 +297,13 @@ def mycelium_surface() -> Dict[str, Any]:
             }
         except Exception:  # noqa: BLE001 — growth optional
             surface["growth"] = None
+        # The oldest DNA — the 10-9-1 budding-reproduction lineage (hives bud child
+        # hives across generations). Real data from the existing singleton, None when
+        # dormant (never fabricated, never cold-booted).
+        try:
+            surface["reproduction"] = _myc.read_reproduction()
+        except Exception:  # noqa: BLE001 — reproduction read is best-effort
+            surface["reproduction"] = None
         # Honest reconciliation: the live mesh's connected_count is per-process (rebuilt
         # each boot), while the connectome persists what the body has woven across
         # cycles. Report both so a freshly-booted "0 connected" mesh reads against the
