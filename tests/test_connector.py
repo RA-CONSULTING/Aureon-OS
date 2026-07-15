@@ -66,6 +66,40 @@ def test_detect_unknown_format_raises():
         connector.detect_format(["foo", "bar", "baz"])
 
 
+def test_detect_generic_with_alternate_source_column():
+    # a generic export whose source lives in a 'doi' column
+    assert connector.detect_format(["molecule", "peak_value", "unit", "doi"]).name == "codex_generic"
+
+
+def test_generic_resolves_alternate_source(tmp_path):
+    text = "molecule,peak_value,unit,doi\nx,1600,cm^-1,10.1/abc\n"
+    path = _write(tmp_path, "gen.csv", text)
+    rows, fmt = connector.ingest(path)
+    assert fmt == ["codex_generic"]
+    assert rows[0].source == "10.1/abc"
+
+
+def test_ingest_many_merges_sources(tmp_path):
+    a = _write(tmp_path, "a.csv", _NATIVE_CSV)
+    b = _write(tmp_path, "b.csv",
+               "molecule,peak_value,unit,rel_intensity,source\n"
+               "caffeic acid,1450,cm^-1,m,doi:cga2\n")
+    rows, formats = connector.ingest_many([a, b])
+    assert formats == ["native", "native"]
+    assert len(rows) == 7  # 6 + 1
+
+
+def test_run_analysis_multi_source_merges_provenance(tmp_path):
+    a = _write(tmp_path, "a.csv", _NATIVE_CSV)
+    b = _write(tmp_path, "b.csv",
+               "molecule,peak_value,unit,rel_intensity,source\n"
+               "chlorogenic acid,1700,cm^-1,m,doi:cga-second\n")
+    result = connector.run_analysis([a, b], nulls=60, seed=0)
+    assert result.valid is True
+    # chlorogenic acid now carries two distinct provenance sources
+    assert set(result.compounds["chlorogenic acid"].sources) == {"doi:cga", "doi:cga-second"}
+
+
 # --------------------------------------------------------------------------
 # Validation gate
 # --------------------------------------------------------------------------

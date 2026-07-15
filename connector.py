@@ -167,6 +167,12 @@ class RawRow:
     extras: dict[str, str] = field(default_factory=dict)
 
 
+# Alternate column names that may carry a citable source across exports.
+_SOURCE_ALIASES: Final[tuple[str, ...]] = (
+    "source", "source_key", "doi_or_pmid", "doi", "pmid", "url", "reference", "citation",
+)
+
+
 @dataclass(frozen=True)
 class _Mapper:
     """A header-driven mapping from one input format to the native fields."""
@@ -175,7 +181,8 @@ class _Mapper:
     required: frozenset[str]
     veto: frozenset[str]
     bonus: frozenset[str]
-    source_col: str
+    source_cols: tuple[str, ...]
+    source_any: frozenset[str] = frozenset()
 
     def score(self, headers: set[str]) -> int:
         """Return a match score, or ``-1`` when this mapper cannot apply."""
@@ -183,7 +190,18 @@ class _Mapper:
             return -1
         if self.veto & headers:
             return -1
+        if self.source_any and not (self.source_any & headers):
+            return -1
         return len(self.bonus & headers)
+
+    def _resolve_source(self, row: dict[str, str]) -> str:
+        """First non-empty source across this mapper's declared source columns."""
+        candidates = list(self.source_cols) + sorted(self.source_any & set(row))
+        for col in candidates:
+            value = (row.get(col) or "").strip()
+            if value:
+                return value
+        return ""
 
     def to_native(self, row: dict[str, str]) -> RawRow:
         """Project a raw CSV row onto :class:`RawRow` using this format's columns."""
@@ -198,7 +216,7 @@ class _Mapper:
             peak_value_hi=(row.get("peak_value_hi") or "").strip(),
             unit=(row.get("unit") or "").strip(),
             rel_intensity=(row.get("rel_intensity") or "").strip(),
-            source=(row.get(self.source_col) or "").strip(),
+            source=self._resolve_source(row),
             fmt=self.name,
             extras=extras,
         )
@@ -212,7 +230,7 @@ _MAPPERS: Final[tuple[_Mapper, ...]] = (
         required=frozenset({"molecule", "peak_value", "unit", "source"}),
         veto=frozenset({"peak_value_hi", "source_key", "doi_or_pmid", "molecular_frequency_thz"}),
         bonus=frozenset({"rel_intensity"}),
-        source_col="source",
+        source_cols=("source",),
     ),
     _Mapper(
         name="codex_conversion_table",
@@ -222,7 +240,7 @@ _MAPPERS: Final[tuple[_Mapper, ...]] = (
             {"molecular_frequency_thz", "selected_octaves", "modulation_frequency_hz",
              "method", "assignment"}
         ),
-        source_col="source_key",
+        source_cols=("source_key",),
     ),
     _Mapper(
         name="codex_spectral_map",
@@ -231,14 +249,15 @@ _MAPPERS: Final[tuple[_Mapper, ...]] = (
         bonus=frozenset(
             {"plant", "assignment", "method", "phase", "solvent", "rel_intensity", "source"}
         ),
-        source_col="source",
+        source_cols=("source",),
     ),
     _Mapper(
         name="codex_generic",
-        required=frozenset({"molecule", "peak_value", "doi_or_pmid"}),
+        required=frozenset({"molecule", "peak_value"}),
         veto=frozenset({"source_key"}),
         bonus=frozenset({"peak_value_hi", "method", "assignment", "unit", "rel_intensity"}),
-        source_col="doi_or_pmid",
+        source_cols=(),
+        source_any=frozenset({"doi_or_pmid", "doi", "pmid", "url", "reference", "citation"}),
     ),
 )
 
@@ -322,6 +341,25 @@ def _ingest_zip(path: Path) -> tuple[list[RawRow], list[str]]:
     if not rows:
         raise IngestError(f"{path} conversion tables contained no data rows")
     return rows, formats
+
+
+def ingest_many(sources: list[str | Path]) -> tuple[list[RawRow], list[str]]:
+    """Ingest and concatenate several CSV/zip sources into one row set.
+
+    Used to merge heterogeneous datasets (e.g. the original Codex export plus
+    fetcher-derived NIST peaks plus a curated CSV) before a single analysis.
+    Each source is auto-detected independently. Raises :class:`IngestError` if
+    the list is empty.
+    """
+    if not sources:
+        raise IngestError("ingest_many requires at least one source")
+    all_rows: list[RawRow] = []
+    formats: list[str] = []
+    for src in sources:
+        rows, fmts = ingest(src)
+        all_rows.extend(rows)
+        formats.extend(fmts)
+    return all_rows, formats
 
 
 # ============================================================================
@@ -516,15 +554,24 @@ def _provenance(rows: list[_NativeRow]) -> dict[str, list[str]]:
     return {name: sorted(sources) for name, sources in prov.items()}
 
 
-def run_analysis(source: str | Path, *, nulls: int = 500, seed: int = 0) -> AnalysisResult:
+def run_analysis(
+    source: str | Path | list[str | Path], *, nulls: int = 500, seed: int = 0
+) -> AnalysisResult:
     """Ingest ``source``, validate, run the engine, and return an :class:`AnalysisResult`.
 
-    ``source`` is a path to a native/Codex CSV or to the HNC data-package zip.
-    The run is deterministic given ``seed``. If the engine's controls fail, the
-    result's ``valid`` flag is ``False`` and ``compounds`` is empty — compound
-    scores are never emitted from an invalid run.
+    ``source`` is a path to a native/Codex CSV, the HNC data-package zip, or a
+    *list* of such paths (merged into one analysis — e.g. the Codex export plus
+    fetcher-derived NIST peaks plus a curated CSV). The run is deterministic
+    given ``seed``. If the engine's controls fail, the result's ``valid`` flag
+    is ``False`` and ``compounds`` is empty — compound scores are never emitted
+    from an invalid run.
     """
-    raw_rows, formats = ingest(source)
+    if isinstance(source, (list, tuple)):
+        raw_rows, formats = ingest_many(list(source))
+        source_label = ", ".join(str(s) for s in source)
+    else:
+        raw_rows, formats = ingest(source)
+        source_label = str(source)
     accepted, report = validate(raw_rows)
     provenance = _provenance(accepted)
 
@@ -540,7 +587,7 @@ def run_analysis(source: str | Path, *, nulls: int = 500, seed: int = 0) -> Anal
         # Propagate the engine's invalid-run state: never surface compound results.
         return AnalysisResult(
             valid=False,
-            source_path=str(source),
+            source_path=source_label,
             formats=formats,
             alpha=run_result.alpha,
             n_nulls=run_result.n_nulls,
@@ -564,7 +611,7 @@ def run_analysis(source: str | Path, *, nulls: int = 500, seed: int = 0) -> Anal
 
     return AnalysisResult(
         valid=True,
-        source_path=str(source),
+        source_path=source_label,
         formats=formats,
         alpha=run_result.alpha,
         n_nulls=run_result.n_nulls,
