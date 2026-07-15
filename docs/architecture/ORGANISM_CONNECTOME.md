@@ -63,6 +63,15 @@ The old broad name suffixes (`_live`/`_runner`/`_app`) were **dropped** — prob
 those import fine and were denied purely for their name, needlessly shrinking `reachable`; now
 they join the connectable body (denied 34 → 13, reachable ~1225 → ~1246).
 
+**A denial is not forever either.** A module recorded `denied` under an *older, broader* gate stays
+frozen — the sweep skips any recorded module, so it never re-touches even once it is allowed again.
+`reconcile_denied()` (run at the top of each `sweep_once` and on each wake) clears the record for
+every `denied` module the *current* gate no longer matches, returning it to `unfelt` so the sweep
+re-touches it (behaviour, via the timeout guard, then decides — weave / fail / re-deny). So narrowing
+the deny-list actually frees the stuck modules instead of leaving them latched (live: freed 9,
+denied 19 → 10). Mirrors "failures aren't forever" — the body keeps re-evaluating what it once
+refused.
+
 **Persistence**: `state/organism_connectome.json` (gitignored) so the body-map
 survives restarts.
 

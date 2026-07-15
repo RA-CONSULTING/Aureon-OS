@@ -913,6 +913,26 @@ def run_audit() -> list[dict]:
                 "deny_only_what_hangs", _deny_ok and _hang_ok,
                 f"deny_honest={_deny_ok} hang_timed_out={_hang_ok} elapsed={_elapsed:.2f}s",
                 critical=False))
+
+            # Edge 33 — denials aren't forever: a module latched `denied` under an old
+            # gate but no longer matched is freed by reconcile_denied (→ unfelt, re-touchable),
+            # while a genuine looper stays denied.
+            from aureon.core.aureon_connectome import Connectome as _Conn3
+            from aureon.core.aureon_connectome import reset_connectome_for_tests as _rc3
+
+            _rc3()
+            _cz = _Conn3(state_path=_Path(_tds) / "reconcile_connectome.json")
+            _cz._records["aureon.x.foo_live"] = {"status": "denied", "ts": 0.0}       # stale
+            _cz._records["aureon.core.hnc_live_daemon"] = {"status": "denied", "ts": 0.0}  # genuine
+            _rd = _cz.reconcile_denied()
+            _reconcile_ok = (_rd["freed"] == 1
+                             and "aureon.x.foo_live" not in _cz._records
+                             and _cz._records["aureon.core.hnc_live_daemon"]["status"] == "denied")
+            _rc3()
+            results.append(_check(
+                "denials_are_not_forever", _reconcile_ok,
+                f"freed={_rd['freed']} genuine_kept={'aureon.core.hnc_live_daemon' in _cz._records}",
+                critical=False))
         finally:
             for _k, _val in _saved.items():
                 if _val is None:

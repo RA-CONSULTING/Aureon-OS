@@ -386,6 +386,28 @@ class Connectome:
         still = sum(1 for rec in self._records.values() if rec.get("status") == "failed")
         return {"retried": retried, "recovered": recovered, "still_failed": still}
 
+    def reconcile_denied(self, limit: int | None = None) -> Dict[str, Any]:
+        """A denial is not forever either. When the deny-list narrows (or a module is
+        renamed), a module recorded ``denied`` under the OLD gate stays frozen — the
+        sweep skips any recorded module, so it never re-touches even though it is now
+        allowed. This clears the record for every ``denied`` module that the CURRENT
+        ``_denied()`` no longer matches, so the sweep re-touches it (behaviour, via the
+        timeout-guarded touch, then decides — weave / fail / re-deny). Bounded by
+        ``limit``, guarded, saves once. Returns ``{re_evaluated, freed, still_denied}``."""
+        stale = [m for m, rec in list(self._records.items())
+                 if rec.get("status") == "denied" and not _denied(m)]
+        freed = 0
+        for module in stale:
+            if limit is not None and freed >= limit:
+                break
+            with self._lock:
+                self._records.pop(module, None)   # → unfelt; the sweep/touch re-attempts it
+            freed += 1
+        if freed:
+            self._save_state()
+        still = sum(1 for rec in self._records.values() if rec.get("status") == "denied")
+        return {"re_evaluated": len(stale), "freed": freed, "still_denied": still}
+
     # ── sweep: feel the whole body, batch by batch ───────────────────────────
 
     def sweep_once(
@@ -395,6 +417,9 @@ class Connectome:
         weave_batch: int = 0,
         retry_batch: int | None = None,
     ) -> Dict[str, Any]:
+        # Re-evaluate stale denials first: if the deny-list has narrowed, free the
+        # now-allowed modules back to unfelt so this cycle's touch loop re-attempts them.
+        freed = self.reconcile_denied().get("freed", 0)
         # A bounded, attempt-capped self-heal: re-attempt a few latched failures each
         # cycle so recoverable ones (e.g. a dep that has since arrived) rejoin the body.
         # retry_batch None → env default; 0 → off (sweep byte-identical to before).
@@ -433,7 +458,7 @@ class Connectome:
                     woven += 1
         self._save_state()
         return {"touched": touched, "failed": failed, "denied": denied,
-                "woven": woven, "recovered": recovered}
+                "woven": woven, "recovered": recovered, "freed": freed}
 
     def start_sweep(self, interval_s: float = 30.0, batch_size: int = 25, weave_batch: int = 0) -> None:
         if self._sweep_thread is not None and self._sweep_thread.is_alive():

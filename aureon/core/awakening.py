@@ -130,7 +130,15 @@ def _signal_the_body(generation: int, carried: Dict[str, Any]) -> None:
 def _move(limit: int) -> Dict[str, Any]:
     """The first movement of the cycle — a bounded weave nudge + a journey point, so
     the climb resumes at once rather than after a full breath. Registration only."""
-    moved: Dict[str, Any] = {"woven": 0, "recovered": 0, "journey_recorded": False}
+    moved: Dict[str, Any] = {"woven": 0, "recovered": 0, "freed": 0, "journey_recorded": False}
+    # A denial is not forever: if the deny-list has narrowed since last cycle, free the
+    # now-allowed modules back to unfelt so this waking re-touches them.
+    try:
+        from aureon.core.aureon_connectome import get_connectome
+
+        moved["freed"] = int(get_connectome().reconcile_denied().get("freed", 0))
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("awakening move (reconcile) skipped: %s", exc)
     # First heal: a failure is not forever — re-attempt a bounded batch of latched
     # failures (the import context is healed on touch), so recoverable modules rejoin
     # the body before the weave, and the coverage climbs toward 100% each waking.

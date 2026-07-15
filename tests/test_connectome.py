@@ -120,6 +120,36 @@ def test_touch_timeout_off_is_synchronous(tmp_path, monkeypatch):
     assert r["status"] == "touched"                                # old synchronous path intact
 
 
+def test_reconcile_denied_frees_stale_denials(tmp_path):
+    # a module recorded `denied` under the OLD gate but no longer matched is freed
+    # (record cleared → unfelt), while a genuine looper stays denied.
+    c = _fresh(tmp_path)
+    stale = "aureon.x.foo_live"          # not matched by the current (narrowed) deny-list
+    genuine = "aureon.core.hnc_live_daemon"
+    c._records[stale] = {"status": "denied", "ts": 0.0}
+    c._records[genuine] = {"status": "denied", "ts": 0.0}
+    r = c.reconcile_denied()
+    assert r["freed"] == 1 and r["re_evaluated"] == 1
+    assert stale not in c._records          # freed → unfelt, the sweep re-attempts it
+    assert c._records[genuine]["status"] == "denied"   # genuine denial stands
+
+
+def test_reconcile_denied_respects_limit(tmp_path):
+    c = _fresh(tmp_path)
+    for m in ("aureon.x.a_live", "aureon.x.b_runner"):
+        c._records[m] = {"status": "denied", "ts": 0.0}
+    assert c.reconcile_denied(limit=1)["freed"] == 1
+
+
+def test_sweep_reconciles_stale_denials(tmp_path):
+    c = _fresh(tmp_path)
+    stale = "aureon.core.hnc_params"     # importable, and not denied by the current gate
+    c._records[stale] = {"status": "denied", "ts": 0.0}
+    c.sweep_once(batch_size=50, weave_batch=0)   # reconcile runs first → stale unstuck
+    # no longer frozen as denied: either freed to unfelt (record gone) or already re-touched
+    assert c._records.get(stale, {}).get("status") != "denied"
+
+
 # ── failures aren't forever: import-context heal + bounded retry ──────────────
 
 def test_ensure_import_paths_is_idempotent():
