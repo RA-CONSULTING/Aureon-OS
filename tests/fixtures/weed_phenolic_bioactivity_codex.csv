@@ -1,0 +1,50 @@
+molecule,assay,result_value,result_unit,cell_line_or_system,concentration,direction,source
+chicoric acid,NO DATA,NO DATA,NO DATA,chicory; dandelion,NO DATA,NO DATA,NO DATA
+chlorogenic acid,PROVISIONAL ABTS IC50,13.15 ± 0.71,µg/mL IC50,cell-free antioxidant assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+chlorogenic acid,PROVISIONAL DPPH IC50,6.41 ± 0.61,µg/mL IC50,cell-free antioxidant assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+chlorogenic acid,PROVISIONAL deoxyribose protection IC50,8.53 ± 0.62,µg/mL IC50,cell-free deoxyribose hydroxyl-radical DNA-sugar protection assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+chlorogenic acid,RTCA cell-index viability IC50,952 ± 32.5,µM IC50,MCF-7,250 µM-8 mM; 72 h,decrease,https://doi.org/10.12991/mpj.2018.54
+chlorogenic acid,RTCA cell-index viability IC50,940 ± 21.2,µM IC50,SK-BR-3,250 µM-8 mM; 72 h,decrease,https://doi.org/10.12991/mpj.2018.54
+chlorogenic acid,RTCA cell-index viability IC50,590.5 ± 10.6,µM IC50,MDA-MB-231,250 µM-8 mM; 72 h,decrease,https://doi.org/10.12991/mpj.2018.54
+chlorogenic acid,RTCA cell-index viability IC50,882.5 ± 12.0,µM IC50,MDA-MB-468,250 µM-8 mM; 72 h,decrease,https://doi.org/10.12991/mpj.2018.54
+chlorogenic acid,RTCA cell-index viability IC50,1095 ± 121.6,µM IC50,BT-20,250 µM-8 mM; 72 h,decrease,https://doi.org/10.12991/mpj.2018.54
+caffeic acid,PROVISIONAL ABTS IC50,18.04 ± 0.68,µg/mL IC50,cell-free antioxidant assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+caffeic acid,PROVISIONAL DPPH IC50,6.34 ± 0.37,µg/mL IC50,cell-free antioxidant assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+caffeic acid,PROVISIONAL deoxyribose protection IC50,4.76 ± 0.37,µg/mL IC50,cell-free deoxyribose hydroxyl-radical DNA-sugar protection assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+rutin,PROVISIONAL ABTS IC50,14.63 ± 1.20,µg/mL IC50,cell-free antioxidant assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+rutin,PROVISIONAL DPPH IC50,9.44 ± 0.39,µg/mL IC50,cell-free antioxidant assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+rutin,PROVISIONAL deoxyribose protection IC50,9.87 ± 0.62,µg/mL IC50,cell-free deoxyribose hydroxyl-radical DNA-sugar protection assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+quercetin,ABTS radical scavenging IC50,0.5083 ± 0.0081,µg/mL IC50,cell-free antioxidant assay,0.5-32.0 µg/mL test range,decrease,https://doi.org/10.1016/j.sajb.2020.10.022
+quercetin,DPPH radical scavenging IC50,1.840 ± 0.0138,µg/mL IC50,cell-free antioxidant assay,0.5-32.0 µg/mL test range,decrease,https://doi.org/10.1016/j.sajb.2020.10.022
+quercetin,FRAP reducing antioxidant power,0.0384 ± 0.0005,mmol Fe2+/µg/mL,cell-free antioxidant assay,0.5-32.0 µg/mL test range,increase,https://doi.org/10.1016/j.sajb.2020.10.022
+quercetin,MTT cell viability IC50,8.65,µg/mL IC50,A549,24 h,decrease,https://doi.org/10.7150/jca.52088
+quercetin,MTT cell viability IC50,7.96,µg/mL IC50,A549,48 h,decrease,https://doi.org/10.7150/jca.52088
+quercetin,MTT cell viability IC50,5.14,µg/mL IC50,A549,72 h,decrease,https://doi.org/10.7150/jca.52088
+quercetin,PROVISIONAL ABTS IC50,13.78 ± 0.93,µg/mL IC50,cell-free antioxidant assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+quercetin,PROVISIONAL DPPH IC50,6.55 ± 0.54,µg/mL IC50,cell-free antioxidant assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+quercetin,PROVISIONAL deoxyribose protection IC50,7.58 ± 0.66,µg/mL IC50,cell-free deoxyribose hydroxyl-radical DNA-sugar protection assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+kaempferol,ABTS radical scavenging IC50,0.8506 ± 0.0533,µg/mL IC50,cell-free antioxidant assay,0.5-32.0 µg/mL test range,decrease,https://doi.org/10.1016/j.sajb.2020.10.022
+kaempferol,DPPH radical scavenging IC50,5.318 ± 0.6658,µg/mL IC50,cell-free antioxidant assay,0.5-32.0 µg/mL test range,decrease,https://doi.org/10.1016/j.sajb.2020.10.022
+kaempferol,FRAP reducing antioxidant power,0.0263 ± 0.0007,mmol Fe2+/µg/mL,cell-free antioxidant assay,0.5-32.0 µg/mL test range,increase,https://doi.org/10.1016/j.sajb.2020.10.022
+kaempferol,PROVISIONAL ABTS IC50,8.54 ± 0.60,µg/mL IC50,cell-free antioxidant assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+kaempferol,PROVISIONAL DPPH IC50,17.30 ± 1.30,µg/mL IC50,cell-free antioxidant assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+kaempferol,PROVISIONAL deoxyribose protection IC50,7.17 ± 0.46,µg/mL IC50,cell-free deoxyribose hydroxyl-radical DNA-sugar protection assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+luteolin,ABTS radical scavenging IC50,0.590 ± 0.0208,µg/mL IC50,cell-free antioxidant assay,0.5-32.0 µg/mL test range,decrease,https://doi.org/10.1016/j.sajb.2020.10.022
+luteolin,DPPH radical scavenging IC50,2.099 ± 0.0587,µg/mL IC50,cell-free antioxidant assay,0.5-32.0 µg/mL test range,decrease,https://doi.org/10.1016/j.sajb.2020.10.022
+luteolin,FRAP reducing antioxidant power,0.0402 ± 0.0006,mmol Fe2+/µg/mL,cell-free antioxidant assay,0.5-32.0 µg/mL test range,increase,https://doi.org/10.1016/j.sajb.2020.10.022
+apigenin,ABTS radical scavenging IC50,0.8243 ± 0.0044,µg/mL IC50,cell-free antioxidant assay,0.5-32.0 µg/mL test range,decrease,https://doi.org/10.1016/j.sajb.2020.10.022
+apigenin,FRAP reducing antioxidant power,0.0101 ± 0.0008,mmol Fe2+/µg/mL,cell-free antioxidant assay,0.5-32.0 µg/mL test range,increase,https://doi.org/10.1016/j.sajb.2020.10.022
+verbascoside/acteoside,NO DATA,NO DATA,NO DATA,plantain,NO DATA,NO DATA,NO DATA
+aucubin,NO DATA,NO DATA,NO DATA,plantain,NO DATA,NO DATA,NO DATA
+plantamajoside,NO DATA,NO DATA,NO DATA,plantain,NO DATA,NO DATA,NO DATA
+silybin/silymarin,NO DATA,NO DATA,NO DATA,milk thistle,NO DATA,NO DATA,NO DATA
+formononetin,NO DATA,NO DATA,NO DATA,red clover,NO DATA,NO DATA,NO DATA
+biochanin A,NO DATA,NO DATA,NO DATA,red clover,NO DATA,NO DATA,NO DATA
+rosmarinic acid,NO DATA,NO DATA,NO DATA,ground ivy,NO DATA,NO DATA,NO DATA
+emodin,Annexin V/PI apoptotic cells,39.27,% apoptotic cells,MCF-7,25 µM; 72 h,increase,https://doi.org/10.3389/fphar.2020.622046
+emodin,Annexin V/PI apoptotic cells,58.7,% apoptotic cells,MCF-7,50 µM; 72 h,increase,https://doi.org/10.3389/fphar.2020.622046
+emodin,Annexin V/PI apoptotic cells,67.8,% apoptotic cells,MCF-7,100 µM; 72 h,increase,https://doi.org/10.3389/fphar.2020.622046
+chrysophanol,NO DATA,NO DATA,NO DATA,curly dock,NO DATA,NO DATA,NO DATA
+ferulic acid,PROVISIONAL ABTS IC50,9.47 ± 0.69,µg/mL IC50,cell-free antioxidant assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+ferulic acid,PROVISIONAL DPPH IC50,11.75 ± 0.45,µg/mL IC50,cell-free antioxidant assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219
+ferulic acid,PROVISIONAL deoxyribose protection IC50,4.51 ± 0.37,µg/mL IC50,cell-free deoxyribose hydroxyl-radical DNA-sugar protection assay,test range reported in source; exact per-assay concentration series not fully extracted,decrease,https://doi.org/10.4172/2329-9029.1000219

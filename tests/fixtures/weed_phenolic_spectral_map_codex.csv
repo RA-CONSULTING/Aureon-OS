@@ -1,0 +1,428 @@
+molecule,plant,peak_value,peak_value_hi,unit,rel_intensity,assignment,method,phase,solvent,source
+chicoric acid,chicory; dandelion,504,,cm^-1,w,γO-H_caff,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,521,,cm^-1,w,β_as COO−,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,565,,cm^-1,w,γO-H_caff,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,576,,cm^-1,m,def_ring,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,583,,cm^-1,m,def_ring,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,596,,cm^-1,m,def ring out-of-plane,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,659,,cm^-1,w,def ring out-of-plane,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,680,,cm^-1,w,def_ring; γCOOH,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,698,,cm^-1,vw,γCOOH,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,715,,cm^-1,vw,def_ring; γCOO; γC-H_alcaff,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,736,,cm^-1,w,def_ring; νC-C_ar,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,765,,cm^-1,w,def_ring; βC(1)-C(2); βC(1′)-C(2′),FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,804,,cm^-1,m,γC-H_ar; γC-H_alcaff,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,853,,cm^-1,w,β_s COO−,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,867,,cm^-1,w,γC-H_ar; γC-H_alcaff,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,877,,cm^-1,w,def ring out-of-plane,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,898,,cm^-1,w,τC(2)-C(2′),FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,930,,cm^-1,vw,γ_s COO−,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,976,,cm^-1,s,δC(2)-C(2′),FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,990,,cm^-1,m,νC(2)-O(3); νC(2′)-O(3′),FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1078,,cm^-1,m,βC-H_tart; βC-C_tart,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1120,,cm^-1,s,βC-H_ar; βO-H_caff,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1167,,cm^-1,s,βC-H_ar; βC-H_alcaff,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1218,,cm^-1,vs,def_ring; βC-H_ar; βC-H_alcaff,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1246,,cm^-1,vs,βC-H_altart,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1280,,cm^-1,m,βC-H_ar; βC-H_altart,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1300,,cm^-1,s,def_ring; νCC_ar; βC-H_ar; βC-H_altart,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1337,,cm^-1,m,βC-H_altart,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1362,,cm^-1,s,βC-H_altart,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1385,,cm^-1,s,ν_s COO−,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1446,,cm^-1,w,βC-H_ar,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1484,,cm^-1,w,βC-C_ar; βC-H_ar; νCC_ar,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1517,,cm^-1,s,νCC_ar; νC=C_alcaff; βC-H_ar; βC-H_alcaff,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1606,,cm^-1,vs,νCC_ar; νC=C_alcaff,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1624,,cm^-1,s,νC=O_caff; νC=C_alcaff,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1682,,cm^-1,vs,νC=O_caff; νC=C_alcaff,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1716,,cm^-1,s,ν_as COOH_tart,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1746,,cm^-1,m,ν_as COOH_tart,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,3412,,cm^-1,s,νOH_caff,FTIR,KBr pellet,KBr,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,504,,cm^-1,vw,γO-H_caff,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,565,,cm^-1,vw,γO-H_caff,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,576,,cm^-1,vw,def_ring,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,584,,cm^-1,vw,def_ring,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,597,,cm^-1,vw,def ring out-of-plane,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,664,,cm^-1,vw,def ring out-of-plane,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,685,,cm^-1,vw,def_ring; γCOOH,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,699,,cm^-1,vw,γCOOH,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,730,,cm^-1,vw,def_ring; νC-C_ar,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,765,,cm^-1,vw,def_ring; βC(1)-C(2); βC(1′)-C(2′),Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,810,,cm^-1,vw,γC-H_ar; γC-H_alcaff,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,860,,cm^-1,vw,β_s COO−,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,862,,cm^-1,vw,γC-H_ar; γC-H_alcaff,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,868,,cm^-1,vw,def ring out-of-plane,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,896,,cm^-1,vw,τC(2)-C(2′),Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,903,,cm^-1,vw,γ_s COO−,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,976,,cm^-1,vw,δC(2)-C(2′),Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,992,,cm^-1,vw,νC(2)-O(3); νC(2′)-O(3′),Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1037,,cm^-1,w,βC-H_tart; βC-C_tart,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1125,,cm^-1,w,βC-H_ar; βO-H_caff,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1170,,cm^-1,w,βC-H_ar; βC-H_alcaff,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1213,,cm^-1,w,def_ring; βC-H_ar; βC-H_alcaff,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1249,,cm^-1,m,βC-H_altart,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1272,,cm^-1,w,βC-H_ar; βC-H_altart,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1303,,cm^-1,m,def_ring; νCC_ar; βC-H_ar; βC-H_altart,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1342,,cm^-1,vw,βC-H_altart,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1364,,cm^-1,m,βC-H_altart,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1381,,cm^-1,vw,ν_s COO−,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1482,,cm^-1,m,βC-C_ar; βC-H_ar; νCC_ar,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1516,,cm^-1,m,νCC_ar; νC=C_alcaff; βC-H_ar; βC-H_alcaff,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1609,,cm^-1,vs,νCC_ar; νC=C_alcaff,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1627,,cm^-1,vs,νC=O_caff; νC=C_alcaff,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,1681,,cm^-1,s,νC=O_caff; νC=C_alcaff,Raman,solid,none,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,233.0,,nm,NO DATA,UV-Vis λmax2,UV-Vis,solution; 5e-5 mol/dm^3,water,https://doi.org/10.3390/ma13143102
+chicoric acid,chicory; dandelion,327.5,,nm,NO DATA,UV-Vis λmax1,UV-Vis,solution; 5e-5 mol/dm^3,water,https://doi.org/10.3390/ma13143102
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,816,,cm^-1,NO DATA,phenyl δ(C-H); cyclohexane ν(C-C); δ(O-H) in COOH,FTIR,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,970,,cm^-1,NO DATA,ν(C-O) in COOH; phenyl ν(C-O); ν(C-H); phenyl ω(C-H); phenyl δ(ring); cyclohexane δ(ring),FTIR,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1035,,cm^-1,NO DATA,ν(C-C); cyclohexane δ(ring),FTIR,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1111,,cm^-1,NO DATA,phenyl δ(ring); phenyl ν(C-O); phenyl ρ(C-H),FTIR,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1289,,cm^-1,NO DATA,ethylene ν(C-H); phenyl ν(C-C); phenyl δ(C-H),FTIR,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1444,,cm^-1,NO DATA,cyclohexane δ(C-H),FTIR,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1638,,cm^-1,NO DATA,phenyl ν(C-C); phenyl ν(C=C); ethylene ν(C=C); ν(C=O) ether,FTIR,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1684,,cm^-1,NO DATA,phenyl ν(C-C); phenyl ν(C=C); ethylene ν(C=C); ethylene δ(C-H); ν(C=O) ether,FTIR,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1743,,cm^-1,NO DATA,ethylene ν(C=C); ν(C=O) ether; ethylene δ(C-H),FTIR,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,766,767,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,856,857,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1116,,cm^-1,NO DATA,ν(O-H); phenyl δ(ring); phenyl δ(C-H); cyclohexane δ(ring),Raman,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1160,,cm^-1,NO DATA,δ(C-O); ethylene δ(C-H); δ(C-H),Raman,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1186,1187,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1189,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1197,,cm^-1,NO DATA,phenyl δ(C-H); phenyl δ(O-H),Raman,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1223,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1246,,cm^-1,NO DATA,phenyl δ(C-H); ethylene δ(C-H); phenyl ν(C-O),Raman,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1285,1286,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1460,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1515,1516,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1604,,cm^-1,NO DATA,phenyl ν(C=C); phenyl δ(O-H); ethylene ν(C=C),Raman,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1604,1605,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1612,1613,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1629,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1630,,cm^-1,NO DATA,ethylene ν(C=C); phenyl ν(C=C); ν(C=O) ether,Raman,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1687,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1443 ± 1,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1157 ± 1,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+chlorogenic acid,chicory; nettle; yarrow; burdock; many,1114 ± 1,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+caffeic acid,widespread,1123,,cm^-1,NO DATA,phenyl δ(ring); phenyl ν(C-O),FTIR,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+caffeic acid,widespread,1310,,cm^-1,NO DATA,phenyl δ(C-H); phenyl ν(C-O),FTIR,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+caffeic acid,widespread,1450,,cm^-1,NO DATA,phenyl ν(C=C); δ(C-C); phenyl δ(O-H),FTIR,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+caffeic acid,widespread,1600,,cm^-1,NO DATA,phenyl ν(C=C); phenyl ν(C-C); ethylene ν(C=C); ν(C-C); phenyl δ(C-H),FTIR,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+caffeic acid,widespread,1645,,cm^-1,NO DATA,phenyl ν(C=C); phenyl ν(C-C); ethylene ν(C=C); ν(C-C); phenyl δ(C-H),FTIR,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+caffeic acid,widespread,803,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+caffeic acid,widespread,805,,cm^-1,NO DATA,phenyl δ(ring); phenyl ν(C-O),Raman,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+caffeic acid,widespread,975,,cm^-1,NO DATA,phenyl δ(ring); phenyl δ(C-H); ethylene δ(C-H),Raman,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+caffeic acid,widespread,975,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+caffeic acid,widespread,1109,,cm^-1,NO DATA,phenyl δ(ring); phenyl δ(O-H); ethylene δ(C-H),Raman,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+caffeic acid,widespread,1112,,cm^-1,NO DATA,phenyl δ(ring); ν(C-O) in –COOH; ethylene δ(C-H),Raman,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+caffeic acid,widespread,1177,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+caffeic acid,widespread,1186,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+caffeic acid,widespread,1188,,cm^-1,NO DATA,phenyl ν(O-H); phenyl δ(C-H); ethylene δ(C-H),Raman,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+caffeic acid,widespread,1268,,cm^-1,NO DATA,δ(O-H) in –COOH; phenyl δ(C-H); phenyl ρ(C-H),Raman,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+caffeic acid,widespread,1287,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+caffeic acid,widespread,1299,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+caffeic acid,widespread,1301,,cm^-1,NO DATA,phenyl ν(C-O); phenyl δ(C-H),Raman,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+caffeic acid,widespread,1307,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+caffeic acid,widespread,1317,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+caffeic acid,widespread,1354,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+caffeic acid,widespread,1533,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+caffeic acid,widespread,1594,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+caffeic acid,widespread,1602,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+caffeic acid,widespread,1614,1615,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+caffeic acid,widespread,1616,,cm^-1,NO DATA,phenyl ν(C=C); ethylene ν(C=C),Raman,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+caffeic acid,widespread,1625,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+caffeic acid,widespread,1640,1641,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+caffeic acid,widespread,1645,,cm^-1,NO DATA,ethylene ν(C=C); phenyl ν(C=C),Raman,NO DATA,NO DATA,https://doi.org/10.3389/fchem.2025.1543663
+rutin,nettle; goldenrod,523,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,657,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,793,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,849,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,947,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,998,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,1299,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,1365,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,1422,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,1501,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,1530,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,1555,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,1556,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,1558,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,1560,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,1574,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,1576,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,1610,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+rutin,nettle; goldenrod,1660,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+quercetin,nettle; burdock; dock; purslane,522,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+quercetin,nettle; burdock; dock; purslane,579,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+quercetin,nettle; burdock; dock; purslane,605,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+quercetin,nettle; burdock; dock; purslane,662,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+quercetin,nettle; burdock; dock; purslane,722,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+quercetin,nettle; burdock; dock; purslane,785,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+quercetin,nettle; burdock; dock; purslane,995,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+quercetin,nettle; burdock; dock; purslane,1114,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+quercetin,nettle; burdock; dock; purslane,1175,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+quercetin,nettle; burdock; dock; purslane,1328,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+quercetin,nettle; burdock; dock; purslane,1398,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+quercetin,nettle; burdock; dock; purslane,1441,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+quercetin,nettle; burdock; dock; purslane,1548,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+quercetin,nettle; burdock; dock; purslane,1590,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+quercetin,nettle; burdock; dock; purslane,1606,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+quercetin,nettle; burdock; dock; purslane,1665,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+kaempferol,purslane; shepherd's purse,460,,cm^-1,vw,CCO/CCC/HCC/HOC/COC bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,565,,cm^-1,vw,CCO/HCC/HOC/CCC bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,584,,cm^-1,vw,CCC/CCO/HCC/HOC bending; C-O stretch contribution,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,620,,cm^-1,vw,CCO bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,639,,cm^-1,vw,CCC/CCO/HCC bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,702,,cm^-1,vw,CCC/CCO/HCC bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,828,,cm^-1,vw,C-O stretching; CCC/CCO bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,882,,cm^-1,vw,HCC/CCC/COC/CCO/HOC bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,974,,cm^-1,w,C-O stretching; HCC/CCC bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1008,,cm^-1,w,C-O stretching; HCC bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1090,,cm^-1,w,C-O stretching; HCC/HOC/CCC bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1129,,cm^-1,vw,C-O stretching; HCC/HOC/CCC bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1177,,cm^-1,vs,HCC/HOC bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1185,,cm^-1,m,C-O stretching; HCC/HOC bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1223,,cm^-1,m,C-O stretching; HCC/CCC/HOC/CCO/COC bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1252,,cm^-1,m,C-C/C-O stretching; HOC/HCC/COC bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1275,,cm^-1,vw,C-O stretching; HCC bending; C-C stretching,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1306,,cm^-1,m,C-O/C-C stretching; HOC/HCC/CCC bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1316,,cm^-1,m,C-C/C-O stretching; COH bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1366,,cm^-1,w,HCC/HOC bending; C-C stretching,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1382,,cm^-1,s,C-C/C-O stretching; COH bending,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1440,,cm^-1,vw,C-C stretching; COH/CCH bending; C-O stretching,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1456,,cm^-1,vw,C-C stretching; COH/CCH bending; C-O stretching,ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1509,,cm^-1,s,"C-C stretching (A,C); CCO/HOC/HCC/CCC bending contributions",ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1568,,cm^-1,m,"C2=C3 stretching (C); C-C stretching (A,C); C=O stretching (C)",ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1612,,cm^-1,vs,"C=O stretching (C); C-C stretching (A,C)",ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1660,,cm^-1,vs,"C=O stretching (C); C2=C3 stretching (C); C-C stretching (A,C)",ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,3206,,cm^-1,s,CH stretching (B),ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,3420,,cm^-1,vs,OH stretching (A),ATR-FTIR,"KBr matrix/ATR; 4000-400 cm^-1, 2 cm^-1 resolution, 512 scans",KBr,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,565,,cm^-1,w,CCO/HCC/HOC/CCC bending,Raman,"solid powder; 532 nm laser, 10 mW, 10 s acquisition, 10 scans",none,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,578,,cm^-1,vw,CCC/CCO/HCC/HOC bending; C-O stretch contribution,Raman,"solid powder; 532 nm laser, 10 mW, 10 s acquisition, 10 scans",none,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,637,,cm^-1,w,CCC/CCO/HCC bending,Raman,"solid powder; 532 nm laser, 10 mW, 10 s acquisition, 10 scans",none,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,690,,cm^-1,w,CCC/CCO/HCC bending,Raman,"solid powder; 532 nm laser, 10 mW, 10 s acquisition, 10 scans",none,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,976,,cm^-1,vw,C-O stretching; HCC/CCC bending,Raman,"solid powder; 532 nm laser, 10 mW, 10 s acquisition, 10 scans",none,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1008,,cm^-1,vw,C-O stretching; HCC bending,Raman,"solid powder; 532 nm laser, 10 mW, 10 s acquisition, 10 scans",none,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1090,,cm^-1,vw,C-O stretching; HCC/HOC/CCC bending,Raman,"solid powder; 532 nm laser, 10 mW, 10 s acquisition, 10 scans",none,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1117,,cm^-1,vw,C-O stretching; HCC/HOC/CCC bending,Raman,"solid powder; 532 nm laser, 10 mW, 10 s acquisition, 10 scans",none,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1222,,cm^-1,w,C-O stretching; HCC/CCC/HOC/CCO/COC bending,Raman,"solid powder; 532 nm laser, 10 mW, 10 s acquisition, 10 scans",none,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1277,,cm^-1,w,C-O stretching; HCC bending; C-C stretching,Raman,"solid powder; 532 nm laser, 10 mW, 10 s acquisition, 10 scans",none,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1316,,cm^-1,w,C-O/C-C stretching; HCC bending,Raman,"solid powder; 532 nm laser, 10 mW, 10 s acquisition, 10 scans",none,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1422,,cm^-1,w,C-C stretching; HCC/HOC bending,Raman,"solid powder; 532 nm laser, 10 mW, 10 s acquisition, 10 scans",none,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1509,,cm^-1,w,"C-C stretching (A,C); CCO/HOC/HCC/CCC bending contributions",Raman,"solid powder; 532 nm laser, 10 mW, 10 s acquisition, 10 scans",none,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1561,,cm^-1,m,"C2=C3 stretching (C); C-C stretching (A,C); C=O stretching (C)",Raman,"solid powder; 532 nm laser, 10 mW, 10 s acquisition, 10 scans",none,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1604,,cm^-1,vs,"C=O stretching (C); C-C stretching (A,C)",Raman,"solid powder; 532 nm laser, 10 mW, 10 s acquisition, 10 scans",none,https://doi.org/10.20450/mjcce.2019.1333
+kaempferol,purslane; shepherd's purse,1642,,cm^-1,m,"C=C stretching (B,C)",Raman,"solid powder; 532 nm laser, 10 mW, 10 s acquisition, 10 scans",none,https://doi.org/10.20450/mjcce.2019.1333
+luteolin,yarrow; chamomile; dandelion,597,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+luteolin,yarrow; chamomile; dandelion,686,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+luteolin,yarrow; chamomile; dandelion,737,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+luteolin,yarrow; chamomile; dandelion,787,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+luteolin,yarrow; chamomile; dandelion,1004,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+luteolin,yarrow; chamomile; dandelion,1223,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+luteolin,yarrow; chamomile; dandelion,1301,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+luteolin,yarrow; chamomile; dandelion,1446,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+luteolin,yarrow; chamomile; dandelion,1589,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+luteolin,yarrow; chamomile; dandelion,1663,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+apigenin,chamomile; yarrow; thistle,1354,,cm^-1,NO DATA,ν(C-OH),FTIR,KBr pellet,KBr,https://doi.org/10.5455/oams.240714.or.070
+apigenin,chamomile; yarrow; thistle,1608,,cm^-1,NO DATA,ν(C=C),FTIR,KBr pellet,KBr,https://doi.org/10.5455/oams.240714.or.070
+apigenin,chamomile; yarrow; thistle,1654,,cm^-1,NO DATA,ν(C=O),FTIR,KBr pellet,KBr,https://doi.org/10.5455/oams.240714.or.070
+apigenin,chamomile; yarrow; thistle,3282,,cm^-1,NO DATA,ν(O-H),FTIR,KBr pellet,KBr,https://doi.org/10.5455/oams.240714.or.070
+verbascoside/acteoside,plantain,NO DATA,,NO DATA,NO DATA,NO DATA,NO DATA,NO DATA,NO DATA,NO DATA
+aucubin,plantain,1054,,cm^-1,NO DATA,alcoholic C-O; stretching,FTIR,isolated solid from Plantago lanceolata; FTIR conditions not fully specified,NO DATA,https://doi.org/10.22159/ijpps.2019v11i2.30566
+aucubin,plantain,1126,,cm^-1,NO DATA,C-O of ether; stretching,FTIR,isolated solid from Plantago lanceolata; FTIR conditions not fully specified,NO DATA,https://doi.org/10.22159/ijpps.2019v11i2.30566
+aucubin,plantain,1359,,cm^-1,NO DATA,alcoholic O-H; bending,FTIR,isolated solid from Plantago lanceolata; FTIR conditions not fully specified,NO DATA,https://doi.org/10.22159/ijpps.2019v11i2.30566
+aucubin,plantain,1651,,cm^-1,NO DATA,C=C of alkene; stretching,FTIR,isolated solid from Plantago lanceolata; FTIR conditions not fully specified,NO DATA,https://doi.org/10.22159/ijpps.2019v11i2.30566
+aucubin,plantain,3204,3409,cm^-1,NO DATA,O-H of primary and secondary alcohol; stretching,FTIR,isolated solid from Plantago lanceolata; FTIR conditions not fully specified,NO DATA,https://doi.org/10.22159/ijpps.2019v11i2.30566
+aucubin,plantain,220,,nm,NO DATA,absorption spectrum peak reported in secondary review,PROVISIONAL,NO DATA,NO DATA,https://iranjournals.nlai.ir/bitstream/handle/123456789/1027521/CFDD73C5A551EE0FF20815EA77DA20AE.pdf?isAllowed=y&sequence=1
+aucubin,plantain,255,,nm,NO DATA,absorption spectrum peak reported in secondary review,PROVISIONAL,NO DATA,NO DATA,https://iranjournals.nlai.ir/bitstream/handle/123456789/1027521/CFDD73C5A551EE0FF20815EA77DA20AE.pdf?isAllowed=y&sequence=1
+aucubin,plantain,290,,nm,NO DATA,absorption spectrum peak reported in secondary review,PROVISIONAL,NO DATA,NO DATA,https://iranjournals.nlai.ir/bitstream/handle/123456789/1027521/CFDD73C5A551EE0FF20815EA77DA20AE.pdf?isAllowed=y&sequence=1
+plantamajoside,plantain,NO DATA,,NO DATA,NO DATA,NO DATA,NO DATA,NO DATA,NO DATA,NO DATA
+silybin/silymarin,milk thistle,820.2,,cm^-1,NO DATA,out-of-plane C-H deformation,FTIR,plain powder,none,https://doi.org/10.1016/j.jpha.2018.09.003
+silybin/silymarin,milk thistle,973,,cm^-1,NO DATA,C-H bending; alkenes,FTIR,solid,none,https://doi.org/10.1021/acsomega.3c08494
+silybin/silymarin,milk thistle,1083.7,,cm^-1,NO DATA,benzopyran ring,FTIR,plain powder,none,https://doi.org/10.1016/j.jpha.2018.09.003
+silybin/silymarin,milk thistle,1273,,cm^-1,NO DATA,C-O stretching; polyols,FTIR,solid,none,https://doi.org/10.1021/acsomega.3c08494
+silybin/silymarin,milk thistle,1452,,cm^-1,NO DATA,aromatic C=C ring stretching,FTIR,solid,none,https://doi.org/10.1021/acsomega.3c08494
+silybin/silymarin,milk thistle,1629,,cm^-1,NO DATA,C=O stretching,FTIR,solid,none,https://doi.org/10.1021/acsomega.3c08494
+silybin/silymarin,milk thistle,2910,,cm^-1,NO DATA,C-H; alkyl,FTIR,solid,none,https://doi.org/10.1021/acsomega.3c08494
+silybin/silymarin,milk thistle,3428,,cm^-1,NO DATA,O-H; phenols/alcohols,FTIR,solid,none,https://doi.org/10.1021/acsomega.3c08494
+formononetin,red clover,NO DATA,,NO DATA,NO DATA,NO DATA,NO DATA,NO DATA,NO DATA,NO DATA
+biochanin A,red clover,1176,,cm^-1,strong,phenolic C-O stretching,FTIR,solid; pure Biochanin A spectrum in hydrogel-carrier study,none,https://doi.org/10.3390/polym13030426
+biochanin A,red clover,1237,,cm^-1,strong,asymmetric C-O-C stretching,FTIR,solid; pure Biochanin A spectrum in hydrogel-carrier study,none,https://doi.org/10.3390/polym13030426
+biochanin A,red clover,1258,,cm^-1,strong,asymmetric C-O-C stretching,FTIR,solid; pure Biochanin A spectrum in hydrogel-carrier study,none,https://doi.org/10.3390/polym13030426
+biochanin A,red clover,1323,,cm^-1,low,in-plane O-H deformation,FTIR,solid; pure Biochanin A spectrum in hydrogel-carrier study,none,https://doi.org/10.3390/polym13030426
+biochanin A,red clover,1515,,cm^-1,NO DATA,aromatic C=C stretching,FTIR,solid; pure Biochanin A spectrum in hydrogel-carrier study,none,https://doi.org/10.3390/polym13030426
+biochanin A,red clover,1585,,cm^-1,NO DATA,aromatic C=C stretching,FTIR,solid; pure Biochanin A spectrum in hydrogel-carrier study,none,https://doi.org/10.3390/polym13030426
+biochanin A,red clover,1625,,cm^-1,NO DATA,aromatic C=C stretching,FTIR,solid; pure Biochanin A spectrum in hydrogel-carrier study,none,https://doi.org/10.3390/polym13030426
+biochanin A,red clover,1661,,cm^-1,strong,C=O stretching,FTIR,solid; pure Biochanin A spectrum in hydrogel-carrier study,none,https://doi.org/10.3390/polym13030426
+biochanin A,red clover,3200,3400,cm^-1,strong,phenolic O-H stretching broad band,FTIR,solid; pure Biochanin A spectrum in hydrogel-carrier study,none,https://doi.org/10.3390/polym13030426
+biochanin A,red clover,3261,,cm^-1,strong,phenolic O-H stretching maximum,FTIR,solid; pure Biochanin A spectrum in hydrogel-carrier study,none,https://doi.org/10.3390/polym13030426
+rosmarinic acid,ground ivy,465,,cm^-1,NO DATA,φCC,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,531,,cm^-1,NO DATA,αCCC,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,565,,cm^-1,NO DATA,β_as COO,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,593,,cm^-1,NO DATA,αCCC,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,594,,cm^-1,NO DATA,γ_s COO; γCH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,642,,cm^-1,NO DATA,γOH_ar,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,682,,cm^-1,NO DATA,γC=O; γCH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,736,,cm^-1,NO DATA,β_s COO,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,782,,cm^-1,NO DATA,αCCC,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,790,,cm^-1,NO DATA,βC=O,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,819,,cm^-1,NO DATA,γCH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,851,,cm^-1,NO DATA,γCH; γCH c=c,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,916,,cm^-1,NO DATA,νOH_COOH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,973,,cm^-1,NO DATA,γCH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,981,,cm^-1,NO DATA,γCH c=c,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1034,,cm^-1,NO DATA,βCH; βOH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1076,,cm^-1,NO DATA,βCH c=c; βCH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1115,,cm^-1,NO DATA,βCH; βOH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1154,,cm^-1,NO DATA,βCH; βOH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1183,,cm^-1,NO DATA,βCH; νC-O,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1232,,cm^-1,NO DATA,ωCH2,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1260,,cm^-1,NO DATA,νC-OH_ar; βOH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1286,,cm^-1,NO DATA,νC-O; τCH2; βOH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1307,,cm^-1,NO DATA,ωCH2; βCH c=c,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1350,,cm^-1,NO DATA,νCC,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1362,,cm^-1,NO DATA,νCC; βOH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1412,,cm^-1,NO DATA,ν_s COO,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1446,,cm^-1,NO DATA,δ_s CH2,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1464,,cm^-1,NO DATA,βOH; νCC,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1521,,cm^-1,NO DATA,νCC,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1617,,cm^-1,NO DATA,νCC,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1645,,cm^-1,NO DATA,νC=C,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1708,,cm^-1,NO DATA,νC=O,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1726,,cm^-1,NO DATA,νC=O,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,2857,,cm^-1,NO DATA,ν_s CH2,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,2933,,cm^-1,NO DATA,ν_as CH2,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,2974,,cm^-1,NO DATA,νCH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,3313,,cm^-1,NO DATA,νOH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,3399,,cm^-1,NO DATA,νOH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,3419,,cm^-1,NO DATA,νOH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,3456,,cm^-1,NO DATA,νOH,FTIR,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,458,,cm^-1,NO DATA,φCC,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,526,,cm^-1,NO DATA,αCCC,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,568,,cm^-1,NO DATA,β_as COO,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,597,,cm^-1,NO DATA,αCCC,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,641,,cm^-1,NO DATA,γOH_ar,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,751,,cm^-1,NO DATA,β_s COO,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,783,,cm^-1,NO DATA,αCCC,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,792,,cm^-1,NO DATA,βC=O,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,807,,cm^-1,NO DATA,γCH,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,852,,cm^-1,NO DATA,γCH; γCH c=c,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,917,,cm^-1,NO DATA,νOH_COOH,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,972,,cm^-1,NO DATA,γCH,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1041,,cm^-1,NO DATA,βCH; βOH,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1077,,cm^-1,NO DATA,βCH c=c; βCH,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1114,,cm^-1,NO DATA,βCH; βOH,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1154,,cm^-1,NO DATA,βCH; βOH,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1193,,cm^-1,NO DATA,βCH; νC-O,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1244,,cm^-1,NO DATA,ωCH2,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1275,,cm^-1,NO DATA,νC-OH_ar; βOH,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1293,,cm^-1,NO DATA,νC-O; τCH2; βOH,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1316,,cm^-1,NO DATA,ωCH2; βCH c=c,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1365,,cm^-1,NO DATA,νCC; βOH,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1384,,cm^-1,NO DATA,νCC,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1407,,cm^-1,NO DATA,ν_s COO,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1478,,cm^-1,NO DATA,βOH; νCC,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1525,,cm^-1,NO DATA,νCC,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1609,,cm^-1,NO DATA,νCC; νC=C,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1619,,cm^-1,NO DATA,νCC,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1646,,cm^-1,NO DATA,νC=C,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1708,,cm^-1,NO DATA,νC=O,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,1727,,cm^-1,NO DATA,νC=O,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,2854,,cm^-1,NO DATA,ν_s CH2,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,2946,,cm^-1,NO DATA,ν_as CH2,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+rosmarinic acid,ground ivy,2964,,cm^-1,NO DATA,νCH,Raman,NO DATA,NO DATA,https://doi.org/10.3390/molecules24142645
+emodin,curly dock,418,,cm^-1,m,ring deformation,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,452,,cm^-1,m,asymmetric ring breathing/ring deformation,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,470,,cm^-1,m,ring deformation,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,546,,cm^-1,m,ring deformation,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,560,,cm^-1,w,ring deformation/skeletal breathing,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,583,,cm^-1,w,ring deformation,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,610,,cm^-1,m,ring deformation/skeletal deformation,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,631,,cm^-1,vw,symmetric ring breathing,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,648,,cm^-1,m,ring deformation,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,722,,cm^-1,m,ring deformation,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,732,,cm^-1,w sh,ring deformation,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,759,,cm^-1,vs,ring deformation; aromatic =C-H out-of-plane,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,822,,cm^-1,w,ring deformation,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,874,,cm^-1,s,ring deformation,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,906,,cm^-1,m,ring deformation,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,942,,cm^-1,w,asymmetric ring breathing,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,994,,cm^-1,w,asymmetric ring breathing,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1033,,cm^-1,s,ring deformation in ring with CH3 group,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1100,,cm^-1,s,asymmetric ring breathing; C-CH in-plane bending,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1131,,cm^-1,m,asymmetric ring breathing; C-CH in-plane bending,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1165,,cm^-1,s,asymmetric ring breathing; OH in-plane bending,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1188,,cm^-1,vw sh,symmetric ring breathing; in-plane ring stretching,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1216,,cm^-1,s,ring deformation; C-O and phenyl OH in-plane bending,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1247,,cm^-1,w,ring stretching/asymmetric ring breathing,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1271,,cm^-1,s,asymmetric ring breathing/ring stretching,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1301,,cm^-1,s,symmetric ring breathing/ring stretching,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1332,,cm^-1,s,asymmetric ring breathing/ring stretching,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1369,,cm^-1,s,asymmetric ring breathing/phenyl C-O stretching,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1383,,cm^-1,m,ring stretching/phenyl C-O stretching,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1416,,cm^-1,s,asymmetric ring breathing/ring stretching,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1443,,cm^-1,w,ring stretching,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1457,,cm^-1,vw,ring deformation involving CH3,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1478,,cm^-1,s,ring stretching coupled with symmetric ring breathing,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1561,,cm^-1,s,aromatic C=C/asymmetric ring breathing,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1578,,cm^-1,s,aromatic C=C/symmetric ring breathing,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1594,,cm^-1,s,symmetric ring breathing,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1610,,cm^-1,vs sh,aromatic C=C/quadrant ring stretching,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1623,,cm^-1,vs,conjugated H-bonded C=O/symmetric ring breathing,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1666,,cm^-1,m,conjugated free C=O/asymmetric ring breathing,FTIR,KBr pellet; 4000-400 cm^-1,KBr,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,421,,cm^-1,w,ring deformation,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,456,,cm^-1,vs,ring deformation/asymmetric ring breathing,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,468,,cm^-1,vs,ring deformation,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,516,,cm^-1,w,ring deformation,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,549,,cm^-1,m,ring deformation,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,566,,cm^-1,vs,skeletal breathing/ring deformation,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,585,,cm^-1,w,ring deformation,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,607,,cm^-1,w,ring deformation/skeletal deformation,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,632,,cm^-1,vs,symmetric ring breathing,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,649,,cm^-1,w,ring deformation,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,720,,cm^-1,m,ring deformation,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,730,,cm^-1,w,ring deformation,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,766,,cm^-1,w,ring deformation; aromatic =C-H out-of-plane,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,875,,cm^-1,w,ring deformation,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,902,,cm^-1,w,ring deformation,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,937,,cm^-1,vs,asymmetric ring breathing,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,993,,cm^-1,w,asymmetric ring breathing,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1035,,cm^-1,w,CH3-ring deformation,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1099,,cm^-1,w,asymmetric ring breathing,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1133,,cm^-1,w,asymmetric ring breathing; C-CH bending,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1170,,cm^-1,m,asymmetric ring breathing; OH bending,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1192,,cm^-1,m,symmetric ring breathing,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1278,,cm^-1,vs,asymmetric ring breathing/ring stretching,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1297,,cm^-1,vs,symmetric ring breathing/ring stretching,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1324,,cm^-1,w,asymmetric ring breathing,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1365,,cm^-1,s,asymmetric ring breathing/phenyl C-O stretching,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1385,,cm^-1,m,ring stretching,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1415,,cm^-1,w,asymmetric ring breathing,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1443,,cm^-1,w,ring stretching,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1477,,cm^-1,w,ring stretch/symmetric ring breathing,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1553,,cm^-1,m,aromatic C=C/asymmetric ring breathing,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1572,,cm^-1,m,aromatic C=C/symmetric ring breathing,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1590,,cm^-1,m,symmetric ring breathing,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1603,,cm^-1,m,aromatic C=C/quadrant ring stretching,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1622,,cm^-1,w,conjugated H-bonded C=O/symmetric ring breathing,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,1658,,cm^-1,vs,conjugated free C=O/asymmetric ring breathing,Raman,"solid; 785 nm laser, 60 mW, 10 s, 5 accumulations",none,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,221,,nm,NO DATA,UV-Vis absorption peak in experimental methanol spectrum,UV-Vis,solution; 200-500 nm scan,methanol,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,252,,nm,NO DATA,UV-Vis absorption peak in experimental methanol spectrum,UV-Vis,solution; 200-500 nm scan,methanol,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,265,,nm,NO DATA,UV-Vis absorption peak in experimental methanol spectrum,UV-Vis,solution; 200-500 nm scan,methanol,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,288,,nm,NO DATA,UV-Vis absorption peak in experimental methanol spectrum,UV-Vis,solution; 200-500 nm scan,methanol,https://doi.org/10.3952/physics.v61i1.4403
+emodin,curly dock,437,,nm,NO DATA,UV-Vis absorption peak in experimental methanol spectrum,UV-Vis,solution; 200-500 nm scan,methanol,https://doi.org/10.3952/physics.v61i1.4403
+chrysophanol,curly dock,NO DATA,,NO DATA,NO DATA,NO DATA,NO DATA,NO DATA,NO DATA,NO DATA
+ferulic acid,lambsquarters,815,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+ferulic acid,lambsquarters,852,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+ferulic acid,lambsquarters,1164,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+ferulic acid,lambsquarters,1177,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+ferulic acid,lambsquarters,1196,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+ferulic acid,lambsquarters,1201,1202,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+ferulic acid,lambsquarters,1211,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+ferulic acid,lambsquarters,1241,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+ferulic acid,lambsquarters,1273,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+ferulic acid,lambsquarters,1433,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+ferulic acid,lambsquarters,1459,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+ferulic acid,lambsquarters,1466,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+ferulic acid,lambsquarters,1592,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+ferulic acid,lambsquarters,1602,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
+ferulic acid,lambsquarters,1631,,cm^-1,NO DATA,not given in source,Raman,solid standard; FT-Raman,none,https://doi.org/10.25518/1780-4507.16270
