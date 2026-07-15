@@ -154,3 +154,15 @@ clustering ported from the HNC packet):
 Experimental lane by default; `--include-computed` adds the labeled theoretical
 overlay. Palette validated CVD-safe on the dark surface. Regenerate with
 `python blueprints.py`.
+
+## Cognition integration
+
+`aureon/cognition/phenolic_bridge.py` feeds an `AnalysisResult` into the cognitive
+layer the repo's own way — publishing `phenolic.fingerprint.run` +
+`phenolic.fingerprint.compound` Thoughts on the ThoughtBus and mirroring a
+`phenolic_fingerprint` `bus_trace` signal (the `aureon_lighthouse` pattern), so the
+metacognition monitor / Queen can sense the patterns. `summarize_patterns()` is the
+sense-making layer (separable / clustering-significant counts, provenance split,
+controls status). Demonstrated by `scripts/validation/feed_fingerprint_to_cognition.py`
+and benchmarked as Tier-A invariant **b9** in `tests/benchmarks/benchmark_aureon_scope.py`
+(9/9 Tier-A pass). Experimental lane only in the falsifiable path; computed stays labeled.

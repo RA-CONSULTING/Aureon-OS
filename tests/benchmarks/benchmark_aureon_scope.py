@@ -855,6 +855,78 @@ def b8_meta_cognition_reflection(tmp_root: Path) -> Dict[str, Any]:
     }
 
 
+def b9_phenolic_fingerprint_cognition(tmp_root: Path) -> Dict[str, Any]:
+    """Phenolic fingerprint → cognition: an AnalysisResult dict fed through
+    aureon.cognition.phenolic_bridge.emit_to_cognition publishes one
+    phenolic.fingerprint.run Thought plus one phenolic.fingerprint.compound
+    Thought per compound (sharing a trace_id), and returns a pattern summary that
+    correctly counts separable / clustering-significant compounds and classifies
+    provenance. This proves the bio->vibe results reach the sense-making layer.
+    """
+    from aureon.cognition import phenolic_bridge as bridge
+
+    os.environ["AUREON_BUS_TRACE_DIR"] = str(tmp_root)
+    bus = _fresh_bus(tmp_root / "bus.jsonl")
+    captured: List[Thought] = []
+    bus.subscribe("phenolic.*", lambda t: captured.append(t))
+
+    analysis = {
+        "valid": True,
+        "alpha": 0.05,
+        "source_path": "benchmark",
+        "formats": ["native"],
+        "controls": {"positive": {"passed": True}, "negative": {"passed": True}},
+        "compounds": {
+            "caffeic acid": {"test_A_p": 0.003, "test_B_p": 0.7, "separable": False,
+                             "n_peaks": 59, "sources": ["doi:cga"]},
+            "luteolin": {"test_A_p": 0.005, "test_B_p": 0.02, "separable": True,
+                         "n_peaks": 21, "sources": ["doi:lut"]},
+            "apigenin": {"test_A_p": 0.8, "test_B_p": 0.9, "separable": False,
+                         "n_peaks": 5, "sources": ["doi:api", "COMPUTED GFN2-xTB (theoretical, non-experimental)"]},
+        },
+    }
+    summary = bridge.emit_to_cognition(analysis, bus=bus)
+
+    topics = [t.topic for t in captured]
+    trace_ids = {t.trace_id for t in captured}
+    try:
+        from aureon.core.bus_trace import read_trace_latest
+        trace = read_trace_latest(bridge.TRACE_NAME) or {}
+    except Exception:  # noqa: BLE001
+        trace = {}
+
+    invariants = {
+        "run_thought_published": topics.count(bridge.RUN_TOPIC) == 1,
+        "one_thought_per_compound": topics.count(bridge.COMPOUND_TOPIC) == 3,
+        "single_trace_id": len(trace_ids) == 1,
+        "separable_counted": summary["separable"] == ["luteolin"],
+        "clustering_counted": summary["clustering_significant"] == ["caffeic acid", "luteolin"],
+        "provenance_classified": summary["provenance_counts"] == {"experimental": 2, "mixed": 1},
+        "controls_pass_seen": summary["controls_pass"] is True,
+        "trace_signal_written": bool(trace) and trace.get("n_compounds") == 3,
+    }
+    passed = all(invariants.values())
+
+    return {
+        "name": "Phenolic fingerprint → cognition (bio→vibe sense-making)",
+        "module": "aureon/cognition/phenolic_bridge.py",
+        "passed": passed,
+        "metrics": {
+            "thoughts_published": len(captured),
+            "n_compounds": summary["n_compounds"],
+            "n_separable": len(summary["separable"]),
+            "n_clustering_significant": len(summary["clustering_significant"]),
+            "provenance_counts": summary["provenance_counts"],
+            "headline": summary["headline"],
+        },
+        "invariants": invariants,
+        "evidence": (
+            "AnalysisResult → emit_to_cognition publishes run + 3 compound Thoughts "
+            "on one trace_id and mirrors a bus_trace; summary = " + summary["headline"]
+        ),
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tier A registry — order matters for the report.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -869,6 +941,7 @@ TIER_A: List[Tuple[str, Callable[[Path], Dict[str, Any]]]] = [
     ("Pattern learning",            b6_pattern_learning),
     ("Skill execution → disk",      b7_skill_execution_artefacts),
     ("Meta-cognition reflection",   b8_meta_cognition_reflection),
+    ("Phenolic → cognition",        b9_phenolic_fingerprint_cognition),
 ]
 
 
