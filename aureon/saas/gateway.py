@@ -406,6 +406,23 @@ def register_saas_routes(app: Any) -> Any:
                 {"available": False, "categories": {}, "surfaces": [], "error": str(exc)[:200]},
                 "no_data"))
 
+    @app.get("/api/automation")
+    @_guarded
+    def saas_automation():
+        # Progress toward the whole repo being connected into the organism and driveable
+        # by the soul/consciousness logic — one honest percentage decomposed by dimension
+        # (connectivity · integration · consciousness · surfacing) and by category.
+        # Composed from real coverage signals only; observational, authorizes nothing.
+        try:
+            from aureon.saas.automation_index import automation_index
+
+            idx = automation_index()
+            return jsonify(_stamp(idx, idx.get("truth_status", "no_data")))
+        except Exception as exc:  # noqa: BLE001 — degrade honestly, never 500
+            return jsonify(_stamp(
+                {"index_pct": None, "dimensions": {}, "error": str(exc)[:200]}, "no_data"))
+
+
     # ── the cognitive substrate as verified SaaS ──────────────────────────────
     # The organism's cognitive + meta-cognitive systems (HNC field, thought-bus
     # links, mycelium mesh, connectome body-map, miner brain) surfaced as

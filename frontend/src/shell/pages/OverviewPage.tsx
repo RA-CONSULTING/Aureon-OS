@@ -43,6 +43,29 @@ interface OrganismStatus {
   };
 }
 
+interface AutomationIndex {
+  index_pct?: number | null;
+  label?: string;
+  dimensions?: Record<string, { pct?: number | null; weight?: number; detail?: string }>;
+  truth_status?: string;
+}
+
+const DIM_LABEL: Record<string, string> = {
+  connectivity: "Connectivity",
+  integration: "Integration",
+  consciousness: "Consciousness",
+  surfacing: "Surfacing",
+};
+
+function Bar({ pct, className }: { pct: number; className?: string }) {
+  return (
+    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+      <div className={`h-full rounded-full ${className ?? "bg-primary"}`}
+           style={{ width: `${Math.max(0, Math.min(100, pct))}%` }} />
+    </div>
+  );
+}
+
 async function fetchJson<T>(url: string): Promise<T | null> {
   try {
     const r = await fetch(url, { cache: "no-store" });
@@ -68,12 +91,14 @@ export default function OverviewPage() {
   const [status, setStatus] = useState<PlatformStatus | null | undefined>(undefined);
   const [billing, setBilling] = useState<BillingStatus | null | undefined>(undefined);
   const [organism, setOrganism] = useState<OrganismStatus | null | undefined>(undefined);
+  const [automation, setAutomation] = useState<AutomationIndex | null | undefined>(undefined);
   const [unified, setUnified] = useState<UnifiedFrontendState | null>(null);
 
   useEffect(() => {
     fetchJson<PlatformStatus>("/api/status").then(setStatus);
     fetchJson<BillingStatus>("/api/billing/status").then(setBilling);
     fetchJson<OrganismStatus>("/api/organism").then(setOrganism);
+    fetchJson<AutomationIndex>("/api/automation").then(setAutomation);  // once — avoids repeated organ cold-boot
     loadUnifiedFrontendState().then(setUnified).catch(() => setUnified(null));
   }, []);
 
@@ -92,6 +117,54 @@ export default function OverviewPage() {
           the coding system, operations, and the platform itself.
         </p>
       </div>
+
+      {/* Automation progress — the headline metric toward "fully automated" */}
+      <Card className="border-primary/30">
+        <CardHeader className="pb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <CardTitle className="text-base">Automation progress</CardTitle>
+            {automation && automation.index_pct != null && (
+              <Badge variant="outline" className="text-xs">{automation.label}</Badge>
+            )}
+          </div>
+          <CardDescription>
+            How much of the repo is connected into the organism and driveable by the
+            soul/consciousness logic — composed from real coverage, never fabricated.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {automation === undefined ? (
+            <Skeleton className="h-10 w-full" />
+          ) : !automation || automation.index_pct == null ? (
+            <p className="text-xs text-muted-foreground">
+              Gateway offline (or organism cold) — start the operator for live progress.
+            </p>
+          ) : (
+            <>
+              <div className="flex items-end gap-3">
+                <span className="font-mono text-3xl tabular-nums text-primary">
+                  {automation.index_pct.toFixed(1)}%
+                </span>
+                <span className="pb-1 text-xs text-muted-foreground">toward fully automated</span>
+              </div>
+              <Bar pct={automation.index_pct} />
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {Object.entries(automation.dimensions ?? {}).map(([name, d]) => (
+                  <div key={name} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">{DIM_LABEL[name] ?? name}</span>
+                      <span className="font-mono tabular-nums">
+                        {d.pct == null ? "—" : `${d.pct.toFixed(1)}%`}
+                      </span>
+                    </div>
+                    <Bar pct={d.pct ?? 0} className="bg-primary/60" />
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Platform health */}
       <div className="grid gap-4 md:grid-cols-3">

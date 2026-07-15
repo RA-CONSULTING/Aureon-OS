@@ -622,6 +622,24 @@ def run_audit() -> list[dict]:
                 and _s["truth_status"] in _TS,
                 f"available={_s['available']} wholeness={_wh} headline={_s['headline'][:40]!r}",
                 critical=False))
+
+            # Edge 22 — the automation index is honest: every dimension fraction is
+            # [0,1] or None, the headline percent is [0,100] or None, and it equals the
+            # weight-renormalized mean of the present dimensions (never a fabricated score).
+            from aureon.saas.automation_index import _compose as _acompose
+            from aureon.saas.automation_index import automation_index as _ai
+
+            _r = _ai()
+            _fr = {k: v["fraction"] for k, v in _r["dimensions"].items()}
+            _frac_ok = all(f is None or (0.0 <= f <= 1.0) for f in _fr.values())
+            _pct = _r["index_pct"]
+            _pct_ok = _pct is None or (0.0 <= _pct <= 100.0)
+            _recomputed, _ = _acompose(_fr)
+            results.append(_check(
+                "automation_index_is_honest",
+                _frac_ok and _pct_ok and _pct == _recomputed and _r["truth_status"] in _TS,
+                f"index_pct={_pct} label={_r['label']} dims={ {k: v['pct'] for k, v in _r['dimensions'].items()} }",
+                critical=False))
         finally:
             for _k, _val in _saved.items():
                 if _val is None:
