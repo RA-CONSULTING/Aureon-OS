@@ -19,7 +19,17 @@ field, surfaced honestly, and acted upon through one fail-safe seam.
 | **victory** | mycelium `growth_percentage` toward the ONE_GOAL, prediction `accuracy_pct`, shadow-trade wins |
 | **defeat** | negative growth / realized losses, wrong predictions, shadow-trade misses |
 | **fear** | whole-body `divergence` (of two minds), Lighthouse coherence-collapse severity, low field `coherence_gamma`, market fear (`crypto_fear_greed`), preflight critical failures |
-| **resolve** | grounded-action approve-ratio + high coherence/ψ with low divergence |
+| **resolve** | grounded-action approve-ratio + high coherence/ψ with low divergence + **the director's trust** (the approval-desk approve-ratio) |
+
+**The director's trust loops back.** When Gary approves or rejects a play on the
+[approval desk](AUTONOMY.md), that decision is not just recorded — the affect monitor
+*senses* it. `ApprovalQueue.trust()` gives the approve-ratio over all decided items
+(`None` until he has decided at least one — never a fabricated trust level), and affect
+folds it into **resolve** once it exists: his blessings steady the organism, his
+rejections make it appropriately humble. Because resolve never feeds `caution_bias`
+(fear + defeat only), his trust is *felt and folded into the affect Λ field* but can
+**never** loosen a gate — the honest, fail-safe loop-back (the HNC field measuring the
+human's judgment, the way it measures its own).
 
 Victory and defeat measure *deviation from neutral*, so a flat, dormant book feels
 neither triumph nor dread. `valence` = victory − defeat; `arousal` = intensity; a

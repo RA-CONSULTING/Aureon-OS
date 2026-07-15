@@ -541,6 +541,27 @@ def run_audit() -> list[dict]:
                 f"empty_clear={_empty_ok} blocked={_bl['blocked']} pending={_bl['pending_count']}",
                 critical=False))
             _osm.environ.pop("AUREON_APPROVAL_MAX_PENDING", None)
+
+            # Edge 18 — the director's trust loops back: after Gary decides, the queue
+            # exposes an approve-ratio and the affect monitor SENSES it (folded into
+            # resolve), while the fail-safe caution bias is untouched — trust is felt,
+            # never a lever that loosens a gate.
+            import aureon.core.approval_queue as _aqm3
+            from aureon.core.affect_monitor import AffectMonitor as _AM
+
+            _aqm3._queue = None
+            _tq = _aqm3.ApprovalQueue()
+            _tq.decide(_tq.propose("trade", "trust a", {}, "audit"), "approve", "gary")
+            _tq.decide(_tq.propose("trade", "trust b", {}, "audit"), "reject", "gary")
+            _tr = _tq.trust()
+            _ratio_ok = _tr["decided"] >= 2 and _tr["approve_ratio"] is not None
+            # affect must sense EXACTLY the ratio the queue computed (no fabrication)
+            _felt = _AM().assess().signals.get("approval_trust", {})
+            _felt_ok = (_felt.get("truth_status") == "real_derived"
+                        and _felt.get("value") == round(_tr["approve_ratio"], 4))
+            results.append(_check(
+                "approval_trust_is_felt", _ratio_ok and _felt_ok,
+                f"ratio={_tr['approve_ratio']} felt={_felt.get('value')}", critical=False))
         finally:
             for _k, _val in _saved.items():
                 if _val is None:

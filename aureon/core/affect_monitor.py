@@ -232,6 +232,19 @@ class AffectMonitor:
         except Exception:  # noqa: BLE001
             _put("action_approve_ratio", None, "no_data")
 
+        # The director's trust (resolve) — how Gary has decided on the approval desk.
+        # A felt signal only: it steadies confidence, it never loosens a gate.
+        try:
+            from aureon.core.approval_queue import get_approval_queue
+
+            t = get_approval_queue().trust()
+            ratio = t.get("approve_ratio")
+            _put("approval_trust", (float(ratio) if ratio is not None else None),
+                 "real_derived" if ratio is not None else "no_data",
+                 f"{t.get('approved', 0)}/{t.get('decided', 0)} approved")
+        except Exception:  # noqa: BLE001
+            _put("approval_trust", None, "no_data")
+
         return sig
 
     @staticmethod
@@ -252,6 +265,7 @@ class AffectMonitor:
         severity, _ = self._val(sig, "lighthouse_severity", 0.0)
         market, _ = self._val(sig, "market_confidence", 0.5)
         approve, _ = self._val(sig, "action_approve_ratio", 0.5)
+        trust, t_ok = self._val(sig, "approval_trust", 0.5)
         blockers, _ = self._val(sig, "safety_blockers", 0.0)
 
         # Achievement axis (how well am I doing?) — only from real achievement signals.
@@ -267,8 +281,14 @@ class AffectMonitor:
             danger.append(_clamp(0.5 + blockers * 0.25))
         fear = _clamp(sum(danger) / len(danger))
 
-        # Resolve — steady confidence (counter-feeling).
-        resolve = _clamp((approve + coherence + (1.0 - divergence)) / 3.0)
+        # Resolve — steady confidence (counter-feeling). The director's trust joins it
+        # once he has decided, so his blessing steadies the organism and his rejections
+        # make it appropriately humble — but resolve never feeds caution_bias, so trust
+        # can only ever be felt, never used to loosen a gate.
+        resolve_terms = [approve, coherence, (1.0 - divergence)]
+        if t_ok:
+            resolve_terms.append(trust)
+        resolve = _clamp(sum(resolve_terms) / len(resolve_terms))
 
         valence = max(-1.0, min(1.0, victory - defeat))
         arousal = _clamp(0.30 + 0.5 * fear + 0.2 * victory)

@@ -128,6 +128,68 @@ def test_no_signals_is_no_data_never_fabricated():
     assert a.caution_bias == 0.0
 
 
+# ── the director's trust loops back into resolve ─────────────────────────────
+
+def _desk(bus_trace_dir, approve_n, reject_n):
+    """Seed the approval desk (in the given trace dir) with decided items."""
+    from aureon.core.approval_queue import ApprovalQueue
+
+    q = ApprovalQueue()
+    for i in range(approve_n):
+        q.decide(q.propose("trade", f"approve me {i}", {}, "soul"), "approve", "gary")
+    for i in range(reject_n):
+        q.decide(q.propose("trade", f"reject me {i}", {}, "soul"), "reject", "gary")
+    return q
+
+
+def test_directors_trust_is_felt_and_steadies_resolve(tmp_path, monkeypatch):
+    b = get_thought_bus()
+    _field(b, sls=0.6, gamma=0.6)                       # identical field for both desks
+    _write(tmp_path / "gfs.json", {"last_snapshot": {"crypto_fear_greed": 50}})
+
+    d_hi = tmp_path / "desk_hi"; d_hi.mkdir()
+    d_lo = tmp_path / "desk_lo"; d_lo.mkdir()
+
+    monkeypatch.setenv("AUREON_BUS_TRACE_DIR", str(d_hi))
+    _desk(d_hi, approve_n=8, reject_n=0)                # the director trusts every play
+    hi = _mon().assess()
+    assert hi.signals["approval_trust"]["value"] == 1.0
+    assert hi.signals["approval_trust"]["truth_status"] == "real_derived"
+
+    monkeypatch.setenv("AUREON_BUS_TRACE_DIR", str(d_lo))
+    _desk(d_lo, approve_n=0, reject_n=8)                # the director rejects every play
+    lo = _mon().assess()
+    assert lo.signals["approval_trust"]["value"] == 0.0
+
+    # his trust steadies the organism; his rejections make it appropriately humble
+    assert hi.resolve > lo.resolve
+
+
+def test_undecided_desk_is_no_data_and_leaves_resolve_unchanged(tmp_path, monkeypatch):
+    b = get_thought_bus()
+    _field(b, sls=0.6, gamma=0.6)
+    _write(tmp_path / "gfs.json", {"last_snapshot": {"crypto_fear_greed": 50}})
+    baseline = _mon().assess()                          # empty desk
+
+    from aureon.core.approval_queue import ApprovalQueue
+
+    ApprovalQueue().propose("trade", "awaiting his call", {}, "soul")  # pending, not decided
+    seeded = _mon().assess()
+    assert seeded.signals["approval_trust"]["value"] is None
+    assert seeded.signals["approval_trust"]["truth_status"] == "no_data"
+    # a desk with nothing decided must not move resolve (no fabricated trust)
+    assert seeded.resolve == baseline.resolve
+
+
+def test_trust_never_loosens_the_gate(tmp_path, monkeypatch):
+    # even a perfectly-trusted desk must not lower the fail-safe caution bias.
+    b = get_thought_bus()
+    _field(b, sls=1.0, gamma=1.0)
+    _write(tmp_path / "gfs.json", {"last_snapshot": {"crypto_fear_greed": 100}})
+    _desk(tmp_path, approve_n=10, reject_n=0)
+    assert _mon().caution_bias() == 0.0                 # trust is felt, never a lever
+
+
 # ── reflect loops the feeling back ────────────────────────────────────────────
 
 def test_reflect_publishes_affect_subfield(tmp_path):

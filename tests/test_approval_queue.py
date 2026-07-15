@@ -83,6 +83,22 @@ def test_backlog_and_backpressure(monkeypatch):
     assert q.is_backpressured() is False
 
 
+def test_trust_tracks_the_directors_decisions():
+    # trust is None until the director has decided at least one — never fabricated.
+    q = ApprovalQueue()
+    assert q.trust() == {"approved": 0, "rejected": 0, "decided": 0, "approve_ratio": None}
+    a = q.propose("trade", "buy A", {}, "soul")
+    b = q.propose("payment", "wire B", {}, "soul")
+    c = q.propose("grant", "submit C", {}, "soul")
+    assert q.trust()["approve_ratio"] is None       # proposed ≠ decided
+    q.decide(a, "approve", "gary")
+    q.decide(b, "approve", "gary")
+    q.decide(c, "reject", "gary")
+    t = q.trust()
+    assert t == {"approved": 2, "rejected": 1, "decided": 3, "approve_ratio": 2 / 3}
+    assert q.summary()["trust"]["approve_ratio"] == 2 / 3
+
+
 def test_no_execution_side_effects(tmp_path):
     # the ONLY artifact is the approvals log; deciding writes no order/payment/email
     q = ApprovalQueue()

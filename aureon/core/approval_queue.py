@@ -154,7 +154,29 @@ class ApprovalQueue:
             counts[s] = counts.get(s, 0) + 1
         return {"pending": self.pending(), "recent": self.recent(20),
                 "counts": counts, "total": len(folded), "backlog": self.backlog(),
+                "trust": self.trust(),
                 "note": "records the human decision; never executes the live move"}
+
+    # ── the director's trust (how he has decided — a signal, never a lever) ─
+    def trust(self) -> dict[str, Any]:
+        """How the director has been deciding: approved vs rejected over all decided
+        items. ``approve_ratio`` is ``None`` until he has decided at least one — the
+        organism must never fabricate a trust level it has not earned. This RECORDS a
+        felt signal; it authorizes nothing."""
+        try:
+            approved = rejected = 0
+            for r in self._fold().values():
+                st = r.get("status")
+                if st == "approved":
+                    approved += 1
+                elif st == "rejected":
+                    rejected += 1
+            decided = approved + rejected
+            return {"approved": approved, "rejected": rejected, "decided": decided,
+                    "approve_ratio": (approved / decided) if decided else None}
+        except Exception as exc:  # noqa: BLE001 — a read error is never a trust level
+            logger.debug("trust read skipped: %s", exc)
+            return {"approved": 0, "rejected": 0, "decided": 0, "approve_ratio": None}
 
     def _append(self, payload: dict[str, Any]) -> None:
         from aureon.core.bus_trace import append_trace

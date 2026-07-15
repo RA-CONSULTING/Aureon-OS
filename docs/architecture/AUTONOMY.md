@@ -63,6 +63,17 @@ blocked on the human and waits — a fail-safe that only ever *reduces* activity
 it. Clearing the desk (Gary approves/rejects) lifts the backpressure automatically. This
 keeps a runaway organism from flooding the director with a thousand pending plays.
 
+### The director's trust loops back
+
+The desk is not a one-way inbox. `ApprovalQueue.trust()` folds the decided items into an
+approve-ratio (`None` until Gary has decided at least one — never fabricated), and the
+[affect monitor](AFFECT.md) *senses* it: his approvals steady the organism's **resolve**,
+his rejections make it humble. This is read-only and fail-safe — trust folds into the
+affect Λ field (observable, felt) but never into `caution_bias`, so the human's judgment
+can be *felt* but can never loosen a gate. Gary's decisions become a signal the organism
+learns from, closing the loop the HNC way: the field measuring the human, as it measures
+itself.
+
 ## Where it runs
 
 - `organism_daemon.breathe()` — the soul surfaces high-stakes deferrals to the desk; the
