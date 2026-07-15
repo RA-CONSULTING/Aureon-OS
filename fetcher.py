@@ -305,6 +305,12 @@ SMILES: Final[dict[str, str]] = {
     "luteolin": r"O=c1cc(-c2ccc(O)c(O)c2)oc2cc(O)cc(O)c12",
     "kaempferol": r"O=c1c(O)c(-c2ccc(O)cc2)oc2cc(O)cc(O)c12",
     "quercetin": r"O=c1c(O)c(-c2ccc(O)c(O)c2)oc2cc(O)cc(O)c12",
+    # Glycosides / larger esters (PubChem canonical SMILES). These have many
+    # rotatable bonds; the computed fingerprint uses a single embedded conformer
+    # and is theoretical only.
+    "chlorogenic acid": r"C1C(C(C(CC1(C(=O)O)O)OC(=O)C=CC2=CC(=C(C=C2)O)O)O)O",
+    "aucubin": r"C1=COC(C2C1C(C=C2CO)O)OC3C(C(C(C(O3)CO)O)O)O",
+    "rutin": r"CC1C(C(C(C(O1)OCC2C(C(C(C(O2)OC3=C(OC4=CC(=CC(=C4C3=O)O)O)C5=CC(=C(C=C5)O)O)O)O)O)O)O)O",
 }
 
 _EV_TO_CM1: Final[float] = 8065.544  # 1 eV in cm^-1
