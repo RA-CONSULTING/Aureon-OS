@@ -76,6 +76,37 @@ and out of the experimental claim.
 **Calibration unchanged:** on the experimental set, empirical separable-FPR = 0.0000,
 positive control detects (p≈0.003), controls valid → CALIBRATED. No threshold moved.
 
+## Round 3 — recompute with glycosides included (two lanes)
+
+Recomputed via the repo's own systems only
+(`scripts/validation/recompute_calibration_with_glycosides.py` → `calibration.calibrate`
++ `connector.run_analysis` + `phenolic_fingerprint.peak_to_modulation_hz`). Two
+clearly-separated lanes, seed 0:
+
+| Lane | compounds | peaks | median/compound | envelope (Hz) | separable-FPR | CALIBRATED |
+|------|-----------|-------|-----------------|---------------|---------------|------------|
+| experimental-only (the claim) | 14 | 543 | 37 | 1005–1982 | 0.0000 | ✅ |
+| computed-inclusive (glycosides, exploratory) | 14 | 1429 | 107 | 1003–1999 | 0.0000 | ✅ |
+
+**Harmonics trace to molecular makeup (verified).** Every compound's modulation-
+frequency set equals exactly the set derived from *its own* spectral peaks via
+`peak_to_modulation_hz` — the traceability assertion **PASSES**. Harmonics are
+compound-specific and deterministic; nothing is pooled across molecules. Glycoside
+harmonic sets (computed): chlorogenic 145, aucubin 129, rutin 250 modes in the
+1000–2000 Hz band.
+
+**Honest finding on the dense computed spectra.** The glycoside computed spectra
+are very dense (95–100% of adjacent harmonic gaps < the 25 Hz clustering tolerance;
+rutin mean gap 4.0 Hz). This makes them *significantly more clustered than a
+uniform envelope-matched null* — so `test_A` (clustering) now **fires** for the
+computed-heavy compounds (caffeic/ferulic/kaempferol/luteolin/rutin p≈0.003). That
+is a **density / mode-bunching effect tied to makeup, not evidence of the
+pre-registered φ-coherence**: `test_B` (golden-interval) is still unmet, so strict
+separability (A ∧ B) **remains 0/14**. Both lanes stay CALIBRATED and no threshold
+was touched. This is precisely why the computed lane is exploratory and the
+experimental falsifiable claim stays computed-free — a computed test_A "hit" must
+not be read as confirmation.
+
 ## Honest findings
 
 1. **More data does not manufacture significance.** Enrichment moved compounds
