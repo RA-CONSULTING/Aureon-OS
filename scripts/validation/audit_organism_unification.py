@@ -811,6 +811,40 @@ def run_audit() -> list[dict]:
             results.append(_check(
                 "lineage_is_read_back", _diary_ok,
                 f"gen={_gen} lineage_axis={_lin.get('value')} totals_gen={_tot_gen}", critical=False))
+
+            # Edge 30 — the road to 100% is honest: connectivity counts the persisted
+            # `touched` (not the process-local baton ping) over `reachable = nodes − denied`,
+            # so the deliberately-denied modules are not a permanent ceiling and 100% is
+            # an achievable target (a fully-woven reachable body → fraction 1.0).
+            import aureon.core.aureon_connectome as _acon
+            from aureon.saas.automation_index import automation_index as _aidx
+
+            class _CStub:
+                def status(self):
+                    return {"nodes": 100, "denied": 10, "touched": 45, "woven": 30,
+                            "baton_linked": 5, "failed": 7, "unfelt": 48}
+
+            class _CFull:
+                def status(self):
+                    return {"nodes": 100, "denied": 10, "touched": 90, "woven": 90,
+                            "baton_linked": 90, "failed": 0, "unfelt": 0}
+
+            _cprev = _acon.get_connectome
+            try:
+                _acon.get_connectome = lambda: _CStub()
+                _d = _aidx()["dimensions"]
+                _partial_ok = (_d["connectivity"]["fraction"] == 45 / 90     # touched, not baton (5)
+                               and _d["integration"]["fraction"] == 30 / 90)  # over reachable (90)
+                _acon.get_connectome = lambda: _CFull()
+                _df = _aidx()["dimensions"]
+                _reachable_ok = (_df["connectivity"]["fraction"] == 1.0
+                                 and _df["integration"]["fraction"] == 1.0)   # 100% achievable
+            finally:
+                _acon.get_connectome = _cprev
+            results.append(_check(
+                "automation_target_is_reachable", _partial_ok and _reachable_ok,
+                f"touched_not_baton={_partial_ok} full_reachable_is_100={_reachable_ok}",
+                critical=False))
         finally:
             for _k, _val in _saved.items():
                 if _val is None:

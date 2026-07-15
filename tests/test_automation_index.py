@@ -63,6 +63,49 @@ def test_index_shape_and_bounds():
     assert isinstance(r["wired_by_category"], dict)
 
 
+def test_connectivity_uses_touched_and_reachable_denominator(monkeypatch):
+    # connectivity counts the PERSISTED touched (not the process-local baton ping), and
+    # the denominator excludes the deliberately-denied modules.
+    import aureon.core.aureon_connectome as conn
+
+    class _Fake:
+        def status(self):
+            return {"nodes": 100, "denied": 10, "touched": 45, "woven": 30,
+                    "baton_linked": 5, "failed": 7, "unfelt": 48}
+
+    monkeypatch.setattr(conn, "get_connectome", lambda: _Fake())
+    r = automation_index()
+    d = r["dimensions"]
+    assert d["connectivity"]["fraction"] == 45 / 90     # touched/reachable, NOT baton_linked (5)
+    assert d["integration"]["fraction"] == 30 / 90       # woven/reachable
+    t = r["totals"]
+    assert t["reachable"] == 90 and t["denied"] == 10 and t["modules"] == 100
+    assert t["touched"] == 45 and t["baton_linked"] == 5 and t["unfelt"] == 48 and t["failed"] == 7
+
+
+def test_hundred_percent_is_achievable(monkeypatch):
+    # a fully-woven REACHABLE body (denied excluded) + full consciousness + surfacing → 100%.
+    # Proves the deny-list is not a permanent ceiling below 100.
+    import aureon.core.aureon_connectome as conn
+    import aureon.saas.automation_index as ai
+
+    class _Full:
+        def status(self):
+            return {"nodes": 100, "denied": 10, "touched": 90, "woven": 90,
+                    "baton_linked": 90, "failed": 0, "unfelt": 0}
+
+    monkeypatch.setattr(conn, "get_connectome", lambda: _Full())
+    monkeypatch.setattr(ai, "_consciousness_fraction",
+                        lambda: (1.0, {"organs_live": 8, "organs_total": 8}))
+    monkeypatch.setattr(ai, "_surfacing_fraction",
+                        lambda: (1.0, {"domains_reachable": 27, "domains_total": 27}))
+    r = automation_index()
+    assert r["dimensions"]["connectivity"]["fraction"] == 1.0    # 90/(100-10)
+    assert r["dimensions"]["integration"]["fraction"] == 1.0
+    assert r["index_pct"] == 100.0
+    assert r["label"] == "near-complete"
+
+
 def test_totals_echo_lineage_generation(tmp_path, monkeypatch):
     # the automation totals echo the genome generation — reported only, never a
     # weighted dimension (index_pct must be unaffected by lineage).

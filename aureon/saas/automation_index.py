@@ -11,10 +11,16 @@ It composes **only signals that already exist** — nothing is measured anew, no
 fabricated. Four dimensions, each a fraction in [0,1] (a dormant one is dropped, never
 counted as zero):
 
-  • connectivity  — baton-linked / total modules      (on the nervous system)
-  • integration   — woven / total modules             (joined to mesh+Queen, driveable)
-  • consciousness — organs live / 8                    (the directing mind is present)
-  • surfacing     — domains reachable / total          (inspectable / operable)
+  • connectivity  — touched / reachable modules        (reached & felt — on the nervous system)
+  • integration   — woven / reachable modules          (joined to mesh+Queen, driveable)
+  • consciousness — organs live / 8                     (the directing mind is present)
+  • surfacing     — domains reachable / total           (inspectable / operable)
+
+``reachable = nodes − denied``: the ``denied`` modules are deliberately deny-listed (unsafe
+to import), so "fully automated" is measured against the body we *intend* to connect. The
+connectome dims count the **persisted** carried coverage (``touched``/``woven``), not the
+process-local ``baton_linked`` ping — so a cold read reflects the real coverage the organism
+carries across cycles, and 100% is an honest, achievable target.
 
 The index is the weight-renormalized mean of the dimensions actually present; when every
 dimension is dormant it is ``None`` (honest ``no_data``, never a fabricated 0). The
@@ -76,19 +82,39 @@ def _compose(fractions: Dict[str, float | None]) -> Tuple[float | None, List[str
 
 
 def _connectome_fractions() -> Tuple[float | None, float | None, Dict[str, Any]]:
-    """(connectivity, integration) + raw totals — offline-safe, no cold-boot."""
+    """(connectivity, integration) + the honest coverage breakdown — offline-safe, no
+    cold-boot.
+
+    Two honesty rules make 100% a truthful, achievable target:
+      • **Carried coverage, not a process-local ping.** connectivity counts the persisted
+        ``touched`` (modules the connectome has imported + felt, carried across cycles) —
+        not ``baton_linked`` (only what pinged in *this* process). ``baton_linked`` stays
+        reported as the live signal (mirrors Phase 45's live-vs-persisted reconciliation).
+      • **Reachable denominator.** the ``denied`` modules are deliberately deny-listed
+        (unsafe to import — loop-at-boot / heavy) and can never be woven, so "fully
+        automated" is measured against ``reachable = nodes − denied``. ``failed`` stays
+        counted against the goal (retryable debt, not an exclusion)."""
     try:
         from aureon.core.aureon_connectome import get_connectome
 
         st = get_connectome().status()
-        nodes = float(st.get("nodes") or 0)
-        if nodes <= 0:
+        nodes = int(st.get("nodes") or 0)
+        denied = int(st.get("denied") or 0)
+        reachable = max(0, nodes - denied)
+        if reachable <= 0:
             return None, None, {}
-        conn = _c01(float(st.get("baton_linked") or 0) / nodes)
-        integ = _c01(float(st.get("woven") or 0) / nodes)
-        return conn, integ, {"modules": int(nodes),
-                             "baton_linked": int(st.get("baton_linked") or 0),
-                             "woven": int(st.get("woven") or 0)}
+        touched = int(st.get("touched") or 0)
+        woven = int(st.get("woven") or 0)
+        conn = _c01(touched / reachable)                 # persisted carried coverage
+        integ = _c01(woven / reachable)
+        return conn, integ, {
+            "modules": nodes, "reachable": reachable,
+            "touched": touched, "woven": woven,
+            "baton_linked": int(st.get("baton_linked") or 0),  # the live signal, kept visible
+            "denied": denied,                            # the deliberate ceiling
+            "failed": int(st.get("failed") or 0),        # retryable debt (still counted)
+            "unfelt": int(st.get("unfelt") or 0),        # remaining to reach
+        }
     except Exception as exc:  # noqa: BLE001 — a cold connectome is no_data, never a crash
         logger.debug("connectome fractions skipped: %s", exc)
         return None, None, {}
@@ -161,8 +187,8 @@ def automation_index() -> Dict[str, Any]:
         "consciousness": cons, "surfacing": surf,
     }
     details = {
-        "connectivity": "modules on the nervous system (baton-linked)",
-        "integration": "modules woven onto the mesh + Queen (driveable by the soul)",
+        "connectivity": "modules reached & felt on the nervous system (touched / reachable, persisted)",
+        "integration": "modules woven onto the mesh + Queen (driveable by the soul; / reachable)",
         "consciousness": "consciousness organs live (the directing mind present)",
         "surfacing": "domains reachable (inspectable / operable)",
     }
