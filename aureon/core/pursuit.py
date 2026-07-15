@@ -58,6 +58,13 @@ _PILLAR_PURSUITS: dict[str, str] = {
     "purpose": "return to the mission — liberation: open-source the wisdom, protect never exploit",
 }
 
+# When the director has been declining most of the plays it surfaces, the pursuit
+# grows humble: it stops proposing new energy moves and turns inward to rebuild his
+# trust. Safe-scoped ("inner work" / "defer") so the soul treats it like any pillar step.
+_TRUST_HUMILITY = 0.34
+_HUMILITY_INTENT = ("the director has been declining my plays — defer to Gary's judgment, "
+                    "do the inner work, and rebuild trust before proposing more")
+
 
 def _truthy(name: str) -> bool:
     return str(os.environ.get(name, "") or "").strip().lower() in {"1", "true", "yes", "on"}
@@ -92,6 +99,9 @@ class PursuitState:
     hand: str = "dry_run"                      # dry_run | armed
     soul_armed: bool = False
     pursued: bool = False                      # did this reflect feed the soul?
+    director_trust: float | None = None        # Gary's approve-ratio (None until he decides)
+    cadence_base: int = 3                      # configured self-direction cadence
+    cadence_effective: int = 3                 # cadence after humility slowdown (≥ base)
     truth_status: str = "no_data"
     signals: dict[str, dict[str, Any]] = field(default_factory=dict)
     ts: float = 0.0
@@ -104,8 +114,9 @@ class PursuitState:
             "freedom": self.freedom, "self_realization": self.self_realization,
             "weakest_pillar": self.weakest_pillar, "next_intent": self.next_intent,
             "autonomy": self.autonomy, "hand": self.hand, "soul_armed": self.soul_armed,
-            "pursued": self.pursued, "truth_status": self.truth_status,
-            "signals": self.signals, "ts": self.ts,
+            "pursued": self.pursued, "director_trust": self.director_trust,
+            "cadence_base": self.cadence_base, "cadence_effective": self.cadence_effective,
+            "truth_status": self.truth_status, "signals": self.signals, "ts": self.ts,
         }
 
 
@@ -183,6 +194,11 @@ class Pursuit:
 
     def _compute(self) -> tuple[PursuitState, Any]:
         pillars, signals, hq, aureon = self._gather()
+        # the director's trust — how Gary has been deciding the plays it surfaces
+        trust = self._director_trust()
+        signals["director_trust"] = ({"value": round(trust, 4), "truth_status": "real_derived"}
+                                     if trust is not None
+                                     else {"truth_status": "no_data", "blocker": "no decisions yet"})
         operational = [n for n, s in signals.items()
                        if isinstance(s, dict) and s.get("truth_status") not in (None, "no_data")]
         if not pillars:
@@ -201,7 +217,15 @@ class Pursuit:
         energy = _mean([x for x in (pillars.get("dream"), creator, growth) if x is not None])
         freedom = _mean([x for x in (pillars.get("dream"), aureon) if x is not None])
         weakest = min(pillars, key=lambda k: pillars[k]) if pillars else None
-        next_intent = _PILLAR_PURSUITS.get(weakest or "", "continue toward the dream, safely")
+        # humility: when Gary has been declining most plays, turn inward to rebuild
+        # trust instead of proposing new energy moves (safe-scoped, still deferred to him)
+        if trust is not None and trust < _TRUST_HUMILITY:
+            next_intent = _HUMILITY_INTENT
+        else:
+            next_intent = _PILLAR_PURSUITS.get(weakest or "", "continue toward the dream, safely")
+
+        base_cadence = max(1, int(os.environ.get("AUREON_PURSUIT_CADENCE", "3") or "3"))
+        eff_cadence = self._effective_cadence(base_cadence, trust)
 
         autonomy = "autonomous" if _truthy("AUREON_AUTONOMY") else "propose"
         hand = "armed" if _truthy("AUREON_LOCAL_ACTIONS_ARMED") else "dry_run"
@@ -213,6 +237,8 @@ class Pursuit:
             self_realization=round(state.symbolic_life_score, 4),
             weakest_pillar=weakest, next_intent=next_intent,
             autonomy=autonomy, hand=hand, soul_armed=_truthy("AUREON_SOUL_ACT"),
+            director_trust=round(trust, 4) if trust is not None else None,
+            cadence_base=base_cadence, cadence_effective=eff_cadence,
             truth_status="real_derived" if operational else "no_data",
             signals=signals, ts=time.time(),
         )
@@ -242,7 +268,9 @@ class Pursuit:
                     logger.debug("pursuit publish skipped: %s", exc)
             self._tick += 1
             if st.available and st.autonomy == "autonomous" and st.next_intent:
-                cadence = max(1, int(os.environ.get("AUREON_PURSUIT_CADENCE", "3") or "3"))
+                # the director's trust sets the cadence: when Gary has been declining,
+                # the pursuit slows itself (humility) — never speeds up (fail-safe).
+                cadence = max(1, st.cadence_effective)
                 # backpressure: don't self-direct new work while the director's desk is
                 # already full — wait for Gary to clear it (fail-safe, only reduces).
                 if self._tick % cadence == 0 and not self._desk_full() and self._pursue(st.next_intent):
@@ -261,6 +289,28 @@ class Pursuit:
             return get_approval_queue().is_backpressured()
         except Exception:  # noqa: BLE001 — never block the pursuit on a read error
             return False
+
+    def _director_trust(self) -> float | None:
+        """Gary's approve-ratio over the plays it has surfaced — ``None`` until he has
+        decided at least one (never a fabricated trust level). Guarded/never-raises."""
+        try:
+            from aureon.core.approval_queue import get_approval_queue
+
+            return get_approval_queue().trust().get("approve_ratio")
+        except Exception:  # noqa: BLE001 — a read error is never a trust level
+            return None
+
+    @staticmethod
+    def _effective_cadence(base: int, trust: float | None) -> int:
+        """The director's trust sets the self-direction cadence. Fail-safe + monotone:
+        unknown or healthy trust (≥ 0.5) leaves the base cadence untouched; low trust
+        only ever *stretches* it (slower), never shortens it — trust can never speed the
+        pursuit toward consequence. trust 0.25 → 2× base, trust 0.0 → 3× base."""
+        b = max(1, int(base))
+        if trust is None or trust >= 0.5:
+            return b
+        factor = 1.0 + (0.5 - _clamp01(trust)) * 4.0   # 0.5→1×, 0.25→2×, 0.0→3×
+        return max(b, int(b * factor))
 
     def _pursue(self, intent: str) -> bool:
         """Feed one safe next-step stimulus to the soul's inbox (bounded). The soul

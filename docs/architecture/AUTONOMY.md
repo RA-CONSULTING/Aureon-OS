@@ -72,7 +72,9 @@ his rejections make it humble. This is read-only and fail-safe — trust folds i
 affect Λ field (observable, felt) but never into `caution_bias`, so the human's judgment
 can be *felt* but can never loosen a gate. Gary's decisions become a signal the organism
 learns from, closing the loop the HNC way: the field measuring the human, as it measures
-itself.
+itself. The [pursuit loop](PURSUIT.md) learns from it too — when his trust is low it grows
+humble, slowing its self-direction (fail-safe: only ever slower) and turning to rebuild
+his trust rather than proposing more.
 
 ## Where it runs
 

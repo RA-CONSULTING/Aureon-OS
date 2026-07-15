@@ -562,6 +562,23 @@ def run_audit() -> list[dict]:
             results.append(_check(
                 "approval_trust_is_felt", _ratio_ok and _felt_ok,
                 f"ratio={_tr['approve_ratio']} felt={_felt.get('value')}", critical=False))
+
+            # Edge 19 — the pursuit learns humility: the director's trust sets the
+            # self-direction cadence (fail-safe + monotone — low trust only ever slows
+            # it, never speeds it) and the surfaced director_trust equals the queue's
+            # ratio (no fabrication).
+            from aureon.core.pursuit import Pursuit as _Pu
+
+            _pu = _Pu()
+            _slow = _pu._effective_cadence(3, 0.0)
+            _base = _pu._effective_cadence(3, 0.9)
+            _none = _pu._effective_cadence(3, None)
+            _cad_ok = _slow > _base and _base == 3 and _none == 3 and _slow <= 9
+            _dt = _pu.assess().director_trust
+            _dt_ok = (_dt is None) or (_dt == round(_tq.trust()["approve_ratio"], 4))
+            results.append(_check(
+                "pursuit_learns_trust", _cad_ok and _dt_ok,
+                f"slow={_slow} base={_base} none={_none} director_trust={_dt}", critical=False))
         finally:
             for _k, _val in _saved.items():
                 if _val is None:

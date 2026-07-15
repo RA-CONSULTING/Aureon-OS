@@ -57,6 +57,27 @@ stays in force:
 `assess()` is read-only — it proposes, never injects or acts. Only `reflect()` (from
 the breath) may feed the soul, and only under the opt-in above.
 
+## Learning humility from the director
+
+The loop is not deaf to how Gary has been answering. It reads his **trust** — the
+approve-ratio over the plays it has surfaced ([`ApprovalQueue.trust()`](AUTONOMY.md),
+`None` until he has decided at least one, never fabricated) — and lets it set the
+self-direction cadence:
+
+- **Fail-safe + monotone.** Unknown or healthy trust (≥ 0.5) leaves the base cadence
+  untouched (behaviour identical to before). Low trust only ever *stretches* it — trust
+  0.25 → 2× slower, 0.0 → 3× slower — and **never** shortens it (`_effective_cadence`
+  returns `≥ base` always). His trust can never speed the pursuit toward consequence.
+- **Turning inward.** When he has been declining most plays (`trust < 0.34`), the next
+  step stops proposing new energy moves and becomes a safe-scoped humility step —
+  *defer to Gary's judgment, do the inner work, and rebuild trust before proposing more.*
+
+So Gary's decisions close the loop: they are recorded (the desk), felt (affect `resolve`),
+and now **learned from** (the pursuit grows humble). The organism proposes less, and turns
+to rebuild trust, exactly when the human has been saying no — the honest, fail-safe shape
+of self-direction. Surfaced on `/api/pursuit` as `director_trust`, `cadence_base`,
+`cadence_effective`.
+
 ## Where it runs
 
 - **Live**: `organism_daemon.breathe()` calls `get_pursuit().reflect()` each breath,

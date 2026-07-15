@@ -18,7 +18,7 @@ import pytest
 
 from aureon.core.aureon_thought_bus import Thought, get_thought_bus
 from aureon.core.hnc_field import read_subfields
-from aureon.core.pursuit import Pursuit
+from aureon.core.pursuit import _PILLAR_PURSUITS, Pursuit
 
 
 @pytest.fixture(autouse=True)
@@ -112,6 +112,68 @@ def test_autonomy_does_not_flood_the_inbox(tmp_path, monkeypatch):
         p.reflect()
     lines = [ln for ln in (tmp_path / "inbox.jsonl").read_text().splitlines() if ln.strip()]
     assert len(lines) <= 2   # bounded — never piles up unconsumed pursuit stimuli
+
+
+# ── the pursuit learns humility from the director's trust ─────────────────────
+
+def _decide(approve_n, reject_n):
+    """Seed the approval desk with the director's decisions."""
+    from aureon.core.approval_queue import ApprovalQueue
+
+    q = ApprovalQueue()
+    for i in range(approve_n):
+        q.decide(q.propose("trade", f"yes {i}", {}, "pursuit"), "approve", "gary")
+    for i in range(reject_n):
+        q.decide(q.propose("trade", f"no {i}", {}, "pursuit"), "reject", "gary")
+
+
+def test_effective_cadence_is_monotone_and_fail_safe():
+    p = Pursuit()
+    assert p._effective_cadence(3, None) == 3        # no decisions → base, unchanged
+    assert p._effective_cadence(3, 0.9) == 3         # trusted → base, unchanged
+    assert p._effective_cadence(3, 0.5) == 3         # neutral → base
+    assert p._effective_cadence(3, 0.25) == 6        # half-trust → 2× slower
+    assert p._effective_cadence(3, 0.0) == 9         # all rejected → 3× slower
+    # the invariant: trust can only ever slow the pursuit, never speed it
+    for tr in (0.0, 0.2, 0.4, 0.5, 0.8, None):
+        assert p._effective_cadence(3, tr) >= 3
+
+
+def test_low_trust_surfaces_a_humility_intent_and_slows(tmp_path):
+    _field()
+    _decide(approve_n=0, reject_n=5)                 # Gary declined everything
+    s = Pursuit().assess()
+    assert s.director_trust == 0.0
+    assert s.cadence_effective > s.cadence_base       # it slowed itself
+    assert "inner work" in s.next_intent.lower() and "trust" in s.next_intent.lower()
+
+
+def test_healthy_trust_leaves_the_pursuit_unchanged(tmp_path):
+    _field()
+    _decide(approve_n=5, reject_n=0)                 # Gary approved everything
+    s = Pursuit().assess()
+    assert s.director_trust == 1.0
+    assert s.cadence_effective == s.cadence_base      # no slowdown
+    assert s.next_intent in _PILLAR_PURSUITS.values() or "dream" in s.next_intent.lower()
+
+
+def test_undecided_desk_is_backward_compatible(tmp_path):
+    _field()
+    s = Pursuit().assess()                            # no decisions at all
+    assert s.director_trust is None                   # never fabricated
+    assert s.cadence_effective == s.cadence_base
+    assert s.signals["director_trust"]["truth_status"] == "no_data"
+
+
+def test_low_trust_holds_injection_under_autonomy(tmp_path, monkeypatch):
+    # same tick budget: a trusted pursuit injects; a distrusted one stays quiet longer.
+    monkeypatch.setenv("AUREON_AUTONOMY", "1")
+    monkeypatch.setenv("AUREON_PURSUIT_CADENCE", "1")  # base fires every tick
+    _field()
+    _decide(approve_n=0, reject_n=5)                   # trust 0.0 → cadence ×3
+    p = Pursuit()
+    p.reflect()                                        # tick 1 — 1 % 3 != 0 → held
+    assert not (tmp_path / "inbox.jsonl").exists()     # slowed: no injection yet
 
 
 # ── reflect folds the pursuit back into the field ─────────────────────────────
