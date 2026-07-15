@@ -469,7 +469,13 @@ class SoulDeliberation:
         try:
             from aureon.core.approval_queue import get_approval_queue
 
-            get_approval_queue().propose(
+            queue = get_approval_queue()
+            # backpressure: if the director's desk is already full, don't pile on —
+            # the organism senses it is blocked on the human and waits for the desk
+            # to clear rather than flood it (fail-safe: this only reduces activity).
+            if queue.is_backpressured():
+                return
+            queue.propose(
                 kind=_approval_kind(text), summary=det.determination or text,
                 params={"stimulus": stimulus, "proposed_action": det.proposed_action,
                         "plan": det.plan, "dissent": det.dissent},

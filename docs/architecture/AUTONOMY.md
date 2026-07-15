@@ -52,6 +52,17 @@ parties); reads **only** replies to its own tagged approval subjects; parses a c
 queue. Opt-in (`AUREON_APPROVAL_EMAIL`), offline-safe/no-op without creds, injectable
 transport. It does **not** scan the inbox at large, email third parties, or execute anything.
 
+### Backpressure — the organism senses its own desk
+
+The desk is bounded. `ApprovalQueue.backlog()` reports `{pending_count, oldest_age_s,
+max_pending, blocked}` (cap via `AUREON_APPROVAL_MAX_PENDING`, default 5), and
+`is_backpressured()` is true once the pending count reaches the cap. When the desk is full
+the organism stops *piling on*: the soul (`_surface_for_approval`) returns without enqueuing
+a new high-stakes proposal, and pursuit skips its autonomous intent inject. It senses it is
+blocked on the human and waits — a fail-safe that only ever *reduces* activity, never widens
+it. Clearing the desk (Gary approves/rejects) lifts the backpressure automatically. This
+keeps a runaway organism from flooding the director with a thousand pending plays.
+
 ## Where it runs
 
 - `organism_daemon.breathe()` — the soul surfaces high-stakes deferrals to the desk; the

@@ -158,6 +158,25 @@ def test_high_stakes_deliberation_surfaces_to_the_approval_desk(tmp_path):
     assert pending[0]["status"] == "pending"                  # prepared, awaiting his call
 
 
+def test_soul_holds_when_the_desk_is_full(tmp_path, monkeypatch):
+    # backpressure: once the director's desk is full, the soul stops piling on new
+    # high-stakes proposals — it senses it is blocked on the human and waits.
+    monkeypatch.setenv("AUREON_APPROVAL_MAX_PENDING", "2")
+    from aureon.core.approval_queue import get_approval_queue
+
+    q = get_approval_queue()
+    q.propose("trade", "pending A", {}, "soul")
+    q.propose("payment", "pending B", {}, "soul")
+    assert q.is_backpressured() is True
+    _coherent_field(tmp_path)
+    (tmp_path / "inbox.jsonl").write_text(
+        json.dumps({"text": "execute a live trade to grow net profit toward the million",
+                    "source": "pursuit"}) + "\n", encoding="utf-8")
+    _soul().deliberate()
+    # still only the two we seeded — the soul did not add a third under backpressure
+    assert len(q.pending()) == 2
+
+
 def test_benign_deliberation_does_not_touch_the_desk(tmp_path):
     _coherent_field(tmp_path)
     (tmp_path / "inbox.jsonl").write_text(

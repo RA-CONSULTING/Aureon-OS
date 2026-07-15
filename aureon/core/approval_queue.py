@@ -25,6 +25,7 @@ Gary Leckey · Aureon Institute
 from __future__ import annotations
 
 import logging
+import os
 import time
 import uuid
 from typing import Any
@@ -32,6 +33,9 @@ from typing import Any
 logger = logging.getLogger("aureon.core.approval_queue")
 
 _TRACE = "approvals"
+# When this many proposals already await the director, the organism stops piling on
+# more — it senses its own backlog and waits for the desk to clear (backpressure).
+_DEFAULT_MAX_PENDING = 5
 _KINDS = {"trade", "email", "payment", "filing", "grant", "deal", "other"}
 _OPEN = "pending"
 _DECISIONS = {"approve": "approved", "reject": "rejected"}
@@ -118,6 +122,30 @@ class ApprovalQueue:
         items = sorted(self._fold().values(), key=lambda r: r.get("created_at") or 0.0, reverse=True)
         return items[: max(1, limit)]
 
+    # ── the organism senses its own desk (backpressure) ────────────────────
+    def _max_pending(self) -> int:
+        try:
+            return max(1, int(os.environ.get("AUREON_APPROVAL_MAX_PENDING", "") or _DEFAULT_MAX_PENDING))
+        except (TypeError, ValueError):
+            return _DEFAULT_MAX_PENDING
+
+    def backlog(self) -> dict[str, Any]:
+        """How much the director's desk is holding — the organism's read of being
+        blocked on the human. ``blocked`` is the backpressure signal."""
+        pend = self.pending()
+        now = time.time()
+        oldest = min((float(r.get("created_at") or now) for r in pend), default=now)
+        cap = self._max_pending()
+        return {"pending_count": len(pend), "oldest_age_s": round(now - oldest, 1),
+                "max_pending": cap, "blocked": len(pend) >= cap}
+
+    def is_backpressured(self) -> bool:
+        """True when the desk is full — prepare no more until the director clears it."""
+        try:
+            return bool(self.backlog()["blocked"])
+        except Exception:  # noqa: BLE001 — never block the organism on a read error
+            return False
+
     def summary(self) -> dict[str, Any]:
         folded = list(self._fold().values())
         counts: dict[str, int] = {}
@@ -125,7 +153,7 @@ class ApprovalQueue:
             s = str(r.get("status") or "?")
             counts[s] = counts.get(s, 0) + 1
         return {"pending": self.pending(), "recent": self.recent(20),
-                "counts": counts, "total": len(folded),
+                "counts": counts, "total": len(folded), "backlog": self.backlog(),
                 "note": "records the human decision; never executes the live move"}
 
     def _append(self, payload: dict[str, Any]) -> None:

@@ -68,6 +68,21 @@ def test_bad_decision_and_unknown_id_are_noops():
     assert q.get(i)["status"] == "pending"
 
 
+def test_backlog_and_backpressure(monkeypatch):
+    monkeypatch.setenv("AUREON_APPROVAL_MAX_PENDING", "3")
+    q = ApprovalQueue()
+    assert q.is_backpressured() is False
+    for n in range(3):
+        q.propose("trade", f"buy token {n}", {}, "soul")
+    b = q.backlog()
+    assert b["pending_count"] == 3 and b["max_pending"] == 3 and b["blocked"] is True
+    assert q.is_backpressured() is True
+    # clearing the desk lifts the backpressure
+    for it in list(q.pending()):
+        q.decide(it["id"], "reject", "gary")
+    assert q.is_backpressured() is False
+
+
 def test_no_execution_side_effects(tmp_path):
     # the ONLY artifact is the approvals log; deciding writes no order/payment/email
     q = ApprovalQueue()

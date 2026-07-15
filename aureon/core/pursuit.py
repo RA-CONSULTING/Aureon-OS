@@ -243,12 +243,24 @@ class Pursuit:
             self._tick += 1
             if st.available and st.autonomy == "autonomous" and st.next_intent:
                 cadence = max(1, int(os.environ.get("AUREON_PURSUIT_CADENCE", "3") or "3"))
-                if self._tick % cadence == 0 and self._pursue(st.next_intent):
+                # backpressure: don't self-direct new work while the director's desk is
+                # already full — wait for Gary to clear it (fail-safe, only reduces).
+                if self._tick % cadence == 0 and not self._desk_full() and self._pursue(st.next_intent):
                     st.pursued = True
             return st
         except Exception as exc:  # noqa: BLE001
             logger.debug("pursuit reflect failed: %s", exc)
             return PursuitState(available=False, truth_status="no_data", ts=time.time())
+
+    def _desk_full(self) -> bool:
+        """Is the director's approval desk already full? If so, the pursuit holds —
+        it senses the organism is blocked on the human and doesn't self-direct more."""
+        try:
+            from aureon.core.approval_queue import get_approval_queue
+
+            return get_approval_queue().is_backpressured()
+        except Exception:  # noqa: BLE001 — never block the pursuit on a read error
+            return False
 
     def _pursue(self, intent: str) -> bool:
         """Feed one safe next-step stimulus to the soul's inbox (bounded). The soul

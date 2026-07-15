@@ -523,6 +523,24 @@ def run_audit() -> list[dict]:
             results.append(_check(
                 "company_crew_fits", len(_roster) >= 20 and _fits and _safe,
                 f"roster={len(_roster)} trade_fit={_fits} verbs_safe={_safe}", critical=False))
+
+            # Edge 17 — the organism senses its own desk: once the approval backlog
+            # fills, backpressure holds (prepare no more until the director clears it).
+            import aureon.core.approval_queue as _aqm2
+
+            _osm.environ["AUREON_APPROVAL_MAX_PENDING"] = "2"
+            _aqm2._queue = None
+            _bq = _aqm2.ApprovalQueue()
+            _empty_ok = _bq.is_backpressured() is False
+            _bq.propose("trade", "backlog a", {}, "audit")
+            _bq.propose("payment", "backlog b", {}, "audit")
+            _bl = _bq.backlog()
+            results.append(_check(
+                "approval_backpressure_holds",
+                _empty_ok and _bl["blocked"] is True and _bl["pending_count"] == 2,
+                f"empty_clear={_empty_ok} blocked={_bl['blocked']} pending={_bl['pending_count']}",
+                critical=False))
+            _osm.environ.pop("AUREON_APPROVAL_MAX_PENDING", None)
         finally:
             for _k, _val in _saved.items():
                 if _val is None:
