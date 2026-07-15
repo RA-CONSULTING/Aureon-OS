@@ -2439,6 +2439,35 @@ def get_mycelium(initial_capital: float = 100.0) -> MyceliumNetwork:
     return _mycelium_instance
 
 
+class _MeshField:
+    """A minimal LambdaEngine-shaped state carrying the mesh's coherence, so the
+    mesh can publish into the HNC field like every other sub-field producer."""
+
+    def __init__(self, coherence: float) -> None:
+        self.symbolic_life_score = coherence
+        self.coherence_gamma = coherence
+        self.consciousness_level = "MESH"
+
+
+def publish_mesh_subfield(bus=None) -> bool:
+    """Connect the mesh to the whole body: publish the live mesh's coherence into
+    the HNC field as a ``symbolic.life.subfield`` so it joins ``blend_field`` instead
+    of dying in the mesh. Reads only the EXISTING singleton — never cold-boots a hive
+    (dormant → no-op). Guarded/never-raises; returns True iff a coherence was
+    published."""
+    try:
+        inst = _mycelium_instance
+        if inst is None:
+            return False
+        coherence = float(inst.get_network_coherence())
+        from aureon.core.hnc_field import publish_subfield
+
+        publish_subfield("mycelium_mesh", _MeshField(coherence), bus=bus)
+        return True
+    except Exception:  # noqa: BLE001 — the field bridge is best-effort, never fatal
+        return False
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # MAIN - Demo
 # ═══════════════════════════════════════════════════════════════════════════════

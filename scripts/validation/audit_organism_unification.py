@@ -699,6 +699,20 @@ def run_audit() -> list[dict]:
                     "organism_awakens_and_carries", _wake_ok,
                     f"gen1={_w1['generation']} gen2={_w2['generation']} signalled={bool(_sig)}",
                     critical=False))
+
+            # Edge 26 — the mesh joins the field (true HNC style, the logic all
+            # connected): the live mycelium's coherence is published as a sub-field so
+            # it flows into the whole-body blend instead of dying in the mesh.
+            from aureon.core.aureon_mycelium import get_mycelium as _gmyc
+            from aureon.core.aureon_mycelium import publish_mesh_subfield as _pmesh
+            from aureon.core.hnc_field import read_subfields as _rsub
+
+            _gmyc()  # ensure the mesh exists in this process
+            _mesh_pub = _pmesh(bus=bus)
+            _mesh_seen = "mycelium_mesh" in _rsub(bus)
+            results.append(_check(
+                "mesh_coherence_joins_field", _mesh_pub and _mesh_seen,
+                f"published={_mesh_pub} in_field={_mesh_seen}", critical=False))
         finally:
             for _k, _val in _saved.items():
                 if _val is None:

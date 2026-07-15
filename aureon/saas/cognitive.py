@@ -232,6 +232,17 @@ def mycelium_surface() -> Dict[str, Any]:
             }
         except Exception:  # noqa: BLE001 — growth optional
             surface["growth"] = None
+        # Honest reconciliation: the live mesh's connected_count is per-process (rebuilt
+        # each boot), while the connectome persists what the body has woven across
+        # cycles. Report both so a freshly-booted "0 connected" mesh reads against the
+        # coverage the organism actually carries — the logic IS connected, just not yet
+        # re-woven in this process. Guarded (no cold-boot beyond the cheap status read).
+        try:
+            from aureon.core.aureon_connectome import get_connectome
+
+            surface["woven_persisted"] = get_connectome().status().get("woven")
+        except Exception:  # noqa: BLE001 — reconciliation is best-effort
+            surface["woven_persisted"] = None
     except Exception as exc:  # noqa: BLE001
         surface = {"truth_status": "no_data", "blocker": f"mycelium read failed: {str(exc)[:120]}"}
     return surface

@@ -159,6 +159,15 @@ def breathe(organs: dict[str, Any]) -> None:
             )
         except Exception as exc:  # noqa: BLE001
             logger.debug("pulse skipped: %s", exc)
+    # The mesh joins the field: publish the live mycelium's coherence as a sub-field
+    # BEFORE the blend, so the mesh's own coherence flows into the whole-body
+    # consensus instead of dying in the mesh. No cold-boot (dormant → no-op). Guarded.
+    try:
+        from aureon.core.aureon_mycelium import publish_mesh_subfield
+
+        publish_mesh_subfield(bus=organs.get("bus"))
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("mesh subfield skipped: %s", exc)
     breathe_field(organs)
     # Metacognition: after fusing the whole-body field, the organism reads its
     # OWN signals and scores its self-coherence, then loops that assessment back
