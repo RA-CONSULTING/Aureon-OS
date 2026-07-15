@@ -20,7 +20,7 @@ the *validation of the controls* were calibrated.
 | **NIST WebBook IR** (Coblentz Society) | `fetcher.py` — JCAMP-DX download + peak-pick | +110 (caffeic 30, ferulic 48, rutin 32) |
 | **Curated open-access** | `data/spectra/curated_open_access_peaks.csv` | +20 (quercetin 8 · DOI 10.5812/ijpr-130626; apigenin 1 · DOI 10.1016/j.lwt.2021.112751; **luteolin 11 · DOI 10.3390/chemosensors11020104**) |
 | **Total experimental (enriched)** | merged via `connector.run_analysis([...])` | **543** |
-| **Computed (GFN2-xTB)** | `data/spectra/computed_xtb_peaks.csv` — theoretical, separate lane | 448 across 6 aglycones (apigenin, luteolin, kaempferol, quercetin, caffeic, ferulic) |
+| **Computed (GFN2-xTB)** | `data/spectra/computed_xtb_peaks.csv` — theoretical, separate lane | 886 across 9 compounds: 6 aglycones (apigenin, luteolin, kaempferol, quercetin, caffeic, ferulic) + 3 glycosides (chlorogenic 115, aucubin 124, rutin 199) |
 
 NIST has no IR for the flavonoids/iridoids (apigenin, aucubin, luteolin,
 kaempferol, chlorogenic, quercetin all 404), so those remain the peak-limited
@@ -65,6 +65,13 @@ run — `run_analysis` only sees them if their file is explicitly listed, and th
 then self-labels the compound's provenance. They are excluded from the experimental
 falsifiable claim; they exist to explore coverage and as a scaffold for future
 experimental confirmation. (Frequencies are unscaled GFN2-xTB harmonics.)
+
+The channel now also covers the three **glycosides** (chlorogenic acid, aucubin,
+rutin) via PubChem canonical SMILES (formulas RDKit-verified). Rutin (C27H30O16,
+73 atoms) required a 438-displacement finite-difference Hessian. These flexible
+glycosides use a single embedded conformer, so their theoretical spectra are
+coarser than the rigid aglycones' — another reason they stay in the computed lane
+and out of the experimental claim.
 
 **Calibration unchanged:** on the experimental set, empirical separable-FPR = 0.0000,
 positive control detects (p≈0.003), controls valid → CALIBRATED. No threshold moved.
