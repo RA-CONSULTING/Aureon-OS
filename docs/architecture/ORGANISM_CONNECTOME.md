@@ -43,8 +43,9 @@ enumerate  →  sense  →  touch  →  weave  →  pulse
 | `manifest()` | Wraps `build_organism_manifest()` — every module as an `OrganismNode`. |
 | `sense(module)` | What the organism knows of a part *without waking it*: manifest identity, baton heartbeat seen, already-imported, mycelium membership, Queen childhood. Subscribes to `baton.link` to build the persistent linked-module registry the bus never kept. |
 | `touch(module)` | **Wakes** the part: dynamic `importlib` import — **always under `AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1`** (saved/restored) so the baton's live-mode env flips can never fire from here — then feels its shape: docstring, classes, functions, `get_*` singleton doors. Failures are recorded and counted, never raised. |
-| `weave(module)` | `touch` + join into the living mesh via the operator's `join_organism()` (mycelium `connect_subsystem` + Queen `_register_child`). |
-| `sweep_once()` / `start_sweep()` | Progressively touch the untouched, batch by batch, until the whole body has been felt. A daemon thread with a pulse each cycle. |
+| `weave(module)` | `touch` + join into the living mesh via the operator's `join_organism()` (mycelium `connect_subsystem` + Queen `_register_child`). Registration only — no module code runs; idempotent. |
+| `weave_touched(limit=None)` | Drain the currently-*touched* backlog onto the mesh+Queen in one bounded pass, so `woven` keeps pace with what the body has felt. Idempotent (a second pass is a no-op), guarded, reversible (state only). |
+| `sweep_once()` / `start_sweep()` | Progressively touch the untouched, batch by batch, and weave them. A daemon thread with a pulse each cycle. `weave_batch` per cycle: `>0` caps at N, `-1` weaves **all** touched (keep-pace), `0` weaves none. It **defaults to the touch batch** so `woven` tracks `touched` — no growing backlog. |
 | `pulse()` | One breath: publishes `organism.connectome.pulse` with honest coverage. |
 | `status()` | The honest picture (see below). |
 

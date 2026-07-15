@@ -480,7 +480,7 @@ def run_audit() -> list[dict]:
 
             # Edge 14 — ascent-gated autonomy: the safe-verb set WIDENS monotonically
             # with the chakra ascent and never contains a live/irreversible verb.
-            from aureon.core.soul_company import _ascent_allowed_verbs, _COMPANY_VERBS
+            from aureon.core.soul_company import _COMPANY_VERBS, _ascent_allowed_verbs
 
             _live = {"place_live_order", "execute_trade", "make_payment", "submit_hmrc",
                      "send_email", "execute_shell"}
@@ -656,6 +656,27 @@ def run_audit() -> list[dict]:
                 "automation_journey_records", _rec_ok,
                 f"snapshot={'yes' if _snap else 'none(dormant)'} journey_len={len(_after)}",
                 critical=False))
+
+            # Edge 24 — the organism weaves as fast as it feels: after touching a batch,
+            # weave_touched() drains it onto the mesh+Queen (woven grows, backlog clears),
+            # and a second pass is a no-op (idempotent). Registration only — pure coverage.
+            import tempfile as _tf6
+
+            from aureon.core.aureon_connectome import Connectome as _CX
+            from aureon.core.aureon_connectome import reset_connectome_for_tests as _rcx
+
+            with _tf6.TemporaryDirectory() as _tdw:
+                _rcx()
+                _cx = _CX(state_path=_osm.path.join(_tdw, "cx.json"))
+                _cx.sweep_once(batch_size=12)
+                _drain = _cx.weave_touched()
+                _idem = _cx.weave_touched()
+                _weave_ok = (_drain["woven"] > 0 and _drain["remaining"] == 0
+                             and _idem == {"woven": 0, "remaining": 0})
+                results.append(_check(
+                    "connectome_weaves_to_keep_pace", _weave_ok,
+                    f"woven={_drain['woven']} remaining={_drain['remaining']} idempotent={_idem['woven'] == 0}",
+                    critical=False))
         finally:
             for _k, _val in _saved.items():
                 if _val is None:

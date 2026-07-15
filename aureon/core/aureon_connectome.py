@@ -204,7 +204,9 @@ class Connectome:
         return {"module": module, "status": "touched", **shape}
 
     def _feel(self, mod: Any) -> Dict[str, Any]:
-        classes, functions, singletons = [], [], []
+        classes: List[str] = []
+        functions: List[str] = []
+        singletons: List[str] = []
         for name in dir(mod):
             if name.startswith("_"):
                 continue
@@ -242,6 +244,28 @@ class Connectome:
             self._record(module, "touched", error=f"weave failed: {exc}"[:300])
             return {"module": module, "status": "touched", "error": f"weave failed: {exc}"[:300]}
 
+    def weave_touched(self, limit: int | None = None) -> Dict[str, Any]:
+        """Drain the currently-touched backlog onto the mycelium mesh + Queen in one
+        bounded pass, so ``woven`` keeps pace with what the organism has already felt.
+        Registration only (via ``join_organism`` — no module code runs), **idempotent**
+        (a woven module is skipped, so a second pass is a no-op), bounded by ``limit``
+        (``None`` = all), guarded — one bad module never stops the drain. Returns
+        ``{"woven": n, "remaining": m}`` (m = touched still awaiting a weave)."""
+        woven = 0
+        pending = [m for m, rec in self._records.items() if rec.get("status") == "touched"]
+        for module in pending:
+            if limit is not None and woven >= limit:
+                break
+            try:
+                if self.weave(module).get("status") == "woven":
+                    woven += 1
+            except Exception as exc:  # noqa: BLE001 — never let one module stop the drain
+                logger.debug("weave_touched skipped %s: %s", module, exc)
+        remaining = sum(1 for rec in self._records.values() if rec.get("status") == "touched")
+        if woven:
+            self._save_state()
+        return {"woven": woven, "remaining": remaining}
+
     # ── sweep: feel the whole body, batch by batch ───────────────────────────
 
     def sweep_once(
@@ -272,10 +296,12 @@ class Connectome:
         # so the deny-list + import-suppression are honoured transitively. This
         # is how the Queen's own systems (queen_*.py) become real children over
         # time, using the existing join_organism gear — no new fabric.
+        # weave_batch > 0 caps at N per cycle; < 0 drains ALL touched (keep-pace);
+        # 0 weaves none. Keep-pace mode lets woven track touched cycle for cycle.
         woven = 0
-        if weave_batch > 0:
+        if weave_batch != 0:
             for module, rec in list(self._records.items()):
-                if woven >= weave_batch:
+                if weave_batch > 0 and woven >= weave_batch:
                     break
                 if rec.get("status") == "touched" and self.weave(module).get("status") == "woven":
                     woven += 1

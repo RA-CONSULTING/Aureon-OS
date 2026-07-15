@@ -37,6 +37,9 @@ is clamped to `[0,1]`.
 - **It climbs with real work.** consciousness + surfacing sit near full early on; the headline
   then rises chiefly as *repo coverage* grows — each phase that wires, weaves, or wakes more
   modules moves `connectivity` + `integration` (0.65 of the weight). That's the needle to watch.
+  The connectome now **weaves as fast as it feels** (the sweep's weave batch defaults to its touch
+  batch; `weave_touched()` drains any backlog), so `integration` tracks `touched` cycle for cycle
+  instead of lagging — see [`ORGANISM_CONNECTOME.md`](ORGANISM_CONNECTOME.md).
 - **`wired_by_category`** shows where the soul logic reaches, per catalog category — so "how
   much of each part is automated" is visible, not just the aggregate.
 - **Observational only.** It measures; it changes no behaviour and authorizes nothing.

@@ -67,13 +67,18 @@ def boot() -> dict[str, Any]:
     connectome = get_connectome()
     organs["connectome"] = connectome
     if _env_flag("AUREON_CONNECTOME_SWEEP"):
-        # weave_batch>0 graduates touched modules to woven (mycelium+Queen) each
-        # cycle, so the body doesn't just get felt — it gets connected. Off →
-        # touch-only (set AUREON_CONNECTOME_WEAVE=0).
-        weave_batch = _env_int("AUREON_CONNECTOME_WEAVE_BATCH", 10) if _env_flag("AUREON_CONNECTOME_WEAVE") else 0
+        # weave_batch graduates touched modules to woven (mycelium+Queen) each cycle,
+        # so the body doesn't just get felt — it gets connected. It DEFAULTS to the
+        # touch batch so woven keeps pace with touched (no growing backlog); env
+        # AUREON_CONNECTOME_WEAVE_BATCH overrides (-1 = weave all touched each cycle).
+        # Off → touch-only (set AUREON_CONNECTOME_WEAVE=0).
+        batch = _env_int("AUREON_CONNECTOME_BATCH", 25)
+        raw_wb = os.environ.get("AUREON_CONNECTOME_WEAVE_BATCH")
+        weave_batch = (int(raw_wb) if (raw_wb or "").lstrip("-").isdigit() else batch) \
+            if _env_flag("AUREON_CONNECTOME_WEAVE") else 0
         connectome.start_sweep(
             interval_s=float(_env_int("AUREON_CONNECTOME_INTERVAL_S", 30)),
-            batch_size=_env_int("AUREON_CONNECTOME_BATCH", 25),
+            batch_size=batch,
             weave_batch=weave_batch,
         )
         logger.info("🕸️ Connectome sweep started (weave_batch=%s) — the organism feels AND connects its body", weave_batch)

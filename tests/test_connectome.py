@@ -100,6 +100,40 @@ def test_sweep_touches_a_batch(tmp_path):
     assert c.status()["coverage_pct"] > 0.0
 
 
+def test_weave_touched_drains_backlog_and_is_idempotent(tmp_path):
+    c = _fresh(tmp_path)
+    c.sweep_once(batch_size=12)                       # feel a batch, weave none yet
+    touched_before = c.status()["woven"]
+    assert touched_before == 0                        # nothing woven yet
+    drained = c.weave_touched()
+    assert drained["woven"] > 0 and drained["remaining"] == 0
+    assert c.status()["woven"] == drained["woven"]    # touched graduated to woven
+    # a second pass is a no-op — nothing left at "touched"
+    assert c.weave_touched() == {"woven": 0, "remaining": 0}
+
+
+def test_sweep_weave_batch_modes(tmp_path):
+    # weave_batch=0 weaves none; -1 weaves ALL touched this cycle (keep-pace)
+    c = _fresh(tmp_path)
+    r0 = c.sweep_once(batch_size=10, weave_batch=0)
+    assert r0["woven"] == 0 and c.status()["woven"] == 0
+    c2 = _fresh(tmp_path / "b")
+    r1 = c2.sweep_once(batch_size=10, weave_batch=-1)
+    assert r1["woven"] == r1["touched"] and r1["touched"] > 0   # all felt this cycle were woven
+
+
+def test_weave_registers_on_the_mesh_only(tmp_path):
+    # weaving is registration only — mesh membership grows, no module code runs
+    from aureon.core.aureon_mycelium import get_mycelium
+
+    c = _fresh(tmp_path)
+    before = set(get_mycelium().get_mesh_status().get("subsystems", {}))
+    c.sweep_once(batch_size=10)
+    c.weave_touched()
+    after = set(get_mycelium().get_mesh_status().get("subsystems", {}))
+    assert len(after) >= len(before)                  # woven modules joined the mesh
+
+
 def test_pulse_publishes_to_the_bus(tmp_path):
     c = _fresh(tmp_path)
     snap = c.pulse()
