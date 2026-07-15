@@ -137,3 +137,20 @@ r=connector.run_analysis(['tests/fixtures/weed_phenolic_spectral_map_codex.csv',
 'data/spectra/nist_ir_peaks.csv','data/spectra/curated_open_access_peaks.csv'], seed=0); \
 print(json.dumps(r.to_dict()['compounds'], indent=2))"
 ```
+
+## Bio↔Vibe blueprints (visuals)
+
+`blueprints.py` renders two figures into `docs/research/figures/` from the repo's
+own systems (`connector` + `phenolic_fingerprint` + `fetcher`; coherence-node
+clustering ported from the HNC packet):
+
+- `phenolic_plant_harmonic_nodes.png/svg` — **plants as harmonic nodes**: each
+  plant links to the shared coherence nodes (>=2 molecules) its phenolics express
+  in the 1000-2000 Hz modulation band.
+- `phenolic_molecule_blueprints.png/svg` — **molecules side-by-side**: 2D
+  structure + cm^-1 spectrum (molecular makeup) beside the modulation-frequency
+  fingerprint + coherence-node bands + phi sidebands (harmonic makeup), per compound.
+
+Experimental lane by default; `--include-computed` adds the labeled theoretical
+overlay. Palette validated CVD-safe on the dark surface. Regenerate with
+`python blueprints.py`.
