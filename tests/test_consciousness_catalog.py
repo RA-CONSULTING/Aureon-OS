@@ -21,7 +21,7 @@ from aureon.saas.consciousness_catalog import (
 )
 
 _EXPECTED_KEYS = {"metacognition", "affect", "soul", "inner_work", "pursuit",
-                  "approval_desk", "company", "connectome"}
+                  "approval_desk", "switchboard", "company", "connectome"}
 
 
 # ── the catalog categorizes every organ ──────────────────────────────────────

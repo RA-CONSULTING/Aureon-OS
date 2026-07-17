@@ -46,6 +46,32 @@ that reads it — and each flag says **honestly** which one applies:
 Flags with no stored decision are left untouched, so a `.env` value or a launcher flag (`aureon-up.sh
 --live`) still wins where the human has made no UI choice.
 
+## Is it applied yet? — the honest pending-restart signal
+
+A "restart" label alone can't tell you whether a decision has actually reached the daemon that reads
+it. So each decision is stamped: `save_flag` records `decided_at = time.time()` alongside `enabled`.
+The organism daemon applies the flags (`bootstrap_credentials()` → `apply_to_env()`) and then
+`awaken()` stamps `last_awakened_at` into `state/aureon_genesis.json` — so those two timestamps are
+directly comparable, and `flag_view()` derives a real **`pending_restart`**:
+
+- **`live`** flag, or a flag with **no stored human decision** → `False` (nothing is waiting).
+- decision recorded but `decided_at` missing (a pre-Phase-55 entry), or the organism has never awoken
+  (`last_awakened_at is None`) → **`null`** — honest no_data, never a fabricated "applied".
+- otherwise → `decided_at > last_awakened_at`: **`True`** means you decided *after* the last boot, so
+  the consuming process is still running the old value and must restart to pick it up.
+
+The read is guarded (`read_genome()` degrades to `None`, never raises) and imports nothing from the
+trading/runtime layer. The Switchboard page shows a **"pending restart"** badge when this is `true`.
+Audit edge `switchboard_pending_is_honest` proves the truth table (before-boot → pending, unknown →
+`null`, live → `False`).
+
+## Seen in governance
+
+The switchboard is registered as a surface in the **`governance`** category of the consciousness
+catalog (`aureon/saas/consciousness_catalog.py`, beside the director's desk), `safety_posture`
+`records_only_gated` — so the human control plane appears in `/api/consciousness` and the Consciousness
+page, not only in its own route.
+
 ## The two tiers
 
 ### Safe / reversible — simple toggles

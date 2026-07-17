@@ -116,6 +116,69 @@ def test_grouped_view_shape(temp_store):
         assert g["flags"] and all("armed" in f for f in g["flags"])
 
 
+# ── pending-restart signal (decided_at vs last_awakened_at) ──────────────────────
+
+def test_save_flag_records_decided_at(temp_store):
+    entry = fs.save_flag("AUREON_LIVE_TRADING", True)
+    assert isinstance(entry["decided_at"], float)
+    assert isinstance(fs.load()["AUREON_LIVE_TRADING"]["decided_at"], float)
+
+
+def test_pending_restart_truth_table(temp_store, monkeypatch):
+    flag = fs.get_flag("AUREON_LIVE_TRADING")  # a restart-tier hard-boundary flag
+    fs.save_flag("AUREON_LIVE_TRADING", True)
+    decided = fs.load()["AUREON_LIVE_TRADING"]["decided_at"]
+
+    # organism never awoke → unknown, honest None (never a fabricated "applied")
+    monkeypatch.setattr(fs, "_last_awakened_at", lambda: None)
+    assert fs.flag_view(flag)["pending_restart"] is None
+
+    # booted BEFORE the decision → the decision has not been picked up → pending
+    monkeypatch.setattr(fs, "_last_awakened_at", lambda: decided - 100)
+    assert fs.flag_view(flag)["pending_restart"] is True
+
+    # booted AFTER the decision → already applied → not pending
+    monkeypatch.setattr(fs, "_last_awakened_at", lambda: decided + 100)
+    assert fs.flag_view(flag)["pending_restart"] is False
+
+
+def test_pending_restart_live_flag_never_pending(temp_store, monkeypatch):
+    fs.save_flag("AUREON_LLM_OFFLINE", True)  # effect == "live"
+    monkeypatch.setattr(fs, "_last_awakened_at", lambda: 0.0)  # ancient boot
+    assert fs.flag_view(fs.get_flag("AUREON_LLM_OFFLINE"))["pending_restart"] is False
+
+
+def test_pending_restart_no_decision_is_false(temp_store, monkeypatch):
+    # env/default source (no human decision) → nothing the human is waiting on
+    monkeypatch.delenv("AUREON_APPROVAL_EMAIL", raising=False)
+    assert fs.flag_view(fs.get_flag("AUREON_APPROVAL_EMAIL"))["pending_restart"] is False
+
+
+def test_pending_restart_legacy_entry_is_none(temp_store, monkeypatch):
+    # a stored decision without decided_at (pre-Phase-55) → no_data, never fabricated
+    fs._persist({"AUREON_LIVE_TRADING": {"enabled": True}})
+    monkeypatch.setattr(fs, "_last_awakened_at", lambda: 1.0)
+    assert fs.flag_view(fs.get_flag("AUREON_LIVE_TRADING"))["pending_restart"] is None
+
+
+def test_last_awakened_at_guarded(monkeypatch):
+    # an unreadable genome degrades to None, never raises
+    import aureon.core.awakening as aw
+    monkeypatch.setattr(aw, "read_genome", lambda: (_ for _ in ()).throw(RuntimeError("boom")))
+    assert fs._last_awakened_at() is None
+
+
+def test_switchboard_in_governance_catalog():
+    from aureon.saas.consciousness_catalog import build_consciousness_catalog
+
+    surfaces = build_consciousness_catalog()["surfaces"]
+    sb = next((s for s in surfaces if s["key"] == "switchboard"), None)
+    assert sb is not None
+    assert sb["category"] == "governance"
+    assert sb["route"] == "/api/switchboard"
+    assert sb["safety_posture"] == "records_only_gated"
+
+
 # ── bootstrap integration ────────────────────────────────────────────────────────
 
 def test_bootstrap_credentials_applies_flags(temp_store, monkeypatch):

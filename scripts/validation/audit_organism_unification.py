@@ -595,7 +595,7 @@ def run_audit() -> list[dict]:
             _cc = _bcc()
             _keys = {s["key"] for s in _cc["surfaces"]}
             _expected = {"metacognition", "affect", "soul", "inner_work", "pursuit",
-                         "approval_desk", "company", "connectome"}
+                         "approval_desk", "switchboard", "company", "connectome"}
             _shapes_ok = all(s["route"].startswith("/api/") and s["safety_posture"] in _SP
                              and s["truth_status"] in _TS for s in _cc["surfaces"])
             _grouped = sum(b["surface_count"] for b in _cc["categories"].values())
@@ -963,6 +963,31 @@ def run_audit() -> list[dict]:
             results.append(_check(
                 "switchboard_never_removes_gates", _hb_off and _only_env and _no_executor,
                 f"hard_boundary_default_off={_hb_off} only_own_env={_only_env} no_executor_import={_no_executor}",
+                critical=False))
+
+            # Edge 35 — the switchboard's "restart" label is real signal, not a static
+            # string: a decision made after the last boot reads pending; unknown boot →
+            # None (no fabrication); a "live" flag is never pending.
+            _flag35 = _fs34.get_flag("AUREON_ACCEPT_LIVE_RISK")
+            _decided = _fs34.load()["AUREON_ACCEPT_LIVE_RISK"].get("decided_at")
+            _orig_boot = _fs34._last_awakened_at
+            try:
+                _fs34._last_awakened_at = lambda: None
+                _p_unknown = _fs34.flag_view(_flag35)["pending_restart"]
+                _fs34._last_awakened_at = lambda: (_decided or 0) - 100
+                _p_before = _fs34.flag_view(_flag35)["pending_restart"]
+                _fs34._last_awakened_at = lambda: (_decided or 0) + 100
+                _p_after = _fs34.flag_view(_flag35)["pending_restart"]
+            finally:
+                _fs34._last_awakened_at = _orig_boot
+            _live35 = _fs34.get_flag("AUREON_LLM_OFFLINE")
+            _fs34.save_flag("AUREON_LLM_OFFLINE", True)
+            _p_live = _fs34.flag_view(_live35)["pending_restart"]
+            _pending_ok = (_p_unknown is None and _p_before is True
+                           and _p_after is False and _p_live is False and _decided is not None)
+            results.append(_check(
+                "switchboard_pending_is_honest", _pending_ok,
+                f"unknown={_p_unknown} before={_p_before} after={_p_after} live={_p_live}",
                 critical=False))
         finally:
             for _k, _val in _saved.items():
