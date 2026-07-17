@@ -316,6 +316,13 @@ def bootstrap_credentials(
     except Exception:  # noqa: BLE001 - a missing/locked keystore must not be fatal
         keystore_applied = False
 
+    try:  # best effort — the feature switchboard is the human on/off control plane
+        from aureon.operator import feature_switchboard
+
+        feature_switchboard.apply_to_env()
+    except Exception:  # noqa: BLE001 - a missing/locked store must not be fatal
+        pass
+
     present = {key: bool(info["set"]) for key, info in env_presence(HNC_RUNTIME_KEYS).items()}
     return {
         "loaded": report.loaded,
