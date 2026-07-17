@@ -46,6 +46,8 @@ interface Flag {
   stored: boolean | null;
   source: "store" | "env" | "default";
   armed: boolean;
+  decided_at: number | null;
+  pending_restart: boolean | null;
 }
 
 interface Group {
@@ -184,6 +186,15 @@ export default function SwitchboardPage() {
                         {effectBadge(f)}
                         {f.armed && (
                           <Badge className="bg-destructive hover:bg-destructive">armed</Badge>
+                        )}
+                        {f.pending_restart === true && (
+                          <Badge
+                            variant="outline"
+                            className="border-amber-500 text-amber-600 dark:text-amber-400"
+                            title="Saved — but the consuming process must restart to pick it up"
+                          >
+                            pending restart
+                          </Badge>
                         )}
                         <code className="text-[11px] text-muted-foreground">{f.env_var}</code>
                       </div>
