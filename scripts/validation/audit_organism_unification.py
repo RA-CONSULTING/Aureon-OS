@@ -933,6 +933,37 @@ def run_audit() -> list[dict]:
                 "denials_are_not_forever", _reconcile_ok,
                 f"freed={_rd['freed']} genuine_kept={'aureon.core.hnc_live_daemon' in _cz._records}",
                 critical=False))
+
+            # Edge 34 — the feature switchboard is a human control plane that never
+            # removes a gate: hard-boundary flags default OFF, and arming one sets ONLY
+            # its own env var (no executor/trading import in the module).
+            from pathlib import Path as _P34
+
+            from aureon.operator import feature_switchboard as _fs34
+
+            _sb_dir = _P34(_tds) / "switchboard"
+            _fs34.CONFIG_DIR = _sb_dir
+            _fs34.KEY_PATH = _sb_dir / "feature_flags.key"
+            _fs34.STORE_PATH = _sb_dir / "feature_flags.json.enc"
+            _hb_off = all(not f.default for f in _fs34.FLAGS if f.kind == "hard_boundary")
+            _flag = "AUREON_ACCEPT_LIVE_RISK"
+            _prev_flag = _osm.environ.get(_flag)
+            _env_before = dict(_osm.environ)
+            _fs34.save_flag(_flag, True)  # persists + applies to env
+            _only_env = {k for k in _osm.environ if _osm.environ.get(k) != _env_before.get(k)} == {_flag}
+            _imports = "\n".join(
+                ln for ln in _P34(_fs34.__file__).read_text(encoding="utf-8").splitlines()
+                if ln.lstrip().startswith(("import ", "from ")))
+            _no_executor = not any(m in _imports for m in
+                                   ("local_action_bridge", "grounded_action", "aureon.trading"))
+            if _prev_flag is None:
+                _osm.environ.pop(_flag, None)
+            else:
+                _osm.environ[_flag] = _prev_flag
+            results.append(_check(
+                "switchboard_never_removes_gates", _hb_off and _only_env and _no_executor,
+                f"hard_boundary_default_off={_hb_off} only_own_env={_only_env} no_executor_import={_no_executor}",
+                critical=False))
         finally:
             for _k, _val in _saved.items():
                 if _val is None:
