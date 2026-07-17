@@ -31,6 +31,7 @@ import {
   Radio,
   Satellite,
   Ship,
+  SlidersHorizontal,
   Sparkles,
   Sun,
   TerminalSquare,
@@ -75,6 +76,14 @@ export const NAV_SECTIONS: NavSection[] = [
         description: "Whole-repo systems map and capability routes",
         icon: Map,
         Component: lazyNamed(() => import("@/components/RepoNavigationPanel"), "RepoNavigationPanel"),
+      },
+      {
+        path: "/platform/switchboard",
+        label: "Switchboard",
+        description: "Turn every system feature on/off at human discretion",
+        icon: SlidersHorizontal,
+        Component: lazy(() => import("./pages/SwitchboardPage")),
+        live: true,
       },
       {
         path: "/platform/billing",
