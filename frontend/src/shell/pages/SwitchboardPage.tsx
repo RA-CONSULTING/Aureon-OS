@@ -55,9 +55,18 @@ interface Group {
   flags: Flag[];
 }
 
+interface Summary {
+  total: number;
+  enabled: number;
+  armed: number;
+  pending_restart: number;
+  hard_boundary_total: number;
+}
+
 export default function SwitchboardPage() {
   // undefined = loading, null = gateway offline, array = data
   const [groups, setGroups] = useState<Group[] | null | undefined>(undefined);
+  const [summary, setSummary] = useState<Summary | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
   const [arm, setArm] = useState<Flag | null>(null); // hard-boundary confirm dialog
   const [armText, setArmText] = useState("");
@@ -68,6 +77,7 @@ export default function SwitchboardPage() {
       if (!r.ok) throw new Error(String(r.status));
       const data = await r.json();
       setGroups(data.groups ?? []);
+      setSummary(data.summary ?? null);
     } catch {
       setGroups(null);
     }
@@ -138,6 +148,26 @@ export default function SwitchboardPage() {
       </div>
 
       <LiveDataNotice />
+
+      {summary && (
+        <div className="flex flex-wrap gap-2 text-sm">
+          <Badge variant="secondary">{summary.enabled}/{summary.total} enabled</Badge>
+          <Badge
+            className={
+              summary.armed > 0
+                ? "bg-destructive hover:bg-destructive"
+                : "bg-emerald-600 hover:bg-emerald-600"
+            }
+          >
+            {summary.armed} armed / {summary.hard_boundary_total} hard-boundary
+          </Badge>
+          {summary.pending_restart > 0 && (
+            <Badge variant="outline" className="border-amber-500 text-amber-600 dark:text-amber-400">
+              {summary.pending_restart} pending restart
+            </Badge>
+          )}
+        </div>
+      )}
 
       {groups === undefined && (
         <div className="grid gap-4">
