@@ -43,14 +43,15 @@ DEFAULT_CACHE: Final[Path] = REPO_ROOT / "data" / "sky" / "nasa_exoplanet_hosts.
 
 TAP_URL: Final[str] = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync"
 #: Deterministic ADQL: bounded, non-null fields, stable ordering -> reproducible.
-ROW_CAP: Final[int] = 400
+ROW_CAP: Final[int] = 1000
 ADQL_QUERY: Final[str] = (
-    f"select top {ROW_CAP} pl_name,hostname,st_teff,pl_orbper "
+    f"select top {ROW_CAP} pl_name,hostname,ra,dec,st_teff,pl_orbper "
     "from pscomppars "
     "where st_teff is not null and pl_orbper is not null "
+    "and ra is not null and dec is not null "
     "order by pl_name"
 )
-FIELDS: Final[tuple[str, ...]] = ("pl_name", "hostname", "st_teff", "pl_orbper")
+FIELDS: Final[tuple[str, ...]] = ("pl_name", "hostname", "ra", "dec", "st_teff", "pl_orbper")
 
 SOURCE_CITATION: Final[str] = (
     "NASA Exoplanet Archive, pscomppars composite-parameters table, "
@@ -126,10 +127,14 @@ def _parse_csv(text: str) -> list[dict[str, str]]:
             continue
         if not rec["pl_name"] or not rec["st_teff"] or not rec["pl_orbper"]:
             continue
+        if not rec.get("ra") or not rec.get("dec"):
+            continue
         # sanity: numeric fields must parse
         try:
             float(rec["st_teff"])
             float(rec["pl_orbper"])
+            float(rec["ra"])
+            float(rec["dec"])
         except ValueError:
             continue
         rows.append(rec)

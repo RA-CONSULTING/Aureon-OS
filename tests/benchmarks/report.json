@@ -1,5 +1,5 @@
 {
-  "ts": "2026-07-19T06:11:39Z",
+  "ts": "2026-07-19T06:36:43Z",
   "tier_a": [
     {
       "name": "Standing-wave bonding (HashResonanceIndex)",
@@ -26,7 +26,7 @@
         "one_publish_per_crossing": true
       },
       "evidence": "21 identical events \u2192 1 bonded fingerprint (count=21, strength=0.6765 \u2248 0.6765; thresholds [3, 8, 21] published exactly once each)",
-      "wall_ms": 1231.8
+      "wall_ms": 1229.9
     },
     {
       "name": "Temporal lighthouse (\u03b2 \u039b(t-\u03c4) goal echo)",
@@ -57,7 +57,7 @@
         "summary_published_each_pulse": true
       },
       "evidence": "3 goals (1 starved, 1 completed, 1 abandoned) \u2192 completion_rate=0.333, orphan_rate=0.333, states={'PROPOSED': 0, 'ACKNOWLEDGED': 0, 'IN_PROGRESS': 0, 'COMPLETED': 1, 'ABANDONED': 1, 'ORPHANED': 1}",
-      "wall_ms": 49.8
+      "wall_ms": 51.3
     },
     {
       "name": "Symbolic life pillars (Auris Conjecture)",
@@ -85,7 +85,7 @@
         "symbolic_life_pulse_topic_landed": true
       },
       "evidence": "SLS=0.6393; \u03c8=0.7069 (CONNECTED); all 5 pillars in [0,1]; vault.current_symbolic_life_score=0.6393012290344635",
-      "wall_ms": 248.9
+      "wall_ms": 301.0
     },
     {
       "name": "Mesh convergence (PhiBridgeMesh, in-process LAN)",
@@ -97,7 +97,7 @@
         "peers_per_node": 3,
         "target_hash_count": 400,
         "cycles_to_converge": 3,
-        "wall_ms": 514.9,
+        "wall_ms": 537.7,
         "posts_issued": 180,
         "client_failures": 0,
         "min_size": 400,
@@ -109,8 +109,8 @@
         "every_vault_holds_identical_set": true,
         "no_routing_failures": true
       },
-      "evidence": "20 vaults converged to identical 400-hash set in 3 cycles (515 ms, 180 posts)",
-      "wall_ms": 524.3
+      "evidence": "20 vaults converged to identical 400-hash set in 3 cycles (538 ms, 180 posts)",
+      "wall_ms": 548.3
     },
     {
       "name": "Conscience VETO (HNC 4th-pass, substrate coherence)",
@@ -131,7 +131,7 @@
         "published_action_matches": true
       },
       "evidence": "SLS=0.05 < 0.20 cliff \u2192 VETO on 'Execute trade' (risk=0.08); message quotes stability cliff and symbolic_life_score; queen.conscience.verdict published",
-      "wall_ms": 12.2
+      "wall_ms": 10.0
     },
     {
       "name": "Pattern learning (PersonaMinerBridge)",
@@ -148,7 +148,7 @@
           "last_winning_skill_chain": [
             "compose_audit"
           ],
-          "last_seen_ts": 1784441486.4708679
+          "last_seen_ts": 1784442954.894999
         },
         "persona_health": {
           "persona": "engineer",
@@ -160,7 +160,7 @@
           "completion_rate": 1.0,
           "abandon_rate": 0.0,
           "avg_sls_delta": 0.0,
-          "last_seen_ts": 1784441486.4708679
+          "last_seen_ts": 1784442954.894999
         },
         "patterns_published": 3,
         "patterns": [
@@ -199,7 +199,7 @@
         "persona_completion_rate_is_1": true
       },
       "evidence": "5 (engineer, 'build the audit gate') successes \u2192 3 patterns learned (['audit', 'build', 'gate']), each published exactly once; (engineer, 'build').confidence=0.747",
-      "wall_ms": 14.5
+      "wall_ms": 18.2
     },
     {
       "name": "Skill execution \u2192 artefacts on disk",
@@ -212,9 +212,9 @@
           "summarise_findings"
         ],
         "artefacts_on_disk": [
-          "artefacts/20260719T061126-compose_audit-a67118.md",
-          "artefacts/20260719T061126-render_report-324a73.md",
-          "artefacts/20260719T061126-summarise_findings-fd6a0f.md"
+          "artefacts/20260719T063554-compose_audit-dd2ba5.md",
+          "artefacts/20260719T063554-render_report-598bed.md",
+          "artefacts/20260719T063554-summarise_findings-279084.md"
         ],
         "vault_skill_output_cards": 3,
         "completion_summary": "built 3 artefact(s) via 3 skill(s): compose_audit, render_report, summarise_findings",
@@ -225,7 +225,7 @@
           "failed": 0,
           "abandoned": 0,
           "subscribed": true,
-          "output_root": "/tmp/aureon-bench-pudvqw2p/a7/artefacts"
+          "output_root": "/tmp/aureon-bench-rg_eduqc/a7/artefacts"
         }
       },
       "invariants": {
@@ -238,7 +238,7 @@
         "every_artefact_actually_exists": true
       },
       "evidence": "3 skills \u2192 3 files on disk + 3 vault cards; goal.completed: \"built 3 artefact(s) via 3 skill(s): compose_audit, render_report, summarise_findings\"",
-      "wall_ms": 15.7
+      "wall_ms": 19.3
     },
     {
       "name": "Meta-cognition reflection (\u03b1 tanh observer term)",
@@ -253,7 +253,7 @@
         "sls_after": 0.72,
         "sls_delta": 0.22,
         "downstream_event_count": 3,
-        "lambda_delta_t": 0.07476377487182617,
+        "lambda_delta_t": 0.076995849609375,
         "reasoning_excerpt": "I, engineer, collapsed into decision 'goal.submit' with p=0.780. The window closed at outcome=COMPLETED. 3 downstream event(s) within the 0.050s window. SLS moved from 0.500 to 0.720 (\u0394+0.220)."
       },
       "invariants": {
@@ -268,7 +268,7 @@
         "downstream_effects_seen": true
       },
       "evidence": "persona.collapse(engineer) \u2192 goal.submit \u2192 goal.completed closes window with SLS \u0394+0.220; narrative quotes the persona",
-      "wall_ms": 86.6
+      "wall_ms": 92.4
     },
     {
       "name": "Phenolic fingerprint \u2192 cognition (bio\u2192vibe sense-making)",
@@ -296,7 +296,7 @@
         "trace_signal_written": true
       },
       "evidence": "AnalysisResult \u2192 emit_to_cognition publishes run + 3 compound Thoughts on one trace_id and mirrors a bus_trace; summary = 1/3 separable \u00b7 2/3 clustering-significant \u00b7 controls PASS",
-      "wall_ms": 10.5
+      "wall_ms": 18.5
     },
     {
       "name": "Bio derived-signal (UPE anchor + governance + convergence)",
@@ -317,7 +317,7 @@
         "convergence_semantics": true
       },
       "evidence": "broadband UPE non-separable; structured separable (A_p=0.01990049751243781); consent gate blocks; convergence 0/9 both-channel cells",
-      "wall_ms": 1521.3
+      "wall_ms": 1613.0
     },
     {
       "name": "Sky derived-signal (scan light from space; \u03c6 logic unchanged)",
@@ -338,21 +338,21 @@
         "scan_deterministic": true,
         "consent_gate_blocks": true
       },
-      "wall_ms": 1377.3
+      "wall_ms": 1528.1
     },
     {
       "name": "NASA sky data (real host-star scan; \u03c6 logic unchanged)",
       "module": "scripts/validation/benchmark_nasa_sky.py",
       "passed": true,
       "metrics": {
-        "nasa_rows": 400,
+        "nasa_rows": 1000,
         "stellar_A_p": 0.004975124378109453,
         "stellar_B_p": 0.004975124378109453,
         "stellar_separable": true,
-        "orbital_A_p": 0.01990049751243781,
+        "orbital_A_p": 0.004975124378109453,
         "orbital_separable": false
       },
-      "evidence": "400 real NASA planets; stellar-Wien lane valid (separable=True, A_p=0.004975124378109453); orbital lane valid (separable=False); tones fold into band; consent gate blocks",
+      "evidence": "1000 real NASA planets; stellar-Wien lane valid (separable=True, A_p=0.004975124378109453); orbital lane valid (separable=False); tones fold into band; consent gate blocks",
       "invariants": {
         "cache_has_rows": true,
         "stellar_lane_valid": true,
@@ -361,7 +361,7 @@
         "orbital_lane_valid": true,
         "consent_gate_blocks": true
       },
-      "wall_ms": 2426.5
+      "wall_ms": 19515.5
     },
     {
       "name": "Market derived-signal (scan a market series; \u03c6 logic unchanged)",
@@ -383,7 +383,7 @@
         "real_scan_deterministic": true,
         "consent_gate_blocks": true
       },
-      "wall_ms": 1471.7
+      "wall_ms": 1462.4
     },
     {
       "name": "Faint sky / UPE-from-the-sky (airglow + diffuse; \u03c6 logic unchanged)",
@@ -405,7 +405,7 @@
         "planted_positive_detected": true,
         "consent_gate_blocks": true
       },
-      "wall_ms": 1539.9
+      "wall_ms": 1380.0
     },
     {
       "name": "QGITA \u21c4 phenolic-\u03c6 calibration (golden lattice; engine unchanged)",
@@ -428,7 +428,30 @@
         "engine_thresholds_unchanged": true,
         "auris_governed": true
       },
-      "wall_ms": 4254.8
+      "wall_ms": 4206.1
+    },
+    {
+      "name": "Sky map (real RA/Dec \u03c6-structure map; \u03c6 logic unchanged)",
+      "module": "aureon/bio/sky_map.py",
+      "passed": true,
+      "metrics": {
+        "positioned_sources": 1175,
+        "stellar": 1000,
+        "planetary": 175,
+        "scored_cells": 63,
+        "converged_cells": 4
+      },
+      "evidence": "1175 real sources (stellar 1000 + planetary 175); 12\u00d76 grid, 63 scored, 4 converged; converged semantics hold; deterministic; consent gate blocks",
+      "invariants": {
+        "map_valid": true,
+        "grid_complete": true,
+        "converged_semantics": true,
+        "cells_scored": true,
+        "deterministic": true,
+        "consent_gate_blocks": true,
+        "boundary_present": true
+      },
+      "wall_ms": 18842.8
     }
   ],
   "tier_b": [
@@ -443,7 +466,7 @@
           "text": "Hello. I hear you through Aureon's local brain fallback, and I am treating this as operator chat, not a trading signal. I can help route coding jobs, UI work, media builds, research, and system-health checks through the local Aureon organism while keeping live trading, payments, filings, credentials, and destructive OS actions behind their gates.",
           "model": "aureon-brain-v1",
           "metrics": {
-            "latency_ms": 1.5,
+            "latency_ms": 1.4,
             "char_count": 348,
             "word_count": 54,
             "tokens_present": {}
@@ -484,7 +507,7 @@
           "text": "I checked the gate. Right now: Right now the field reads \u039b(t) = +1.600, \u03c8 = 0.920, coherence_gamma = 0.951; Decompose this goal into 4\u20136 ordered steps, each tagged with the gate you would check before proceeding:. You asked: \u201cRight now the field reads \u039b(t) = +1.600, \u03c8 = 0.920, coherence_gamma = 0.951.\nDecompose this goal into 4\u20136 ordered steps, each tagged with the gate you would check before proceeding:\nGOAL: 'draft a research note that documents the current \u039b-state and what it implies for the next 30-minute window'.\u201d The coherence reading and the noise-cut say what they say; do not override them with wish. \u2014 that is what the numbers show.",
           "model": "persona-voice-local",
           "metrics": {
-            "latency_ms": 0.1,
+            "latency_ms": 0.0,
             "char_count": 648,
             "word_count": 112,
             "tokens_present": {}

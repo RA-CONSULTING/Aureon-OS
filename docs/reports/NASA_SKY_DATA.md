@@ -41,13 +41,16 @@ engine's own constant (`_wavelength_nm_to_hz`).
 
 ## Scan results (whatever the test returns)
 
-Reported exactly as the engine outputs them, neutrally, on the committed 400-planet
+Reported exactly as the engine outputs them, neutrally, on the committed 1000-planet
 snapshot (seed-fixed, deterministic):
 
 | Lane | inputs | Test A p | Test B p | separable |
 |------|--------|----------|----------|-----------|
-| Stellar Wien wavelengths (starlight colour) | 400 | 0.002 | 0.002 | True |
-| Orbital-period frequencies (planetary rhythm) | 400 | 0.010 | 0.134 | False |
+| Stellar Wien wavelengths (starlight colour) | 1000 | 0.002 | 0.002 | True |
+| Orbital-period frequencies (planetary rhythm) | 1000 | 0.002 | 0.429 | False |
+
+(The snapshot now also carries each host's real `ra`/`dec`, which the
+[sky map](SKY_MAP.md) bins by celestial position.)
 
 Both scans are `valid` (controls pass, tones fold into band). The verdicts are the
 engine's own — no claim is asserted here about what the sky "should" score.

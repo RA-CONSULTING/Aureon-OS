@@ -1290,6 +1290,72 @@ def b15_qgita_calibration(tmp_root: Path) -> Dict[str, Any]:
     }
 
 
+def b16_sky_map(tmp_root: Path) -> Dict[str, Any]:
+    """The harmonic sensors map the sky with the engine's φ logic unchanged: real sky
+    sources (NASA host stars by RA/Dec + Wien colour, and DE440 planets painting their
+    orbital-motion tones along the ecliptic) bin into an RA/Dec grid, each cell scored
+    by the two independent engine tests; a cell converges only when both agree below
+    ALPHA. The map is valid + deterministic, converged semantics hold for every cell,
+    and the consent gate blocks + empties the map. Offline; skip-pass if the position
+    cache is absent so CI never needs network.
+    """
+    from aureon.bio.sky_map import (
+        analyze_sky_map,
+        planet_track_sources_from_de440,
+        stellar_sources_from_nasa,
+        SKY_MAP_BOUNDARY,
+    )
+
+    stellar = stellar_sources_from_nasa()
+    planets = planet_track_sources_from_de440()
+    sources = stellar + planets
+
+    if not sources:
+        return {
+            "name": "Sky map (real RA/Dec φ-structure map; φ logic unchanged)",
+            "module": "aureon/bio/sky_map.py",
+            "passed": True,
+            "metrics": {"positioned_sources": 0},
+            "invariants": {"sources_present_or_skip": True},
+            "evidence": "no positioned sky data (cache lacks ra/dec) — invariant skipped (offline).",
+        }
+
+    m1 = analyze_sky_map(sources, consent=True, provenance="benchmark sky map", nulls=150)
+    m2 = analyze_sky_map(sources, consent=True, provenance="benchmark sky map", nulls=150)
+    blocked = analyze_sky_map(sources, consent=False, provenance="x", nulls=100)
+    scored = [c for c in m1.cells if c.n_tones >= 2]
+
+    invariants = {
+        "map_valid": m1.valid and m1.controls_pass and not m1.blocked,
+        "grid_complete": len(m1.cells) == m1.ra_bins * m1.dec_bins,
+        "converged_semantics": all(c.converged == (c.channels_fired == 2) for c in m1.cells),
+        "cells_scored": len(scored) > 0,
+        "deterministic": m1.to_dict() == m2.to_dict(),
+        "consent_gate_blocks": blocked.blocked and not blocked.cells and blocked.n_converged == 0,
+        "boundary_present": m1.boundary == SKY_MAP_BOUNDARY,
+    }
+    passed = all(invariants.values())
+
+    return {
+        "name": "Sky map (real RA/Dec φ-structure map; φ logic unchanged)",
+        "module": "aureon/bio/sky_map.py",
+        "passed": passed,
+        "metrics": {
+            "positioned_sources": len(sources),
+            "stellar": len(stellar),
+            "planetary": len(planets),
+            "scored_cells": len(scored),
+            "converged_cells": m1.n_converged,
+        },
+        "evidence": (
+            f"{len(sources)} real sources (stellar {len(stellar)} + planetary {len(planets)}); "
+            f"{m1.ra_bins}×{m1.dec_bins} grid, {len(scored)} scored, {m1.n_converged} converged; "
+            f"converged semantics hold; deterministic; consent gate blocks"
+        ),
+        "invariants": invariants,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tier A registry — order matters for the report.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1311,6 +1377,7 @@ TIER_A: List[Tuple[str, Callable[[Path], Dict[str, Any]]]] = [
     ("Market derived-signal",       b13_market_derived_signal),
     ("Faint sky / UPE-from-sky",    b14_faint_sky_upe),
     ("QGITA φ calibration",         b15_qgita_calibration),
+    ("Sky map",                     b16_sky_map),
 ]
 
 
