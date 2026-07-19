@@ -159,6 +159,34 @@ python -m aureon.bio.image_harmonic_overlay my_consented_photo.png \
 python -m aureon.bio.upe_reference
 ```
 
+## Convergence map — the "ghost-hunter grid" (`aureon/bio/convergence_map.py`)
+
+Ghost-hunting done as *rigorous anomaly detection* (not showmanship) rests on two
+ideas this module implements literally, and nothing more:
+
+- **Baseline + controls** — validate the instrument and take a null reading before
+  calling anything anomalous. Here that is the engine's positive/negative controls,
+  run once for the whole image; if they fail, the whole map is invalid and nothing
+  renders.
+- **Multi-sensor convergence** — no single channel is trusted. Over a **uniform
+  spatial grid**, each cell is scored by **two independent** structure detectors
+  (Test A coherence-clustering and Test B φ-alignment). A cell "converges" only when
+  **both** fire; a single-channel hit is **noise, not a detection**.
+
+The output is a heatmap of *where independent measures of a derived colour signal
+agree that there is non-random structure* — a spatial + multi-channel map.
+
+**Boundary (baked into every map):** statistical structure in a derived signal
+**only** — NOT detection of any entity, spirit, energy field, or person; convergence
+*reduces false positives*, it proves nothing paranormal. Content-agnostic (uniform
+grid, no face/landmark logic), consent-gated, and governed by the same controls +
+Operator/conscience veto via `score_signal`.
+
+```bash
+python -m aureon.bio.convergence_map my_consented_photo.png \
+    --consent --provenance "my own photo" --grid 6 --out convergence_map.png
+```
+
 ## Run it
 
 ```bash
