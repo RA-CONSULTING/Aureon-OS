@@ -1602,6 +1602,58 @@ def b21_observatory_cognition(tmp_root: Path) -> Dict[str, Any]:
     }
 
 
+def b22_sacred_lattice(tmp_root: Path) -> Dict[str, Any]:
+    """The repo's OWN sky-mapping systems scan through the engine, φ logic unchanged:
+    the stargate / Maeshowe / Metatron tone lattices each fold into the band and scan
+    to a valid deterministic result, the consent gate blocks, the Earth-grid lattice
+    map is valid with correct convergence semantics, and no person-reading surface
+    exists. Aureon maps the sky through Earth's harmonic lattice — different by design.
+    """
+    from aureon.bio import sacred_lattice_scan as sl
+
+    scans = {name: sl.score_lattice(name, nulls=120, seed=0)
+             for name in ("stargate", "maeshowe", "metatron")}
+    again = sl.score_lattice("stargate", nulls=120, seed=0)
+    blocked = sl.score_lattice("stargate", consent=False, provenance="x", nulls=100)
+    m = sl.score_lattice_map(nulls=150, seed=0)
+
+    surface = [n.lower() for n in dir(sl)]
+    banned = ("face", "landmark", "detect", "emotion", "biometric", "recognize")
+
+    invariants = {
+        "all_scans_valid": all(r.valid and r.n_tones >= 2 for r in scans.values()),
+        "deterministic": (scans["stargate"].test_A_p, scans["stargate"].test_B_p)
+        == (again.test_A_p, again.test_B_p),
+        "consent_gate_blocks": blocked.blocked and not blocked.structure_present,
+        "map_valid": m.valid,
+        "converged_semantics": all(
+            c.converged == (c.channels_fired == 2) for c in m.cells
+        ),
+        "no_person_surface": not any(b in n for b in banned for n in surface),
+    }
+    passed = all(invariants.values())
+
+    return {
+        "name": "Sacred lattice (repo's own Earth-grid sky map; φ logic unchanged)",
+        "module": "aureon/bio/sacred_lattice_scan.py",
+        "passed": passed,
+        "metrics": {
+            "stargate_tones": scans["stargate"].n_tones,
+            "maeshowe_tones": scans["maeshowe"].n_tones,
+            "metatron_tones": scans["metatron"].n_tones,
+            "map_converged": m.n_converged,
+        },
+        "evidence": (
+            f"stargate/maeshowe/metatron scans valid "
+            f"({scans['stargate'].n_tones}/{scans['maeshowe'].n_tones}/"
+            f"{scans['metatron'].n_tones} tones); lattice map valid "
+            f"({m.n_converged} converged); consent gate blocks; no person surface"
+        ),
+        "invariants": invariants,
+    }
+
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tier A registry — order matters for the report.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1629,6 +1681,7 @@ TIER_A: List[Tuple[str, Callable[[Path], Dict[str, Any]]]] = [
     ("Coherence lane",              b19_coherence_lane),
     ("φ Celestial Observatory",     b20_celestial_observatory),
     ("Observatory → cognition",     b21_observatory_cognition),
+    ("Sacred lattice",               b22_sacred_lattice),
 ]
 
 

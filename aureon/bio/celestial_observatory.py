@@ -14,7 +14,8 @@ Lanes (each reuses its own module):
   * Schumann ionospheric modes / planetary Cosmic-Octave      → ``cosmic_scan``
   * Kp/ap/F10.7 space weather                                 → ``cosmic_scan``
   * DE440 coherence spectrum                                  → ``coherence_scan``
-  * All-sky RA/Dec map (convergence summary)                  → ``sky_map``
+  * Sacred lattice: stargate / Maeshowe / Metatron            → ``sacred_lattice_scan``
+  * All-sky RA/Dec map + sacred-lattice Earth-grid map        → ``sky_map``
 
 Every lane routes through ``score_signal`` (consent/provenance → controls →
 Operator/conscience veto → Test A / Test B → separability at ``ALPHA``) and carries
@@ -91,6 +92,8 @@ class ObservatoryReport:
     n_separable: int
     sky_map_converged: int | None
     sky_map_scored: int | None
+    lattice_converged: int | None = None
+    lattice_scored: int | None = None
     boundary: str = OBSERVATORY_BOUNDARY
     out_path: str | None = None
 
@@ -124,6 +127,7 @@ def observe(
     """
     from aureon.bio.coherence_scan import score_coherence
     from aureon.bio.cosmic_scan import score_cosmic_catalog, score_space_weather
+    from aureon.bio.sacred_lattice_scan import lattice_sky_sources, score_lattice
     from aureon.bio.sky_map import (
         analyze_sky_map,
         planet_track_sources_from_de440,
@@ -173,9 +177,19 @@ def observe(
         readings.append(LaneReading("DE440 coherence", "planetary coherence", 0, False,
                                    False, None, None, note="data absent — skipped"))
 
-    # all-sky RA/Dec map summary
+    # sacred lattice — the repo's OWN sky-mapping systems (Earth harmonic grid)
+    readings.append(_reading("Stargate lattice", "Earth grid (ancient sites)",
+                             score_lattice("stargate", consent=consent, nulls=nulls, seed=seed)))
+    readings.append(_reading("Maeshowe solstice", "chamber (solstice)",
+                             score_lattice("maeshowe", consent=consent, nulls=nulls, seed=seed)))
+    readings.append(_reading("Metatron geometry", "φ-geometry (13-sphere)",
+                             score_lattice("metatron", consent=consent, nulls=nulls, seed=seed)))
+
+    # all-sky RA/Dec map summary + the sacred-lattice Earth-grid map
     sky_map_converged: int | None = None
     sky_map_scored: int | None = None
+    lattice_converged: int | None = None
+    lattice_scored: int | None = None
     if include_map:
         sources = stellar + planet_track_sources_from_de440()
         if sources:
@@ -183,6 +197,13 @@ def observe(
                                nulls=min(nulls, 200), seed=seed)
             sky_map_converged = m.n_converged
             sky_map_scored = sum(1 for c in m.cells if c.n_tones >= 2)
+        lat_sources = lattice_sky_sources()
+        if lat_sources:
+            lm = analyze_sky_map(lat_sources, consent=consent,
+                                provenance="observatory sacred-lattice map",
+                                nulls=min(nulls, 200), seed=seed)
+            lattice_converged = lm.n_converged
+            lattice_scored = sum(1 for c in lm.cells if c.n_tones >= 2)
 
     scored = [r for r in readings if r.valid]
     return ObservatoryReport(
@@ -192,6 +213,8 @@ def observe(
         n_separable=sum(1 for r in readings if r.structure_present),
         sky_map_converged=sky_map_converged,
         sky_map_scored=sky_map_scored,
+        lattice_converged=lattice_converged,
+        lattice_scored=lattice_scored,
     )
 
 
@@ -248,6 +271,7 @@ def emit_observatory(
         "n_valid": report.n_valid,
         "n_separable": report.n_separable,
         "sky_map_converged": report.sky_map_converged,
+        "lattice_converged": report.lattice_converged,
         "lanes": [
             {"lane": r.lane, "valid": r.valid, "structure_present": r.structure_present}
             for r in report.readings
@@ -311,7 +335,8 @@ def main(argv: list[str] | None = None) -> int:
               + (f"   ({r.note})" if r.note else ""))
     print(f"  ── {report.n_valid}/{report.n_lanes} lanes valid · "
           f"{report.n_separable} separable · sky-map {report.sky_map_converged} converged "
-          f"of {report.sky_map_scored} scored")
+          f"of {report.sky_map_scored} scored · lattice-map {report.lattice_converged} "
+          f"converged of {report.lattice_scored} scored")
 
     if args.render:
         result = render_observatory(report, args.render)

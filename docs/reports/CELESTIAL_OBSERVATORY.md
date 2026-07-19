@@ -24,7 +24,11 @@ pre-registered test returned for each, neutrally. The φ engine is never modifie
 | Planetary tones | orbital (Cosmic Octave) | `cosmic_scan` |
 | Space weather | solar (Kp/ap/F10.7) | `cosmic_scan` |
 | DE440 coherence | planetary coherence | `coherence_scan` |
+| Stargate lattice | Earth grid (ancient sites) | `sacred_lattice_scan` |
+| Maeshowe solstice | chamber (solstice) | `sacred_lattice_scan` |
+| Metatron geometry | φ-geometry (13-sphere) | `sacred_lattice_scan` |
 | All-sky map | RA/Dec convergence | `sky_map` (summary) |
+| Sacred-lattice map | Earth grid convergence | `sky_map` (summary) |
 
 ## The boundary (load-bearing)
 
@@ -48,8 +52,11 @@ Reported exactly as the engine outputs them, neutrally (seed-fixed, deterministi
 | Planetary tones | 6 | 1.000 | 0.488 | False |
 | Space weather | 14 | 0.003 | 0.355 | False |
 | DE440 coherence | 23 | 0.940 | 0.704 | False |
+| Stargate lattice | 12 | 0.907 | 0.252 | False |
+| Maeshowe solstice | 18 | 1.000 | 0.682 | False |
+| Metatron geometry | 12 | 0.815 | 0.225 | False |
 
-**9/9 lanes valid**; the all-sky map reports **4 converged cells of 63 scored**.
+**12/12 lanes valid**; the all-sky map reports **4 converged cells of 63 scored** and the sacred-lattice Earth-grid map **0 of 9 scored**.
 Every number is the engine's own verdict — the observatory makes no claim beyond
 tabulating them.
 
@@ -72,6 +79,6 @@ python -m aureon.bio.celestial_observatory --emit          # publish to cognitio
 ```
 
 Benchmarked as Tier-A invariants **b20 "φ Celestial Observatory"** and
-**b21 "Observatory → cognition"** in `tests/benchmarks/benchmark_aureon_scope.py`
-(Tier-A 21/21). Fully offline; lanes whose data is absent degrade to a skipped reading
+**b21 "Observatory → cognition"** (and **b22 "Sacred lattice"**) in `tests/benchmarks/benchmark_aureon_scope.py`
+(Tier-A 22/22). Fully offline; lanes whose data is absent degrade to a skipped reading
 so it runs anywhere. See [SENSOR_SUITE.md](SENSOR_SUITE.md) for the per-lane catalog.

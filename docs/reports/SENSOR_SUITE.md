@@ -32,10 +32,11 @@ pre-registered test returns it.
 | Sky map (RA/Dec) | `sky_map.py` | `sky` | SKY_MAP_BOUNDARY | NASA hosts + `de440_ephemeris.csv` | b16 |
 | Cosmic sensors | `cosmic_scan.py` | `sky` | COSMIC_BOUNDARY | Schumann + planetary + `sim_kp.csv` | b17 |
 | Coherence | `coherence_scan.py` | `sky` | SCIENTIFIC_BOUNDARY | `de440_gate3_coherence.csv` | **b19** |
+| Sacred lattice (stargate/Maeshowe/Metatron) | `sacred_lattice_scan.py` | `sky` | SACRED_LATTICE_BOUNDARY | repo's own site coords + φ-geometry + Solfeggio/Schumann | **b22** |
 | **φ Celestial Observatory** | `celestial_observatory.py` | (orchestrator) | OBSERVATORY_BOUNDARY | every sky/cosmic lane above | **b20** |
 
 Reference/data modules (no governance surface): `upe_reference.py`,
-`sky_reference.py`, `market_reference.py`, `cosmic_reference.py`.
+`sky_reference.py`, `market_reference.py`, `cosmic_reference.py`, `sacred_lattice_reference.py`.
 
 The **φ Celestial Observatory** (`celestial_observatory.py`) is the capstone: it
 operates every sky-facing lane at once through the one unchanged engine, renders one
@@ -43,7 +44,9 @@ consolidated picture, and **emits it to cognition** (`bio.observatory.run` on th
 ThoughtBus, benchmark **b21**) so the Queen/metacognition monitor can sense the
 whole-sky reading — see [CELESTIAL_OBSERVATORY.md](CELESTIAL_OBSERVATORY.md).
 
-† b9 is the phenolic→cognition bridge; b10–b21 are the bio lanes. Tier-A total: **21**.
+The **sacred lattice** (`sacred_lattice_scan.py`) is how the repo maps the sky *differently*: not with object catalogs but through Earth's own harmonic lattice — ancient-site coordinates, φ-scaled sacred geometry, and the Solfeggio/Schumann canon — scanned through the same engine and grided into an Earth-referenced map. See [SACRED_LATTICE.md](SACRED_LATTICE.md).
+
+† b9 is the phenolic→cognition bridge; b10–b22 are the bio lanes. Tier-A total: **22**.
 
 ## Shared invariants (asserted per lane)
 
@@ -58,11 +61,11 @@ face/landmark/detect/emotion/biometric/recognize). Convenience helpers that defa
 
 `HUMAN_HARMONIC_PROXY.md` · `UPE_DATA_AVAILABILITY.md` · `SKY_FINGERPRINT.md` ·
 `FAINT_SKY_UPE.md` · `NASA_SKY_DATA.md` · `MARKET_FINGERPRINT.md` ·
-`QGITA_CALIBRATION.md` · `SKY_MAP.md` · `COSMIC_SENSORS.md` · `COHERENCE_LANE.md`.
+`QGITA_CALIBRATION.md` · `SKY_MAP.md` · `COSMIC_SENSORS.md` · `COHERENCE_LANE.md` · `SACRED_LATTICE.md`.
 
 ## Run the whole suite
 
 ```bash
 AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 pytest tests/bio/ -q
-python tests/benchmarks/benchmark_aureon_scope.py     # Tier-A 19/19
+python tests/benchmarks/benchmark_aureon_scope.py     # Tier-A 22/22
 ```

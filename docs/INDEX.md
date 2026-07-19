@@ -92,6 +92,7 @@ Master table of contents for all project documentation.
 | [Human Harmonic Proxy](reports/HUMAN_HARMONIC_PROXY.md) | Core governed derived-signal scorer |
 | [Sky Fingerprint](reports/SKY_FINGERPRINT.md) · [Faint Sky / UPE](reports/FAINT_SKY_UPE.md) · [NASA Sky Data](reports/NASA_SKY_DATA.md) | Astronomical light lanes |
 | [Sky Map](reports/SKY_MAP.md) · [Cosmic Sensors](reports/COSMIC_SENSORS.md) · [Coherence Lane](reports/COHERENCE_LANE.md) | All-sky map + Schumann/planetary/space-weather + DE440 coherence |
+| [Sacred Lattice](reports/SACRED_LATTICE.md) | The repo's OWN sky map — ancient-site coords + φ-geometry + Solfeggio/Schumann, gridded into an Earth-referenced map |
 | [Market Fingerprint](reports/MARKET_FINGERPRINT.md) · [QGITA Calibration](reports/QGITA_CALIBRATION.md) | Market test-bed + QGITA φ calibration |
 
 ## Deployment
