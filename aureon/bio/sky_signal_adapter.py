@@ -41,6 +41,7 @@ __all__ = [
     "SkySignalAdapter",
     "score_sky",
     "score_catalog",
+    "score_diffuse",
     "main",
 ]
 
@@ -139,10 +140,24 @@ def score_catalog(
     nulls: int = engine.DEFAULT_NULLS,
     seed: int = 0,
 ) -> ProxyResult:
-    """Scan a named real catalog ('balmer' or 'fraunhofer') through the engine."""
+    """Scan a named real catalog ('balmer', 'fraunhofer', 'airglow') through the engine."""
     lines = sky.catalog_nm(name)
-    prov = provenance or f"open catalog: {name} ({sky.SKY_CITATION})"
+    citation = sky.AIRGLOW_CITATION if name == "airglow" else sky.SKY_CITATION
+    prov = provenance or f"open catalog: {name} ({citation})"
     return score_sky(lines, consent=consent, provenance=prov, kind="lines", nulls=nulls, seed=seed)
+
+
+def score_diffuse(
+    *,
+    consent: bool = True,
+    provenance: str | None = None,
+    nulls: int = engine.DEFAULT_NULLS,
+    seed: int = 0,
+) -> ProxyResult:
+    """Scan the diffuse night-sky background (featureless UPE-from-the-sky anchor)."""
+    prov = provenance or "diffuse night-sky background (featureless reference)"
+    return score_sky(sky.diffuse_night_sky_spectrum(), consent=consent, provenance=prov,
+                     kind="spectrum", nulls=nulls, seed=seed)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -153,13 +168,16 @@ def main(argv: list[str] | None = None) -> int:
         description="Scan light directed at space through the phenolic engine (φ logic unchanged)."
     )
     parser.add_argument("spectrum", nargs="?", help="CSV of wavelength_nm,intensity (a sky spectrum)")
-    parser.add_argument("--catalog", choices=["balmer", "fraunhofer"], help="scan a real named catalog")
+    parser.add_argument("--catalog", choices=["balmer", "fraunhofer", "airglow"],
+                        help="scan a real named catalog")
     parser.add_argument("--consent", action="store_true")
     parser.add_argument("--provenance", default="")
     parser.add_argument("--nulls", type=int, default=engine.DEFAULT_NULLS)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--self-test", action="store_true",
                         help="control self-test: featureless continuum + planted-structure references")
+    parser.add_argument("--faint-sky", action="store_true",
+                        help="UPE-from-the-sky: scan real airglow lines + the diffuse background")
     args = parser.parse_args(argv)
 
     print("Sky signal adapter — scanning light directed at us from space")
@@ -186,6 +204,22 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  continuum:  A_p={continuum.test_A_p} B_p={continuum.test_B_p}")
         print(f"  structured: A_p={structured.test_A_p} B_p={structured.test_B_p}")
         return 0 if ok else 1
+
+    if args.faint_sky:
+        # UPE-from-the-sky: the sky's real faint self-emission (airglow lines) +
+        # the featureless diffuse background anchor. UPE proper is biological; this is
+        # the honest astronomical analog. Verdicts reported exactly as the engine returns.
+        print(f"  airglow:  {sky.AIRGLOW_CITATION}")
+        airglow = score_catalog("airglow", consent=True, nulls=args.nulls, seed=args.seed)
+        diffuse = score_diffuse(consent=True, nulls=args.nulls, seed=args.seed)
+        ad = airglow.to_dict()
+        dd = diffuse.to_dict()
+        print(f"  ✅ airglow lines scanned : n_tones={ad['n_tones']} valid={ad['valid']} "
+              f"structure_present={ad['structure_present']} A_p={ad['test_A_p']} B_p={ad['test_B_p']}")
+        anchor_ok = diffuse.valid and not diffuse.structure_present
+        print(f"  {'✅' if anchor_ok else '❌'} diffuse background      : featureless anchor "
+              f"non-separable (n_tones={dd['n_tones']}, structure_present={dd['structure_present']})")
+        return 0 if (airglow.valid and anchor_ok) else 1
 
     if args.catalog:
         result = score_catalog(args.catalog, consent=True, nulls=args.nulls, seed=args.seed)

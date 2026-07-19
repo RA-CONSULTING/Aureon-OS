@@ -36,12 +36,15 @@ from aureon.bio.image_signal_adapter import _wavelength_nm_to_hz
 __all__ = [
     "HYDROGEN_BALMER_NM",
     "SOLAR_FRAUNHOFER_NM",
+    "AIRGLOW_NM",
     "HYDROGEN_21CM_HZ",
     "SKY_CITATION",
+    "AIRGLOW_CITATION",
     "OPTICAL_BAND_NM",
     "catalog_nm",
     "continuum_spectrum",
     "continuum_modulation_tones",
+    "diffuse_night_sky_spectrum",
     "structured_spectrum",
 ]
 
@@ -83,6 +86,25 @@ SOLAR_FRAUNHOFER_NM: Final[tuple[float, ...]] = (
     393.368,   # K   Ca+
 )
 
+#: Airglow / nightglow emission lines — the *real* faint self-emission of the night
+#: sky (standard air nm). This is the honest "UPE-from-the-sky" analog: UPE proper is
+#: biological (biophotons from living tissue); the sky does not emit biophotons. What
+#: the sky itself faintly emits is airglow — atomic oxygen, the mesospheric sodium
+#: layer, molecular oxygen, and the OH Meinel bands. Standard nightglow values
+#: (Chamberlain, *Physics of the Aurora and Airglow*; Meinel 1950 for OH).
+AIRGLOW_NM: Final[tuple[float, ...]] = (
+    557.7339,  # O I     green line (¹S→¹D) — the dominant nightglow line
+    589.0,     # Na D2   mesospheric sodium layer
+    589.6,     # Na D1   mesospheric sodium layer
+    630.0304,  # O I     red doublet (¹D→³P₂)
+    636.3776,  # O I     red doublet (¹D→³P₁)
+    761.9,     # O2      atmospheric A-band (0-0)
+    864.5,     # O2      atmospheric band (0-1), nightglow
+    730.0,     # OH      Meinel band head (8-3), approx standard value
+    803.0,     # OH      Meinel band head (5-1), approx standard value
+    840.0,     # OH      Meinel band head (6-2), approx standard value
+)
+
 #: Neutral-hydrogen 21 cm hyperfine line (Hz) — the Wow!-signal / SETI band.
 HYDROGEN_21CM_HZ: Final[float] = 1_420_405_751.768
 
@@ -91,11 +113,22 @@ SKY_CITATION: Final[str] = (
     "HI 21 cm line 1420.405751768 MHz. Open/standard reference values."
 )
 
+AIRGLOW_CITATION: Final[str] = (
+    "Night-sky airglow emission (atomic O 557.7/630.0/636.4 nm, Na D 589.0/589.6 nm, "
+    "O2 atmospheric bands, OH Meinel bands), standard nightglow reference values. "
+    "The sky's own faint self-emission — NOT biological UPE."
+)
+
 OPTICAL_BAND_NM: Final[tuple[float, float]] = (380.0, 760.0)
+
+#: The optical span the airglow catalog reaches (extends past OPTICAL_BAND_NM into the
+#: near-IR OH/O2 bands, which are genuine airglow features).
+AIRGLOW_BAND_NM: Final[tuple[float, float]] = (380.0, 900.0)
 
 _CATALOGS = {
     "balmer": HYDROGEN_BALMER_NM,
     "fraunhofer": SOLAR_FRAUNHOFER_NM,
+    "airglow": AIRGLOW_NM,
 }
 
 
@@ -134,6 +167,19 @@ def continuum_modulation_tones(n: int = 241) -> list[float]:
         if f is not None:
             tones.append(f)
     return sorted(tones)
+
+
+def diffuse_night_sky_spectrum(n: int = 241) -> list[tuple[float, float]]:
+    """The diffuse night-sky background (nm, relative intensity) — featureless ref.
+
+    The optical diffuse night-sky background (integrated starlight + zodiacal light +
+    diffuse galactic light + the airglow continuum) is broadly smooth, with no
+    discrete lines. This is the honest UPE-from-the-sky non-structure anchor: a
+    featureless faint glow peak-picks to nothing and therefore scans non-separable —
+    structure is reported only when the sky genuinely carries discrete lines
+    (:data:`AIRGLOW_NM`), never by fiat. Implemented as the smooth continuum.
+    """
+    return continuum_spectrum(n)
 
 
 def _fold_band_vec(f_hz):  # numpy array in, array out

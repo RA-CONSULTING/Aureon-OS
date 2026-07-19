@@ -1184,6 +1184,61 @@ def b13_market_derived_signal(tmp_root: Path) -> Dict[str, Any]:
     }
 
 
+def b14_faint_sky_upe(tmp_root: Path) -> Dict[str, Any]:
+    """UPE-from-the-sky holds its invariants with the engine's φ logic unchanged: the
+    sky's real faint self-emission (airglow lines) scans to a valid deterministic
+    result, the featureless diffuse night-sky background is the honest non-structure
+    anchor (peak-picks to nothing → non-separable), a planted clustered + φ set is
+    still detected, and the consent gate blocks an unconsented scan. UPE proper is
+    biological; this is the astronomical analog, reported exactly as the test returns.
+    """
+    import phenolic_fingerprint as engine
+    from aureon.bio import sky_reference as sky
+    from aureon.bio.sky_signal_adapter import score_catalog, score_diffuse, score_sky
+
+    airglow = score_catalog("airglow", nulls=200, seed=0)
+    airglow2 = score_catalog("airglow", nulls=200, seed=0)
+    diffuse = score_diffuse(nulls=200)
+    planted = score_sky(sky.structured_spectrum(), consent=True, provenance="bench",
+                        kind="spectrum", nulls=200)
+    unconsented = score_catalog("airglow", consent=False, provenance="x", nulls=100)
+
+    invariants = {
+        "airglow_valid": airglow.valid and 2 <= airglow.n_tones <= len(sky.AIRGLOW_NM),
+        "airglow_deterministic": (airglow.test_A_p, airglow.test_B_p)
+        == (airglow2.test_A_p, airglow2.test_B_p),
+        "diffuse_anchor_non_separable": diffuse.valid and not diffuse.structure_present,
+        "planted_positive_detected": bool(
+            planted.structure_present
+            and (planted.test_A_p or 1.0) < engine.ALPHA
+            and (planted.test_B_p or 1.0) < engine.ALPHA
+        ),
+        "consent_gate_blocks": unconsented.blocked and not unconsented.structure_present,
+    }
+    passed = all(invariants.values())
+
+    return {
+        "name": "Faint sky / UPE-from-the-sky (airglow + diffuse; φ logic unchanged)",
+        "module": "aureon/bio/sky_signal_adapter.py",
+        "passed": passed,
+        "metrics": {
+            "airglow_lines": len(sky.AIRGLOW_NM),
+            "airglow_A_p": airglow.test_A_p,
+            "airglow_B_p": airglow.test_B_p,
+            "airglow_separable": airglow.structure_present,
+            "diffuse_tones": diffuse.n_tones,
+            "planted_A_p": planted.test_A_p,
+        },
+        "evidence": (
+            f"real airglow scan valid ({airglow.n_tones} tones, "
+            f"separable={airglow.structure_present}, A_p={airglow.test_A_p}); diffuse "
+            f"background featureless anchor (n_tones={diffuse.n_tones}); planted positive "
+            f"detected (A_p={planted.test_A_p}); consent gate blocks"
+        ),
+        "invariants": invariants,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tier A registry — order matters for the report.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1203,6 +1258,7 @@ TIER_A: List[Tuple[str, Callable[[Path], Dict[str, Any]]]] = [
     ("Sky derived-signal",          b11_sky_derived_signal),
     ("NASA sky data",               b12_nasa_sky_data),
     ("Market derived-signal",       b13_market_derived_signal),
+    ("Faint sky / UPE-from-sky",    b14_faint_sky_upe),
 ]
 
 
