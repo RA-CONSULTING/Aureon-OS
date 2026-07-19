@@ -80,3 +80,35 @@ def test_platform_status_is_honest():
     assert s["domains_total"] >= 24
     assert set(s["product_domains"]) == set(PRODUCT_DOMAINS)
     assert "operational_core" in s and "note" in s        # honesty note present
+
+
+def test_bio_domain_is_connected():
+    # the bio sensor suite / φ Celestial Observatory must be surfaced by the SaaS
+    # product layer — categorized under research and reachable via its observatory.
+    p = probe_domain("bio")
+    assert p["product_domain"] == "research"
+    assert p["available"] is True
+    assert p["entry_point"] == "aureon.bio.celestial_observatory:observe"
+    # and it appears in the aggregate report
+    assert any(d["domain"] == "bio" for d in domain_report())
+
+
+def test_every_real_aureon_package_is_categorized():
+    # "all systems connected": no real package under aureon/ (one with .py modules)
+    # may be left out of the product-domain taxonomy — otherwise it silently defaults
+    # to self-improvement and never gets an intentional home.
+    import aureon
+    from aureon.saas.domains import _FS_TO_PRODUCT
+
+    root = Path(aureon.__file__).resolve().parent
+    real_pkgs = {
+        child.name
+        for child in root.iterdir()
+        if child.is_dir()
+        and not child.name.startswith("__")
+        and any(f.suffix == ".py" for f in child.iterdir())
+    }
+    unmapped = sorted(real_pkgs - set(_FS_TO_PRODUCT))
+    assert not unmapped, f"uncategorized aureon/ packages (add to _FS_TO_PRODUCT): {unmapped}"
+    # every mapping target is one of the 6 product domains
+    assert set(_FS_TO_PRODUCT.values()) <= set(PRODUCT_DOMAINS)
