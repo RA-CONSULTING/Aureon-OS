@@ -345,6 +345,34 @@ python -m aureon.bio.null_calibration --self-test
 python -m aureon.bio.null_calibration --report calibration.md --report-json calibration.json
 ```
 
+## Detection power — the sensitivity sweep (`aureon/bio/power_analysis.py`)
+
+Null calibration proves the rule does not *hallucinate* structure; this proves the other half
+of the operating characteristic — that it reliably *detects* real structure, and degrades
+gracefully. Together they are the ROC picture a pre-registered, falsifiable detector should show.
+
+- **Measures true-positive rate vs signal strength.** The canonical structured signal (two
+  clusters one golden ratio apart, in-band — what the adapters and the engine's positive control
+  use) is progressively jittered with increasing Gaussian noise; at each level the engine's own
+  `test_A`/`test_B` are run and the **detection power** (fraction flagged `structure_present`) is
+  measured. It re-tunes nothing.
+- **The curve.** At zero jitter the clean structure is detected ≈100% of the time; as jitter
+  passes the engine's coherence tolerance the clusters scatter and the φ ratios blur, so power
+  collapses **monotonically toward the false-positive floor** (≈ ALPHA²). Representative sweep
+  (200 trials, 200 nulls): `1.00 → 1.00 → 0.98 → 0.61 → 0.11 → 0.02` at jitter `0 → 5 → 10 → 20
+  → 40 → 80` Hz.
+- **Synthetic only.** No real subject; `POWER_BOUNDARY` on every result. `write_power_report`
+  emits a deterministic markdown + JSON artifact (byte-identical on re-run), and `emit_power`
+  publishes `bio.power_analysis.run`.
+
+```bash
+# Sweep self-test — clean-signal power high, collapsing under heavy jitter.
+python -m aureon.bio.power_analysis --self-test
+
+# Write the power-curve evidence artifact (deterministic markdown + JSON).
+python -m aureon.bio.power_analysis --report power.md --report-json power.json
+```
+
 ## Run it
 
 ```bash

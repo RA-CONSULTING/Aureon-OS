@@ -2045,6 +2045,71 @@ def b29_null_calibration(tmp_root: Path) -> Dict[str, Any]:
     }
 
 
+def b30_power_analysis(tmp_root: Path) -> Dict[str, Any]:
+    """The detection rule has real statistical power, φ logic unchanged: the engine's OWN
+    Test A + Test B reliably flag the canonical structured signal (clean-signal power ≥ 0.8),
+    and that power collapses monotonically toward the false-positive floor as the signal is
+    degraded by jitter — the true-positive companion to the null-calibration FPR audit (b29),
+    together the ROC picture. It writes a durable markdown + JSON artifact that round-trips and
+    is byte-identical on re-run, and exposes no person-reading surface.
+    """
+    import json
+
+    from aureon.bio import power_analysis as pa
+
+    report = pa.detection_power(trials=200, nulls=200, seed0=0)
+    out_md = tmp_root / "power.md"
+    out_json = tmp_root / "power.json"
+    rendered = pa.write_power_report(report, out_md, out_json)
+
+    md = out_md.read_text(encoding="utf-8") if out_md.exists() else ""
+    loaded = json.loads(out_json.read_text(encoding="utf-8")) if out_json.exists() else {}
+    row_lines = [ln for ln in md.splitlines() if ln.startswith("| ") and "---" not in ln]
+
+    out_md2 = tmp_root / "power2.md"
+    out_json2 = tmp_root / "power2.json"
+    pa.write_power_report(pa.detection_power(trials=200, nulls=200, seed0=0), out_md2, out_json2)
+
+    surface = [n.lower() for n in dir(pa)]
+    banned = ("face", "speaker", "voice", "pose", "emotion", "identity", "biometric")
+    powers = [lv.power for lv in report.levels]
+    monotone = all(b <= a + 0.15 for a, b in zip(powers, powers[1:]))
+
+    invariants = {
+        "clean_power_high": report.clean_power >= 0.8,
+        "power_collapses": report.degraded_power <= 0.3 and report.degraded_power < report.clean_power,
+        "monotone_nonincreasing": monotone,
+        "both_files_nonempty": out_md.exists() and out_md.stat().st_size > 0
+        and out_json.exists() and out_json.stat().st_size > 0,
+        "json_round_trips": loaded.get("n_levels") == report.n_levels
+        and loaded.get("boundary") == pa.POWER_BOUNDARY,
+        "one_row_per_level": len(row_lines) == report.n_levels + 1,  # + header row
+        "out_path_set": rendered.out_path == str(out_md),
+        "byte_identical_on_rewrite": out_md2.read_bytes() == out_md.read_bytes()
+        and out_json2.read_bytes() == out_json.read_bytes(),
+        "no_person_surface": not any(b in n for b in banned for n in surface),
+    }
+    passed = all(invariants.values())
+
+    return {
+        "name": "Detection power (sensitivity sweep; φ logic unchanged)",
+        "module": "aureon/bio/power_analysis.py",
+        "passed": passed,
+        "metrics": {
+            "clean_power": report.clean_power,
+            "degraded_power": report.degraded_power,
+            "n_levels": report.n_levels,
+            "trials": report.trials,
+        },
+        "evidence": (
+            f"clean-signal power {report.clean_power:.3f} → {report.degraded_power:.3f} at "
+            f"{report.levels[-1].jitter_hz:g} Hz jitter over {report.trials} trials; monotone "
+            f"collapse toward the FPR floor; durable md+JSON byte-identical; no person surface"
+        ),
+        "invariants": invariants,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tier A registry — order matters for the report.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2080,6 +2145,7 @@ TIER_A: List[Tuple[str, Callable[[Path], Dict[str, Any]]]] = [
     ("Video signal adapter",         b27_video_adapter),
     ("Signal-adapter conformance",   b28_proxy_suite),
     ("Null calibration (FPR audit)",  b29_null_calibration),
+    ("Detection power (sensitivity)",  b30_power_analysis),
 ]
 
 

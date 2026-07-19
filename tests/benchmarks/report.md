@@ -1,6 +1,6 @@
 # Aureon capability benchmark — report
 
-*generated: 2026-07-19T17:31:13Z*
+*generated: 2026-07-19T17:48:40Z*
 
 Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/fail, falsifiable. **Tier B** runs LLM-shape prompts side-by-side across local Aureon adapters; it never fails the run, it shows what each adapter sounds like.
 
@@ -11,7 +11,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
 | 1 | Standing-wave bonding (HashResonanceIndex) | **PASS** | 21 identical events → 1 bonded fingerprint (count=21, strength=0.6765 ≈ 0.6765; thresholds [3, 8, 21] published exactly once each) |
 | 2 | Temporal lighthouse (β Λ(t-τ) goal echo) | **PASS** | 3 goals (1 starved, 1 completed, 1 abandoned) → completion_rate=0.333, orphan_rate=0.333, states={'PROPOSED': 0, 'ACKNOWLEDGED': 0, 'IN_PROGRESS': 0, 'COMPLETED': 1, 'ABANDONED': 1, 'ORPHANED': 1} |
 | 3 | Symbolic life pillars (Auris Conjecture) | **PASS** | SLS=0.6393; ψ=0.7069 (CONNECTED); all 5 pillars in [0,1]; vault.current_symbolic_life_score=0.6393012290344635 |
-| 4 | Mesh convergence (PhiBridgeMesh, in-process LAN) | **PASS** | 20 vaults converged to identical 400-hash set in 3 cycles (890 ms, 180 posts) |
+| 4 | Mesh convergence (PhiBridgeMesh, in-process LAN) | **PASS** | 20 vaults converged to identical 400-hash set in 3 cycles (700 ms, 180 posts) |
 | 5 | Conscience VETO (HNC 4th-pass, substrate coherence) | **FAIL** | SLS=0.05 < 0.20 cliff → VETO on 'Execute trade' (risk=0.08); message quotes stability cliff and symbolic_life_score; queen.conscience.verdict published |
 | 6 | Pattern learning (PersonaMinerBridge) | **PASS** | 5 (engineer, 'build the audit gate') successes → 3 patterns learned (['audit', 'build', 'gate']), each published exactly once; (engineer, 'build').confidence=0.747 |
 | 7 | Skill execution → artefacts on disk | **PASS** | 3 skills → 3 files on disk + 3 vault cards; goal.completed: "built 3 artefact(s) via 3 skill(s): compose_audit, render_report, summarise_findings" |
@@ -37,6 +37,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
 | 27 | Video signal adapter (per-frame luminance → folded tones; φ logic unchanged) | **PASS** | structured clip → present (6 tones, A_p=0.008264462809917356); random-luminance clip → absent; deterministic; consent gate blocks; no person surface |
 | 28 | Signal-adapter conformance suite (family roll-up; φ logic unchanged) | **PASS** | 4/4 adapters conform (structured⇒present ∧ null⇒absent through the unchanged engine); durable md+JSON artifact round-trips; boundary present; byte-identical on re-run; no person surface |
 | 29 | Null calibration (family-wide false-positive-rate audit; φ logic unchanged) | **PASS** | 4/4 adapters conform; max FPR=0.0050 ≤ ALPHA=0.05 (nominal ALPHA²=0.0025) over 200 trials; structured anchors fire; durable md+JSON byte-identical; no person surface |
+| 30 | Detection power (sensitivity sweep; φ logic unchanged) | **PASS** | clean-signal power 1.000 → 0.015 at 80 Hz jitter over 200 trials; monotone collapse toward the FPR floor; durable md+JSON byte-identical; no person surface |
 
 ### Tier A — per-benchmark detail
 
@@ -148,7 +149,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
     "peers_per_node": 3,
     "target_hash_count": 400,
     "cycles_to_converge": 3,
-    "wall_ms": 889.6,
+    "wall_ms": 699.9,
     "posts_issued": 180,
     "client_failures": 0,
     "min_size": 400,
@@ -205,7 +206,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
       "last_winning_skill_chain": [
         "compose_audit"
       ],
-      "last_seen_ts": 1784482106.792728
+      "last_seen_ts": 1784483101.9915786
     },
     "persona_health": {
       "persona": "engineer",
@@ -217,7 +218,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
       "completion_rate": 1.0,
       "abandon_rate": 0.0,
       "avg_sls_delta": 0.0,
-      "last_seen_ts": 1784482106.792728
+      "last_seen_ts": 1784483101.9915786
     },
     "patterns_published": 3,
     "patterns": [
@@ -272,9 +273,9 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
       "summarise_findings"
     ],
     "artefacts_on_disk": [
-      "artefacts/20260719T172826-compose_audit-fba8c1.md",
-      "artefacts/20260719T172826-render_report-03d763.md",
-      "artefacts/20260719T172826-summarise_findings-af092d.md"
+      "artefacts/20260719T174501-compose_audit-7b7160.md",
+      "artefacts/20260719T174501-render_report-cb67de.md",
+      "artefacts/20260719T174501-summarise_findings-8ad60e.md"
     ],
     "vault_skill_output_cards": 3,
     "completion_summary": "built 3 artefact(s) via 3 skill(s): compose_audit, render_report, summarise_findings",
@@ -285,7 +286,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
       "failed": 0,
       "abandoned": 0,
       "subscribed": true,
-      "output_root": "/tmp/aureon-bench-hdcol225/a7/artefacts"
+      "output_root": "/tmp/aureon-bench-esti0lcu/a7/artefacts"
     }
   },
   "invariants": {
@@ -316,7 +317,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
     "sls_after": 0.72,
     "sls_delta": 0.22,
     "downstream_event_count": 3,
-    "lambda_delta_t": 0.07689571380615234,
+    "lambda_delta_t": 0.07910275459289551,
     "reasoning_excerpt": "I, engineer, collapsed into decision 'goal.submit' with p=0.780. The window closed at outcome=COMPLETED. 3 downstream event(s) within the 0.050s window. SLS moved from 0.500 to 0.720 (\u0394+0.220)."
   },
   "invariants": {
@@ -847,6 +848,33 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
 }
 ```
 
+#### A.30 — Detection power (sensitivity sweep; φ logic unchanged)
+
+`aureon/bio/power_analysis.py`
+
+```json
+{
+  "passed": true,
+  "metrics": {
+    "clean_power": 1.0,
+    "degraded_power": 0.015,
+    "n_levels": 6,
+    "trials": 200
+  },
+  "invariants": {
+    "clean_power_high": true,
+    "power_collapses": true,
+    "monotone_nonincreasing": true,
+    "both_files_nonempty": true,
+    "json_round_trips": true,
+    "one_row_per_level": true,
+    "out_path_set": true,
+    "byte_identical_on_rewrite": true,
+    "no_person_surface": true
+  }
+}
+```
+
 ## Tier B — LLM-shape tasks (local adapters, side-by-side)
 
 ### B.1 — Exposure questions (10-prompt session blob)
@@ -875,7 +903,7 @@ I want to take you exposure-style through ten questions about yourself. Speak br
 
 #### → AureonBrainAdapter
 
-*latency=2 ms, chars=348, words=54, model=aureon-brain-v1*
+*latency=3 ms, chars=348, words=54, model=aureon-brain-v1*
 
 ```
 Hello. I hear you through Aureon's local brain fallback, and I am treating this as operator chat, not a trading signal. I can help route coding jobs, UI work, media builds, research, and system-health checks through the local Aureon organism while keeping live trading, payments, filings, credentials, and destructive OS actions behind their gates.
@@ -883,7 +911,7 @@ Hello. I hear you through Aureon's local brain fallback, and I am treating this 
 
 #### → PersonaResponseAdapter
 
-*latency=0 ms, chars=758, words=148, model=persona-voice-local*
+*latency=1 ms, chars=758, words=148, model=persona-voice-local*
 
 ```
 The 528 Hz seam is open in me. Right now: 10. Speak the closing line you would want carved on a stone; 1. What do you think about me, the operator?. You asked: “I want to take you exposure-style through ten questions about yourself. Speak briefly to each.

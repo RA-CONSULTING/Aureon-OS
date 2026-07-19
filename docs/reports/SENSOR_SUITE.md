@@ -41,6 +41,7 @@ pre-registered test returns it.
 | Video | `video_signal_adapter.py` | `video` | SCIENTIFIC_BOUNDARY | consented clip / frame-stack → per-frame mean-luminance time-series → windowed-FFT dominant tones (global per-frame luminance; synthetic self-test) | **b27** |
 | **Conformance suite** | `proxy_suite.py` | (family roll-up) | SUITE_BOUNDARY | runs every self-testable adapter's synthetic structured/null self-test through the one unchanged engine; asserts each conforms; durable md+JSON artifact | **b28** |
 | **Null calibration** | `null_calibration.py` | (family FPR audit) | CALIBRATION_BOUNDARY | runs the engine's own Test A + Test B on each adapter's synthetic null many times; asserts empirical false-positive rate ≤ ALPHA while the structured anchor fires; durable md+JSON artifact | **b29** |
+| **Detection power** | `power_analysis.py` | (sensitivity sweep) | POWER_BOUNDARY | runs the engine's own Test A + Test B on the canonical structured signal degraded by increasing jitter; asserts clean-signal power is high and collapses monotonically toward the FPR floor; durable md+JSON artifact | **b30** |
 
 Reference/data modules (no governance surface): `upe_reference.py`,
 `sky_reference.py`, `market_reference.py`, `cosmic_reference.py`, `sacred_lattice_reference.py`, `harmonic_core_reference.py`, `counter_frequency_reference.py`.
@@ -58,7 +59,7 @@ The **sacred lattice** (`sacred_lattice_scan.py`) is how the repo maps the sky *
 
 The **harmonic core** (`harmonic_core_scan.py`) goes one level deeper still — to the frequency substrate the framework itself is built on: the HNC **Master Formula Λ(t)** modes, the **Celtic Ogham** φ-scaled tree-tones, and the **Ghost Dance** ancestral Solfeggio ladder, each scanned through the same engine. See [HARMONIC_CORE.md](HARMONIC_CORE.md).
 
-† b9 is the phenolic→cognition bridge; b10–b27 are the bio lanes; b28 is the signal-adapter conformance roll-up and b29 the family-wide false-positive-rate audit. Tier-A total: **29**.
+† b9 is the phenolic→cognition bridge; b10–b27 are the bio lanes; b28 is the signal-adapter conformance roll-up, b29 the family-wide false-positive-rate audit, and b30 the detection-power sensitivity sweep (b29+b30 = the ROC picture). Tier-A total: **30**.
 
 ## Shared invariants (asserted per lane)
 
@@ -79,5 +80,5 @@ face/landmark/detect/emotion/biometric/recognize). Convenience helpers that defa
 
 ```bash
 AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 pytest tests/bio/ -q
-python tests/benchmarks/benchmark_aureon_scope.py     # Tier-A: 29 architectural invariants
+python tests/benchmarks/benchmark_aureon_scope.py     # Tier-A: 30 architectural invariants
 ```
