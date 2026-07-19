@@ -38,10 +38,12 @@ Reference/data modules (no governance surface): `upe_reference.py`,
 `sky_reference.py`, `market_reference.py`, `cosmic_reference.py`.
 
 The **φ Celestial Observatory** (`celestial_observatory.py`) is the capstone: it
-operates every sky-facing lane at once through the one unchanged engine and renders
-one consolidated picture — see [CELESTIAL_OBSERVATORY.md](CELESTIAL_OBSERVATORY.md).
+operates every sky-facing lane at once through the one unchanged engine, renders one
+consolidated picture, and **emits it to cognition** (`bio.observatory.run` on the
+ThoughtBus, benchmark **b21**) so the Queen/metacognition monitor can sense the
+whole-sky reading — see [CELESTIAL_OBSERVATORY.md](CELESTIAL_OBSERVATORY.md).
 
-† b9 is the phenolic→cognition bridge; b10–b20 are the bio lanes. Tier-A total: **20**.
+† b9 is the phenolic→cognition bridge; b10–b21 are the bio lanes. Tier-A total: **21**.
 
 ## Shared invariants (asserted per lane)
 

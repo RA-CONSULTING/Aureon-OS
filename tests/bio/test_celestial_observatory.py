@@ -78,6 +78,35 @@ def test_render_writes_picture(tmp_path):
     assert out.exists() and out.stat().st_size > 0
 
 
+def test_emit_publishes_to_cognition():
+    published = []
+
+    class _StubBus:
+        def publish(self, thought):
+            published.append(thought)
+
+    r = obs.observe(nulls=NULLS, include_map=False)
+    payload = obs.emit_observatory(r, bus=_StubBus(), trace=False)
+    assert len(published) == 1
+    assert published[0].topic == obs.OBS_RUN_TOPIC
+    summary = published[0].payload
+    assert summary["n_lanes"] == r.n_lanes
+    assert summary["boundary"] == obs.OBSERVATORY_BOUNDARY
+    assert isinstance(summary["lanes"], list) and len(summary["lanes"]) == r.n_lanes
+    assert payload["n_lanes"] == r.n_lanes  # returns the full report dict
+
+
+def test_emit_is_best_effort_and_never_raises():
+    class _BoomBus:
+        def publish(self, thought):
+            raise RuntimeError("bus down")
+
+    r = obs.observe(nulls=NULLS, include_map=False)
+    # a throwing bus must be swallowed — emission never crashes an observation
+    payload = obs.emit_observatory(r, bus=_BoomBus(), trace=False)
+    assert payload["n_lanes"] == r.n_lanes
+
+
 def test_module_has_no_person_reading_surface():
     names = [n.lower() for n in dir(obs)]
     for banned in ("face", "landmark", "detect", "emotion", "biometric", "recognize"):

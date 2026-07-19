@@ -55,13 +55,23 @@ tabulating them.
 
 ![observatory](../research/figures/celestial_observatory.png)
 
+## Closing the loop — the observatory feeds cognition
+
+`emit_observatory(report)` publishes the consolidated picture as a
+**`bio.observatory.run`** Thought on the ThoughtBus (plus a `celestial_observatory`
+bus-trace), mirroring the human-proxy / phenolic-bridge emission idiom — so Aureon's
+metacognition monitor and the Queen can sense the whole-sky reading. Emission is
+best-effort: a throwing bus never crashes an observation. This makes the observatory a
+live sensor of the organism, not just a report.
+
 ## Run it
 
 ```bash
 python -m aureon.bio.celestial_observatory --render observatory.png
+python -m aureon.bio.celestial_observatory --emit          # publish to cognition
 ```
 
-Benchmarked as Tier-A invariant **b20 "φ Celestial Observatory"** in
-`tests/benchmarks/benchmark_aureon_scope.py` (Tier-A 20/20). Fully offline; lanes whose
-data is absent degrade to a skipped reading so it runs anywhere. See
-[SENSOR_SUITE.md](SENSOR_SUITE.md) for the per-lane catalog.
+Benchmarked as Tier-A invariants **b20 "φ Celestial Observatory"** and
+**b21 "Observatory → cognition"** in `tests/benchmarks/benchmark_aureon_scope.py`
+(Tier-A 21/21). Fully offline; lanes whose data is absent degrade to a skipped reading
+so it runs anywhere. See [SENSOR_SUITE.md](SENSOR_SUITE.md) for the per-lane catalog.

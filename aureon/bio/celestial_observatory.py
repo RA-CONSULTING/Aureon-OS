@@ -25,6 +25,8 @@ Pure stdlib + numpy + the bio lanes; matplotlib for the rendered picture.
 
 from __future__ import annotations
 
+import time
+import uuid
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Final
@@ -38,12 +40,21 @@ from aureon.bio.human_harmonic_proxy import (
 
 __all__ = [
     "OBSERVATORY_BOUNDARY",
+    "OBS_RUN_TOPIC",
+    "OBS_TRACE_NAME",
     "LaneReading",
     "ObservatoryReport",
     "observe",
     "render_observatory",
+    "emit_observatory",
     "main",
 ]
+
+#: ThoughtBus topic + bus-trace name — mirrors the human-proxy / phenolic-bridge idiom
+#: so the metacognition monitor / Queen can sense the observatory's consolidated run.
+OBS_RUN_TOPIC: Final[str] = "bio.observatory.run"
+OBS_TRACE_NAME: Final[str] = "celestial_observatory"
+_SOURCE: Final[str] = "celestial_observatory"
 
 OBSERVATORY_BOUNDARY: Final[str] = (
     "The φ Celestial Observatory reports statistical structure in derived signals "
@@ -220,6 +231,58 @@ def render_observatory(report: ObservatoryReport, out_path: str | Path) -> Obser
     return replace(report, out_path=out)
 
 
+def emit_observatory(
+    report: ObservatoryReport, *, bus: Any | None = None, trace: bool = True
+) -> dict[str, Any]:
+    """Publish the observatory's consolidated picture to cognition; return its dict.
+
+    Closes the loop: mirrors :func:`aureon.bio.human_harmonic_proxy.emit_proxy_result`
+    — a ``bio.observatory.run`` Thought on the ThoughtBus + a compact
+    ``celestial_observatory`` bus_trace — so the metacognition monitor / Queen can
+    sense the whole-sky picture. Bus/trace failures are swallowed; emission never
+    crashes a run.
+    """
+    payload = report.to_dict()
+    summary = {
+        "n_lanes": report.n_lanes,
+        "n_valid": report.n_valid,
+        "n_separable": report.n_separable,
+        "sky_map_converged": report.sky_map_converged,
+        "lanes": [
+            {"lane": r.lane, "valid": r.valid, "structure_present": r.structure_present}
+            for r in report.readings
+        ],
+        "boundary": OBSERVATORY_BOUNDARY,
+    }
+    try:
+        from aureon.core.aureon_thought_bus import Thought, get_thought_bus
+
+        target = bus if bus is not None else get_thought_bus()
+        target.publish(
+            Thought(source=_SOURCE, topic=OBS_RUN_TOPIC, trace_id=uuid.uuid4().hex,
+                    payload=summary)
+        )
+    except Exception:  # noqa: BLE001 - emission is best-effort, never fatal
+        pass
+
+    if trace:
+        try:
+            from aureon.core.bus_trace import append_trace
+
+            append_trace(OBS_TRACE_NAME, {
+                "n_lanes": report.n_lanes,
+                "n_valid": report.n_valid,
+                "n_separable": report.n_separable,
+                "sky_map_converged": report.sky_map_converged,
+                "boundary": OBSERVATORY_BOUNDARY,
+                "_ts": time.time(),
+            })
+        except Exception:  # noqa: BLE001 - trace mirror is best-effort
+            pass
+
+    return payload
+
+
 def main(argv: list[str] | None = None) -> int:
     """CLI: operate the φ Celestial Observatory and print the consolidated picture."""
     import argparse
@@ -231,6 +294,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--nulls", type=int, default=300)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--no-map", action="store_true", help="skip the all-sky map summary")
+    parser.add_argument("--emit", action="store_true",
+                        help="publish the consolidated picture to cognition (ThoughtBus)")
     args = parser.parse_args(argv)
 
     report = observe(nulls=args.nulls, seed=args.seed, include_map=not args.no_map)
@@ -251,6 +316,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.render:
         result = render_observatory(report, args.render)
         print(f"  rendered: {result.out_path}")
+    if args.emit:
+        emit_observatory(report)
+        print(f"  emitted:  {OBS_RUN_TOPIC} (cognition)")
     return 0
 
 

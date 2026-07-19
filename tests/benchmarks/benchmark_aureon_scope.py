@@ -1553,6 +1553,55 @@ def b20_celestial_observatory(tmp_root: Path) -> Dict[str, Any]:
     }
 
 
+def b21_observatory_cognition(tmp_root: Path) -> Dict[str, Any]:
+    """The φ Celestial Observatory closes the loop into cognition: its consolidated
+    picture publishes a ``bio.observatory.run`` Thought (mirroring the human-proxy /
+    phenolic bridge) so the metacognition monitor / Queen can sense the whole-sky
+    reading, and emission is best-effort — a throwing bus never crashes an observation.
+    """
+    from aureon.bio import celestial_observatory as obs
+
+    published = []
+
+    class _StubBus:
+        def publish(self, thought):
+            published.append(thought)
+
+    class _BoomBus:
+        def publish(self, thought):
+            raise RuntimeError("bus down")
+
+    report = obs.observe(nulls=100, seed=0, include_map=False)
+    payload = obs.emit_observatory(report, bus=_StubBus(), trace=False)
+    # a throwing bus must not raise
+    obs.emit_observatory(report, bus=_BoomBus(), trace=False)
+
+    thought = published[0] if published else None
+    invariants = {
+        "one_thought_published": len(published) == 1,
+        "correct_topic": bool(thought and thought.topic == obs.OBS_RUN_TOPIC),
+        "summary_carries_lanes": bool(
+            thought and thought.payload.get("n_lanes") == report.n_lanes
+            and isinstance(thought.payload.get("lanes"), list)
+        ),
+        "boundary_in_summary": bool(thought and thought.payload.get("boundary") == obs.OBSERVATORY_BOUNDARY),
+        "emission_best_effort": payload.get("n_lanes") == report.n_lanes,
+    }
+    passed = all(invariants.values())
+
+    return {
+        "name": "Observatory → cognition (whole-sky picture on the ThoughtBus)",
+        "module": "aureon/bio/celestial_observatory.py",
+        "passed": passed,
+        "metrics": {"n_lanes": report.n_lanes, "topic": obs.OBS_RUN_TOPIC},
+        "evidence": (
+            f"observatory publishes {obs.OBS_RUN_TOPIC} carrying {report.n_lanes} lanes "
+            f"+ boundary; emission best-effort (throwing bus swallowed)"
+        ),
+        "invariants": invariants,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tier A registry — order matters for the report.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1579,6 +1628,7 @@ TIER_A: List[Tuple[str, Callable[[Path], Dict[str, Any]]]] = [
     ("Image derived-signal",        b18_image_signal),
     ("Coherence lane",              b19_coherence_lane),
     ("φ Celestial Observatory",     b20_celestial_observatory),
+    ("Observatory → cognition",     b21_observatory_cognition),
 ]
 
 
