@@ -2110,6 +2110,72 @@ def b30_power_analysis(tmp_root: Path) -> Dict[str, Any]:
     }
 
 
+def b31_calibration_curve(tmp_root: Path) -> Dict[str, Any]:
+    """The detection rule is well-calibrated under the null, φ logic unchanged: across a grid of
+    significance levels, the engine's OWN Test A + Test B are run on many synthetic true-null
+    signals, and the conjunction they form (the structure_present rule) rejects at a rate ≤ α at
+    every level — it never exceeds its nominal size. Test A is conservative; Test B is reported
+    verbatim (the conjunction is what guarantees the detector's size). This is the calibration
+    foundation under the FPR audit (b29) and the power sweep (b30). A durable md + JSON artifact
+    round-trips and is byte-identical on re-run, and no person-reading surface exists.
+    """
+    import json
+
+    from aureon.bio import calibration_curve as cc
+
+    report = cc.compute_calibration(trials=400, nulls=200, seed0=0)
+    out_md = tmp_root / "curve.md"
+    out_json = tmp_root / "curve.json"
+    rendered = cc.write_curve_report(report, out_md, out_json)
+
+    md = out_md.read_text(encoding="utf-8") if out_md.exists() else ""
+    loaded = json.loads(out_json.read_text(encoding="utf-8")) if out_json.exists() else {}
+    row_lines = [ln for ln in md.splitlines() if ln.startswith("| ") and "---" not in ln]
+
+    out_md2 = tmp_root / "curve2.md"
+    out_json2 = tmp_root / "curve2.json"
+    cc.write_curve_report(cc.compute_calibration(trials=400, nulls=200, seed0=0), out_md2, out_json2)
+
+    surface = [n.lower() for n in dir(cc)]
+    banned = ("face", "speaker", "voice", "pose", "emotion", "identity", "biometric")
+    joint_subset = all(p.rate_joint <= p.rate_A + 1e-9 and p.rate_joint <= p.rate_B + 1e-9
+                       for p in report.points)
+
+    invariants = {
+        "detection_rule_conservative": report.joint_conservative,
+        "test_A_conservative": report.test_A_conservative,
+        "joint_is_subset": joint_subset,
+        "both_files_nonempty": out_md.exists() and out_md.stat().st_size > 0
+        and out_json.exists() and out_json.stat().st_size > 0,
+        "json_round_trips": loaded.get("n_points") == report.n_points
+        and loaded.get("boundary") == cc.CALIBRATION_CURVE_BOUNDARY,
+        "one_row_per_level": len(row_lines) == report.n_points + 1,  # + header row
+        "out_path_set": rendered.out_path == str(out_md),
+        "byte_identical_on_rewrite": out_md2.read_bytes() == out_md.read_bytes()
+        and out_json2.read_bytes() == out_json.read_bytes(),
+        "no_person_surface": not any(b in n for b in banned for n in surface),
+    }
+    passed = all(invariants.values())
+
+    return {
+        "name": "Calibration curve (per-test null calibration; φ logic unchanged)",
+        "module": "aureon/bio/calibration_curve.py",
+        "passed": passed,
+        "metrics": {
+            "n_points": report.n_points,
+            "trials": report.trials,
+            "max_joint_exceedance": report.max_joint_exceedance,
+            "tolerance": report.tolerance,
+        },
+        "evidence": (
+            f"detection rule conservative at all {report.n_points} α levels "
+            f"(max joint exceedance {report.max_joint_exceedance:+.4f} ≤ tol {report.tolerance:g}); "
+            f"Test A conservative; joint ⊆ each test; durable md+JSON byte-identical; no person surface"
+        ),
+        "invariants": invariants,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tier A registry — order matters for the report.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2146,6 +2212,7 @@ TIER_A: List[Tuple[str, Callable[[Path], Dict[str, Any]]]] = [
     ("Signal-adapter conformance",   b28_proxy_suite),
     ("Null calibration (FPR audit)",  b29_null_calibration),
     ("Detection power (sensitivity)",  b30_power_analysis),
+    ("Calibration curve (null)",       b31_calibration_curve),
 ]
 
 

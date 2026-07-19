@@ -373,6 +373,32 @@ python -m aureon.bio.power_analysis --self-test
 python -m aureon.bio.power_analysis --report power.md --report-json power.json
 ```
 
+## Calibration curve — the null-calibration foundation (`aureon/bio/calibration_curve.py`)
+
+The FPR audit checks the detector at one operating point (ALPHA); this generalises it to a **curve**
+and validates the calibration underneath. Across a grid of significance levels α, it runs the
+engine's own `test_A`/`test_B` on many synthetic *true-null* signals and measures how often each
+test — and the **conjunction** they form (the `structure_present` rule) — rejects.
+
+- **Honest per-test reporting.** Test A (coherence clustering) is strongly *conservative*
+  (`P(pₐ<α) ≤ α` everywhere — its statistic is discrete). Test B (φ-alignment) is *approximately*
+  calibrated and can be mildly anti-conservative on a flat null; the curve reports its rate verbatim
+  rather than hiding it.
+- **The operative guarantee.** The conjunction `pₐ<α ∧ p_b<α` is **conservative across the whole α
+  grid** (Test A's conservatism dominates), so `structure_present` never exceeds its nominal size.
+  Representative run (400 null trials, 200 nulls): joint rejection `0.000 / 0.000 / 0.000 / 0.008 /
+  0.035` at α `0.01 / 0.02 / 0.05 / 0.10 / 0.20` — ≤ α at every level.
+- **Synthetic only.** `CALIBRATION_CURVE_BOUNDARY` on every result; deterministic markdown + JSON
+  artifact (byte-identical on re-run); `emit_curve` publishes `bio.calibration_curve.run`.
+
+```bash
+# Curve self-test — the detection rule stays at or below α across the grid.
+python -m aureon.bio.calibration_curve --self-test
+
+# Write the calibration-curve evidence artifact (deterministic markdown + JSON).
+python -m aureon.bio.calibration_curve --report curve.md --report-json curve.json
+```
+
 ## Run it
 
 ```bash
