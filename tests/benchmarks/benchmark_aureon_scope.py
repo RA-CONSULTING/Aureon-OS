@@ -1867,6 +1867,59 @@ def b26_audio_adapter(tmp_root: Path) -> Dict[str, Any]:
     }
 
 
+def b27_video_adapter(tmp_root: Path) -> Dict[str, Any]:
+    """A video clip scores through the engine, φ logic unchanged: the video adapter
+    reduces each frame to one global mean-luminance scalar and turns that per-frame
+    time-series into its dominant folded modulation tones (global per-frame luminance
+    only — no face/object/pose analysis), a synthetic structured-luminance clip scores
+    structure PRESENT while random luminance scores ABSENT (the honest anchor), scoring
+    is deterministic, the consent gate blocks, and no person-reading surface exists.
+    This is the last SignalAdapter on the roadmap — image · audio · video · UPE · sky · market.
+    """
+    from aureon.bio import video_signal_adapter as vsa
+
+    structured = vsa.score_video(vsa.synthetic_video("structured"), consent=True,
+                                 provenance="synthetic video (no subject)", nulls=120, seed=0)
+    noise = vsa.score_video(vsa.synthetic_video("noise"), consent=True,
+                            provenance="synthetic video (no subject)", nulls=120, seed=0)
+    again = vsa.score_video(vsa.synthetic_video("structured"), consent=True,
+                            provenance="synthetic video (no subject)", nulls=120, seed=0)
+    blocked = vsa.score_video(vsa.synthetic_video("structured"), consent=False,
+                              provenance="x", nulls=100)
+
+    surface = [n.lower() for n in dir(vsa)]
+    banned = ("face", "object", "pose", "emotion", "identity", "recognize", "biometric")
+
+    invariants = {
+        "structured_present": structured.valid and structured.structure_present
+        and structured.n_tones >= 2,
+        "noise_absent": noise.valid and not noise.structure_present,
+        "deterministic": (structured.test_A_p, structured.test_B_p)
+        == (again.test_A_p, again.test_B_p),
+        "consent_gate_blocks": blocked.blocked and not blocked.structure_present,
+        "no_person_surface": not any(b in n for b in banned for n in surface),
+    }
+    passed = all(invariants.values())
+
+    return {
+        "name": "Video signal adapter (per-frame luminance → folded tones; φ logic unchanged)",
+        "module": "aureon/bio/video_signal_adapter.py",
+        "passed": passed,
+        "metrics": {
+            "structured_A_p": structured.test_A_p,
+            "structured_B_p": structured.test_B_p,
+            "structured_tones": structured.n_tones,
+            "noise_tones": noise.n_tones,
+        },
+        "evidence": (
+            f"structured clip → present ({structured.n_tones} tones, "
+            f"A_p={structured.test_A_p}); random-luminance clip → absent; deterministic; "
+            f"consent gate blocks; no person surface"
+        ),
+        "invariants": invariants,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tier A registry — order matters for the report.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1899,6 +1952,7 @@ TIER_A: List[Tuple[str, Callable[[Path], Dict[str, Any]]]] = [
     ("Counter-frequency",            b24_counter_frequency),
     ("Observatory evidence report",  b25_observatory_report),
     ("Audio signal adapter",         b26_audio_adapter),
+    ("Video signal adapter",         b27_video_adapter),
 ]
 
 

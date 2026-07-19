@@ -1,6 +1,6 @@
 # Aureon capability benchmark — report
 
-*generated: 2026-07-19T15:52:54Z*
+*generated: 2026-07-19T16:13:19Z*
 
 Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/fail, falsifiable. **Tier B** runs LLM-shape prompts side-by-side across local Aureon adapters; it never fails the run, it shows what each adapter sounds like.
 
@@ -11,7 +11,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
 | 1 | Standing-wave bonding (HashResonanceIndex) | **PASS** | 21 identical events → 1 bonded fingerprint (count=21, strength=0.6765 ≈ 0.6765; thresholds [3, 8, 21] published exactly once each) |
 | 2 | Temporal lighthouse (β Λ(t-τ) goal echo) | **PASS** | 3 goals (1 starved, 1 completed, 1 abandoned) → completion_rate=0.333, orphan_rate=0.333, states={'PROPOSED': 0, 'ACKNOWLEDGED': 0, 'IN_PROGRESS': 0, 'COMPLETED': 1, 'ABANDONED': 1, 'ORPHANED': 1} |
 | 3 | Symbolic life pillars (Auris Conjecture) | **PASS** | SLS=0.6393; ψ=0.7069 (CONNECTED); all 5 pillars in [0,1]; vault.current_symbolic_life_score=0.6393012290344635 |
-| 4 | Mesh convergence (PhiBridgeMesh, in-process LAN) | **PASS** | 20 vaults converged to identical 400-hash set in 3 cycles (494 ms, 180 posts) |
+| 4 | Mesh convergence (PhiBridgeMesh, in-process LAN) | **PASS** | 20 vaults converged to identical 400-hash set in 3 cycles (475 ms, 180 posts) |
 | 5 | Conscience VETO (HNC 4th-pass, substrate coherence) | **FAIL** | SLS=0.05 < 0.20 cliff → VETO on 'Execute trade' (risk=0.08); message quotes stability cliff and symbolic_life_score; queen.conscience.verdict published |
 | 6 | Pattern learning (PersonaMinerBridge) | **PASS** | 5 (engineer, 'build the audit gate') successes → 3 patterns learned (['audit', 'build', 'gate']), each published exactly once; (engineer, 'build').confidence=0.747 |
 | 7 | Skill execution → artefacts on disk | **PASS** | 3 skills → 3 files on disk + 3 vault cards; goal.completed: "built 3 artefact(s) via 3 skill(s): compose_audit, render_report, summarise_findings" |
@@ -34,6 +34,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
 | 24 | Counter-frequency (repo's φ/Fibonacci canon; φ logic unchanged) | **PASS** | counter/fibonacci/phi scans valid (16/4/3 tones); Fibonacci ladder + φ-harmonics present; consent gate blocks; no person surface |
 | 25 | Observatory evidence report (durable, deterministic cross-lane artifact) | **PASS** | markdown + JSON evidence artifact for 16 lanes; JSON round-trips; boundary present; byte-identical on re-run (deterministic) |
 | 26 | Audio signal adapter (waveform → folded tones; φ logic unchanged) | **PASS** | structured clip → present (6 tones, A_p=0.008264462809917356); noise clip → absent; deterministic; consent gate blocks; no person surface |
+| 27 | Video signal adapter (per-frame luminance → folded tones; φ logic unchanged) | **PASS** | structured clip → present (6 tones, A_p=0.008264462809917356); random-luminance clip → absent; deterministic; consent gate blocks; no person surface |
 
 ### Tier A — per-benchmark detail
 
@@ -145,7 +146,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
     "peers_per_node": 3,
     "target_hash_count": 400,
     "cycles_to_converge": 3,
-    "wall_ms": 494.1,
+    "wall_ms": 475.4,
     "posts_issued": 180,
     "client_failures": 0,
     "min_size": 400,
@@ -202,7 +203,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
       "last_winning_skill_chain": [
         "compose_audit"
       ],
-      "last_seen_ts": 1784476291.0589721
+      "last_seen_ts": 1784477514.7043386
     },
     "persona_health": {
       "persona": "engineer",
@@ -214,7 +215,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
       "completion_rate": 1.0,
       "abandon_rate": 0.0,
       "avg_sls_delta": 0.0,
-      "last_seen_ts": 1784476291.0589721
+      "last_seen_ts": 1784477514.7043386
     },
     "patterns_published": 3,
     "patterns": [
@@ -269,9 +270,9 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
       "summarise_findings"
     ],
     "artefacts_on_disk": [
-      "artefacts/20260719T155131-compose_audit-cbabc0.md",
-      "artefacts/20260719T155131-render_report-d547d6.md",
-      "artefacts/20260719T155131-summarise_findings-94638e.md"
+      "artefacts/20260719T161154-compose_audit-d52b48.md",
+      "artefacts/20260719T161154-render_report-da2a7d.md",
+      "artefacts/20260719T161154-summarise_findings-dfa062.md"
     ],
     "vault_skill_output_cards": 3,
     "completion_summary": "built 3 artefact(s) via 3 skill(s): compose_audit, render_report, summarise_findings",
@@ -282,7 +283,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
       "failed": 0,
       "abandoned": 0,
       "subscribed": true,
-      "output_root": "/tmp/aureon-bench-2wrwidkj/a7/artefacts"
+      "output_root": "/tmp/aureon-bench-14mdocue/a7/artefacts"
     }
   },
   "invariants": {
@@ -313,7 +314,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
     "sls_after": 0.72,
     "sls_delta": 0.22,
     "downstream_event_count": 3,
-    "lambda_delta_t": 0.07514715194702148,
+    "lambda_delta_t": 0.07519721984863281,
     "reasoning_excerpt": "I, engineer, collapsed into decision 'goal.submit' with p=0.780. The window closed at outcome=COMPLETED. 3 downstream event(s) within the 0.050s window. SLS moved from 0.500 to 0.720 (\u0394+0.220)."
   },
   "invariants": {
@@ -747,6 +748,29 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
 #### A.26 — Audio signal adapter (waveform → folded tones; φ logic unchanged)
 
 `aureon/bio/audio_signal_adapter.py`
+
+```json
+{
+  "passed": true,
+  "metrics": {
+    "structured_A_p": 0.008264462809917356,
+    "structured_B_p": 0.008264462809917356,
+    "structured_tones": 6,
+    "noise_tones": 24
+  },
+  "invariants": {
+    "structured_present": true,
+    "noise_absent": true,
+    "deterministic": true,
+    "consent_gate_blocks": true,
+    "no_person_surface": true
+  }
+}
+```
+
+#### A.27 — Video signal adapter (per-frame luminance → folded tones; φ logic unchanged)
+
+`aureon/bio/video_signal_adapter.py`
 
 ```json
 {

@@ -53,11 +53,11 @@ This release ships the **interface + governance backbone**, proven by a
   `emit_proxy_result` (publishes `bio.human_proxy.run` on the ThoughtBus + a
   `human_harmonic_proxy` bus_trace, mirroring `aureon/cognition/phenolic_bridge.py`).
 
-Several **real** adapters now ship (see below), including audio; the remaining
-**video** extractor stays **future, gated, consent-required work**. Every adapter
-implements the `SignalAdapter` seam so the scoring and governance path never
-changes — and each is built only with explicit consent handling, provenance
-capture, and the same boundary enforced above.
+The `SignalAdapter` roadmap is now **complete**: every named extractor ships — image,
+audio, and video (below), alongside UPE, sky, and market — with **no remaining deferred
+extractor**. Every adapter implements the `SignalAdapter` seam so the scoring and
+governance path never changes, and each is built only with explicit consent handling,
+provenance capture, and the same boundary enforced above.
 
 ## Image adapter (shipped — content-agnostic)
 
@@ -123,6 +123,42 @@ python -m aureon.bio.audio_signal_adapter --self-test
 
 # Score a PCM WAV the caller consents to (content-agnostic, no voice analysis):
 python -m aureon.bio.audio_signal_adapter path/to/clip.wav \
+    --consent --provenance "my own recording, consented"
+```
+
+## Video adapter (shipped — content-agnostic; completes the roadmap)
+
+`aureon/bio/video_signal_adapter.py` is the last real `SignalAdapter`. It scores a
+video clip through the *unchanged* `score_signal` pipeline — **without becoming a
+face, object, pose, or scene reader** — and with it the roadmap is complete.
+
+- **Content-agnostic by construction.** Each frame is reduced to a **single global
+  mean-luminance scalar**; the signal is the sequence of those scalars over time.
+  There is no face detection, no object or pose detection, no scene classification,
+  and no per-region analysis anywhere in the module. One scalar per frame is
+  *structurally* incapable of physiognomy regardless of what the clip contains — even
+  more so than the image adapter.
+- **Physics reused, not invented.** A per-frame luminance series *is* a time-series
+  sampled at the frame rate, so a windowed real FFT recovers its dominant temporal
+  frequencies (Hz) — the same operation the audio and UPE adapters perform.
+  `fold_to_band` then octave-folds those into the 1000–2000 Hz band. A clip with no
+  periodic brightness change yields no dominant tone, so it honestly scores
+  non-separable rather than a fabricated result.
+- **numpy + stdlib core; optional lazy decode.** The core needs only numpy + stdlib;
+  `imageio` is imported **lazily and only** to decode a real video file (the synthetic
+  path and the pure proxy core never need it) — no import-time side effects.
+- **Every guardrail still applies.** Consent + provenance are *required arguments* to
+  `extract`/`score_video`, the mandatory engine controls run, the Operator hard-boundary
+  + conscience veto gate the emission, and the `SCIENTIFIC_BOUNDARY` rides on every
+  result. Output is only *statistical structure in a derived signal* — never a claim
+  about a person.
+
+```bash
+# Deterministic synthetic self-test (no real subject): structured⇒present, noise⇒absent.
+python -m aureon.bio.video_signal_adapter --self-test
+
+# Score a video the caller consents to (content-agnostic, no face/object analysis):
+python -m aureon.bio.video_signal_adapter path/to/clip.mp4 \
     --consent --provenance "my own recording, consented"
 ```
 

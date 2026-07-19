@@ -38,6 +38,7 @@ pre-registered test returns it.
 | **φ Celestial Observatory** | `celestial_observatory.py` | (orchestrator) | OBSERVATORY_BOUNDARY | every sky/cosmic lane above | **b20** |
 | Observatory evidence report | `celestial_observatory.py` | (artifact writer) | OBSERVATORY_BOUNDARY | serializes the consolidated picture to durable markdown + JSON | **b25** |
 | Audio | `audio_signal_adapter.py` | `audio` | SCIENTIFIC_BOUNDARY | consented WAV / waveform → windowed-FFT dominant tones (global clip statistics; synthetic self-test) | **b26** |
+| Video | `video_signal_adapter.py` | `video` | SCIENTIFIC_BOUNDARY | consented clip / frame-stack → per-frame mean-luminance time-series → windowed-FFT dominant tones (global per-frame luminance; synthetic self-test) | **b27** |
 
 Reference/data modules (no governance surface): `upe_reference.py`,
 `sky_reference.py`, `market_reference.py`, `cosmic_reference.py`, `sacred_lattice_reference.py`, `harmonic_core_reference.py`, `counter_frequency_reference.py`.
@@ -55,7 +56,7 @@ The **sacred lattice** (`sacred_lattice_scan.py`) is how the repo maps the sky *
 
 The **harmonic core** (`harmonic_core_scan.py`) goes one level deeper still — to the frequency substrate the framework itself is built on: the HNC **Master Formula Λ(t)** modes, the **Celtic Ogham** φ-scaled tree-tones, and the **Ghost Dance** ancestral Solfeggio ladder, each scanned through the same engine. See [HARMONIC_CORE.md](HARMONIC_CORE.md).
 
-† b9 is the phenolic→cognition bridge; b10–b26 are the bio lanes. Tier-A total: **26**.
+† b9 is the phenolic→cognition bridge; b10–b27 are the bio lanes. Tier-A total: **27**.
 
 ## Shared invariants (asserted per lane)
 
@@ -76,5 +77,5 @@ face/landmark/detect/emotion/biometric/recognize). Convenience helpers that defa
 
 ```bash
 AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 pytest tests/bio/ -q
-python tests/benchmarks/benchmark_aureon_scope.py     # Tier-A: 26 architectural invariants
+python tests/benchmarks/benchmark_aureon_scope.py     # Tier-A: 27 architectural invariants
 ```
