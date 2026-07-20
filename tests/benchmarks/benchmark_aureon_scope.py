@@ -2176,6 +2176,78 @@ def b31_calibration_curve(tmp_root: Path) -> Dict[str, Any]:
     }
 
 
+def b32_multiplicity(tmp_root: Path) -> Dict[str, Any]:
+    """The detector survives multiplicity, φ logic unchanged: when many synthetic true-null lanes are
+    tested at once, the probability that AT LEAST one falsely fires (the family-wise error rate, FWER)
+    is measured as a function of the number of simultaneous lanes k. Because the detector is the
+    conjunction p_A<α ∧ p_B<α, its per-lane rate is ≈α², giving built-in headroom to about k≈1/α; the
+    audit reports the k at which the uncorrected FWER would cross α, and demonstrates that a Bonferroni
+    α/k threshold controls FWER ≤ α at EVERY k. This is the multiplicity layer over the FPR audit
+    (b29), the power sweep (b30), and the calibration curve (b31). A durable md + JSON artifact
+    round-trips and is byte-identical on re-run, and no person-reading surface exists.
+    """
+    import json
+
+    from aureon.bio import multiplicity as mp
+
+    report = mp.compute_multiplicity(trials=150, nulls=100, seed0=0)
+    out_md = tmp_root / "mult.md"
+    out_json = tmp_root / "mult.json"
+    rendered = mp.write_multiplicity_report(report, out_md, out_json)
+
+    md = out_md.read_text(encoding="utf-8") if out_md.exists() else ""
+    loaded = json.loads(out_json.read_text(encoding="utf-8")) if out_json.exists() else {}
+    row_lines = [ln for ln in md.splitlines() if ln.startswith("| ") and "---" not in ln]
+
+    out_md2 = tmp_root / "mult2.md"
+    out_json2 = tmp_root / "mult2.json"
+    mp.write_multiplicity_report(report, out_md2, out_json2)
+
+    surface = [n.lower() for n in dir(mp)]
+    banned = ("face", "speaker", "voice", "pose", "emotion", "identity", "biometric")
+    fwers = [p.fwer_uncorrected for p in report.points]
+    fwer_monotone = all(hi >= lo - 0.02 for lo, hi in zip(fwers, fwers[1:], strict=False))
+    any_ge_per_lane = all(p.fwer_uncorrected >= p.per_lane_rate - 1e-9 for p in report.points)
+
+    invariants = {
+        "bonferroni_controls_all": report.bonferroni_controls_all,
+        "fwer_monotone_in_k": fwer_monotone,
+        "fwer_ge_per_lane_rate": any_ge_per_lane,
+        "both_files_nonempty": out_md.exists() and out_md.stat().st_size > 0
+        and out_json.exists() and out_json.stat().st_size > 0,
+        "json_round_trips": loaded.get("n_points") == report.n_points
+        and loaded.get("boundary") == mp.MULTIPLICITY_BOUNDARY,
+        "one_row_per_k": len(row_lines) == report.n_points + 1,  # + header row
+        "out_path_set": rendered.out_path == str(out_md),
+        "byte_identical_on_rewrite": out_md2.read_bytes() == out_md.read_bytes()
+        and out_json2.read_bytes() == out_json.read_bytes(),
+        "no_person_surface": not any(b in n for b in banned for n in surface),
+    }
+    passed = all(invariants.values())
+
+    cross = report.k_uncorrected_crosses_alpha
+    max_bonf = max((p.fwer_bonferroni for p in report.points), default=0.0)
+
+    return {
+        "name": "Multiplicity (family-wise error-rate control; φ logic unchanged)",
+        "module": "aureon/bio/multiplicity.py",
+        "passed": passed,
+        "metrics": {
+            "n_points": report.n_points,
+            "trials": report.trials,
+            "max_bonferroni_fwer": max_bonf,
+            "k_uncorrected_crosses_alpha": cross,
+        },
+        "evidence": (
+            f"Bonferroni controls FWER ≤ α at every k (max Bonferroni FWER {max_bonf:.4f} ≤ "
+            f"α {report.alpha:g} + tol {report.tolerance:g}); uncorrected FWER rises with k, "
+            f"crossing α at {('k=' + str(cross)) if cross is not None else 'no k in range'}; "
+            f"durable md+JSON byte-identical; no person surface"
+        ),
+        "invariants": invariants,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tier A registry — order matters for the report.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2213,6 +2285,7 @@ TIER_A: List[Tuple[str, Callable[[Path], Dict[str, Any]]]] = [
     ("Null calibration (FPR audit)",  b29_null_calibration),
     ("Detection power (sensitivity)",  b30_power_analysis),
     ("Calibration curve (null)",       b31_calibration_curve),
+    ("Multiplicity (FWER control)",     b32_multiplicity),
 ]
 
 

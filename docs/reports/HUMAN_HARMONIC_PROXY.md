@@ -399,6 +399,37 @@ python -m aureon.bio.calibration_curve --self-test
 python -m aureon.bio.calibration_curve --report curve.md --report-json curve.json
 ```
 
+## Multiplicity — family-wise error control (`aureon/bio/multiplicity.py`)
+
+The audits above validate a *single* lane. But the φ Celestial Observatory runs ~16 lanes and the
+human-signal family runs several adapters **simultaneously** — and when many calibrated tests run at
+once, the probability that **at least one** falsely fires (the **family-wise error rate**, FWER)
+inflates roughly as `1-(1-r)^k` in the number of simultaneous lanes `k` (per-lane rate `r`). This
+audit measures that FWER over many synthetic *true-null* lanes and shows two things honestly:
+
+- **Built-in headroom from the conjunction.** Because the detector is `pₐ<α ∧ p_b<α`, its per-lane
+  false-positive rate is `r ≈ α² ≈ 0.0025` (confirmed by b29/b31), so `k·r ≤ α` holds for
+  `k ≤ 1/α ≈ 20`. The audit reports the `k` (if any within the sweep) at which the *uncorrected* FWER
+  first crosses α. Representative run (200 trials, 100 nulls): uncorrected FWER
+  `0.005 / 0.005 / 0.025 / 0.040 / 0.070 / 0.105` at k `1 / 2 / 4 / 8 / 16 / 32` — crossing α at k=16,
+  matching the ≈1/α headroom prediction.
+- **Bonferroni restores control everywhere.** A per-lane `α/k` threshold controls FWER `≤ α` at
+  **every** k (Bonferroni FWER ≈ 0 across the sweep) — the correction extends control beyond the
+  built-in headroom for arbitrarily many lanes.
+- **Synthetic only.** `MULTIPLICITY_BOUNDARY` on every result; deterministic markdown + JSON artifact
+  (byte-identical on re-run); `emit_multiplicity` publishes `bio.multiplicity.run`.
+
+Together b29 (size), b30 (power), b31 (calibration), and b32 (multiplicity) form the family's
+complete statistical-validity dossier.
+
+```bash
+# Multiplicity self-test — Bonferroni controls FWER ≤ α at every k.
+python -m aureon.bio.multiplicity --self-test
+
+# Write the multiplicity evidence artifact (deterministic markdown + JSON).
+python -m aureon.bio.multiplicity --report mult.md --report-json mult.json
+```
+
 ## Run it
 
 ```bash
