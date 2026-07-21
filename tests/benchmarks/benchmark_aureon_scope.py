@@ -2413,6 +2413,103 @@ def b34_integrity_guard(tmp_root: Path) -> Dict[str, Any]:
     }
 
 
+def b35_swarm_defense(tmp_root: Path) -> Dict[str, Any]:
+    """The immune layer responds, not just senses: when the integrity guard (b34) detects a breach, a
+    leaderless swarm of N independent defenders each re-verify the threat and confirm neutralization only
+    on a majority quorum — the bee-ball. It is Byzantine-tolerant: a minority of compromised or silent
+    defenders cannot flip the verdict (survives up to quorum-1 faults), and the swarm is overwhelmed only
+    when a majority is compromised (the honest bound). There is no authority in the command path — no
+    single defender or leader can force or veto the outcome — because a co-opted leader is the very
+    parasite we defend against. defend_from_guard_report wires b34's verdict into this response. A durable
+    md + JSON artifact round-trips and is byte-identical on re-run, and no person-reading surface exists.
+    """
+    import json
+
+    from aureon.bio import swarm_defense as sd
+
+    real = sd.ThreatReport(threat_id="bench-real", kind="mutated_invariant",
+                          description="a pinned invariant drifted", severity=2)
+    benign = sd.ThreatReport(threat_id="bench-benign", kind="unknown", description="no drift", severity=0)
+
+    result = sd.mount_defense(real)
+    tol = result.tolerated_faults
+    minority = sd.mount_defense(real, faulty_idx=tuple(range(tol)))
+    overwhelmed = sd.mount_defense(real, faulty_idx=tuple(range(result.quorum)))
+    benign_res = sd.mount_defense(benign)
+
+    out_md = tmp_root / "defense.md"
+    out_json = tmp_root / "defense.json"
+    rendered = sd.write_defense_report(result, out_md, out_json)
+    md = out_md.read_text(encoding="utf-8") if out_md.exists() else ""
+    loaded = json.loads(out_json.read_text(encoding="utf-8")) if out_json.exists() else {}
+    row_lines = [ln for ln in md.splitlines() if ln.startswith("| ") and "---" not in ln]
+
+    out_md2 = tmp_root / "defense2.md"
+    out_json2 = tmp_root / "defense2.json"
+    sd.write_defense_report(result, out_md2, out_json2)
+
+    class _Intact:
+        intact = True
+        findings: list = []
+        n_findings = 0
+
+    class _Breach:
+        intact = False
+        findings = [object(), object()]
+        n_findings = 2
+
+    from_guard_wires = (
+        sd.defend_from_guard_report(_Intact()) is None
+        and (sd.defend_from_guard_report(_Breach()) or DummyNone()).confirmed
+    )
+
+    surface = [n.lower() for n in dir(sd)]
+    banned = ("face", "speaker", "voice", "pose", "emotion", "identity", "biometric")
+    authority = ("authority", "leader", "queen", "commander", "boss", "dictator")
+
+    invariants = {
+        "real_threat_confirmed": result.confirmed,
+        "benign_not_confirmed": not benign_res.confirmed,
+        "survives_minority_faults": minority.confirmed,
+        "overwhelmed_only_by_majority": not overwhelmed.confirmed,
+        "leaderless": result.leaderless and not any(a in n for a in authority for n in surface),
+        "from_guard_report_wires": from_guard_wires,
+        "both_files_nonempty": out_md.exists() and out_md.stat().st_size > 0
+        and out_json.exists() and out_json.stat().st_size > 0,
+        "json_round_trips": loaded.get("confirmed") == result.confirmed
+        and loaded.get("boundary") == sd.SWARM_DEFENSE_BOUNDARY,
+        "one_row_per_defender": len(row_lines) == result.n_defenders + 1,  # + header row
+        "byte_identical_on_rewrite": out_md2.read_bytes() == out_md.read_bytes()
+        and out_json2.read_bytes() == out_json.read_bytes(),
+        "no_person_surface": not any(b in n for b in banned for n in surface),
+    }
+    passed = all(invariants.values())
+
+    return {
+        "name": "Swarm defense (leaderless bee-ball quorum; φ logic unchanged)",
+        "module": "aureon/bio/swarm_defense.py",
+        "passed": passed,
+        "metrics": {
+            "n_defenders": result.n_defenders,
+            "quorum": result.quorum,
+            "tolerated_faults": result.tolerated_faults,
+            "confidence": result.confidence,
+        },
+        "evidence": (
+            f"real threat confirmed by {result.n_threat}/{result.n_defenders} quorum {result.quorum} "
+            f"(conf {result.confidence:g}); survives {tol} compromised, overwhelmed at {result.quorum}; "
+            f"benign not confirmed; leaderless; guard-report wired; durable md+JSON byte-identical; no person surface"
+        ),
+        "invariants": invariants,
+    }
+
+
+class DummyNone:
+    """Fallback so a None from defend_from_guard_report fails the invariant instead of raising."""
+
+    confirmed = False
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tier A registry — order matters for the report.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2453,6 +2550,7 @@ TIER_A: List[Tuple[str, Callable[[Path], Dict[str, Any]]]] = [
     ("Multiplicity (FWER control)",     b32_multiplicity),
     ("False discovery rate (BH control)", b33_false_discovery),
     ("Integrity guard (immune layer)",  b34_integrity_guard),
+    ("Swarm defense (bee-ball quorum)", b35_swarm_defense),
 ]
 
 

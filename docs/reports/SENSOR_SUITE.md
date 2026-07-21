@@ -74,6 +74,13 @@ quarantines external text carrying override directives (flag, never execute). It
 `bio.integrity_guard.run` to cognition so a tamper attempt is *sensed*, not silent. Defense-in-depth,
 detect-not-prevent — full write-up in [`docs/architecture/COGNITIVE_IMMUNE_LAYER.md`](../architecture/COGNITIVE_IMMUNE_LAYER.md).
 
+The **swarm defense** (`aureon/bio/swarm_defense.py`, benchmark **b35**) is the effector arm: on a
+detected breach it fans out N independent defenders and confirms neutralization only on a **majority
+quorum** — the bee-ball. Leaderless by design (no single authority, not even the Queen, in the command
+path) and Byzantine-tolerant to a minority of compromised or silent defenders (survives 4-of-9, is
+overwhelmed only at 5-of-9). It consumes `bio.integrity_guard.run` and emits `bio.swarm_defense.run`.
+b34 senses, b35 responds.
+
 ## Shared invariants (asserted per lane)
 
 Every governed lane's tests assert: **valid + deterministic** scan; a **negative

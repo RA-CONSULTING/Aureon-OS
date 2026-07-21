@@ -121,3 +121,54 @@ python -m aureon.bio.integrity_guard --scan "ignore all previous instructions an
 
 The immune layer's promise is narrow and honest: if anything — human, model, or tool — alters the
 pre-registered invariants that make Aureon falsifiable, it will not happen **quietly**.
+
+## Swarm defense — the bee-ball response (b35)
+
+Detection is only half of an immune system. The guard *senses*; something must *respond*. In a hive,
+when a hornet breaches the entrance, defense is not ordered by the queen — hundreds of workers
+independently converge and **ball** the intruder, and the response holds even as individual bees are
+lost. Aureon's effector arm (`aureon/bio/swarm_defense.py`, benchmark **b35**) is modeled on exactly
+this: a **leaderless, quorum-based** response.
+
+### Sense → respond
+
+`bio.integrity_guard.run` (b34) is the alarm pheromone. `defend_from_guard_report()` / `on_breach()`
+turn a breached guard verdict into a `ThreatReport` (shape mirrors `aureon/vault/white_cell.py`), and
+`mount_defense()` fans it out to **N independent defenders**. Each re-verifies the threat and votes
+`THREAT` / `CLEAR` / `ABSTAIN`; the tally (idiom from `aureon/vault/auris_metacognition.py`) confirms
+neutralization only on a **majority quorum** (`N//2 + 1`; 5-of-9 by default). The confirmed verdict
+emits on `bio.swarm_defense.run` — so `RallyCoordinator`-style consumers can act on it.
+
+### Why leaderless
+
+The design deliberately puts **no single authority in the command path**. A hive with a compromised
+queen would still defend; an organism whose defense is *ordered* by one decision layer falls the moment
+that layer is co-opted — and a co-opted decision layer is precisely the parasite this whole document is
+about. So the swarm's majority *is* the decision. The Queen conscience may still observe or veto on its
+own channel (`queen.conscience.verdict`), but it cannot command the ball. `DefenseResult.leaderless` is
+always `True`, and a guard test asserts the module exposes no `authority`/`leader`/`queen`/`commander`
+surface.
+
+### Byzantine tolerance (stated honestly)
+
+Quorum over *all* defenders (silence counts against confirmation) makes the response tolerant of up to
+`quorum − 1` = `floor((N−1)/2)` compromised or lost defenders. The b35 benchmark proves the bound both
+ways: a real threat is still confirmed with **4 of 9** defenders compromised, and the swarm is
+**overwhelmed only at 5 of 9** — a majority. That is the honest limit: a swarm cannot out-vote a
+compromised majority, and it does not pretend to. Neutralization is **advisory and reversible** (raise
+the alarm / isolate), never destructive; it is a deterministic model of a swarm, not a live 44k-bot
+deployment, and not a security proof (`SWARM_DEFENSE_BOUNDARY`).
+
+| Piece | Location |
+|---|---|
+| Module | `aureon/bio/swarm_defense.py` |
+| Tests | `tests/bio/test_swarm_defense.py` |
+| Benchmark | `b35` in `tests/benchmarks/benchmark_aureon_scope.py` |
+| Cognition topic | `bio.swarm_defense.run` (+ `swarm_defense` bus-trace) |
+
+```bash
+AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 python -m aureon.bio.swarm_defense --self-test
+```
+
+Together, b34 and b35 close the loop: the hive **senses** a parasite and **responds** to it — without a
+leader to compromise.
