@@ -172,3 +172,14 @@ AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 python -m aureon.bio.
 
 Together, b34 and b35 close the loop: the hive **senses** a parasite and **responds** to it — without a
 leader to compromise.
+
+## The border — MCP boundary membrane (b36)
+
+Sensing and responding both assume the parasite is already *inside*. The layer's third organ guards the
+*boundary* itself: when Aureon attaches to a flagship model as an MCP server, the **membrane**
+(`aureon/bio/mcp_membrane.py`, benchmark **b36**) seals outbound packets so drift/tamper/replay in
+transit is detectable, contains inbound model output as data-never-instructions (injection quarantined,
+false blocked-action claims held, and false claims about Aureon's own pinned invariants rejected against
+ground truth), and proves the interior genome is **unchanged** across the crossing — logic flows out,
+contamination does not flow in. So the immune layer is now **sensor (b34) → effector (b35) → membrane
+(b36)**. Full write-up: [`MCP_BOUNDARY_MEMBRANE.md`](MCP_BOUNDARY_MEMBRANE.md).

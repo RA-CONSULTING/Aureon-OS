@@ -1,6 +1,6 @@
 # Aureon capability benchmark — report
 
-*generated: 2026-07-21T11:14:27Z*
+*generated: 2026-07-21T12:15:25Z*
 
 Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/fail, falsifiable. **Tier B** runs LLM-shape prompts side-by-side across local Aureon adapters; it never fails the run, it shows what each adapter sounds like.
 
@@ -11,7 +11,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
 | 1 | Standing-wave bonding (HashResonanceIndex) | **PASS** | 21 identical events → 1 bonded fingerprint (count=21, strength=0.6765 ≈ 0.6765; thresholds [3, 8, 21] published exactly once each) |
 | 2 | Temporal lighthouse (β Λ(t-τ) goal echo) | **PASS** | 3 goals (1 starved, 1 completed, 1 abandoned) → completion_rate=0.333, orphan_rate=0.333, states={'PROPOSED': 0, 'ACKNOWLEDGED': 0, 'IN_PROGRESS': 0, 'COMPLETED': 1, 'ABANDONED': 1, 'ORPHANED': 1} |
 | 3 | Symbolic life pillars (Auris Conjecture) | **PASS** | SLS=0.6393; ψ=0.7069 (CONNECTED); all 5 pillars in [0,1]; vault.current_symbolic_life_score=0.6393012290344635 |
-| 4 | Mesh convergence (PhiBridgeMesh, in-process LAN) | **PASS** | 20 vaults converged to identical 400-hash set in 3 cycles (410 ms, 180 posts) |
+| 4 | Mesh convergence (PhiBridgeMesh, in-process LAN) | **PASS** | 20 vaults converged to identical 400-hash set in 3 cycles (463 ms, 180 posts) |
 | 5 | Conscience VETO (HNC 4th-pass, substrate coherence) | **FAIL** | SLS=0.05 < 0.20 cliff → VETO on 'Execute trade' (risk=0.08); message quotes stability cliff and symbolic_life_score; queen.conscience.verdict published |
 | 6 | Pattern learning (PersonaMinerBridge) | **PASS** | 5 (engineer, 'build the audit gate') successes → 3 patterns learned (['audit', 'build', 'gate']), each published exactly once; (engineer, 'build').confidence=0.747 |
 | 7 | Skill execution → artefacts on disk | **PASS** | 3 skills → 3 files on disk + 3 vault cards; goal.completed: "built 3 artefact(s) via 3 skill(s): compose_audit, render_report, summarise_findings" |
@@ -43,6 +43,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
 | 33 | False discovery rate (Benjamini–Hochberg control; φ logic unchanged) | **PASS** | BH controls FDR ≤ q (FDR 0.0000 ≤ q 0.05 + tol 0.03) and rejects a superset of Bonferroni; BH recovers power 0.273 vs Bonferroni 0.048 (uncorrected 0.488); durable md+JSON byte-identical; no person surface |
 | 34 | Integrity guard (cognitive immune layer; φ logic unchanged) | **PASS** | clean engine intact (0 drift); mutated-ALPHA detected True; swapped-test detected True; engine restored intact True; injection quarantined; durable md+JSON byte-identical; no person surface |
 | 35 | Swarm defense (leaderless bee-ball quorum; φ logic unchanged) | **PASS** | real threat confirmed by 9/9 quorum 5 (conf 0.95); survives 4 compromised, overwhelmed at 5; benign not confirmed; leaderless; guard-report wired; durable md+JSON byte-identical; no person surface |
+| 36 | MCP boundary membrane (directional integrity gateway; φ logic unchanged) | **PASS** | egress seals+verifies, drift detected (drift), replay detected (replay); injection + false-ALPHA-claim + blocked-action all contained, benign passes; interior unchanged=True, laminar=True; durable md+JSON byte-identical; no person surface |
 
 ### Tier A — per-benchmark detail
 
@@ -154,7 +155,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
     "peers_per_node": 3,
     "target_hash_count": 400,
     "cycles_to_converge": 3,
-    "wall_ms": 409.8,
+    "wall_ms": 462.9,
     "posts_issued": 180,
     "client_failures": 0,
     "min_size": 400,
@@ -211,7 +212,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
       "last_winning_skill_chain": [
         "compose_audit"
       ],
-      "last_seen_ts": 1784632255.2623591
+      "last_seen_ts": 1784635913.5999858
     },
     "persona_health": {
       "persona": "engineer",
@@ -223,7 +224,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
       "completion_rate": 1.0,
       "abandon_rate": 0.0,
       "avg_sls_delta": 0.0,
-      "last_seen_ts": 1784632255.2623591
+      "last_seen_ts": 1784635913.5999858
     },
     "patterns_published": 3,
     "patterns": [
@@ -278,9 +279,9 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
       "summarise_findings"
     ],
     "artefacts_on_disk": [
-      "artefacts/20260721T111055-compose_audit-d0e227.md",
-      "artefacts/20260721T111055-render_report-06e5f9.md",
-      "artefacts/20260721T111055-summarise_findings-f04e08.md"
+      "artefacts/20260721T121153-compose_audit-b21d8e.md",
+      "artefacts/20260721T121153-render_report-d6ddc7.md",
+      "artefacts/20260721T121153-summarise_findings-4e3427.md"
     ],
     "vault_skill_output_cards": 3,
     "completion_summary": "built 3 artefact(s) via 3 skill(s): compose_audit, render_report, summarise_findings",
@@ -291,7 +292,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
       "failed": 0,
       "abandoned": 0,
       "subscribed": true,
-      "output_root": "/tmp/aureon-bench-aq3n4s56/a7/artefacts"
+      "output_root": "/tmp/aureon-bench-4tdfafsj/a7/artefacts"
     }
   },
   "invariants": {
@@ -322,7 +323,7 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
     "sls_after": 0.72,
     "sls_delta": 0.22,
     "downstream_event_count": 3,
-    "lambda_delta_t": 0.07668566703796387,
+    "lambda_delta_t": 0.07620835304260254,
     "reasoning_excerpt": "I, engineer, collapsed into decision 'goal.submit' with p=0.780. The window closed at outcome=COMPLETED. 3 downstream event(s) within the 0.050s window. SLS moved from 0.500 to 0.720 (\u0394+0.220)."
   },
   "invariants": {
@@ -1015,6 +1016,37 @@ Two tiers. **Tier A** asserts architectural invariants only Aureon has — pass/
     "json_round_trips": true,
     "one_row_per_defender": true,
     "byte_identical_on_rewrite": true,
+    "no_person_surface": true
+  }
+}
+```
+
+#### A.36 — MCP boundary membrane (directional integrity gateway; φ logic unchanged)
+
+`aureon/bio/mcp_membrane.py`
+
+```json
+{
+  "passed": true,
+  "metrics": {
+    "n_scalar_invariants": 6,
+    "sequence": 1,
+    "digest_len": 64
+  },
+  "invariants": {
+    "egress_seals_and_verifies": true,
+    "egress_drift_detected": true,
+    "replay_detected": true,
+    "benign_ingress_passes": true,
+    "injection_ingress_contained": true,
+    "false_self_claim_rejected": true,
+    "blocked_action_claim_held": true,
+    "interior_unchanged_after_ingress": true,
+    "laminar": true,
+    "both_files_nonempty": true,
+    "json_round_trips": true,
+    "byte_identical_on_rewrite": true,
+    "out_path_set": true,
     "no_person_surface": true
   }
 }
