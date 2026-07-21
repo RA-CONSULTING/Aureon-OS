@@ -17,8 +17,8 @@ def test_builds_three_groups_from_committed_report():
     assert cat["group_order"] == ["cognitive_immune_layer", "statistical_validity", "sensor_lane"]
     groups = cat["groups"]
     assert set(groups) == set(cat["group_order"])
-    # the immune quartet and the six statistical modules are grouped exactly
-    assert groups["cognitive_immune_layer"]["module_count"] == 4
+    # the immune layer's five organs and the six statistical modules are grouped exactly
+    assert groups["cognitive_immune_layer"]["module_count"] == 5
     assert groups["statistical_validity"]["module_count"] == 6
     assert groups["sensor_lane"]["module_count"] >= 1
     assert cat["counts"]["total"] == sum(g["module_count"] for g in groups.values())

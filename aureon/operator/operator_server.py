@@ -707,6 +707,16 @@ def build_boot_app():
             get_trace_pump().start()
         except Exception as exc:  # noqa: BLE001 — the pump is optional
             logger.warning("trace pump not started: %s", exc)
+    # Close the cognitive immune layer's loop: subscribe immune memory to confirmed
+    # neutralizations (bio.swarm_defense.run) so a repeat parasite is recognized
+    # instantly. The Queen observes on her own channel; the effector stays leaderless.
+    if str(os.environ.get("AUREON_IMMUNE_MEMORY", "1")).strip().lower() not in {"0", "false", "no", "off"}:
+        try:
+            from aureon.bio.immune_memory import install_immune_memory
+
+            install_immune_memory()
+        except Exception as exc:  # noqa: BLE001 — the immune memory is optional
+            logger.warning("immune memory not installed: %s", exc)
     # The static manifests in frontend/public are owned by the repo's manifest
     # pipeline (scripts/validation/generate_*) and checked in with a richer
     # schema; the gateway serves its own live manifests at /api/manifests/<name>.

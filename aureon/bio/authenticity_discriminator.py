@@ -57,6 +57,14 @@ if str(_REPO_ROOT) not in sys.path:
 import phenolic_fingerprint as engine  # noqa: E402
 from aureon.bio.power_analysis import _structured_tones  # noqa: E402
 
+# --- guarded organism link (suppressible; never fatal) — the "I exist" heartbeat ---
+try:  # pragma: no cover - environment-dependent, best-effort
+    from aureon.core.aureon_baton_link import link_system
+
+    link_system(__name__)
+except Exception:  # noqa: BLE001 - the organ must import in any environment
+    pass
+
 __all__ = [
     "AUTHENTICITY_BOUNDARY",
     "AUTH_RUN_TOPIC",

@@ -206,5 +206,58 @@ key is authentic by every test.** The real key comes from `AUREON_AUTHENTICITY_K
 fixed, documented non-secret test key is the default so self-tests are deterministic. Synthetic only, not
 a claim about any person, not a security proof. It emits `bio.authenticity.run`.
 
-So the immune layer is now **sensor (b34) → effector (b35) → membrane (b36) → counterfeit detector
-(b37)**.
+## The memory organ — immune memory (b38)
+
+The first four organs sense, respond, hold the border, and tell genuine from counterfeit — but each was
+**stateless**: every attack, even one met a hundred times, paid the full primary-response cost again. The
+adaptive immune system's defining trick is **memory** — once a pathogen is neutralized, the body keeps its
+signature so a *second* exposure is recognized instantly and answered by a faster, stronger **secondary
+response** (memory B/T cells; the basis of vaccination). Immune memory
+(`aureon/bio/immune_memory.py`, benchmark **b38**) is that organ.
+
+A confirmed, neutralized threat's **content signature** (a SHA-256 over `kind`+`threat_id`, reusing b36's
+canonical idiom) is committed to a **bounded** memory; on re-exposure the memory **recognizes** it and
+returns a cheap, escalated **secondary** response — a single lookup — instead of the full quorum
+re-verification. Cost is measured in **verification work-units, not wall-clock**: a novel threat costs the
+full quorum's worth of passes (`PRIMARY_COST = swarm_defense.DEFAULT_N_DEFENDERS`), a recognized repeat
+costs `1` — a measurable speedup that keeps every artifact byte-identical. It has **specificity** (a
+remembered parasite does not recall a different one), **self-tolerance** (a benign / self signal, severity
+0, is never remembered — no autoimmunity), and **bounded** deterministic FIFO eviction. Honest scope: a
+signature cache + recognition accelerator, **not** machine learning and **not** prevention — a novel or
+*mutated* threat (a changed signature) is correctly seen as new and pays the full primary response.
+
+Immune memory **reuses** the layer's own primitives — it imports `swarm_defense.ThreatReport` /
+`DefenseResult` (no third ThreatReport), the `mcp_membrane` signature idiom, and the
+`queen.conversation_memory` atomic-persist pattern (`state/immune_memory.json`, tmp-file + `os.replace` +
+`PERSIST_VERSION` — never a repo-root JSON). It emits `bio.immune_memory.run`.
+
+So the immune layer is now **sensor (b34) → effector (b35) → membrane (b36) → counterfeit detector (b37) →
+memory (b38)**.
+
+## Wiring the layer into the organism
+
+Until this cycle the immune layer was **HNC-faithful in voice but an unwired silo in code**: the modules
+published `bio.*.run` + `append_trace`, but nothing subscribed, none carried the canonical import
+heartbeat, their traces were not routed across process, and the organism-unification audit never saw them.
+This cycle closes those gaps (additive and guarded throughout):
+
+- **Heartbeat ("I exist").** All five organs (b34–b38) now carry the guarded, suppressible
+  `link_system(__name__)` import heartbeat used by sibling bio modules, so the connectome counts them —
+  and it does not fire under `AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1`.
+- **Cross-process route.** `trace_pump.DEFAULT_ROUTES` now re-fires `bio.integrity_guard.run`,
+  `bio.swarm_defense.run`, and `bio.immune_memory.run` onto a consuming process's bus, so a breach sensed
+  in one process reaches subscribers (and the Queen, who may observe) in another.
+- **The loop closes.** `immune_memory.install_immune_memory()` subscribes `on_confirmed_defense` to
+  `bio.swarm_defense.run` (realizing the previously *subjunctive* `on_breach`), mounted at operator boot
+  right after the trace pump. A confirmed neutralization now actually commits to memory.
+- **Proven in CI.** A new `immune_layer_recall` edge in `scripts/validation/audit_organism_unification.py`
+  publishes a synthetic confirmed breach and asserts the recurrence is recognized (and a novel parasite is
+  not) — the first time the organism's own liveness gate sees the immune layer.
+
+Per the leaderless principle (`swarm_defense.py` — a co-opted authority is the very parasite we defend
+against), the Queen **observes** the immune layer on her channels but never commands it; nothing here is
+`QueenConscience.ask_why`-gated.
+
+**Deferred convergence (tracked follow-ups, not in this diff to avoid destabilizing shipped benchmarks):**
+unify `swarm_defense._tally` onto `auris_metacognition._tally` (same tiers, currently copied), and draw
+b37's provenance key from `aureon/vault/hnc_swarm_key_store.py` instead of a bespoke env var.

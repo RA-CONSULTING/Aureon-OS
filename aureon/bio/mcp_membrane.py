@@ -40,6 +40,14 @@ from typing import Any, Final
 
 from aureon.bio import integrity_guard as guard
 
+# --- guarded organism link (suppressible; never fatal) — the "I exist" heartbeat ---
+try:  # pragma: no cover - environment-dependent, best-effort
+    from aureon.core.aureon_baton_link import link_system
+
+    link_system(__name__)
+except Exception:  # noqa: BLE001 - the organ must import in any environment
+    pass
+
 __all__ = [
     "MEMBRANE_BOUNDARY",
     "MEMBRANE_RUN_TOPIC",

@@ -2678,6 +2678,110 @@ def b37_authenticity(tmp_root: Path) -> Dict[str, Any]:
     }
 
 
+def b38_immune_memory(tmp_root: Path) -> Dict[str, Any]:
+    """The immune layer remembers, φ logic unchanged: once the swarm (b35) confirms a neutralization, the
+    threat's content signature is committed to a bounded, self-tolerant memory, so a repeat parasite is
+    recognized instantly and answered by a cheap, escalated secondary response instead of the full quorum
+    re-verification (cost measured in work-units, never wall-clock). It has specificity (a remembered
+    parasite does not recall a different one), self-tolerance (a benign signal is never remembered — no
+    autoimmunity), and it is bounded (deterministic FIFO eviction). Crucially it CLOSES THE LOOP the
+    effector only described: install_immune_memory subscribes to bio.swarm_defense.run so a confirmed
+    breach published into cognition actually commits to memory (the Queen may observe; the effector stays
+    leaderless). A durable md + JSON artifact round-trips and is byte-identical on re-run, and no
+    person-reading surface exists.
+    """
+    import json
+
+    from aureon.bio import immune_memory as mem
+    from aureon.bio.swarm_defense import ThreatReport
+
+    report = mem.compute_immune_memory(n_threats=8, repeats=3, n_novel=8, n_self=6, seed0=0)
+    out_md = tmp_root / "immune_memory.md"
+    out_json = tmp_root / "immune_memory.json"
+    rendered = mem.write_immune_memory_report(report, out_md, out_json)
+
+    md = out_md.read_text(encoding="utf-8") if out_md.exists() else ""
+    loaded = json.loads(out_json.read_text(encoding="utf-8")) if out_json.exists() else {}
+    row_lines = [ln for ln in md.splitlines() if ln.startswith("| ") and "---" not in ln]
+
+    out_md2 = tmp_root / "immune_memory2.md"
+    out_json2 = tmp_root / "immune_memory2.json"
+    mem.write_immune_memory_report(report, out_md2, out_json2)
+
+    # Bounded capacity with deterministic eviction (a fresh small-capacity store).
+    small = mem.ImmuneMemory(capacity=3)
+    for i in range(6):
+        small.remember(ThreatReport(threat_id=f"p-{i}", kind="mutated_invariant",
+                                     description=f"d{i}", severity=2))
+    bounded_ok = len(small) == 3 and small.evictions == 3
+
+    # The loop closes: a confirmed neutralization on the bus commits, and the recurrence is recognized.
+    class _Bus:
+        def subscribe(self, topic, handler):
+            self._topic, self._handler = topic, handler
+
+        def publish(self, thought):
+            if getattr(thought, "topic", None) == getattr(self, "_topic", None):
+                self._handler(thought)
+
+    from aureon.core.aureon_thought_bus import Thought
+
+    loop_bus = _Bus()
+    loop_mem = mem.install_immune_memory(bus=loop_bus)
+    loop_bus.publish(Thought(source="swarm_defense", topic="bio.swarm_defense.run",
+                             payload={"threat_id": "bench-loop", "kind": "mutated_invariant",
+                                      "confirmed": True}))
+    loop_closes = loop_mem.recognize(
+        ThreatReport(threat_id="bench-loop", kind="mutated_invariant", description="recur", severity=2)
+    ) is not None
+
+    surface = [n.lower() for n in dir(mem)]
+    banned = ("face", "speaker", "voice", "pose", "emotion", "identity", "biometric")
+
+    invariants = {
+        "recognizes_repeat": report.recognition_rate >= 0.99,
+        "misses_novel": report.false_recall_rate <= 0.01,
+        "self_tolerance": report.self_not_remembered,
+        "secondary_cheaper_than_primary": report.secondary_cost < report.primary_cost,
+        "speedup_gt_1": report.speedup > 1.0,
+        "specificity": report.specificity,
+        "bounded_capacity": bounded_ok,
+        "loop_closes": loop_closes,
+        "both_files_nonempty": out_md.exists() and out_md.stat().st_size > 0
+        and out_json.exists() and out_json.stat().st_size > 0,
+        "json_round_trips": loaded.get("recognition_rate") == report.recognition_rate
+        and loaded.get("boundary") == mem.IMMUNE_MEMORY_BOUNDARY,
+        "has_metric_rows": len(row_lines) >= 5,
+        "byte_identical_on_rewrite": out_md2.read_bytes() == out_md.read_bytes()
+        and out_json2.read_bytes() == out_json.read_bytes(),
+        "out_path_set": rendered.out_path == str(out_md),
+        "no_person_surface": not any(b in n for b in banned for n in surface),
+    }
+    passed = all(invariants.values())
+
+    return {
+        "name": "Immune memory (recall + secondary response; φ logic unchanged)",
+        "module": "aureon/bio/immune_memory.py",
+        "passed": passed,
+        "metrics": {
+            "recognition_rate": report.recognition_rate,
+            "false_recall_rate": report.false_recall_rate,
+            "primary_cost": report.primary_cost,
+            "secondary_cost": report.secondary_cost,
+            "speedup": report.speedup,
+            "memory_size": report.memory_size,
+        },
+        "evidence": (
+            f"recognition {report.recognition_rate:.3f} on repeats, false-recall {report.false_recall_rate:.3f}; "
+            f"primary {report.primary_cost} vs secondary {report.secondary_cost} work-units "
+            f"(speedup {report.speedup:.1f}×); self not remembered {report.self_not_remembered}; specificity "
+            f"{report.specificity}; bounded eviction {bounded_ok}; loop closes {loop_closes}; durable md+JSON "
+            f"byte-identical; no person surface"
+        ),
+        "invariants": invariants,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tier A registry — order matters for the report.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2721,6 +2825,7 @@ TIER_A: List[Tuple[str, Callable[[Path], Dict[str, Any]]]] = [
     ("Swarm defense (bee-ball quorum)", b35_swarm_defense),
     ("MCP boundary membrane",           b36_mcp_membrane),
     ("Authenticity discriminator",      b37_authenticity),
+    ("Immune memory (recall)",          b38_immune_memory),
 ]
 
 

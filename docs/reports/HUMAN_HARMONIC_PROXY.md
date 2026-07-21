@@ -495,6 +495,31 @@ python -m aureon.bio.authenticity_discriminator --self-test
 python -m aureon.bio.authenticity_discriminator --report auth.md --report-json auth.json
 ```
 
+## Immune memory — recall and the secondary response (`aureon/bio/immune_memory.py`)
+
+The immune layer's memory organ (benchmark **b38**): once the swarm (b35) confirms a neutralization, the
+threat's content signature is committed to a bounded, self-tolerant memory, so a repeat parasite is
+recognized instantly and answered by a cheap, escalated **secondary response** instead of the full quorum
+re-verification.
+
+- **Work-units, not wall-clock.** A novel threat costs the full quorum (`PRIMARY_COST =
+  swarm_defense.DEFAULT_N_DEFENDERS`); a recognized repeat costs `1` — a measurable speedup that keeps the
+  artifact byte-identical.
+- **Specificity + self-tolerance.** A remembered parasite does not recall a different one; a benign / self
+  signal (severity 0) is never remembered — no autoimmunity. Bounded, deterministic FIFO eviction.
+- **Reuse + wiring.** Imports `swarm_defense.ThreatReport` (no third copy), reuses the `mcp_membrane`
+  signature idiom and the `conversation_memory` atomic `state/` persistence; `install_immune_memory`
+  closes the guard→swarm→memory loop the effector only described. Not ML, not prevention — a *mutated*
+  signature is correctly seen as new. Emits `bio.immune_memory.run`.
+
+```bash
+# Immune-memory self-test — repeats recognized, novel/self missed, speedup > 1, self not remembered.
+python -m aureon.bio.immune_memory --self-test
+
+# Write the immune-memory evidence artifact (deterministic markdown + JSON).
+python -m aureon.bio.immune_memory --report mem.md --report-json mem.json
+```
+
 ## Run it
 
 ```bash
