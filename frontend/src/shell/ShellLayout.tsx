@@ -10,7 +10,7 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Search, Sparkles } from "lucide-react";
+import { Search } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -50,6 +50,8 @@ import { HASH_REDIRECTS, VISIBLE_NAV_SECTIONS, navItemForPath, sectionForPath } 
 import { PageSkeleton, RouteErrorBoundary } from "./Page";
 import { BackendStatusBanner } from "@/components/BackendStatusBanner";
 import { LiveVitals } from "@/components/LiveVitals";
+import { SiteFooter } from "./SiteFooter";
+import { RiskDisclaimer } from "@/components/RiskDisclaimer";
 
 type PlatformHealth = "healthy" | "degraded" | "critical" | "unknown";
 
@@ -159,15 +161,13 @@ function ShellSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
-            <Sparkles className="h-4 w-4 text-primary-foreground" />
-          </div>
+        <Link to="/" className="flex items-center gap-2 px-2 py-1.5">
+          <img src="/aureon-logo.jpg" alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover" />
           <div className="grid leading-tight group-data-[collapsible=icon]:hidden">
             <span className="font-semibold tracking-wide">AUREON</span>
-            <span className="text-[10px] text-muted-foreground">Harmonic Nexus Platform</span>
+            <span className="text-[10px] text-muted-foreground">Harmonic Nexus Core</span>
           </div>
-        </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         {VISIBLE_NAV_SECTIONS.map((section) => (
@@ -213,7 +213,7 @@ function ShellBreadcrumb() {
       <BreadcrumbList>
         <BreadcrumbItem className="hidden md:block">
           <BreadcrumbLink asChild>
-            <Link to="/">Aureon</Link>
+            <Link to="/console">Aureon</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
         {section && section.label !== "Platform" && (
@@ -252,6 +252,8 @@ export default function ShellLayout() {
   useLegacyHashRedirect();
   const location = useLocation();
   const item = navItemForPath(location.pathname);
+  const section = sectionForPath(location.pathname);
+  const isTrading = section?.label === "Trading";
 
   return (
     <SidebarProvider>
@@ -273,11 +275,17 @@ export default function ShellLayout() {
         </header>
         <BackendStatusBanner />
         <main className="flex-1 overflow-auto">
+          {isTrading && (
+            <div className="px-4 pt-4">
+              <RiskDisclaimer />
+            </div>
+          )}
           <RouteErrorBoundary key={location.pathname} name={item?.label ?? "This page"}>
             <Suspense fallback={<PageSkeleton />}>
               <Outlet />
             </Suspense>
           </RouteErrorBoundary>
+          <SiteFooter />
         </main>
       </SidebarInset>
     </SidebarProvider>

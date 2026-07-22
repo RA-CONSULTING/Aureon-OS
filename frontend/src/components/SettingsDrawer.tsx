@@ -15,6 +15,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Info, FileText, Shield } from "lucide-react";
+import { LEGAL_EFFECTIVE_DATE } from "@/shell/companyFacts";
 
 export function SettingsDrawer() {
   const [open, setOpen] = useState(false);
@@ -82,7 +83,7 @@ export function SettingsDrawer() {
               </AccordionTrigger>
               <AccordionContent>
                 <div className="text-sm text-muted-foreground space-y-4 py-2 max-h-[300px] overflow-y-auto">
-                  <p className="text-xs">Last updated: {new Date().toLocaleDateString()}</p>
+                  <p className="text-xs">Last updated: {LEGAL_EFFECTIVE_DATE}</p>
                   
                   <div>
                     <h4 className="font-medium text-foreground mb-1">1. Acceptance of Terms</h4>
@@ -127,7 +128,7 @@ export function SettingsDrawer() {
               </AccordionTrigger>
               <AccordionContent>
                 <div className="text-sm text-muted-foreground space-y-4 py-2 max-h-[300px] overflow-y-auto">
-                  <p className="text-xs">Last updated: {new Date().toLocaleDateString()}</p>
+                  <p className="text-xs">Last updated: {LEGAL_EFFECTIVE_DATE}</p>
                   
                   <div>
                     <h4 className="font-medium text-foreground mb-1">1. Information We Collect</h4>

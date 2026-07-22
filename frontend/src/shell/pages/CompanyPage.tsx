@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LiveDataNotice } from "@/shell/Page";
 import { type TruthStatus, TRUTH_STATUS_STYLE } from "../truthStatus";
+import { buildStaticCompanyProfile } from "../companyFacts";
 
 
 interface OrgProfile {
@@ -58,10 +59,12 @@ export default function CompanyPage() {
   const [data, setData] = useState<OrgProfile | null | undefined>(undefined);
 
   useEffect(() => {
+    // Prefer the live gateway; fall back to the committed static facts so the company
+    // story is never blank — the facts are identical (both real_derived from COMPANY.md).
     fetch("/api/org")
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then(setData)
-      .catch(() => setData(null));
+      .catch(() => setData(buildStaticCompanyProfile() as OrgProfile));
   }, []);
 
   return (

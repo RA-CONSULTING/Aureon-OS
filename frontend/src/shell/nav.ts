@@ -69,7 +69,7 @@ export const NAV_SECTIONS: NavSection[] = [
     label: "Platform",
     items: [
       {
-        path: "/",
+        path: "/console",
         label: "Overview",
         description: "Platform health, domains, and quick routes",
         icon: LayoutDashboard,
@@ -395,7 +395,7 @@ export function sectionForPath(pathname: string): NavSection | undefined {
  * right tab.
  */
 export const HASH_REDIRECTS: Record<string, string> = {
-  "#overview": "/",
+  "#overview": "/console",
   "#repo-map": "/platform/repo-map",
   "#live-ops": "/platform/console#live-ops",
   "#coding": "/coding/organism",
