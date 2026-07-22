@@ -13,6 +13,7 @@ import {
   Bot,
   Brain,
   Briefcase,
+  Building2,
   Coins,
   Compass,
   CreditCard,
@@ -95,6 +96,13 @@ export const NAV_SECTIONS: NavSection[] = [
         description: "Gas tank, usage metering, support the project",
         icon: CreditCard,
         Component: lazy(() => import("./pages/BillingPage")),
+      },
+      {
+        path: "/platform/company",
+        label: "Company",
+        description: "The organization behind Aureon OS — R&A Consulting · Aureon Zorza Technologies",
+        icon: Building2,
+        Component: lazy(() => import("./pages/CompanyPage")),
       },
       {
         path: "/platform/console",

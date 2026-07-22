@@ -398,6 +398,21 @@ def register_saas_routes(app: Any) -> Any:
             ts = "no_data"
         return jsonify(_stamp(data, ts))
 
+    @app.get("/api/org")
+    @_guarded
+    def saas_org():
+        # The organization behind Aureon OS — R&A Consulting and Brokerage Services Ltd
+        # (trading as Aureon Zorza Technologies), its company number, the Innovate NI Silver
+        # recognition, community support and contact — verifiable public facts transcribed
+        # from COMPANY.md. Distinct from /api/company, which is the agent workforce roster.
+        try:
+            from aureon.saas.company_profile import build_company_profile
+
+            profile = build_company_profile()
+            return jsonify(_stamp(profile, profile.get("truth_status", "real_derived")))
+        except Exception as exc:  # noqa: BLE001 — degrade honestly, never 500
+            return jsonify(_stamp({"available": False, "error": str(exc)[:200]}, "no_data"))
+
     @app.get("/api/consciousness")
     @_guarded
     def saas_consciousness():
