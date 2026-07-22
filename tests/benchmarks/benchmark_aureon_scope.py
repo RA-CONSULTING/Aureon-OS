@@ -2782,6 +2782,112 @@ def b38_immune_memory(tmp_root: Path) -> Dict[str, Any]:
     }
 
 
+def b39_immune_regulation(tmp_root: Path) -> Dict[str, Any]:
+    """The immune layer has a brake, φ logic unchanged: memory (b38) biases toward faster/stronger
+    responses, so the layer needs regulation or it harms the host — autoimmunity (attacking self) or a
+    cytokine storm (over-responding to repeated alarms). The regulatory governor enforces self-tolerance
+    (a benign signal is NEVER mounted against → self_attack_rate 0), damps a false-alarm storm with a
+    refractory cooldown, never suppresses a genuine novel threat (novelty always passes), bounds concurrent
+    inflammation at a cap (a flood is deferred, not run away), and returns to homeostasis when alarms
+    quiet. It closes a loop with the effector: a confirmed neutralization on bio.swarm_defense.run
+    registers a cooldown so the layer does not re-attack a cleared threat. Deterministic, measured in
+    event-ticks (not wall-clock). A durable md + JSON artifact round-trips and is byte-identical on re-run,
+    and no person-reading surface exists.
+    """
+    import json
+
+    from aureon.bio import immune_regulation as reg
+    from aureon.bio.swarm_defense import ThreatReport
+
+    report = reg.compute_immune_regulation(n_genuine=4, storm_signatures=3, storm_repeats=4, n_self=4, seed0=0)
+    out_md = tmp_root / "regulation.md"
+    out_json = tmp_root / "regulation.json"
+    rendered = reg.write_immune_regulation_report(report, out_md, out_json)
+
+    md = out_md.read_text(encoding="utf-8") if out_md.exists() else ""
+    loaded = json.loads(out_json.read_text(encoding="utf-8")) if out_json.exists() else {}
+    row_lines = [ln for ln in md.splitlines() if ln.startswith("| ") and "---" not in ln]
+
+    out_md2 = tmp_root / "regulation2.md"
+    out_json2 = tmp_root / "regulation2.json"
+    reg.write_immune_regulation_report(report, out_md2, out_json2)
+
+    # The inflammation cap bites under a flood (a fresh governor, cap+3 distinct threats held active).
+    flood = reg.RegulatoryGovernor(cooldown=20, inflammation_cap=4)
+    flood_peak = 0
+    flood_capped = 0
+    for i in range(7):
+        o = flood.regulate(ThreatReport(threat_id=f"flood-{i}", kind="mutated_invariant",
+                                        description="d", severity=2))
+        flood_peak = max(flood_peak, o.inflammation)
+        if o.reason == "inflammation_cap":
+            flood_capped += 1
+    bounded_ok = flood_peak <= 4 and flood_capped == 3
+
+    # The loop closes: a confirmed neutralization registers a cooldown → the recurrence is suppressed.
+    class _Bus:
+        def subscribe(self, topic, handler):
+            self._topic, self._handler = topic, handler
+
+        def publish(self, thought):
+            if getattr(thought, "topic", None) == getattr(self, "_topic", None):
+                self._handler(thought)
+
+    from aureon.core.aureon_thought_bus import Thought
+
+    loop_bus = _Bus()
+    loop_gov = reg.install_immune_regulation(bus=loop_bus)
+    loop_bus.publish(Thought(source="swarm_defense", topic="bio.swarm_defense.run",
+                             payload={"threat_id": "bench-loop", "kind": "mutated_invariant",
+                                      "confirmed": True}))
+    loop_closes = loop_gov.regulate(
+        ThreatReport(threat_id="bench-loop", kind="mutated_invariant", description="recur", severity=2)
+    ).reason == "refractory_cooldown"
+
+    surface = [n.lower() for n in dir(reg)]
+    banned = ("face", "speaker", "voice", "pose", "emotion", "identity", "biometric")
+
+    invariants = {
+        "self_tolerance": report.self_attack_rate == 0.0,
+        "damps_false_alarms": report.false_alarm_suppression_rate >= 0.99,
+        "passes_genuine_threats": report.genuine_pass_rate == 1.0,
+        "bounded_inflammation": bounded_ok and report.max_inflammation <= report.inflammation_cap,
+        "homeostasis_restored": report.homeostasis_restored,
+        "loop_closes": loop_closes,
+        "both_files_nonempty": out_md.exists() and out_md.stat().st_size > 0
+        and out_json.exists() and out_json.stat().st_size > 0,
+        "json_round_trips": loaded.get("self_attack_rate") == report.self_attack_rate
+        and loaded.get("boundary") == reg.IMMUNE_REGULATION_BOUNDARY,
+        "has_metric_rows": len(row_lines) >= 5,
+        "byte_identical_on_rewrite": out_md2.read_bytes() == out_md.read_bytes()
+        and out_json2.read_bytes() == out_json.read_bytes(),
+        "out_path_set": rendered.out_path == str(out_md),
+        "no_person_surface": not any(b in n for b in banned for n in surface),
+    }
+    passed = all(invariants.values())
+
+    return {
+        "name": "Immune regulation (homeostatic brake; φ logic unchanged)",
+        "module": "aureon/bio/immune_regulation.py",
+        "passed": passed,
+        "metrics": {
+            "self_attack_rate": report.self_attack_rate,
+            "false_alarm_suppression_rate": report.false_alarm_suppression_rate,
+            "genuine_pass_rate": report.genuine_pass_rate,
+            "max_inflammation": report.max_inflammation,
+            "work_saved_fraction": report.work_saved_fraction,
+        },
+        "evidence": (
+            f"self-attack {report.self_attack_rate:.3f} (no autoimmunity); false-alarm suppression "
+            f"{report.false_alarm_suppression_rate:.3f}; genuine-pass {report.genuine_pass_rate:.3f} (novelty "
+            f"always passes); inflammation bounded {flood_peak}/4 under flood (capped {flood_capped}); "
+            f"homeostasis restored {report.homeostasis_restored}; loop closes {loop_closes}; durable md+JSON "
+            f"byte-identical; no person surface"
+        ),
+        "invariants": invariants,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tier A registry — order matters for the report.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2826,6 +2932,7 @@ TIER_A: List[Tuple[str, Callable[[Path], Dict[str, Any]]]] = [
     ("MCP boundary membrane",           b36_mcp_membrane),
     ("Authenticity discriminator",      b37_authenticity),
     ("Immune memory (recall)",          b38_immune_memory),
+    ("Immune regulation (homeostasis)", b39_immune_regulation),
 ]
 
 

@@ -17,8 +17,8 @@ def test_builds_three_groups_from_committed_report():
     assert cat["group_order"] == ["cognitive_immune_layer", "statistical_validity", "sensor_lane"]
     groups = cat["groups"]
     assert set(groups) == set(cat["group_order"])
-    # the immune layer's five organs and the six statistical modules are grouped exactly
-    assert groups["cognitive_immune_layer"]["module_count"] == 5
+    # the immune layer's six organs and the six statistical modules are grouped exactly
+    assert groups["cognitive_immune_layer"]["module_count"] == 6
     assert groups["statistical_validity"]["module_count"] == 6
     assert groups["sensor_lane"]["module_count"] >= 1
     assert cat["counts"]["total"] == sum(g["module_count"] for g in groups.values())
@@ -29,7 +29,7 @@ def test_immune_and_stat_modules_land_in_the_right_group():
     immune = {dc._basename(m["module"]) for m in cat["groups"]["cognitive_immune_layer"]["modules"]}
     stat = {dc._basename(m["module"]) for m in cat["groups"]["statistical_validity"]["modules"]}
     assert {"integrity_guard", "swarm_defense", "mcp_membrane",
-            "authenticity_discriminator"} <= immune
+            "authenticity_discriminator", "immune_memory", "immune_regulation"} <= immune
     assert {"proxy_suite", "null_calibration", "power_analysis",
             "calibration_curve", "multiplicity", "false_discovery"} <= stat
 

@@ -234,6 +234,43 @@ Immune memory **reuses** the layer's own primitives — it imports `swarm_defens
 So the immune layer is now **sensor (b34) → effector (b35) → membrane (b36) → counterfeit detector (b37) →
 memory (b38)**.
 
+## The homeostatic brake — immune regulation (b39)
+
+Every immune system needs a **brake**. Memory (b38) biases the layer toward faster, stronger secondary
+responses; ungoverned, that bias harms the host — the layer attacks *self* (autoimmunity) or over-responds
+to repeated alarms until the reaction itself is the damage (a cytokine storm). Immune regulation
+(`aureon/bio/immune_regulation.py`, benchmark **b39**) is the counterbalance — a deterministic,
+tick-based **regulatory governor** modeled on regulatory T-cells and inflammation resolution. It applies
+three homeostatic controls to the layer's candidate responses: **self-tolerance** (a benign / self signal,
+`severity < 1`, is *never* mounted against — the anti-autoimmunity invariant), a **refractory cooldown**
+(once a threat is responded to, identical alarms within a `cooldown` window are suppressed, so a false-alarm
+storm cannot re-inflame the layer), and a **bounded-inflammation cap** (concurrent active responses are
+capped; a flood beyond the cap is *deferred*, not run away). A genuine *novel* threat always passes — the
+brake damps repetition and self, never novelty — and when alarms quiet, active responses age out and
+inflammation returns to **homeostasis**. Cost is measured in **event-ticks, not wall-clock**. It reuses
+`swarm_defense.ThreatReport` and `immune_memory`'s signature idiom, and `install_immune_regulation`
+subscribes to `bio.swarm_defense.run` so a confirmed neutralization registers a cooldown (the layer does
+not re-attack a just-cleared threat). Emits `bio.immune_regulation.run`.
+
+So the full immune layer is now **sensor (b34) → effector (b35) → membrane (b36) → counterfeit detector
+(b37) → memory (b38) → regulation (b39)** — with memory and regulation the accelerator/brake balance.
+
+## Reuse audit — two convergences investigated and declined
+
+Following the "don't reinvent the wheel" discipline, two candidate convergences were scoped against the
+existing repo primitives and **deliberately declined** (recorded here so they are not mistaken for open
+TODOs):
+
+- **`swarm_defense._tally` → `auris_metacognition._tally`:** declined. The auris version is a bound method
+  over a 5-way vote with hard-coded 5/7 thresholds and no quorum, and it keys confidence off the *winning*
+  verdict — adopting it would need an adapter, could not supply the `quorum`/`confirmed` the effector
+  needs, and would silently change `DefenseResult.confidence` for non-confirmed cases. The swarm's own
+  n-parameterized `_tally` is the more correct form; it stays.
+- **b37 provenance key → `hnc_swarm_key_store`:** declined. That store mints `os.urandom` keys, retrieves
+  via Windows DPAPI + PowerShell (unavailable offline/CI), and is filesystem/timestamp-stateful with no
+  deterministic default — wiring it into `_default_key()` would break b37's byte-identical artifacts. The
+  existing `AUREON_AUTHENTICITY_KEY` env + fixed test-key default is the correct deterministic design.
+
 ## Wiring the layer into the organism
 
 Until this cycle the immune layer was **HNC-faithful in voice but an unwired silo in code**: the modules

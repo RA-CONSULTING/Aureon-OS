@@ -717,6 +717,14 @@ def build_boot_app():
             install_immune_memory()
         except Exception as exc:  # noqa: BLE001 — the immune memory is optional
             logger.warning("immune memory not installed: %s", exc)
+        # The homeostatic brake: a confirmed neutralization registers a cooldown so the layer
+        # does not re-attack a just-cleared threat (memory accelerates; regulation restrains).
+        try:
+            from aureon.bio.immune_regulation import install_immune_regulation
+
+            install_immune_regulation()
+        except Exception as exc:  # noqa: BLE001 — the immune regulation is optional
+            logger.warning("immune regulation not installed: %s", exc)
     # The static manifests in frontend/public are owned by the repo's manifest
     # pipeline (scripts/validation/generate_*) and checked in with a richer
     # schema; the gateway serves its own live manifests at /api/manifests/<name>.

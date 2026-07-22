@@ -1037,6 +1037,29 @@ def run_audit() -> list[dict]:
     except Exception as _exc:  # noqa: BLE001
         results.append(_check("immune_layer_recall", False, f"error: {_exc}", critical=False))
 
+    # Edge 38 — the immune layer's homeostatic brake closes its loop: a confirmed neutralization
+    # published on bio.swarm_defense.run registers a cooldown, so the same threat recurring is
+    # regulated (suppressed) rather than re-attacked — while a benign self signal is never mounted against.
+    try:
+        from aureon.bio.immune_regulation import install_immune_regulation
+        from aureon.bio.swarm_defense import ThreatReport as _TR
+
+        _gov = install_immune_regulation(bus=bus)
+        bus.publish(Thought(source="swarm_defense", topic="bio.swarm_defense.run",
+                            payload={"threat_id": "audit-reg", "kind": "mutated_invariant",
+                                     "confirmed": True}))
+        _repeat_reg = _gov.regulate(_TR(threat_id="audit-reg", kind="mutated_invariant",
+                                        description="recur", severity=2))
+        _self_reg = _gov.regulate(_TR(threat_id="audit-self", kind="unknown",
+                                      description="benign", severity=0))
+        _damped = _repeat_reg.reason == "refractory_cooldown"
+        _tolerant = _self_reg.reason == "self_tolerance"
+        results.append(_check(
+            "immune_regulation_homeostasis", _damped and _tolerant,
+            f"repeat_damped={_damped} self_tolerated={_tolerant}", critical=False))
+    except Exception as _exc:  # noqa: BLE001
+        results.append(_check("immune_regulation_homeostasis", False, f"error: {_exc}", critical=False))
+
     return results
 
 

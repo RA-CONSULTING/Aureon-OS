@@ -62,7 +62,7 @@ The **sacred lattice** (`sacred_lattice_scan.py`) is how the repo maps the sky *
 
 The **harmonic core** (`harmonic_core_scan.py`) goes one level deeper still — to the frequency substrate the framework itself is built on: the HNC **Master Formula Λ(t)** modes, the **Celtic Ogham** φ-scaled tree-tones, and the **Ghost Dance** ancestral Solfeggio ladder, each scanned through the same engine. See [HARMONIC_CORE.md](HARMONIC_CORE.md).
 
-† b9 is the phenolic→cognition bridge; b10–b27 are the bio lanes; b28 is the signal-adapter conformance roll-up, b29 the family-wide false-positive-rate audit, b30 the detection-power sensitivity sweep, b31 the per-test null-calibration curve, b32 the multiplicity / family-wise-error audit, and b33 the false-discovery-rate / Benjamini–Hochberg audit (b29+b30 = the ROC picture; b31 the calibration foundation under both; b32+b33 = the two multiple-comparisons regimes, FWER and FDR, that close the statistical-validity dossier). b34–b38 are a different kind of check — not sensor lanes but the **cognitive immune layer**: sensor (b34 integrity guard) → effector (b35 swarm defense) → membrane (b36 MCP boundary) → counterfeit detector (b37 authenticity discriminator) → memory (b38 immune memory), see below. Tier-A total: **38**.
+† b9 is the phenolic→cognition bridge; b10–b27 are the bio lanes; b28 is the signal-adapter conformance roll-up, b29 the family-wide false-positive-rate audit, b30 the detection-power sensitivity sweep, b31 the per-test null-calibration curve, b32 the multiplicity / family-wise-error audit, and b33 the false-discovery-rate / Benjamini–Hochberg audit (b29+b30 = the ROC picture; b31 the calibration foundation under both; b32+b33 = the two multiple-comparisons regimes, FWER and FDR, that close the statistical-validity dossier). b34–b39 are a different kind of check — not sensor lanes but the **cognitive immune layer**: sensor (b34 integrity guard) → effector (b35 swarm defense) → membrane (b36 MCP boundary) → counterfeit detector (b37 authenticity discriminator) → memory (b38 immune memory) → regulation (b39 immune regulation), see below. Tier-A total: **39**.
 
 ## Integrity / immune layer (not a sensor lane)
 
@@ -111,8 +111,17 @@ silo): a guarded `link_system` heartbeat on b34–b38, a `trace_pump` route so `
 `immune_layer_recall` edge in the organism-unification audit. The Queen observes but never commands
 (leaderless). Emits `bio.immune_memory.run`.
 
+The **immune regulation** (`aureon/bio/immune_regulation.py`, benchmark **b39**) is the homeostatic brake:
+memory accelerates responses, so the layer needs regulation or it harms the host (autoimmunity, cytokine
+storm). A deterministic tick-based governor enforces **self-tolerance** (a benign signal is never mounted
+against), a **refractory cooldown** (damps false-alarm storms), and a **bounded-inflammation cap** (defers
+a flood), while genuine novel threats always pass and inflammation resolves to **homeostasis**. Wired in
+like the rest (heartbeat, `trace_pump` route, `install_immune_regulation` closing the swarm→cooldown loop
+at boot, an `immune_regulation_homeostasis` audit edge); emits `bio.immune_regulation.run`. Memory (b38)
+and regulation (b39) are the accelerator/brake balance.
+
 **Surfaced in the console.** The whole bio family — the sensor lanes, the statistical-validity dossier
-(b28–b33), and the cognitive immune layer (b34–b38) — is now exposed to the SaaS at **`GET /api/defense`**
+(b28–b33), and the cognitive immune layer (b34–b39) — is now exposed to the SaaS at **`GET /api/defense`**
 and rendered on the **Defense & Validation** page of the React console, grouped as *sensor lanes ·
 statistical-validity dossier · cognitive immune layer*. Status is read from the committed Tier-A
 benchmark report (real `passed`/`metrics`/`evidence`) with a live bus-trace overlay where a module has
@@ -138,5 +147,5 @@ face/landmark/detect/emotion/biometric/recognize). Convenience helpers that defa
 
 ```bash
 AUREON_LLM_OFFLINE=1 AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS=1 pytest tests/bio/ -q
-python tests/benchmarks/benchmark_aureon_scope.py     # Tier-A: 38 architectural invariants
+python tests/benchmarks/benchmark_aureon_scope.py     # Tier-A: 39 architectural invariants
 ```

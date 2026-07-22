@@ -520,6 +520,29 @@ python -m aureon.bio.immune_memory --self-test
 python -m aureon.bio.immune_memory --report mem.md --report-json mem.json
 ```
 
+## Immune regulation — the homeostatic brake (`aureon/bio/immune_regulation.py`)
+
+The immune layer's brake (benchmark **b39**): memory accelerates responses, so regulation counterbalances
+or the layer harms the host (autoimmunity, cytokine storm). A deterministic tick-based governor enforces:
+
+- **Self-tolerance** — a benign / self signal (severity 0) is *never* mounted against (self_attack_rate 0).
+- **Refractory cooldown** — repeated identical alarms are suppressed within a cooldown window (damps a
+  false-alarm storm), while a genuine *novel* threat always passes (novelty is never suppressed).
+- **Bounded inflammation** — concurrent active responses are capped; a flood is *deferred*, not run away;
+  inflammation resolves to **homeostasis** when alarms quiet.
+
+Cost is measured in event-ticks, not wall-clock. Reuses `swarm_defense.ThreatReport` +
+`immune_memory.signature_of`; `install_immune_regulation` closes the swarm→cooldown loop. Emits
+`bio.immune_regulation.run`.
+
+```bash
+# Immune-regulation self-test — self never attacked, false alarms damped, genuine pass, homeostasis.
+python -m aureon.bio.immune_regulation --self-test
+
+# Write the immune-regulation evidence artifact (deterministic markdown + JSON).
+python -m aureon.bio.immune_regulation --report reg.md --report-json reg.json
+```
+
 ## Run it
 
 ```bash

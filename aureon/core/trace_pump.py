@@ -56,6 +56,7 @@ DEFAULT_ROUTES: tuple[PumpRoute, ...] = (
     PumpRoute("integrity_guard", "bio.integrity_guard.run", seed_latest=False),
     PumpRoute("swarm_defense", "bio.swarm_defense.run", seed_latest=False),
     PumpRoute("immune_memory", "bio.immune_memory.run", seed_latest=False),
+    PumpRoute("immune_regulation", "bio.immune_regulation.run", seed_latest=False),
 )
 
 
