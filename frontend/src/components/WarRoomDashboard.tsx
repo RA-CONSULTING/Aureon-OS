@@ -51,14 +51,14 @@ export default function WarRoomDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-destructive to-primary bg-clip-text text-transparent">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
               Trading War Room
             </h1>
             <p className="text-muted-foreground mt-1 flex items-center gap-2">
               Autonomous Trading • Live Quantum State • Temporal Ladder
               {globalState.isRunning && (
-                <Badge variant="default" className="bg-success animate-pulse">
-                  SYSTEMS ONLINE
+                <Badge variant="default" className="bg-success">
+                  Systems online
                 </Badge>
               )}
               {hncGamma != null && (

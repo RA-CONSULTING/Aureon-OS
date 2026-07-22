@@ -96,17 +96,17 @@ export function AureonLiveDashboard() {
       <Card className={`border-2 ${connected ? 'border-success/50' : 'border-destructive/50'}`}>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xl font-bold flex items-center gap-2">
+            <CardTitle className="text-lg font-semibold tracking-tight flex items-center gap-2">
               {connected ? (
-                <Wifi className="h-6 w-6 text-success animate-pulse" />
+                <Wifi className="h-5 w-5 text-success" />
               ) : (
-                <WifiOff className="h-6 w-6 text-destructive" />
+                <WifiOff className="h-5 w-5 text-destructive" />
               )}
               Aureon Live Bridge
             </CardTitle>
             <div className="flex items-center gap-2">
               <Badge variant={connected ? 'default' : 'destructive'}>
-                {connecting ? 'CONNECTING...' : connected ? 'LIVE' : 'OFFLINE'}
+                {connecting ? 'Connecting…' : connected ? 'Live' : 'Offline'}
               </Badge>
               <Button 
                 variant="outline" 

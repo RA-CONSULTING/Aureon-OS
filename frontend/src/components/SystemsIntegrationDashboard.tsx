@@ -110,7 +110,7 @@ export const SystemsIntegrationDashboard: React.FC = () => {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-3xl font-bold text-foreground">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Temporal Ladder — Hive Mind Integration
           </h1>
           <SimulatedDataBadge />
