@@ -163,7 +163,7 @@ function ShellSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <Link to="/" className="flex items-center gap-2 px-2 py-1.5">
-          <img src="/aureon-logo.jpg" alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover" />
+          <BrandMark size={32} className="shrink-0" />
           <div className="grid leading-tight group-data-[collapsible=icon]:hidden">
             <span className="font-semibold tracking-wide">AUREON</span>
             <span className="text-[10px] text-muted-foreground">Harmonic Nexus Core</span>

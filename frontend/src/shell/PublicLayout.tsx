@@ -10,6 +10,7 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SiteFooter } from "./SiteFooter";
+import { BrandMark } from "./Brand";
 import { PRODUCT } from "./companyFacts";
 
 const NAV = [
@@ -24,11 +25,7 @@ export default function PublicLayout() {
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
           <Link to="/" className="flex items-center gap-2.5">
-            <img
-              src="/aureon-logo.jpg"
-              alt=""
-              className="h-8 w-8 rounded-md object-cover"
-            />
+            <BrandMark size={32} className="shrink-0" />
             <span className="grid leading-tight">
               <span className="text-sm font-semibold tracking-wide">{PRODUCT.name}</span>
               <span className="text-[10px] text-muted-foreground">{PRODUCT.poweredBy}</span>
