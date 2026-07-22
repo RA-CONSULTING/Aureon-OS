@@ -10,7 +10,7 @@
 Trading research · autonomous operator · planetary/HNC research · a coding organism — one auditable system.
 
 ![Strict tier: passing](https://img.shields.io/badge/strict%20tier-passing-brightgreen.svg)
-![Tests: 92 passing](https://img.shields.io/badge/tests-92%20passing-brightgreen.svg)
+![Tests: 135 passing](https://img.shields.io/badge/tests-135%20passing-brightgreen.svg)
 ![ruff + mypy: clean](https://img.shields.io/badge/ruff%20%2B%20mypy-clean-brightgreen.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)
@@ -52,7 +52,7 @@ flowchart TB
         cognition["Agentic cognition<br/>tools · repo-wide grounding · hard boundaries"]
     end
 
-    subgraph organism["The organism (~1,200 modules)"]
+    subgraph organism["The organism (~1,100 modules)"]
         connectome["Connectome<br/>sense · touch · weave"]
         bus["Thought bus · mycelium · Queen"]
         hnc["HNC live daemon → Λ(t) field → harmonic observer"]
@@ -81,7 +81,7 @@ flowchart TB
 | **Aureon Operator** | A grounded AI switchboard — routes a prompt through many models, grounds it in the repo, reaches consensus, and applies a conscience veto before answering. | [`aureon/operator/`](aureon/operator/) · [switchboard doc](docs/architecture/AUREON_OPERATOR_SWITCHBOARD.md) |
 | **Agentic cognition** | The operator as an agent: repo-wide grounding, tool use (search / read / code / state), hard authority boundaries enforced before any action. | [`aureon/operator/cognition.py`](aureon/operator/cognition.py) |
 | **The organism connectome** | The metacognitive layer that senses, touches, and weaves every module of the body — legacy code included — into one living system. | [`aureon/core/aureon_connectome.py`](aureon/core/aureon_connectome.py) · [doc](docs/architecture/ORGANISM_CONNECTOME.md) |
-| **SaaS platform** | A categorized catalog of ~1,200 modules, honest health status, a tenancy bridge, and a billing/metering layer, served behind one gateway. | [`aureon/saas/`](aureon/saas/) · [SAAS_PLATFORM.md](docs/SAAS_PLATFORM.md) |
+| **SaaS platform** | A categorized catalog of ~1,100 modules, honest health status, a tenancy bridge, and a billing/metering layer, served behind one gateway. | [`aureon/saas/`](aureon/saas/) · [SAAS_PLATFORM.md](docs/SAAS_PLATFORM.md) |
 | **Unified console** | One professional React interface — sidebar, command palette, every dashboard as a route — over the whole repo. | [`frontend/`](frontend/) |
 | **Production hardening** | WSGI serving, `/healthz` `/readyz` `/metrics`, bearer auth + rate limiting, Docker, a two-tier lint/type gate, CI. | [PRODUCTION_GRADE.md](docs/runbooks/PRODUCTION_GRADE.md) |
 
@@ -182,15 +182,15 @@ Open-source repository traffic to date (verifiable in the repo's GitHub **Insigh
 
 The source of truth for quality is the **strict-tier gate**, verified on every change:
 `ruff` + `mypy` clean and the offline test suite green across `aureon/operator`,
-`aureon/saas`, and the connectome (92 tests). The badges at the top of this README reflect
+`aureon/saas`, and the connectome (135 tests). The badges at the top of this README reflect
 that verified state.
 
 The hosted GitHub Actions status badges below turn green once Actions is enabled on the
 organization (they reflect hosted runs, not the local gate):
 
-[![Operator CI](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/operator-ci.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/operator-ci.yml)
-[![Aureon CI](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/main_ci.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/main_ci.yml)
-[![Nightly benchmark](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/nightly-benchmark.yml/badge.svg)](https://github.com/RA-CONSULTING/aureon-trading/actions/workflows/nightly-benchmark.yml)
+[![Operator CI](https://github.com/RA-CONSULTING/Aureon-OS/actions/workflows/operator-ci.yml/badge.svg)](https://github.com/RA-CONSULTING/Aureon-OS/actions/workflows/operator-ci.yml)
+[![Aureon CI](https://github.com/RA-CONSULTING/Aureon-OS/actions/workflows/main_ci.yml/badge.svg)](https://github.com/RA-CONSULTING/Aureon-OS/actions/workflows/main_ci.yml)
+[![Nightly benchmark](https://github.com/RA-CONSULTING/Aureon-OS/actions/workflows/nightly-benchmark.yml/badge.svg)](https://github.com/RA-CONSULTING/Aureon-OS/actions/workflows/nightly-benchmark.yml)
 
 ```bash
 # reproduce the gate locally
