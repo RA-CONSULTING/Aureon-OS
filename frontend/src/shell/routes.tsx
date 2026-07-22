@@ -11,6 +11,7 @@ import { lazy } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import ShellLayout from "./ShellLayout";
 import PublicLayout from "./PublicLayout";
+import { AuthGate } from "@/components/AuthGate";
 import { ALL_NAV_ITEMS } from "./nav";
 
 const LandingPage = lazy(() => import("./pages/LandingPage"));
@@ -29,7 +30,13 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    element: <ShellLayout />,
+    // The operator console is auth-gated (a no-op unless VITE_REQUIRE_AUTH=1);
+    // the public PublicLayout subtree above stays open in every build.
+    element: (
+      <AuthGate>
+        <ShellLayout />
+      </AuthGate>
+    ),
     children: ALL_NAV_ITEMS.map((item) => ({
       path: item.path.replace(/^\//, ""),
       element: <item.Component />,

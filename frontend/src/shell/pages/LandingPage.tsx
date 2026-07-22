@@ -18,6 +18,7 @@ import {
   ArrowRight,
   BadgeCheck,
   ScrollText,
+  Coins,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -157,6 +158,36 @@ export default function LandingPage() {
             </Button>
           </CardContent>
         </Card>
+      </section>
+
+      {/* Commercial model — the real model, stated honestly (no invented tiers) */}
+      <section className="py-8">
+        <div className="flex items-center gap-2">
+          <Coins className="h-5 w-5 text-primary" />
+          <h2 className="text-2xl font-semibold tracking-tight">How Aureon is priced</h2>
+        </div>
+        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+          Aligned with the operator, not extractive. No seats, no lock-in, no invented tiers.
+        </p>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { title: "Free to run", body: "Open-source under the MIT licence and self-hostable. Clone it and run your own instance." },
+            { title: "Performance-fee gas tank", body: "A prepaid wallet charged only as a fee on profit above your high-water mark. Usage metering is record-only." },
+            { title: "Human-approved", body: "Sensitive actions — trading, payments — always require your explicit approval. The platform never initiates payments." },
+            { title: "Optional support", body: "Support-the-project contributions keep the work going. They are voluntary, never a paywall." },
+          ].map((m) => (
+            <Card key={m.title}>
+              <CardContent className="p-5">
+                <h3 className="font-medium">{m.title}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{m.body}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <p className="mt-4 text-xs text-muted-foreground">
+          Full billing state and the prepaid wallet live in the console under{" "}
+          <Link to="/platform/billing" className="underline hover:text-foreground">Billing &amp; Support</Link>.
+        </p>
       </section>
 
       {/* Voice accent — a single line, not the headline */}

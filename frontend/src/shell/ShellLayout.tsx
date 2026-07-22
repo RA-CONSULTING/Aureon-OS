@@ -52,6 +52,7 @@ import { BackendStatusBanner } from "@/components/BackendStatusBanner";
 import { LiveVitals } from "@/components/LiveVitals";
 import { SiteFooter } from "./SiteFooter";
 import { RiskDisclaimer } from "@/components/RiskDisclaimer";
+import { SupportProjectPrompt } from "@/components/SupportProjectPrompt";
 
 type PlatformHealth = "healthy" | "degraded" | "critical" | "unknown";
 
@@ -287,6 +288,7 @@ export default function ShellLayout() {
           </RouteErrorBoundary>
           <SiteFooter />
         </main>
+        <SupportProjectPrompt />
       </SidebarInset>
     </SidebarProvider>
   );
