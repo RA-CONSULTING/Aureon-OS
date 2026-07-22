@@ -32,7 +32,7 @@ _IDENTITY: Dict[str, str] = {
     "director": "Gary Anthony Leckey",
     "trading_name": "Aureon Zorza Technologies",
     "research_identity": "Aureon Institute",
-    "website": "https://aureonzorzatechnologies.pl",
+    "website": "https://aureonzorzatechnologies.com",
 }
 
 _IDENTITY_NOTE: str = (
@@ -69,7 +69,7 @@ _PRODUCT: Dict[str, str] = {
 }
 
 _CONTACT: Dict[str, str] = {
-    "website": "https://aureonzorzatechnologies.pl",
+    "website": "https://aureonzorzatechnologies.com",
     "repository": "https://github.com/RA-CONSULTING/Aureon-OS",
     "license": "MIT",
     "copyright": "© 2025 R&A Consulting and Brokerage Services Ltd",

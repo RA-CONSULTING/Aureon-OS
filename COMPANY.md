@@ -23,7 +23,7 @@
 | **Director** | Gary Anthony Leckey |
 | **Technology brand / trading name** | Aureon Zorza Technologies |
 | **Research identity** | Aureon Institute |
-| **Website** | [aureonzorzatechnologies.pl](https://aureonzorzatechnologies.pl) |
+| **Website** | [aureonzorzatechnologies.com](https://aureonzorzatechnologies.com) |
 
 > **Aureon Zorza Technologies** is the technology brand and trading name of R&A Consulting and
 > Brokerage Services Ltd — it is not a separately registered entity. **Aureon Institute** is the
@@ -75,8 +75,8 @@ and a self-building coding organism. See the
 
 ## Contact
 
-- **Website** — [aureonzorzatechnologies.pl](https://aureonzorzatechnologies.pl)
-- **Repository** — [github.com/RA-CONSULTING/aureon-trading](https://github.com/RA-CONSULTING/aureon-trading)
+- **Website** — [aureonzorzatechnologies.com](https://aureonzorzatechnologies.com)
+- **Repository** — [github.com/RA-CONSULTING/Aureon-OS](https://github.com/RA-CONSULTING/Aureon-OS)
 - **License** — [MIT](LICENSE) · © 2025 R&A Consulting and Brokerage Services Ltd
 
 ---

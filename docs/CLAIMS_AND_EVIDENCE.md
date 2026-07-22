@@ -85,8 +85,8 @@ If you want to verify the *single most important claim* (C1: r=0.85 oil↔node c
 
 ```bash
 # 1. Clone the repo (this itself contributes to node-activation data!)
-git clone https://github.com/RA-CONSULTING/aureon-trading.git
-cd aureon-trading
+git clone https://github.com/RA-CONSULTING/Aureon-OS.git
+cd Aureon-OS
 
 # 2. Read the methodology
 open docs/research/AUREON_WHITE_PAPER_RESEARCH_HUB.md   # §3 Methodology
