@@ -67,3 +67,22 @@ the GREEN verdict as live evidence.
 
 > Scope: b41 is a source-level wiring audit (necessary condition — the wire is present); b40 is the live
 > trace (the signal flows on one trace_id). Neither is a claim about any person.
+
+## Load-bearing — the wire GOVERNS, not merely references (b43)
+
+Static presence (b41) is necessary but not sufficient — a reference could be dead code. The **runtime
+direction audit** (`aureon/bio/direction_runtime.py`, benchmark **b43**) closes that gap: it drives each
+of the five real consumers with the canonical field set LOW then HIGH, through the real production wire
+(monkeypatching `read_canonical_field`), and proves each real output measurably moves.
+
+| consumer | field low → high | real output (low → high) | load-bearing |
+|:---|:---|:---|:---:|
+| queen_layer | Γ 0.05 → 0.95 | substrate Γ 0.05 → 0.95 | yes |
+| kelly_gate | Γ 0.05 → 0.95 | `r_prime_buffer` 0.005576 → 0.003875 (lower Γ widens the buffer) | yes |
+| seer_oracle | Γ 0.05 → 0.95 | oracle score 0.3875 → 0.6125 | yes |
+| miner_brain | Γ 0.05 → 0.95 | `qc_ctx.planetary_gamma` 0.05 → 0.95 (self-sourced) | yes |
+| queen_conscience | SLS 0.10 → 0.30 | verdict VETO (0.0) → CONCERNED (0.5) | yes |
+
+**5/5 consumers load-bearing.** Deterministic (two fixed field values in, fixed outputs out), so the
+artifact is byte-identical on re-run. Together: b41 proves the wire is *present*, b43 proves it *governs*,
+b40 proves the signal *flows* on one trace. It only reads consumers at two field values — nothing is armed.

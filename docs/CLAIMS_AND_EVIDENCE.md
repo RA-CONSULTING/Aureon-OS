@@ -63,6 +63,7 @@ with `python tests/benchmarks/benchmark_aureon_scope.py` (status lands in `repor
 | D1 | Logic flows HNC → decision on one unbroken trace | pulse → `read_canonical_field` → decision, **single trace_id** | [`aureon/cognition/logic_flow.py`](../aureon/cognition/logic_flow.py) · **b40** |
 | D2 | Every adaptive consumer reads the ONE canonical field | **5/5 directed** (was 1/5) — Kelly, miner, Seer, base Queen, conscience | [`aureon/bio/hnc_direction_audit.py`](../aureon/bio/hnc_direction_audit.py) · **b41** · before/after in [audit](research/audits/HNC_AURIS_DIRECTION_AUDIT_2026-07-24.md) |
 | D3 | MCP connection is a live wire through the membrane | tool calls sealed out / screened in / guarded dispatch; laminar round-trip | [`aureon/bio/mcp_transport.py`](../aureon/bio/mcp_transport.py) · **b42** · [`MCP_BOUNDARY_MEMBRANE`](architecture/MCP_BOUNDARY_MEMBRANE.md) |
+| D4 | The canonical field is load-bearing, not just referenced | **5/5 consumers** move when the field is set low→high (Kelly buffer widens, conscience VETO→CONCERN, Seer/Queen/miner shift) | [`aureon/bio/direction_runtime.py`](../aureon/bio/direction_runtime.py) · **b43** |
 
 ---
 

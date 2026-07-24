@@ -3125,6 +3125,72 @@ def b42_mcp_transport(tmp_root: Path) -> Dict[str, Any]:
     }
 
 
+def b43_direction_runtime(tmp_root: Path) -> Dict[str, Any]:
+    """The canonical field is LOAD-BEARING, φ logic unchanged: where b41 proves each adaptive consumer
+    references the one canonical field (static), b43 proves the field actually GOVERNS — it drives all
+    five real consumers (Queen layer, Kelly gate, Seer oracle, miner brain, conscience veto) with the
+    field set LOW then HIGH and asserts each consumer's real output measurably changes. The field is
+    injected through the real production wire (monkeypatching aureon.core.hnc_field.read_canonical_field,
+    which every consumer imports at call-time). Deterministic (two fixed field values in); a durable md +
+    JSON artifact round-trips and is byte-identical on re-run; no person-reading surface exists.
+    """
+    import json
+
+    from aureon.bio import direction_runtime as dr
+
+    report = dr.compute_direction_runtime()
+    out_md = tmp_root / "direction_runtime.md"
+    out_json = tmp_root / "direction_runtime.json"
+    rendered = dr.write_direction_runtime_report(report, out_md, out_json)
+
+    md = out_md.read_text(encoding="utf-8") if out_md.exists() else ""
+    loaded = json.loads(out_json.read_text(encoding="utf-8")) if out_json.exists() else {}
+    row_lines = [ln for ln in md.splitlines() if ln.startswith("| ") and "---" not in ln]
+
+    out_md2 = tmp_root / "direction_runtime2.md"
+    out_json2 = tmp_root / "direction_runtime2.json"
+    dr.write_direction_runtime_report(report, out_md2, out_json2)
+
+    determinism = dr.compute_direction_runtime().to_dict() == report.to_dict()
+
+    surface = [n.lower() for n in dir(dr)]
+    banned = ("face", "speaker", "pose", "emotion", "biometric")
+
+    invariants = {
+        "all_consumers_probed": report.n_consumers == len(dr.consumer_specs()) and report.n_consumers >= 5,
+        "field_is_load_bearing_everywhere": report.all_sway,
+        "no_inert_consumers": report.n_inert == 0,
+        "deterministic": determinism,
+        "both_files_nonempty": out_md.exists() and out_md.stat().st_size > 0
+        and out_json.exists() and out_json.stat().st_size > 0,
+        "json_round_trips": loaded.get("all_sway") == report.all_sway
+        and loaded.get("boundary") == dr.DIRECTION_RUNTIME_BOUNDARY,
+        "has_metric_rows": len(row_lines) >= 5,
+        "byte_identical_on_rewrite": out_md2.read_bytes() == out_md.read_bytes()
+        and out_json2.read_bytes() == out_json.read_bytes(),
+        "out_path_set": rendered.out_path == str(out_md),
+        "no_person_surface": not any(b in n for b in banned for n in surface),
+    }
+    passed = all(invariants.values())
+
+    return {
+        "name": "Runtime direction audit (field is load-bearing)",
+        "module": "aureon/bio/direction_runtime.py",
+        "passed": passed,
+        "metrics": {
+            "n_swaying": report.n_swaying,
+            "n_consumers": report.n_consumers,
+        },
+        "evidence": (
+            f"{report.n_swaying}/{report.n_consumers} real adaptive consumers swayed by the canonical "
+            f"field (load-bearing {report.all_sway})"
+            + (f"; inert: {', '.join(report.inert_names)}" if report.inert_names else "")
+            + "; deterministic; durable md+JSON byte-identical; no person surface"
+        ),
+        "invariants": invariants,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tier A registry — order matters for the report.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -3173,6 +3239,7 @@ TIER_A: List[Tuple[str, Callable[[Path], Dict[str, Any]]]] = [
     ("Logic-flow trace (HNC→decision)",  b40_logic_flow),
     ("HNC direction audit (one field)",  b41_hnc_direction_audit),
     ("MCP transport (live membrane)",    b42_mcp_transport),
+    ("Runtime direction (load-bearing)", b43_direction_runtime),
 ]
 
 

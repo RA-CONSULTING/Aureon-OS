@@ -62,7 +62,7 @@ The **sacred lattice** (`sacred_lattice_scan.py`) is how the repo maps the sky *
 
 The **harmonic core** (`harmonic_core_scan.py`) goes one level deeper still — to the frequency substrate the framework itself is built on: the HNC **Master Formula Λ(t)** modes, the **Celtic Ogham** φ-scaled tree-tones, and the **Ghost Dance** ancestral Solfeggio ladder, each scanned through the same engine. See [HARMONIC_CORE.md](HARMONIC_CORE.md).
 
-† b9 is the phenolic→cognition bridge; b10–b27 are the bio lanes; b28 is the signal-adapter conformance roll-up, b29 the family-wide false-positive-rate audit, b30 the detection-power sensitivity sweep, b31 the per-test null-calibration curve, b32 the multiplicity / family-wise-error audit, and b33 the false-discovery-rate / Benjamini–Hochberg audit (b29+b30 = the ROC picture; b31 the calibration foundation under both; b32+b33 = the two multiple-comparisons regimes, FWER and FDR, that close the statistical-validity dossier). b34–b39 are a different kind of check — not sensor lanes but the **cognitive immune layer**: sensor (b34 integrity guard) → effector (b35 swarm defense) → membrane (b36 MCP boundary) → counterfeit detector (b37 authenticity discriminator) → memory (b38 immune memory) → regulation (b39 immune regulation), see below. b40–b41 are the **HNC-direction dossier** — not sensor lanes but proof that the adaptive logic is directed by the one canonical field: b40 traces a live signal from `symbolic.life.pulse` to a decision on one trace_id; b41 audits that every adaptive consumer references the canonical-field wire (see below). b42 is the **live MCP transport**: it makes the b36 membrane a real wire — routing tool traffic through it over `GET /mcp/tools` + `POST /mcp/call`, sealed out / screened in / guarded dispatch. Tier-A total: **42**.
+† b9 is the phenolic→cognition bridge; b10–b27 are the bio lanes; b28 is the signal-adapter conformance roll-up, b29 the family-wide false-positive-rate audit, b30 the detection-power sensitivity sweep, b31 the per-test null-calibration curve, b32 the multiplicity / family-wise-error audit, and b33 the false-discovery-rate / Benjamini–Hochberg audit (b29+b30 = the ROC picture; b31 the calibration foundation under both; b32+b33 = the two multiple-comparisons regimes, FWER and FDR, that close the statistical-validity dossier). b34–b39 are a different kind of check — not sensor lanes but the **cognitive immune layer**: sensor (b34 integrity guard) → effector (b35 swarm defense) → membrane (b36 MCP boundary) → counterfeit detector (b37 authenticity discriminator) → memory (b38 immune memory) → regulation (b39 immune regulation), see below. b40–b41 are the **HNC-direction dossier** — not sensor lanes but proof that the adaptive logic is directed by the one canonical field: b40 traces a live signal from `symbolic.life.pulse` to a decision on one trace_id; b41 audits that every adaptive consumer references the canonical-field wire (see below). b42 is the **live MCP transport**: it makes the b36 membrane a real wire — routing tool traffic through it over `GET /mcp/tools` + `POST /mcp/call`, sealed out / screened in / guarded dispatch. b43 is the **runtime companion** to b41 — it proves the field is load-bearing at every real consumer, not merely referenced (see below). Tier-A total: **43**.
 
 ## Integrity / immune layer (not a sensor lane)
 
@@ -145,6 +145,14 @@ operator's `GuardedToolRegistry` so the authority boundary applies to external c
 always on; confidentiality is optional (transit key + AES). Asserted by a deterministic self-test AND a
 real in-process Flask round-trip; it also subscribes the previously-unheard `bio.mcp_membrane.run` topic.
 Emits `bio.mcp_transport.run`.
+
+The **runtime direction audit** (`aureon/bio/direction_runtime.py`, benchmark **b43**) is the
+load-bearing companion to b41: where b41 proves each adaptive consumer *references* the canonical field
+(static), b43 proves the field *governs* it — it drives all five real consumers (Queen layer, Kelly gate,
+Seer oracle, miner brain, conscience veto) with the field set LOW then HIGH and asserts each real output
+measurably changes (e.g. a lower Γ widens the Kelly safety buffer; a low symbolic-life score VETOes where
+a higher one only cautions). The field is injected through the real production wire (monkeypatching
+`read_canonical_field`). Deterministic; **5/5 consumers load-bearing**. Emits `bio.direction_runtime.run`.
 
 **Surfaced in the console.** The whole bio family — the sensor lanes, the statistical-validity dossier
 (b28–b33), and the cognitive immune layer (b34–b39) — is now exposed to the SaaS at **`GET /api/defense`**

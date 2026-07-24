@@ -79,6 +79,7 @@ _GROUPS: Dict[str, str] = {
     "false_discovery": "statistical_validity",
     "hnc_direction_audit": "adaptive_direction",
     "mcp_transport": "adaptive_direction",
+    "direction_runtime": "adaptive_direction",
 }
 
 # module-basename → bus-trace name (the emit_* mirror), for the live overlay only
@@ -97,6 +98,7 @@ _TRACE_NAMES: Dict[str, str] = {
     "false_discovery": "false_discovery",
     "hnc_direction_audit": "hnc_direction_audit",
     "mcp_transport": "mcp_transport",
+    "direction_runtime": "direction_runtime",
     "celestial_observatory": "observatory",
 }
 
