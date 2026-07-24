@@ -5441,7 +5441,28 @@ class MinerBrain:
         # Store quantum context for use throughout cycle; force dict for safety
         self._quantum_context = quantum_context if isinstance(quantum_context, dict) else {}
         qc_ctx = self._quantum_context
-        
+
+        # HNC direction: self-source the harmonic context from the ONE canonical field when the caller
+        # did not inject it, so the miner's adaptive cycle is directed by the shared symbolic.life.pulse
+        # (Λ/Γ/Ψ) instead of the static 0.5/1.0 defaults. An explicitly-injected value always wins; this
+        # only fills gaps. Guarded/offline-safe — a missing daemon leaves the pre-existing defaults intact.
+        try:
+            from aureon.core.hnc_field import read_canonical_field
+
+            _field = read_canonical_field()
+            if getattr(_field, "available", False):
+                _canonical = {
+                    "piano_lambda": getattr(_field, "lambda_t", None),
+                    "planetary_gamma": getattr(_field, "coherence_gamma", None),
+                    "quantum_coherence": getattr(_field, "consciousness_psi", None),
+                }
+                for _key, _val in _canonical.items():
+                    if _val is not None and qc_ctx.get(_key) is None:
+                        qc_ctx[_key] = _val
+                qc_ctx.setdefault("hnc_field_source", getattr(_field, "source", None) or "canonical")
+        except Exception:  # noqa: BLE001 — the canonical field is best-effort enrichment, never fatal
+            pass
+
         # ═══════════════════════════════════════════════════════════
         # PHASE -2: SANDBOX EVOLUTION INTEGRATION (NEW!)
         # ═══════════════════════════════════════════════════════════

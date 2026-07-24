@@ -42,18 +42,28 @@ b40 reads GREEN at baseline (the canonical wire that *does* exist — daemon →
 decision — carries a single trace end to end); b41 reads RED. The gap is not the producer; it is the
 consumers.
 
-## Target — after the un-siloing (GREEN)
+## Achieved — after the un-siloing (GREEN)
 
-Workstream 2 wires every consumer onto `read_canonical_field` / `blend_field` (miner brain self-sources
-when no context is injected; the Kelly gate reads `coherence_gamma`; the Seer oracle reconciles onto the
-canonical field; the base Queen couples its first-pass routing; the conscience veto fails *safe* rather
-than open). The safety rail: only the *reads* are unified in every mode — the numeric influence on live
-position-sizing / routing stays behind the existing `aureon/observer/production_mode.py` gates, so
-DRY_RUN / SHADOW output is bit-reproducible.
+Raw artifacts: [`hnc_auris_direction_after.md`](hnc_auris_direction_after.md) ·
+[`hnc_auris_direction_after.json`](hnc_auris_direction_after.json).
 
-When that lands, b41 is registered into the Tier-A suite and this section records the GREEN result
-(`directed_fraction` 1.000, `all_directed` true) alongside the baseline above — the before/after evidence
-for the claim.
+**5 / 5 adaptive consumers directed (directed fraction 1.000, `all_directed` true).** Every consumer now
+reads the one canonical field:
+
+| consumer | module | directed | the wire |
+|:---|:---|:---:|:---|
+| kelly_gate | `aureon/utils/adaptive_prime_profit_gate.py` | **yes** | reads `read_canonical_field().coherence_gamma`, reconciled with the observer's rock score (the lower widens the safety buffer) |
+| miner_brain | `aureon/utils/aureon_miner_brain.py` | **yes** | `run_cycle` self-sources Λ/Γ/Ψ from `read_canonical_field()` when the caller injects none |
+| seer_oracle | `aureon/intelligence/aureon_seer.py` | **yes** | `OracleOfHarmony.read()` blends the canonical Γ into its score (0.75 scan / 0.25 canonical) |
+| queen_layer | `aureon/queen/queen_layer.py` | **yes** | `substrate_field()` reads the canonical field at boot and publishes `queen.layer.substrate_field` |
+| queen_conscience | `aureon/queen/queen_conscience.py` | **yes** | `read_canonical_field` + `symbolic.life.pulse`, now fail-*safe* (advisory caution) when the field is down |
+
+Workstream 2 wired every consumer onto `read_canonical_field` / `blend_field`. The safety rail held: only
+the *reads* are unified in every mode — the numeric influence on live position-sizing / routing stays
+behind the existing `aureon/observer/production_mode.py` gates, so DRY_RUN / SHADOW output is
+bit-reproducible (the Kelly buffer multiplier stays 1.0 outside LIVE; the conscience fail-safe is silent
+in DRY_RUN). b41 is now registered in the Tier-A suite, so `report.json` and the `/defense` surface carry
+the GREEN verdict as live evidence.
 
 > Scope: b41 is a source-level wiring audit (necessary condition — the wire is present); b40 is the live
 > trace (the signal flows on one trace_id). Neither is a claim about any person.

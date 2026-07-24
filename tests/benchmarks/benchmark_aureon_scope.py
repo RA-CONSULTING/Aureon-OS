@@ -3076,8 +3076,7 @@ TIER_A: List[Tuple[str, Callable[[Path], Dict[str, Any]]]] = [
     ("Immune memory (recall)",          b38_immune_memory),
     ("Immune regulation (homeostasis)", b39_immune_regulation),
     ("Logic-flow trace (HNC→decision)",  b40_logic_flow),
-    # b41_hnc_direction_audit is registered once the un-siloing (W2) makes it GREEN; until then it
-    # reads a partial directed_fraction (the honest RED baseline captured in the audit dossier).
+    ("HNC direction audit (one field)",  b41_hnc_direction_audit),
 ]
 
 

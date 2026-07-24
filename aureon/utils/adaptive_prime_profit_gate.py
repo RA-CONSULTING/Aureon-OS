@@ -109,20 +109,45 @@ def _resolve_auto_observer_coherence() -> Optional[float]:
         _scaling_active = False
         _obs_audit = None
 
+    # HNC direction: read the ONE canonical field's coherence (Γ from symbolic.life.pulse) so the
+    # safety buffer is directed by the same shared field the rest of the organism uses, not only the
+    # observer's local rock-stability score. Reconciled conservatively (the lower of the two widens
+    # the buffer more). Guarded/offline-safe; a missing field leaves the observer path unchanged.
+    canonical_gamma: Optional[float] = None
+    try:
+        from aureon.core.hnc_field import read_canonical_field
+
+        _field = read_canonical_field()
+        if getattr(_field, "available", False) and _field.coherence_gamma is not None:
+            g = float(_field.coherence_gamma)
+            canonical_gamma = max(0.0, min(1.0, g))
+    except Exception:  # noqa: BLE001 — the canonical field is best-effort, never breaks the hot path
+        canonical_gamma = None
+
     try:
         from aureon.observer import get_observer
         obs = get_observer()
-        if obs is None:
+        obs_score: Optional[float] = None
+        if obs is not None:
+            s = float(obs.coherence_score())
+            if s != s:  # NaN
+                s = 0.0
+            obs_score = max(0.0, min(1.0, s))
+
+        # Reconcile: prefer the more conservative (lower) of the observer's rock coherence and the
+        # canonical field's Γ. Either alone is used when only one is available; None when neither is.
+        candidates = [c for c in (obs_score, canonical_gamma) if c is not None]
+        if not candidates:
             return None
-        score = float(obs.coherence_score())
-        if score != score or score < 0.0 or score > 1.0:  # NaN-safe clamp
-            score = max(0.0, min(1.0, score))
+        score = min(candidates)
 
         if _obs_audit is not None:
             try:
                 _obs_audit(
                     "kelly_buffer_evaluation",
                     {"coherence_score": score,
+                     "observer_rock_score": obs_score,
+                     "canonical_field_gamma": canonical_gamma,
                      "scaling_active_in_mode": _scaling_active},
                     decision="kelly_buffer",
                     would_have_blocked=None,
@@ -132,7 +157,7 @@ def _resolve_auto_observer_coherence() -> Optional[float]:
                 pass
 
         # In non-LIVE modes return None so calculate_gates uses the
-        # pre-observer multiplier of 1.0.
+        # pre-observer multiplier of 1.0 (bit-identical position sizing).
         return score if _scaling_active else None
     except Exception:
         return None
