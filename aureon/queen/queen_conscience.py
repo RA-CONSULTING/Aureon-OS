@@ -398,8 +398,8 @@ class QueenConscience:
                     verdict=ConscienceVerdict.VETO,
                     message=(
                         f"The field is divided — divergence {divergence:.3f} — and "
-                        f"symbolic_life_score is {sls:.3f}, off the stability island. "
-                        f"I refuse {action!r} while the organism is of two minds."
+                        f"symbolic_life_score is {sls:.3f}, off the β-stability island and at the "
+                        f"stability cliff. I refuse {action!r} while the organism is of two minds."
                     ),
                     why_it_matters=(
                         "High blend divergence means the sub-fields disagree; acting "

@@ -45,6 +45,13 @@ _GROUP_META: Dict[str, Dict[str, str]] = {
                    "null calibration, and multiple-comparison error control (FWER + FDR), "
                    "each reported exactly as the pre-registered test returns it",
     },
+    "adaptive_direction": {
+        "label": "Adaptive-direction integrity",
+        "purpose": "proof that the adaptive logic is directed by the one canonical HNC field and that "
+                   "the MCP connection is a real, integrity-checked wire — a source-level direction "
+                   "audit (every consumer on the shared field) and a live membrane transport (tool "
+                   "calls sealed out, screened in, guarded dispatch)",
+    },
     "sensor_lane": {
         "label": "Sensor lanes",
         "purpose": "the derived-signal lanes — every modality (image · audio · video · sky · "
@@ -52,7 +59,9 @@ _GROUP_META: Dict[str, Dict[str, str]] = {
                    "the one unchanged φ engine",
     },
 }
-_GROUP_ORDER: List[str] = ["cognitive_immune_layer", "statistical_validity", "sensor_lane"]
+_GROUP_ORDER: List[str] = [
+    "cognitive_immune_layer", "statistical_validity", "adaptive_direction", "sensor_lane",
+]
 
 # module-basename (no .py) → group; anything else under aureon/bio/ is a sensor lane
 _GROUPS: Dict[str, str] = {
@@ -68,6 +77,8 @@ _GROUPS: Dict[str, str] = {
     "calibration_curve": "statistical_validity",
     "multiplicity": "statistical_validity",
     "false_discovery": "statistical_validity",
+    "hnc_direction_audit": "adaptive_direction",
+    "mcp_transport": "adaptive_direction",
 }
 
 # module-basename → bus-trace name (the emit_* mirror), for the live overlay only
@@ -84,6 +95,8 @@ _TRACE_NAMES: Dict[str, str] = {
     "calibration_curve": "calibration_curve",
     "multiplicity": "multiplicity",
     "false_discovery": "false_discovery",
+    "hnc_direction_audit": "hnc_direction_audit",
+    "mcp_transport": "mcp_transport",
     "celestial_observatory": "observatory",
 }
 
