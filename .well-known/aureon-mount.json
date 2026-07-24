@@ -1,0 +1,52 @@
+{
+  "service": "aureon-mount",
+  "version": "1",
+  "summary": "Point your OpenAI-compatible base_url at Aureon; every request runs through Aureon as the host mind \u2014 grounded in the repo, vetted by the conscience \u2014 and only the grounded, vetted answer comes back.",
+  "endpoint": "POST /v1/chat/completions",
+  "models_endpoint": "GET /v1/models",
+  "manifest_endpoint": "GET /v1/integration",
+  "engines": [
+    {
+      "id": "aureon-cognition",
+      "engine": "cognition",
+      "description": "Single grounded agentic mind: repo-wide grounding + tools + conscience veto. The honest default; runs offline with no keys."
+    },
+    {
+      "id": "aureon-switchboard",
+      "engine": "switchboard",
+      "description": "Many models \u2192 ground \u2192 fan-out \u2192 consensus \u2192 conscience veto. One grounded answer collapsed from every reachable line."
+    }
+  ],
+  "default_model": "aureon-cognition",
+  "request_shape": "OpenAI chat.completions {model, messages, stream}",
+  "response_object": [
+    "chat.completion",
+    "chat.completion.chunk"
+  ],
+  "provenance_field": "aureon",
+  "provenance_keys": [
+    "engine",
+    "trace_id",
+    "grounded",
+    "grounding",
+    "conscience_verdict",
+    "conscience_message",
+    "blocked",
+    "stages",
+    "host_mind"
+  ],
+  "boundary_behavior": "crossing a hard authority boundary (live trading, payment, safety-gate bypass, credential, filing) \u2192 finish_reason=content_filter; text + a verdict only; nothing executes",
+  "human_in_the_loop": true,
+  "auth": "Authorization: Bearer <AUREON_OPERATOR_API_KEY> (required only when the key is set)",
+  "mount_by": "point base_url at <host>/v1 \u2014 no other change",
+  "mcp": {
+    "endpoint": "POST /mcp",
+    "transport": "streamable-http (JSON-RPC 2.0) + stdio",
+    "stdio_command": "aureon-mcp",
+    "tools": [
+      "aureon_reason",
+      "aureon_switchboard",
+      "aureon_integration"
+    ]
+  }
+}

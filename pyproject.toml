@@ -53,6 +53,7 @@ dev = [
 
 [project.scripts]
 aureon-operator = "aureon.operator.operator_server:main"
+aureon-mcp = "aureon.operator.mcp_server:main"
 aureon-organism = "aureon.core.organism_daemon:main"
 aureon-hnc = "aureon.core.hnc_live_daemon:main"
 

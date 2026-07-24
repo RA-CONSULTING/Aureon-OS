@@ -476,6 +476,16 @@ def register_saas_routes(app: Any) -> Any:
     def saas_cognition_brain():
         return jsonify({"surface": "brain", "data": brain_surface()})
 
+    @app.get("/api/mount")
+    @_guarded
+    def saas_mount():
+        # The Aureon Mount as a first-class SaaS surface: the same live integration
+        # manifest the /v1/integration front door serves, now same-origin under /api
+        # (nginx proxies /api, not /v1) and provenance-stamped like every other read.
+        from aureon.operator.mount import MOUNT_MODELS, integration_manifest
+
+        return jsonify(_stamp({**integration_manifest(), "models": MOUNT_MODELS}, "real_derived"))
+
     @app.get("/api/manifests/<name>")
     @_guarded
     def saas_manifest(name: str):

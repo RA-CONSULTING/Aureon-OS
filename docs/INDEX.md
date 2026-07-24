@@ -66,6 +66,7 @@ Master table of contents for all project documentation.
 | [Module Reference](MODULES_AT_A_GLANCE.md) | All 715 modules across 24 domains |
 | [System Architecture Map](architecture/SYSTEM_ARCHITECTURE_MAP.md) | 5-phase startup hierarchy |
 | [Aureon Operator Switchboard](architecture/AUREON_OPERATOR_SWITCHBOARD.md) | Runs many AIs (ChatGPT/Grok/Gemini) through the repo: ground → consensus → veto |
+| [The Aureon Mount](architecture/AUREON_MOUNT.md) | OpenAI-compatible `/v1/chat/completions` front door — any flagship model plugs in and runs *through* Aureon (grounded + vetted); human-in-loop, nothing executes |
 | [Feature Switchboard](architecture/FEATURE_SWITCHBOARD.md) | Turn every system feature on/off at human discretion — safe toggles + armed hard-boundary flags (gates never removed) |
 | [Production-Grade Program](runbooks/PRODUCTION_GRADE.md) | Two-tier gate, serving surface, CI/Docker, and the repo-wide hardening ledger |
 | [SaaS Platform](SAAS_PLATFORM.md) | Categorized catalog + domain adapters + honest status feeding the React console; Supabase tenancy bridge |

@@ -266,6 +266,7 @@ the identical loop drives that flagship model.
 
 ## 📚 Related Documentation
 
+- [`docs/architecture/AUREON_MOUNT.md`](AUREON_MOUNT.md) — **the Mount**: an OpenAI-compatible `/v1/chat/completions` front door so any flagship model plugs into Aureon and runs *through* these same grounded, vetted engines
 - [`docs/deployment/OPERATOR_DEPLOY.md`](../deployment/OPERATOR_DEPLOY.md) — run the operator/cognition service, real model keys, DigitalOcean/IONOS, phone reachability
 - [`docs/cognition`](../../aureon/cognition/pipeline.py) — `CognitionPipeline`, the seven-pane prism this operator's phase shape is patterned on
 - [`docs/architecture/SYSTEM_ARCHITECTURE_MAP.md`](SYSTEM_ARCHITECTURE_MAP.md) — where the operator sits in the wider system

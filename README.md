@@ -95,14 +95,25 @@ flowchart TB
 ```bash
 # 1 · the grounded operator (offline-safe; add model keys to go live)
 pip install -e '.[operator]'
-python -m aureon.operator.operator_server        # serves :8790 — /healthz, /api/cognition/reason
+python -m aureon.operator.operator_server        # or: aureon-operator — serves :8790
 
-# 2 · the full platform (console + gateway) via Docker
+# 2 · mount any OpenAI client — just swap the base_url (grounded + vetted reply)
+curl -s http://localhost:8790/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"aureon-cognition","messages":[{"role":"user","content":"How does Aureon ground its answers?"}]}'
+
+# 3 · the full platform (console + gateway) via Docker
 docker compose -f deploy/docker-compose.saas.yml up --build
 
-# 3 · run the strict-tier test suite (offline, no keys/network)
+# 4 · verify offline (no keys/network) — mount benchmark + strict-tier suite
+AUREON_LLM_OFFLINE=1 python -m scripts.run_mount_benchmark
 AUREON_LLM_OFFLINE=1 pytest tests/test_operator_*.py tests/test_saas_*.py tests/test_connectome.py -q
 ```
+
+> **Integrating from another AI / agent?** The Mount is an OpenAI-compatible front
+> door — point your `base_url` at `http://<host>:8790/v1` and keep your existing
+> client. Full guide: **[`AGENTS.md`](AGENTS.md)** ·
+> [`docs/architecture/AUREON_MOUNT.md`](docs/architecture/AUREON_MOUNT.md).
 
 ---
 
