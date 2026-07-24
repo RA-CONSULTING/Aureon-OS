@@ -186,10 +186,17 @@ class QueenLayer:
         self._booted = True
         elapsed = time.time() - boot_start
 
+        # HNC direction: at boot the base layer reads the ONE canonical field and publishes it, so the
+        # first-pass orchestration is coupled to the shared symbolic.life.pulse — not only the late
+        # conscience veto. Guarded/offline-safe.
+        field = self.substrate_field()
+        self._publish("queen.layer.substrate_field", field)
+
         # Publish boot complete to ThoughtBus
         self._publish("queen.layer.boot_complete", {
             "elapsed_s": round(elapsed, 2),
             "health": self.get_health(),
+            "substrate_field": field,
         })
 
         health = self.get_health()
@@ -218,6 +225,20 @@ class QueenLayer:
             "total": total,
             "systems": systems,
         }
+
+    def substrate_field(self) -> Dict[str, Any]:
+        """Read the ONE canonical HNC field (``symbolic.life.pulse`` via ``read_canonical_field``).
+
+        The base Queen layer is directed by the same shared field the conscience veto and the rest of
+        the organism read — coherence Γ / symbolic-life score ψ, not a private number. Guarded and
+        offline-safe: returns ``{"available": False}`` when the HNC daemon is not publishing, never raises.
+        """
+        try:
+            from aureon.core.hnc_field import read_canonical_field
+
+            return read_canonical_field().to_dict()
+        except Exception:  # noqa: BLE001 — the field is best-effort; the layer boots regardless
+            return {"available": False}
 
     def get_system(self, name: str) -> Optional[Any]:
         """Retrieve a booted system instance by name."""

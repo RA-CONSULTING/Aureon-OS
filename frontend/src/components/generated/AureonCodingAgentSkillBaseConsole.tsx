@@ -56,10 +56,10 @@ export function AureonCodingAgentSkillBaseConsole() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-2">
-          <Badge variant="outline" className="border-green-500/40 bg-green-500/10 text-green-100">{profile.status || "pending"}</Badge>
+          <Badge variant="outline" className="border-success/40 bg-success/10 text-success">{profile.status || "pending"}</Badge>
           <Badge variant="outline" className="border-border bg-muted/20 text-muted-foreground">updated {profile.generated_at ? new Date(profile.generated_at).toLocaleTimeString() : "pending"}</Badge>
-          <Badge variant="outline" className="border-blue-500/40 bg-blue-500/10 text-blue-100">web tools {summary.web_tools_ready ? "ready" : "attention"}</Badge>
-          <Badge variant="outline" className="border-purple-500/40 bg-purple-500/10 text-purple-100">{logicMap.status || "logic pending"}</Badge>
+          <Badge variant="outline" className="border-primary/40 bg-primary/10 text-primary">web tools {summary.web_tools_ready ? "ready" : "attention"}</Badge>
+          <Badge variant="outline" className="border-primary/40 bg-primary/10 text-primary">{logicMap.status || "logic pending"}</Badge>
         </div>
         <div className="grid gap-2 md:grid-cols-6">
           <Stat icon={UsersRound} label="coder agents" value={summary.coder_agent_count} />
@@ -103,7 +103,7 @@ export function AureonCodingAgentSkillBaseConsole() {
                   <Badge variant="outline" className="border-border bg-muted/20 text-muted-foreground">{(rule.who || []).slice(0, 2).join(" + ")}</Badge>
                 </div>
                 <div className="mt-2 text-xs text-muted-foreground">{rule.what}</div>
-                <div className="mt-2 truncate font-mono text-[10px] text-green-100">{(rule.where || []).slice(0, 3).join(" | ")}</div>
+                <div className="mt-2 truncate font-mono text-[10px] text-success">{(rule.where || []).slice(0, 3).join(" | ")}</div>
               </div>
             ))}
           </div>
@@ -119,7 +119,7 @@ export function AureonCodingAgentSkillBaseConsole() {
                   </div>
                   <Badge variant="outline" className="border-border bg-muted/20 text-muted-foreground">{order.owner_agent}</Badge>
                 </div>
-                <div className="mt-2 text-xs text-green-100">{order.proposed_action}</div>
+                <div className="mt-2 text-xs text-success">{order.proposed_action}</div>
               </div>
             ))}
           </div>

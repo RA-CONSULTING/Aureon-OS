@@ -63,7 +63,7 @@ export const PrismStatus = ({
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           🔮 THE PRISM
           {prismOutput.isLoveLocked && (
-            <span className={`text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 ${pulseAnimation ? 'animate-pulse' : ''}`}>
+            <span className={`text-xs px-2 py-0.5 rounded-full bg-success/20 text-success ${pulseAnimation ? 'animate-pulse' : ''}`}>
               528 Hz LOCKED
             </span>
           )}
@@ -142,7 +142,7 @@ export const PrismStatus = ({
       <div className="mt-4 pt-3 border-t border-border/30">
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">Distance to 528 Hz</span>
-          <span className={prismOutput.isLoveLocked ? 'text-emerald-400 font-bold' : 'text-foreground'}>
+          <span className={prismOutput.isLoveLocked ? 'text-success font-bold' : 'text-foreground'}>
             {prismOutput.isLoveLocked ? '✓ ALIGNED' : `${Math.abs(prismOutput.frequency - 528)} Hz`}
           </span>
         </div>

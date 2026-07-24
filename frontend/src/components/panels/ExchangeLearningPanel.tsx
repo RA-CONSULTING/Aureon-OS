@@ -10,10 +10,10 @@ import { exchangeLearningTracker, ExchangeType } from '@/core/exchangeLearningTr
 import { TrendingUp, TrendingDown, Activity, Target, Zap, Clock } from 'lucide-react';
 
 const EXCHANGE_COLORS: Record<ExchangeType, string> = {
-  binance: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  kraken: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  alpaca: 'bg-green-500/20 text-green-400 border-green-500/30',
-  capital: 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+  binance: 'bg-warning/20 text-warning border-warning/30',
+  kraken: 'bg-primary/20 text-primary border-primary/30',
+  alpaca: 'bg-success/20 text-success border-success/30',
+  capital: 'bg-primary/20 text-primary border-primary/30'
 };
 
 const EXCHANGE_LABELS: Record<ExchangeType, string> = {
@@ -65,13 +65,13 @@ export function ExchangeLearningPanel() {
               Overall Win Rate
             </div>
             <div className="flex items-center gap-2">
-              <span className={`text-lg font-bold ${overallWinRate > 0.51 ? 'text-green-400' : 'text-red-400'}`}>
+              <span className={`text-lg font-bold ${overallWinRate > 0.51 ? 'text-success' : 'text-destructive'}`}>
                 {(overallWinRate * 100).toFixed(1)}%
               </span>
               {overallWinRate > 0.51 ? (
-                <TrendingUp className="h-4 w-4 text-green-400" />
+                <TrendingUp className="h-4 w-4 text-success" />
               ) : (
-                <TrendingDown className="h-4 w-4 text-red-400" />
+                <TrendingDown className="h-4 w-4 text-destructive" />
               )}
             </div>
           </div>
@@ -105,14 +105,14 @@ export function ExchangeLearningPanel() {
               <div className="grid grid-cols-4 gap-2 text-xs">
                 <div>
                   <div className="text-muted-foreground">Win Rate</div>
-                  <div className={`font-mono font-bold ${m.winRate > 0.51 ? 'text-green-400' : 'text-muted-foreground'}`}>
+                  <div className={`font-mono font-bold ${m.winRate > 0.51 ? 'text-success' : 'text-muted-foreground'}`}>
                     {(m.winRate * 100).toFixed(1)}%
                   </div>
                 </div>
                 
                 <div>
                   <div className="text-muted-foreground">Avg Profit</div>
-                  <div className={`font-mono font-bold ${m.avgProfit > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  <div className={`font-mono font-bold ${m.avgProfit > 0 ? 'text-success' : 'text-destructive'}`}>
                     {m.avgProfit > 0 ? '+' : ''}{m.avgProfit.toFixed(2)}%
                   </div>
                 </div>
@@ -127,7 +127,7 @@ export function ExchangeLearningPanel() {
                 
                 <div>
                   <div className="text-muted-foreground">Success</div>
-                  <div className={`font-mono font-bold ${m.successRate > 0.95 ? 'text-green-400' : 'text-yellow-400'}`}>
+                  <div className={`font-mono font-bold ${m.successRate > 0.95 ? 'text-success' : 'text-warning'}`}>
                     {(m.successRate * 100).toFixed(0)}%
                   </div>
                 </div>
@@ -136,11 +136,11 @@ export function ExchangeLearningPanel() {
               {m.bestSymbol && (
                 <div className="mt-2 pt-2 border-t border-border/30 flex justify-between text-xs">
                   <span className="text-muted-foreground">
-                    Best: <span className="text-green-400 font-mono">{m.bestSymbol}</span>
+                    Best: <span className="text-success font-mono">{m.bestSymbol}</span>
                   </span>
                   {m.worstSymbol && (
                     <span className="text-muted-foreground">
-                      Worst: <span className="text-red-400 font-mono">{m.worstSymbol}</span>
+                      Worst: <span className="text-destructive font-mono">{m.worstSymbol}</span>
                     </span>
                   )}
                 </div>

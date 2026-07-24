@@ -14,10 +14,10 @@ import { Wallet, RefreshCw, TrendingUp, AlertCircle, CheckCircle2, XCircle } fro
 import { cn } from '@/lib/utils';
 
 const EXCHANGE_COLORS: Record<string, string> = {
-  binance: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  kraken: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  alpaca: 'bg-green-500/20 text-green-400 border-green-500/30',
-  capital: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  binance: 'bg-warning/20 text-warning border-warning/30',
+  kraken: 'bg-primary/20 text-primary border-primary/30',
+  alpaca: 'bg-success/20 text-success border-success/30',
+  capital: 'bg-primary/20 text-primary border-primary/30',
 };
 
 const EXCHANGE_LABELS: Record<string, string> = {
@@ -50,8 +50,8 @@ export function UserAssetsPanel() {
             <Wallet className="h-4 w-4" />
             LIVE PORTFOLIO
             {isLive && (
-              <span className="flex items-center gap-1 text-[10px] text-green-400">
-                <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="flex items-center gap-1 text-[10px] text-success">
+                <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
                 LIVE
               </span>
             )}
@@ -80,7 +80,7 @@ export function UserAssetsPanel() {
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Total Equity</span>
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-green-400" />
+              <TrendingUp className="h-4 w-4 text-success" />
               <span className="text-xl font-bold font-mono">
                 ${totalEquityUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
@@ -155,14 +155,14 @@ export function UserAssetsPanel() {
 
 function ExchangeStatusBadge({ exchange }: { exchange: ExchangeBalance }) {
   const getStatusIcon = () => {
-    if (exchange.connected) return <CheckCircle2 className="h-3 w-3 text-green-400" />;
-    if (exchange.error) return <AlertCircle className="h-3 w-3 text-orange-400" />;
+    if (exchange.connected) return <CheckCircle2 className="h-3 w-3 text-success" />;
+    if (exchange.error) return <AlertCircle className="h-3 w-3 text-warning" />;
     return <XCircle className="h-3 w-3 text-muted-foreground" />;
   };
 
   const getStatusColor = () => {
     if (exchange.connected) return EXCHANGE_COLORS[exchange.exchange];
-    if (exchange.error) return "bg-orange-500/10 text-orange-400 border-orange-500/30";
+    if (exchange.error) return "bg-warning/10 text-warning border-warning/30";
     return "bg-muted/30 text-muted-foreground border-border/50";
   };
 
@@ -184,7 +184,7 @@ function ExchangeStatusBadge({ exchange }: { exchange: ExchangeBalance }) {
         )}
       </div>
       {exchange.error && (
-        <span className="text-[8px] text-orange-300 truncate max-w-full">
+        <span className="text-[8px] text-warning truncate max-w-full">
           {exchange.error.includes('Rate limit') ? 'Rate limited' : 
            exchange.error.includes('401') ? 'Invalid credentials' :
            exchange.error.includes('429') ? 'Rate limited' :

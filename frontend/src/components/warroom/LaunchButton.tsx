@@ -86,7 +86,7 @@ export function LaunchButton({ onLaunch, onStop, status }: LaunchButtonProps) {
       onLaunch();
 
       toast({
-        title: '🚀 AUREON Launched!',
+        title: ' AUREON Launched!',
         description: isLiveMode 
           ? 'Live trading is now active. Monitor your positions closely.'
           : 'Paper trading started. No real funds at risk.',
@@ -114,7 +114,7 @@ export function LaunchButton({ onLaunch, onStop, status }: LaunchButtonProps) {
       onStop();
 
       toast({
-        title: '🛑 Trading Stopped',
+        title: ' Trading Stopped',
         description: 'All automated trading has been halted.',
       });
     } catch (err) {
@@ -135,13 +135,13 @@ export function LaunchButton({ onLaunch, onStop, status }: LaunchButtonProps) {
             {/* Status */}
             <div className="flex items-center gap-4">
               <div className={`w-4 h-4 rounded-full ${
-                status === 'active' ? 'bg-green-500 animate-pulse' :
-                status === 'emergency_stopped' ? 'bg-red-500' : 'bg-muted'
+                status === 'active' ? 'bg-success animate-pulse' :
+                status === 'emergency_stopped' ? 'bg-destructive' : 'bg-muted'
               }`} />
               <div>
                 <h3 className="text-xl font-bold">
-                  {status === 'active' ? '🔥 TRADING ACTIVE' :
-                   status === 'emergency_stopped' ? '🛑 STOPPED' : '⏸️ READY TO LAUNCH'}
+                  {status === 'active' ? ' TRADING ACTIVE' :
+                   status === 'emergency_stopped' ? ' STOPPED' : ' READY TO LAUNCH'}
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   {status === 'active' ? 'Autonomous trading is running' :
@@ -171,14 +171,14 @@ export function LaunchButton({ onLaunch, onStop, status }: LaunchButtonProps) {
                   size="lg"
                   onClick={() => validateAndLaunch()}
                   disabled={isLaunching}
-                  className="bg-gradient-to-r from-green-500 to-primary hover:from-green-600 hover:to-primary/90 text-white font-bold text-lg px-8"
+                  className="bg-gradient-to-r from-success to-primary hover:from-success hover:to-primary/90 text-white font-bold text-lg px-8"
                 >
                   {isLaunching ? (
                     <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                   ) : (
                     <Rocket className="h-5 w-5 mr-2" />
                   )}
-                  {isLaunching ? 'VALIDATING...' : '🚀 LAUNCH AUREON'}
+                  {isLaunching ? 'VALIDATING...' : ' LAUNCH AUREON'}
                 </Button>
               )}
               {status === 'active' && (
@@ -189,7 +189,7 @@ export function LaunchButton({ onLaunch, onStop, status }: LaunchButtonProps) {
                   className="font-bold text-lg px-8 animate-pulse"
                 >
                   <Square className="h-5 w-5 mr-2" />
-                  🛑 STOP TRADING
+                   STOP TRADING
                 </Button>
               )}
               {status === 'emergency_stopped' && (
@@ -197,10 +197,10 @@ export function LaunchButton({ onLaunch, onStop, status }: LaunchButtonProps) {
                   size="lg"
                   onClick={() => validateAndLaunch()}
                   disabled={isLaunching}
-                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-lg px-8"
+                  className="bg-gradient-to-r from-warning to-warning hover:from-warning hover:to-warning text-white font-bold text-lg px-8"
                 >
                   <Rocket className="h-5 w-5 mr-2" />
-                  🔄 RESUME TRADING
+                   RESUME TRADING
                 </Button>
               )}
             </div>

@@ -26,18 +26,18 @@ export function TemporalAlignmentTracker() {
   }
 
   const getAlignmentLevel = (score: number) => {
-    if (score >= 0.8) return { level: 'PEAK RESONANCE', color: 'text-purple-500', bg: 'bg-purple-500/20' };
-    if (score >= 0.6) return { level: 'HIGH ALIGNMENT', color: 'text-blue-500', bg: 'bg-blue-500/20' };
-    if (score >= 0.4) return { level: 'MODERATE', color: 'text-yellow-500', bg: 'bg-yellow-500/20' };
-    return { level: 'LOW ALIGNMENT', color: 'text-orange-500', bg: 'bg-orange-500/20' };
+    if (score >= 0.8) return { level: 'PEAK RESONANCE', color: 'text-primary', bg: 'bg-primary/20' };
+    if (score >= 0.6) return { level: 'HIGH ALIGNMENT', color: 'text-primary', bg: 'bg-primary/20' };
+    if (score >= 0.4) return { level: 'MODERATE', color: 'text-warning', bg: 'bg-warning/20' };
+    return { level: 'LOW ALIGNMENT', color: 'text-warning', bg: 'bg-warning/20' };
   };
 
   const getCyclePhaseColor = (phase: string) => {
     switch (phase) {
-      case 'peak': return 'text-green-500';
-      case 'ascending': return 'text-blue-500';
-      case 'descending': return 'text-yellow-500';
-      case 'trough': return 'text-red-500';
+      case 'peak': return 'text-success';
+      case 'ascending': return 'text-primary';
+      case 'descending': return 'text-warning';
+      case 'trough': return 'text-destructive';
       default: return 'text-gray-500';
     }
   };
@@ -47,13 +47,13 @@ export function TemporalAlignmentTracker() {
 
   return (
     <Card className="bg-card/50 backdrop-blur border-border/50 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-indigo-500/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/5 to-primary/5" />
       
       <CardHeader className="relative">
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-purple-500" />
+              <Clock className="w-5 h-5 text-primary" />
               Temporal Alignment Tracker
             </CardTitle>
             <CardDescription>
@@ -68,13 +68,13 @@ export function TemporalAlignmentTracker() {
 
       <CardContent className="relative space-y-4">
         {/* Current Alignment Display */}
-        <div className="flex items-center justify-center p-6 bg-gradient-to-br from-purple-500/10 to-indigo-500/10 rounded-lg border border-border/50">
+        <div className="flex items-center justify-center p-6 bg-gradient-to-br from-primary/10 to-primary/10 rounded-lg border border-border/50">
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <Sparkles className="w-6 h-6 text-purple-500" />
+              <Sparkles className="w-6 h-6 text-primary" />
               <span className="text-sm text-muted-foreground font-medium">Current Temporal Alignment</span>
             </div>
-            <div className="text-5xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
+            <div className="text-5xl font-bold bg-gradient-to-r from-primary to-primary bg-clip-text text-transparent">
               {(alignment.currentAlignment * 100).toFixed(1)}%
             </div>
             <div className="text-xs text-muted-foreground mt-1">
@@ -87,7 +87,7 @@ export function TemporalAlignmentTracker() {
         <div className="grid grid-cols-2 gap-4">
           <div className="p-4 bg-background/50 rounded-lg border border-border/50">
             <div className="flex items-center gap-2 mb-3">
-              <Calendar className="w-4 h-4 text-indigo-500" />
+              <Calendar className="w-4 h-4 text-primary" />
               <span className="text-xs text-muted-foreground font-medium">Birth Pattern</span>
             </div>
             <div className="space-y-2 text-xs">
@@ -112,7 +112,7 @@ export function TemporalAlignmentTracker() {
 
           <div className="p-4 bg-background/50 rounded-lg border border-border/50">
             <div className="flex items-center gap-2 mb-3">
-              <Clock className="w-4 h-4 text-purple-500" />
+              <Clock className="w-4 h-4 text-primary" />
               <span className="text-xs text-muted-foreground font-medium">Current Pattern</span>
             </div>
             <div className="space-y-2 text-xs">
@@ -140,7 +140,7 @@ export function TemporalAlignmentTracker() {
         <div className="grid grid-cols-2 gap-4">
           <div className="p-3 bg-background/50 rounded-lg border border-border/50">
             <div className="flex items-center gap-2 mb-2">
-              <Moon className="w-4 h-4 text-blue-400" />
+              <Moon className="w-4 h-4 text-primary" />
               <span className="text-xs text-muted-foreground">Lunar Cycle</span>
             </div>
             <Progress value={alignment.currentPattern.lunarCycle * 100} className="h-2" />
@@ -151,7 +151,7 @@ export function TemporalAlignmentTracker() {
 
           <div className="p-3 bg-background/50 rounded-lg border border-border/50">
             <div className="flex items-center gap-2 mb-2">
-              <Sun className="w-4 h-4 text-yellow-400" />
+              <Sun className="w-4 h-4 text-warning" />
               <span className="text-xs text-muted-foreground">Solar Cycle</span>
             </div>
             <Progress value={alignment.currentPattern.solarCycle * 100} className="h-2" />
@@ -162,17 +162,17 @@ export function TemporalAlignmentTracker() {
         </div>
 
         {/* Next Optimal Window */}
-        <div className="p-4 bg-gradient-to-br from-purple-500/10 to-blue-500/10 rounded-lg border border-border/50">
+        <div className="p-4 bg-gradient-to-br from-primary/10 to-primary/10 rounded-lg border border-border/50">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-purple-500" />
+              <TrendingUp className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium">Next Peak Alignment</span>
             </div>
             <Badge variant="outline" className="text-xs">
               {daysToNext} {daysToNext === 1 ? 'day' : 'days'}
             </Badge>
           </div>
-          <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+          <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary bg-clip-text text-transparent">
             {format(alignment.nextOptimal, 'MMM dd, yyyy')}
           </div>
           <div className="text-xs text-muted-foreground mt-1">
@@ -184,7 +184,7 @@ export function TemporalAlignmentTracker() {
         {alignment.optimalWindows.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-500" />
+              <Sparkles className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium">Recent Peak Windows</span>
             </div>
             <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -207,7 +207,7 @@ export function TemporalAlignmentTracker() {
                     </div>
                   </div>
                   <div className="text-right ml-3">
-                    <div className="text-lg font-bold text-purple-500">
+                    <div className="text-lg font-bold text-primary">
                       {(window.alignmentScore * 100).toFixed(0)}%
                     </div>
                     <div className="text-xs text-muted-foreground">alignment</div>
@@ -219,7 +219,7 @@ export function TemporalAlignmentTracker() {
         )}
 
         {/* Insight Box */}
-        <div className="p-4 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-lg border border-border/50">
+        <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/10 rounded-lg border border-border/50">
           <p className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">Temporal Insight:</span>{' '}
             {alignment.currentAlignment >= 0.8 ? (

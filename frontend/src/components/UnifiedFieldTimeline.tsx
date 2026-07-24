@@ -368,7 +368,7 @@ export const UnifiedFieldTimeline = () => {
           )}
 
           {data.insights.fieldAlignment === 'EXCELLENT' && (
-            <div className="border-l-4 border-green-500 pl-4">
+            <div className="border-l-4 border-success pl-4">
               <p className="text-sm font-medium">✨ Excellent Field Alignment Today</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Multiple hours showing unified coherence above 80%. Earth and space systems are in strong harmony. 
@@ -377,7 +377,7 @@ export const UnifiedFieldTimeline = () => {
             </div>
           )}
 
-          <div className="border-l-4 border-blue-500 pl-4">
+          <div className="border-l-4 border-primary pl-4">
             <p className="text-sm font-medium">🌍 Unified Field Theory</p>
             <p className="text-xs text-muted-foreground mt-1">
               When seismic stability, Schumann resonance, solar wind conditions, geomagnetic indices, and trading 
@@ -387,7 +387,7 @@ export const UnifiedFieldTimeline = () => {
           </div>
 
           {data.statistics.totalOptimalHours < 4 && (
-            <div className="border-l-4 border-amber-500 pl-4">
+            <div className="border-l-4 border-warning pl-4">
               <p className="text-sm font-medium">⚠️ Limited Optimal Windows</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Only {data.statistics.totalOptimalHours} optimal hours detected in the last 24 hours. 

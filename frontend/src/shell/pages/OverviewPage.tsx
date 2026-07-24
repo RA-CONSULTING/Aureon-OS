@@ -51,6 +51,11 @@ interface AutomationIndex {
   truth_status?: string;
 }
 
+interface DefenseSummary {
+  counts?: { total?: number; passing?: number };
+  truth_status?: string;
+}
+
 /** Dependency-free sparkline over the recorded journey; scales 0–100. */
 function JourneySparkline({ points }: { points: number[] }) {
   const pts = points.filter((v) => Number.isFinite(v));
@@ -111,6 +116,7 @@ export default function OverviewPage() {
   const [billing, setBilling] = useState<BillingStatus | null | undefined>(undefined);
   const [organism, setOrganism] = useState<OrganismStatus | null | undefined>(undefined);
   const [automation, setAutomation] = useState<AutomationIndex | null | undefined>(undefined);
+  const [defense, setDefense] = useState<DefenseSummary | null | undefined>(undefined);
   const [unified, setUnified] = useState<UnifiedFrontendState | null>(null);
 
   useEffect(() => {
@@ -118,6 +124,7 @@ export default function OverviewPage() {
     fetchJson<BillingStatus>("/api/billing/status").then(setBilling);
     fetchJson<OrganismStatus>("/api/organism").then(setOrganism);
     fetchJson<AutomationIndex>("/api/automation").then(setAutomation);  // once — avoids repeated organ cold-boot
+    fetchJson<DefenseSummary>("/api/defense").then(setDefense);
     loadUnifiedFrontendState().then(setUnified).catch(() => setUnified(null));
   }, []);
 
@@ -187,6 +194,38 @@ export default function OverviewPage() {
                 </div>
               )}
             </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Defenses — the bio family's benchmark health (immune layer + statistical validity + lanes) */}
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <CardTitle className="text-base">Defense & Validation</CardTitle>
+            <Link to="/defense" className="text-xs text-primary hover:underline inline-flex items-center gap-1">
+              open <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <CardDescription>
+            The cognitive immune layer + statistical-validity dossier + sensor lanes — real
+            Tier-A benchmark status, never fabricated.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {defense === undefined ? (
+            <Skeleton className="h-8 w-40" />
+          ) : !defense || defense.counts?.total == null ? (
+            <p className="text-xs text-muted-foreground">
+              Gateway offline — start the operator for live defense status.
+            </p>
+          ) : (
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-2xl tabular-nums text-primary">
+                {defense.counts.passing}/{defense.counts.total}
+              </span>
+              <span className="text-xs text-muted-foreground">bio benchmarks passing · immune layer active</span>
+            </div>
           )}
         </CardContent>
       </Card>

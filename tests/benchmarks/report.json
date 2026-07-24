@@ -1,5 +1,5 @@
 {
-  "ts": "2026-07-15T21:02:02Z",
+  "ts": "2026-07-24T18:42:57Z",
   "tier_a": [
     {
       "name": "Standing-wave bonding (HashResonanceIndex)",
@@ -26,7 +26,7 @@
         "one_publish_per_crossing": true
       },
       "evidence": "21 identical events \u2192 1 bonded fingerprint (count=21, strength=0.6765 \u2248 0.6765; thresholds [3, 8, 21] published exactly once each)",
-      "wall_ms": 1134.9
+      "wall_ms": 108.7
     },
     {
       "name": "Temporal lighthouse (\u03b2 \u039b(t-\u03c4) goal echo)",
@@ -57,7 +57,7 @@
         "summary_published_each_pulse": true
       },
       "evidence": "3 goals (1 starved, 1 completed, 1 abandoned) \u2192 completion_rate=0.333, orphan_rate=0.333, states={'PROPOSED': 0, 'ACKNOWLEDGED': 0, 'IN_PROGRESS': 0, 'COMPLETED': 1, 'ABANDONED': 1, 'ORPHANED': 1}",
-      "wall_ms": 40.7
+      "wall_ms": 50.8
     },
     {
       "name": "Symbolic life pillars (Auris Conjecture)",
@@ -85,7 +85,7 @@
         "symbolic_life_pulse_topic_landed": true
       },
       "evidence": "SLS=0.6393; \u03c8=0.7069 (CONNECTED); all 5 pillars in [0,1]; vault.current_symbolic_life_score=0.6393012290344635",
-      "wall_ms": 214.5
+      "wall_ms": 266.1
     },
     {
       "name": "Mesh convergence (PhiBridgeMesh, in-process LAN)",
@@ -97,7 +97,7 @@
         "peers_per_node": 3,
         "target_hash_count": 400,
         "cycles_to_converge": 3,
-        "wall_ms": 457.3,
+        "wall_ms": 493.6,
         "posts_issued": 180,
         "client_failures": 0,
         "min_size": 400,
@@ -109,8 +109,8 @@
         "every_vault_holds_identical_set": true,
         "no_routing_failures": true
       },
-      "evidence": "20 vaults converged to identical 400-hash set in 3 cycles (457 ms, 180 posts)",
-      "wall_ms": 465.4
+      "evidence": "20 vaults converged to identical 400-hash set in 3 cycles (494 ms, 180 posts)",
+      "wall_ms": 522.5
     },
     {
       "name": "Conscience VETO (HNC 4th-pass, substrate coherence)",
@@ -120,7 +120,7 @@
         "sls_at_decision": 0.05,
         "sls_danger_threshold": 0.2,
         "verdict_name": "VETO",
-        "whisper_confidence": 0.95,
+        "whisper_confidence": 0.9,
         "verdict_publishes": 1
       },
       "invariants": {
@@ -131,7 +131,7 @@
         "published_action_matches": true
       },
       "evidence": "SLS=0.05 < 0.20 cliff \u2192 VETO on 'Execute trade' (risk=0.08); message quotes stability cliff and symbolic_life_score; queen.conscience.verdict published",
-      "wall_ms": 8.0
+      "wall_ms": 12.9
     },
     {
       "name": "Pattern learning (PersonaMinerBridge)",
@@ -148,7 +148,7 @@
           "last_winning_skill_chain": [
             "compose_audit"
           ],
-          "last_seen_ts": 1784149322.4222429
+          "last_seen_ts": 1784918321.9165766
         },
         "persona_health": {
           "persona": "engineer",
@@ -160,7 +160,7 @@
           "completion_rate": 1.0,
           "abandon_rate": 0.0,
           "avg_sls_delta": 0.0,
-          "last_seen_ts": 1784149322.4222429
+          "last_seen_ts": 1784918321.9165766
         },
         "patterns_published": 3,
         "patterns": [
@@ -199,7 +199,7 @@
         "persona_completion_rate_is_1": true
       },
       "evidence": "5 (engineer, 'build the audit gate') successes \u2192 3 patterns learned (['audit', 'build', 'gate']), each published exactly once; (engineer, 'build').confidence=0.747",
-      "wall_ms": 13.3
+      "wall_ms": 15.9
     },
     {
       "name": "Skill execution \u2192 artefacts on disk",
@@ -212,9 +212,9 @@
           "summarise_findings"
         ],
         "artefacts_on_disk": [
-          "artefacts/20260715T210202-compose_audit-98ed11.md",
-          "artefacts/20260715T210202-render_report-c8ebde.md",
-          "artefacts/20260715T210202-summarise_findings-8257bd.md"
+          "artefacts/20260724T183841-compose_audit-a8aa54.md",
+          "artefacts/20260724T183841-render_report-af5c30.md",
+          "artefacts/20260724T183841-summarise_findings-cfb62c.md"
         ],
         "vault_skill_output_cards": 3,
         "completion_summary": "built 3 artefact(s) via 3 skill(s): compose_audit, render_report, summarise_findings",
@@ -225,7 +225,7 @@
           "failed": 0,
           "abandoned": 0,
           "subscribed": true,
-          "output_root": "/tmp/aureon-bench-4pivmarp/a7/artefacts"
+          "output_root": "/tmp/aureon-bench-1kpzi1d7/a7/artefacts"
         }
       },
       "invariants": {
@@ -238,7 +238,7 @@
         "every_artefact_actually_exists": true
       },
       "evidence": "3 skills \u2192 3 files on disk + 3 vault cards; goal.completed: \"built 3 artefact(s) via 3 skill(s): compose_audit, render_report, summarise_findings\"",
-      "wall_ms": 12.6
+      "wall_ms": 15.3
     },
     {
       "name": "Meta-cognition reflection (\u03b1 tanh observer term)",
@@ -253,7 +253,7 @@
         "sls_after": 0.72,
         "sls_delta": 0.22,
         "downstream_event_count": 3,
-        "lambda_delta_t": 0.07407474517822266,
+        "lambda_delta_t": 0.07575631141662598,
         "reasoning_excerpt": "I, engineer, collapsed into decision 'goal.submit' with p=0.780. The window closed at outcome=COMPLETED. 3 downstream event(s) within the 0.050s window. SLS moved from 0.500 to 0.720 (\u0394+0.220)."
       },
       "invariants": {
@@ -268,7 +268,7 @@
         "downstream_effects_seen": true
       },
       "evidence": "persona.collapse(engineer) \u2192 goal.submit \u2192 goal.completed closes window with SLS \u0394+0.220; narrative quotes the persona",
-      "wall_ms": 82.5
+      "wall_ms": 86.7
     },
     {
       "name": "Phenolic fingerprint \u2192 cognition (bio\u2192vibe sense-making)",
@@ -296,7 +296,776 @@
         "trace_signal_written": true
       },
       "evidence": "AnalysisResult \u2192 emit_to_cognition publishes run + 3 compound Thoughts on one trace_id and mirrors a bus_trace; summary = 1/3 separable \u00b7 2/3 clustering-significant \u00b7 controls PASS",
-      "wall_ms": 9.4
+      "wall_ms": 13.4
+    },
+    {
+      "name": "Bio derived-signal (UPE anchor + governance + convergence)",
+      "module": "aureon/bio/",
+      "passed": true,
+      "metrics": {
+        "upe_broadband_A_p": null,
+        "upe_structured_A_p": 0.01990049751243781,
+        "upe_structured_B_p": 0.004975124378109453,
+        "convergence_cells": 9,
+        "convergence_converged": 0
+      },
+      "invariants": {
+        "upe_broadband_non_separable": true,
+        "upe_structured_separable": true,
+        "consent_gate_blocks": true,
+        "convergence_valid": true,
+        "convergence_semantics": true
+      },
+      "evidence": "broadband UPE non-separable; structured separable (A_p=0.01990049751243781); consent gate blocks; convergence 0/9 both-channel cells",
+      "wall_ms": 2279.0
+    },
+    {
+      "name": "Sky derived-signal (scan light from space; \u03c6 logic unchanged)",
+      "module": "aureon/bio/sky_signal_adapter.py",
+      "passed": true,
+      "metrics": {
+        "balmer_A_p": 0.9054726368159204,
+        "balmer_B_p": 0.5472636815920398,
+        "balmer_separable": false,
+        "structured_A_p": 0.004975124378109453,
+        "continuum_over_fire": false
+      },
+      "evidence": "continuum negative ref quiet; planted positive detected (A_p=0.004975124378109453); real Balmer scan valid (separable=False, A_p=0.9054726368159204); consent gate blocks",
+      "invariants": {
+        "continuum_negative_ref_no_overfire": true,
+        "planted_positive_ref_detected": true,
+        "real_catalog_valid": true,
+        "scan_deterministic": true,
+        "consent_gate_blocks": true
+      },
+      "wall_ms": 1288.4
+    },
+    {
+      "name": "NASA sky data (real host-star scan; \u03c6 logic unchanged)",
+      "module": "scripts/validation/benchmark_nasa_sky.py",
+      "passed": true,
+      "metrics": {
+        "nasa_rows": 1000,
+        "stellar_A_p": 0.004975124378109453,
+        "stellar_B_p": 0.004975124378109453,
+        "stellar_separable": true,
+        "orbital_A_p": 0.004975124378109453,
+        "orbital_separable": false
+      },
+      "evidence": "1000 real NASA planets; stellar-Wien lane valid (separable=True, A_p=0.004975124378109453); orbital lane valid (separable=False); tones fold into band; consent gate blocks",
+      "invariants": {
+        "cache_has_rows": true,
+        "stellar_lane_valid": true,
+        "stellar_scan_deterministic": true,
+        "tones_in_band": true,
+        "orbital_lane_valid": true,
+        "consent_gate_blocks": true
+      },
+      "wall_ms": 23361.6
+    },
+    {
+      "name": "Market derived-signal (scan a market series; \u03c6 logic unchanged)",
+      "module": "aureon/bio/market_signal_adapter.py",
+      "passed": true,
+      "metrics": {
+        "symbol": "APEUSDT",
+        "real_A_p": 0.6915422885572139,
+        "real_B_p": 0.7860696517412935,
+        "real_separable": false,
+        "planted_A_p": 0.004975124378109453,
+        "null_over_fire": false
+      },
+      "evidence": "efficient-market null quiet; planted positive detected (A_p=0.004975124378109453); real APEUSDT scan valid (separable=False); consent gate blocks",
+      "invariants": {
+        "null_negative_ref_no_overfire": true,
+        "planted_positive_ref_detected": true,
+        "real_symbol_valid": true,
+        "real_scan_deterministic": true,
+        "consent_gate_blocks": true
+      },
+      "wall_ms": 1400.3
+    },
+    {
+      "name": "Faint sky / UPE-from-the-sky (airglow + diffuse; \u03c6 logic unchanged)",
+      "module": "aureon/bio/sky_signal_adapter.py",
+      "passed": true,
+      "metrics": {
+        "airglow_lines": 10,
+        "airglow_A_p": 0.8706467661691543,
+        "airglow_B_p": 0.6567164179104478,
+        "airglow_separable": false,
+        "diffuse_tones": 0,
+        "planted_A_p": 0.004975124378109453
+      },
+      "evidence": "real airglow scan valid (10 tones, separable=False, A_p=0.8706467661691543); diffuse background featureless anchor (n_tones=0); planted positive detected (A_p=0.004975124378109453); consent gate blocks",
+      "invariants": {
+        "airglow_valid": true,
+        "airglow_deterministic": true,
+        "diffuse_anchor_non_separable": true,
+        "planted_positive_detected": true,
+        "consent_gate_blocks": true
+      },
+      "wall_ms": 1337.1
+    },
+    {
+      "name": "QGITA \u21c4 phenolic-\u03c6 calibration (golden lattice; engine unchanged)",
+      "module": "aureon/bio/qgita_calibration.py",
+      "passed": true,
+      "metrics": {
+        "phi": 1.618033988749895,
+        "phi_lattice_alignment_p": 0.004975124378109453,
+        "empirical_fpr_separable": 0.0,
+        "positive_control_p_A": 0.004975124378109453,
+        "auris_A_p": 0.9104477611940298
+      },
+      "evidence": "\u03c6 shared (1.618034); engine detects QGITA golden lattice (Test B p=0.004975124378109453); CALIBRATED=True (separable FPR=0.0); engine thresholds unchanged; Auris scan governed (consent gate blocks)",
+      "invariants": {
+        "phi_shared_with_engine": true,
+        "engine_detects_golden_lattice": true,
+        "calibrated": true,
+        "fpr_bounded": true,
+        "deterministic": true,
+        "engine_thresholds_unchanged": true,
+        "auris_governed": true
+      },
+      "wall_ms": 3946.2
+    },
+    {
+      "name": "Sky map (real RA/Dec \u03c6-structure map; \u03c6 logic unchanged)",
+      "module": "aureon/bio/sky_map.py",
+      "passed": true,
+      "metrics": {
+        "positioned_sources": 1175,
+        "stellar": 1000,
+        "planetary": 175,
+        "scored_cells": 63,
+        "converged_cells": 4
+      },
+      "evidence": "1175 real sources (stellar 1000 + planetary 175); 12\u00d76 grid, 63 scored, 4 converged; converged semantics hold; deterministic; consent gate blocks",
+      "invariants": {
+        "map_valid": true,
+        "grid_complete": true,
+        "converged_semantics": true,
+        "cells_scored": true,
+        "deterministic": true,
+        "consent_gate_blocks": true,
+        "boundary_present": true
+      },
+      "wall_ms": 23512.7
+    },
+    {
+      "name": "Cosmic sensors (Schumann + planetary + space-weather; \u03c6 logic unchanged)",
+      "module": "aureon/bio/cosmic_scan.py",
+      "passed": true,
+      "metrics": {
+        "schumann_A_p": 1.0,
+        "schumann_separable": false,
+        "planetary_A_p": 1.0,
+        "space_weather_tones": 14,
+        "space_weather_A_p": 0.006622516556291391
+      },
+      "evidence": "Schumann scan valid (7 modes, separable=False); planetary scan valid (6 tones); space-weather scan valid (14 pooled tones); consent gate blocks",
+      "invariants": {
+        "schumann_valid": true,
+        "schumann_deterministic": true,
+        "planetary_valid": true,
+        "space_weather_valid": true,
+        "consent_gate_blocks": true
+      },
+      "wall_ms": 1114.0
+    },
+    {
+      "name": "Image derived-signal (colour \u2192 \u03c6 scan + overlay; \u03c6 logic unchanged)",
+      "module": "aureon/bio/image_signal_adapter.py",
+      "passed": true,
+      "metrics": {
+        "image_A_p": 1.0,
+        "image_B_p": 0.6556291390728477,
+        "image_separable": false,
+        "overlay_nodes": 4
+      },
+      "evidence": "image colour scan valid (separable=False, A_p=1.0); overlay rendered 4 nodes; consent gate blocks; boundary present",
+      "invariants": {
+        "image_valid": true,
+        "image_deterministic": true,
+        "consent_gate_blocks": true,
+        "boundary_present": true,
+        "overlay_renders_on_valid": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 811.8
+    },
+    {
+      "name": "Coherence lane (DE440 coherence spectrum; \u03c6 logic unchanged)",
+      "module": "aureon/bio/coherence_scan.py",
+      "passed": true,
+      "metrics": {
+        "n_tones": 23,
+        "real_A_p": 0.9337748344370861,
+        "real_B_p": 0.6754966887417219,
+        "real_separable": false
+      },
+      "evidence": "DE440 coherence scan valid (23 tones, separable=False, A_p=0.9337748344370861); sim control valid; consent gate blocks",
+      "invariants": {
+        "tones_in_band": true,
+        "real_valid": true,
+        "deterministic": true,
+        "sim_control_valid": true,
+        "consent_gate_blocks": true
+      },
+      "wall_ms": 823.2
+    },
+    {
+      "name": "\u03c6 Celestial Observatory (every sky lane, one engine; \u03c6 logic unchanged)",
+      "module": "aureon/bio/celestial_observatory.py",
+      "passed": true,
+      "metrics": {
+        "n_lanes": 16,
+        "n_valid": 16,
+        "n_separable": 1
+      },
+      "evidence": "16/16 sky/cosmic lanes valid through one \u03c6 engine; 1 separable; deterministic; boundary present",
+      "invariants": {
+        "all_lanes_read": true,
+        "some_valid": true,
+        "every_reading_has_fields": true,
+        "deterministic": true,
+        "boundary_present": true
+      },
+      "wall_ms": 12015.5
+    },
+    {
+      "name": "Observatory \u2192 cognition (whole-sky picture on the ThoughtBus)",
+      "module": "aureon/bio/celestial_observatory.py",
+      "passed": true,
+      "metrics": {
+        "n_lanes": 16,
+        "topic": "bio.observatory.run"
+      },
+      "evidence": "observatory publishes bio.observatory.run carrying 16 lanes + boundary; emission best-effort (throwing bus swallowed)",
+      "invariants": {
+        "one_thought_published": true,
+        "correct_topic": true,
+        "summary_carries_lanes": true,
+        "boundary_in_summary": true,
+        "emission_best_effort": true
+      },
+      "wall_ms": 4928.2
+    },
+    {
+      "name": "Sacred lattice (repo's own Earth-grid sky map; \u03c6 logic unchanged)",
+      "module": "aureon/bio/sacred_lattice_scan.py",
+      "passed": true,
+      "metrics": {
+        "stargate_tones": 12,
+        "maeshowe_tones": 18,
+        "metatron_tones": 12,
+        "map_converged": 0
+      },
+      "evidence": "stargate/maeshowe/metatron scans valid (12/18/12 tones); lattice map valid (0 converged); consent gate blocks; no person surface",
+      "invariants": {
+        "all_scans_valid": true,
+        "deterministic": true,
+        "consent_gate_blocks": true,
+        "map_valid": true,
+        "converged_semantics": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 1117.7
+    },
+    {
+      "name": "Harmonic core (HNC \u039b(t) / Ogham / Ghost Dance; \u03c6 logic unchanged)",
+      "module": "aureon/bio/harmonic_core_scan.py",
+      "passed": true,
+      "metrics": {
+        "lambda_tones": 6,
+        "ogham_tones": 15,
+        "ghostdance_tones": 9
+      },
+      "evidence": "\u039b(t)/Ogham/Ghost-Dance scans valid (6/15/9 tones); \u039b weights sum=1.0; Ogham \u03c6-scaled; consent gate blocks; no person surface",
+      "invariants": {
+        "all_scans_valid": true,
+        "deterministic": true,
+        "consent_gate_blocks": true,
+        "lambda_weights_normalised": true,
+        "ogham_phi_scaled": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 765.8
+    },
+    {
+      "name": "Counter-frequency (repo's \u03c6/Fibonacci canon; \u03c6 logic unchanged)",
+      "module": "aureon/bio/counter_frequency_scan.py",
+      "passed": true,
+      "metrics": {
+        "counter_tones": 16,
+        "fibonacci_tones": 4,
+        "phi_tones": 3
+      },
+      "evidence": "counter/fibonacci/phi scans valid (16/4/3 tones); Fibonacci ladder + \u03c6-harmonics present; consent gate blocks; no person surface",
+      "invariants": {
+        "all_scans_valid": true,
+        "deterministic": true,
+        "consent_gate_blocks": true,
+        "fibonacci_ladder_present": true,
+        "phi_harmonic_present": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 776.9
+    },
+    {
+      "name": "Observatory evidence report (durable, deterministic cross-lane artifact)",
+      "module": "aureon/bio/celestial_observatory.py",
+      "passed": true,
+      "metrics": {
+        "n_lanes": 16,
+        "n_valid": 16,
+        "md_bytes": 2230
+      },
+      "evidence": "markdown + JSON evidence artifact for 16 lanes; JSON round-trips; boundary present; byte-identical on re-run (deterministic)",
+      "invariants": {
+        "both_files_nonempty": true,
+        "json_round_trips": true,
+        "boundary_in_markdown": true,
+        "one_row_per_lane": true,
+        "out_path_set": true,
+        "byte_identical_on_rewrite": true
+      },
+      "wall_ms": 10476.8
+    },
+    {
+      "name": "Audio signal adapter (waveform \u2192 folded tones; \u03c6 logic unchanged)",
+      "module": "aureon/bio/audio_signal_adapter.py",
+      "passed": true,
+      "metrics": {
+        "structured_A_p": 0.008264462809917356,
+        "structured_B_p": 0.008264462809917356,
+        "structured_tones": 6,
+        "noise_tones": 24
+      },
+      "evidence": "structured clip \u2192 present (6 tones, A_p=0.008264462809917356); noise clip \u2192 absent; deterministic; consent gate blocks; no person surface",
+      "invariants": {
+        "structured_present": true,
+        "noise_absent": true,
+        "deterministic": true,
+        "consent_gate_blocks": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 612.0
+    },
+    {
+      "name": "Video signal adapter (per-frame luminance \u2192 folded tones; \u03c6 logic unchanged)",
+      "module": "aureon/bio/video_signal_adapter.py",
+      "passed": true,
+      "metrics": {
+        "structured_A_p": 0.008264462809917356,
+        "structured_B_p": 0.008264462809917356,
+        "structured_tones": 6,
+        "noise_tones": 24
+      },
+      "evidence": "structured clip \u2192 present (6 tones, A_p=0.008264462809917356); random-luminance clip \u2192 absent; deterministic; consent gate blocks; no person surface",
+      "invariants": {
+        "structured_present": true,
+        "noise_absent": true,
+        "deterministic": true,
+        "consent_gate_blocks": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 731.6
+    },
+    {
+      "name": "Signal-adapter conformance suite (family roll-up; \u03c6 logic unchanged)",
+      "module": "aureon/bio/proxy_suite.py",
+      "passed": true,
+      "metrics": {
+        "n_adapters": 4,
+        "n_conforming": 4,
+        "md_bytes": 1334
+      },
+      "evidence": "4/4 adapters conform (structured\u21d2present \u2227 null\u21d2absent through the unchanged engine); durable md+JSON artifact round-trips; boundary present; byte-identical on re-run; no person surface",
+      "invariants": {
+        "all_adapters_conform": true,
+        "both_files_nonempty": true,
+        "json_round_trips": true,
+        "boundary_in_markdown": true,
+        "one_row_per_adapter": true,
+        "out_path_set": true,
+        "byte_identical_on_rewrite": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 3304.0
+    },
+    {
+      "name": "Null calibration (family-wide false-positive-rate audit; \u03c6 logic unchanged)",
+      "module": "aureon/bio/null_calibration.py",
+      "passed": true,
+      "metrics": {
+        "n_adapters": 4,
+        "n_conforming": 4,
+        "max_fpr": 0.005,
+        "alpha": 0.05,
+        "nominal_fpr": 0.0025000000000000005,
+        "trials": 200
+      },
+      "evidence": "4/4 adapters conform; max FPR=0.0050 \u2264 ALPHA=0.05 (nominal ALPHA\u00b2=0.0025) over 200 trials; structured anchors fire; durable md+JSON byte-identical; no person surface",
+      "invariants": {
+        "all_adapters_conform": true,
+        "fpr_bounded": true,
+        "structured_anchors_fire": true,
+        "both_files_nonempty": true,
+        "json_round_trips": true,
+        "one_row_per_adapter": true,
+        "out_path_set": true,
+        "byte_identical_on_rewrite": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 21691.8
+    },
+    {
+      "name": "Detection power (sensitivity sweep; \u03c6 logic unchanged)",
+      "module": "aureon/bio/power_analysis.py",
+      "passed": true,
+      "metrics": {
+        "clean_power": 1.0,
+        "degraded_power": 0.015,
+        "n_levels": 6,
+        "trials": 200
+      },
+      "evidence": "clean-signal power 1.000 \u2192 0.015 at 80 Hz jitter over 200 trials; monotone collapse toward the FPR floor; durable md+JSON byte-identical; no person surface",
+      "invariants": {
+        "clean_power_high": true,
+        "power_collapses": true,
+        "monotone_nonincreasing": true,
+        "both_files_nonempty": true,
+        "json_round_trips": true,
+        "one_row_per_level": true,
+        "out_path_set": true,
+        "byte_identical_on_rewrite": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 33675.2
+    },
+    {
+      "name": "Calibration curve (per-test null calibration; \u03c6 logic unchanged)",
+      "module": "aureon/bio/calibration_curve.py",
+      "passed": true,
+      "metrics": {
+        "n_points": 5,
+        "trials": 400,
+        "max_joint_exceedance": 0.0,
+        "tolerance": 0.02
+      },
+      "evidence": "detection rule conservative at all 5 \u03b1 levels (max joint exceedance +0.0000 \u2264 tol 0.02); Test A conservative; joint \u2286 each test; durable md+JSON byte-identical; no person surface",
+      "invariants": {
+        "detection_rule_conservative": true,
+        "test_A_conservative": true,
+        "joint_is_subset": true,
+        "both_files_nonempty": true,
+        "json_round_trips": true,
+        "one_row_per_level": true,
+        "out_path_set": true,
+        "byte_identical_on_rewrite": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 11713.9
+    },
+    {
+      "name": "Multiplicity (family-wise error-rate control; \u03c6 logic unchanged)",
+      "module": "aureon/bio/multiplicity.py",
+      "passed": true,
+      "metrics": {
+        "n_points": 6,
+        "trials": 150,
+        "max_bonferroni_fwer": 0.006666666666666667,
+        "k_uncorrected_crosses_alpha": 16
+      },
+      "evidence": "Bonferroni controls FWER \u2264 \u03b1 at every k (max Bonferroni FWER 0.0067 \u2264 \u03b1 0.05 + tol 0.02); uncorrected FWER rises with k, crossing \u03b1 at k=16; durable md+JSON byte-identical; no person surface",
+      "invariants": {
+        "bonferroni_controls_all": true,
+        "fwer_monotone_in_k": true,
+        "fwer_ge_per_lane_rate": true,
+        "both_files_nonempty": true,
+        "json_round_trips": true,
+        "one_row_per_k": true,
+        "out_path_set": true,
+        "byte_identical_on_rewrite": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 34575.0
+    },
+    {
+      "name": "False discovery rate (Benjamini\u2013Hochberg control; \u03c6 logic unchanged)",
+      "module": "aureon/bio/false_discovery.py",
+      "passed": true,
+      "metrics": {
+        "n_methods": 3,
+        "trials": 60,
+        "bh_fdr": 0.0,
+        "bh_power": 0.2733333333333334,
+        "bonferroni_power": 0.04833333333333335
+      },
+      "evidence": "BH controls FDR \u2264 q (FDR 0.0000 \u2264 q 0.05 + tol 0.03) and rejects a superset of Bonferroni; BH recovers power 0.273 vs Bonferroni 0.048 (uncorrected 0.488); durable md+JSON byte-identical; no person surface",
+      "invariants": {
+        "bh_controls_fdr": true,
+        "bh_dominates_bonferroni": true,
+        "power_ordering": true,
+        "both_files_nonempty": true,
+        "json_round_trips": true,
+        "one_row_per_method": true,
+        "out_path_set": true,
+        "byte_identical_on_rewrite": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 51290.4
+    },
+    {
+      "name": "Integrity guard (cognitive immune layer; \u03c6 logic unchanged)",
+      "module": "aureon/bio/integrity_guard.py",
+      "passed": true,
+      "metrics": {
+        "n_invariants_pinned": 7,
+        "n_injection_patterns": 9,
+        "n_benign": 4,
+        "n_adversarial": 4
+      },
+      "evidence": "clean engine intact (0 drift); mutated-ALPHA detected True; swapped-test detected True; engine restored intact True; injection quarantined; durable md+JSON byte-identical; no person surface",
+      "invariants": {
+        "engine_intact": true,
+        "detects_mutated_alpha": true,
+        "detects_swapped_test": true,
+        "engine_intact_after_restore": true,
+        "benign_text_passes": true,
+        "injection_quarantined": true,
+        "both_files_nonempty": true,
+        "json_round_trips": true,
+        "byte_identical_on_rewrite": true,
+        "out_path_set": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 1118.9
+    },
+    {
+      "name": "Swarm defense (leaderless bee-ball quorum; \u03c6 logic unchanged)",
+      "module": "aureon/bio/swarm_defense.py",
+      "passed": true,
+      "metrics": {
+        "n_defenders": 9,
+        "quorum": 5,
+        "tolerated_faults": 4,
+        "confidence": 0.95
+      },
+      "evidence": "real threat confirmed by 9/9 quorum 5 (conf 0.95); survives 4 compromised, overwhelmed at 5; benign not confirmed; leaderless; guard-report wired; durable md+JSON byte-identical; no person surface",
+      "invariants": {
+        "real_threat_confirmed": true,
+        "benign_not_confirmed": true,
+        "survives_minority_faults": true,
+        "overwhelmed_only_by_majority": true,
+        "leaderless": true,
+        "from_guard_report_wires": true,
+        "both_files_nonempty": true,
+        "json_round_trips": true,
+        "one_row_per_defender": true,
+        "byte_identical_on_rewrite": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 11.6
+    },
+    {
+      "name": "MCP boundary membrane (directional integrity gateway; \u03c6 logic unchanged)",
+      "module": "aureon/bio/mcp_membrane.py",
+      "passed": true,
+      "metrics": {
+        "n_scalar_invariants": 6,
+        "sequence": 1,
+        "digest_len": 64
+      },
+      "evidence": "egress seals+verifies, drift detected (drift), replay detected (replay); injection + false-ALPHA-claim + blocked-action all contained, benign passes; interior unchanged=True, laminar=True; durable md+JSON byte-identical; no person surface",
+      "invariants": {
+        "egress_seals_and_verifies": true,
+        "egress_drift_detected": true,
+        "replay_detected": true,
+        "benign_ingress_passes": true,
+        "injection_ingress_contained": true,
+        "false_self_claim_rejected": true,
+        "blocked_action_claim_held": true,
+        "interior_unchanged_after_ingress": true,
+        "laminar": true,
+        "both_files_nonempty": true,
+        "json_round_trips": true,
+        "byte_identical_on_rewrite": true,
+        "out_path_set": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 659.1
+    },
+    {
+      "name": "Authenticity discriminator (real vs synthetic + clone paradox; \u03c6 logic unchanged)",
+      "module": "aureon/bio/authenticity_discriminator.py",
+      "passed": true,
+      "metrics": {
+        "authentic_rate": 1.0,
+        "max_surface_imitation_rate": 0.0,
+        "clone_structural_rate": 1.0,
+        "clone_authentic_rate": 0.0,
+        "separation": 1.0
+      },
+      "evidence": "genuine authentic 1.000 vs strongest imitation 0.000 (separation 1.000); harmonic/geometric axes independent; perfect clone structurally passes 1.000 but authentic only 0.000 \u2192 blocked by provenance; durable md+JSON byte-identical; no person surface",
+      "invariants": {
+        "authentic_detected": true,
+        "coarse_mimic_blocked": true,
+        "harmonic_only_fails_geometry": true,
+        "geometric_only_fails_harmony": true,
+        "surface_imitations_blocked": true,
+        "clone_structurally_passes": true,
+        "clone_blocked_by_provenance": true,
+        "separation_positive": true,
+        "both_files_nonempty": true,
+        "json_round_trips": true,
+        "one_row_per_class": true,
+        "byte_identical_on_rewrite": true,
+        "out_path_set": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 6462.6
+    },
+    {
+      "name": "Immune memory (recall + secondary response; \u03c6 logic unchanged)",
+      "module": "aureon/bio/immune_memory.py",
+      "passed": true,
+      "metrics": {
+        "recognition_rate": 1.0,
+        "false_recall_rate": 0.0,
+        "primary_cost": 9,
+        "secondary_cost": 1,
+        "speedup": 9.0,
+        "memory_size": 16
+      },
+      "evidence": "recognition 1.000 on repeats, false-recall 0.000; primary 9 vs secondary 1 work-units (speedup 9.0\u00d7); self not remembered True; specificity True; bounded eviction True; loop closes True; durable md+JSON byte-identical; no person surface",
+      "invariants": {
+        "recognizes_repeat": true,
+        "misses_novel": true,
+        "self_tolerance": true,
+        "secondary_cheaper_than_primary": true,
+        "speedup_gt_1": true,
+        "specificity": true,
+        "bounded_capacity": true,
+        "loop_closes": true,
+        "both_files_nonempty": true,
+        "json_round_trips": true,
+        "has_metric_rows": true,
+        "byte_identical_on_rewrite": true,
+        "out_path_set": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 7.0
+    },
+    {
+      "name": "Immune regulation (homeostatic brake; \u03c6 logic unchanged)",
+      "module": "aureon/bio/immune_regulation.py",
+      "passed": true,
+      "metrics": {
+        "self_attack_rate": 0.0,
+        "false_alarm_suppression_rate": 1.0,
+        "genuine_pass_rate": 1.0,
+        "max_inflammation": 4,
+        "work_saved_fraction": 0.65
+      },
+      "evidence": "self-attack 0.000 (no autoimmunity); false-alarm suppression 1.000; genuine-pass 1.000 (novelty always passes); inflammation bounded 4/4 under flood (capped 3); homeostasis restored True; loop closes True; durable md+JSON byte-identical; no person surface",
+      "invariants": {
+        "self_tolerance": true,
+        "damps_false_alarms": true,
+        "passes_genuine_threats": true,
+        "bounded_inflammation": true,
+        "homeostasis_restored": true,
+        "loop_closes": true,
+        "both_files_nonempty": true,
+        "json_round_trips": true,
+        "has_metric_rows": true,
+        "byte_identical_on_rewrite": true,
+        "out_path_set": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 3.9
+    },
+    {
+      "name": "Logic-flow trace (HNC pulse \u2192 decision, one trace_id)",
+      "module": "aureon/cognition/logic_flow.py",
+      "passed": true,
+      "metrics": {
+        "field_score": 0.639,
+        "topics": 2
+      },
+      "evidence": "canonical pulse published; read via read_canonical_field (score 0.639); decision carries the field on one trace_id (benchflow0); topic sequence symbolic.life.pulse -> cognition.logic_flow.decision; flow intact True; cognition bridge fired; durable md+JSON byte-identical; no person surface",
+      "invariants": {
+        "pulse_published": true,
+        "field_read_canonical": true,
+        "decision_carries_field": true,
+        "trace_id_propagated": true,
+        "single_trace_id": true,
+        "flow_intact": true,
+        "topic_sequence_ordered": true,
+        "deterministic": true,
+        "trace_signal_written": true,
+        "both_files_nonempty": true,
+        "json_round_trips": true,
+        "has_metric_rows": true,
+        "byte_identical_on_rewrite": true,
+        "out_path_set": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 21.2
+    },
+    {
+      "name": "HNC direction audit (adaptive logic on the one field)",
+      "module": "aureon/bio/hnc_direction_audit.py",
+      "passed": true,
+      "metrics": {
+        "directed_fraction": 1.0,
+        "n_directed": 5,
+        "n_total": 5
+      },
+      "evidence": "5/5 adaptive consumers directed by the canonical field (fraction 1.000); all directed True; durable md+JSON byte-identical; no person surface",
+      "invariants": {
+        "all_consumers_probed": true,
+        "every_consumer_present": true,
+        "all_adaptive_consumers_directed": true,
+        "no_silos": true,
+        "deterministic": true,
+        "both_files_nonempty": true,
+        "json_round_trips": true,
+        "has_metric_rows": true,
+        "byte_identical_on_rewrite": true,
+        "out_path_set": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 9.9
+    },
+    {
+      "name": "MCP transport (live wire through the membrane)",
+      "module": "aureon/bio/mcp_transport.py",
+      "passed": true,
+      "metrics": {
+        "tools_listed": 9,
+        "http_tools": 9
+      },
+      "evidence": "live MCP transport: 9 tools sealed; benign call laminar True; adversarial ingress contained True; tamper detected True; Flask round-trip laminar True (adversarial refused True); durable md+JSON byte-identical; no person surface",
+      "invariants": {
+        "benign_call_laminar": true,
+        "benign_egress_verifies": true,
+        "adversarial_ingress_contained": true,
+        "tamper_detected": true,
+        "self_test_all_ok": true,
+        "http_round_trip_laminar": true,
+        "http_adversarial_refused": true,
+        "tools_listed": true,
+        "both_files_nonempty": true,
+        "json_round_trips": true,
+        "has_metric_rows": true,
+        "byte_identical_on_rewrite": true,
+        "out_path_set": true,
+        "no_person_surface": true
+      },
+      "wall_ms": 78.1
     }
   ],
   "tier_b": [
@@ -311,7 +1080,7 @@
           "text": "Hello. I hear you through Aureon's local brain fallback, and I am treating this as operator chat, not a trading signal. I can help route coding jobs, UI work, media builds, research, and system-health checks through the local Aureon organism while keeping live trading, payments, filings, credentials, and destructive OS actions behind their gates.",
           "model": "aureon-brain-v1",
           "metrics": {
-            "latency_ms": 1.3,
+            "latency_ms": 1.4,
             "char_count": 348,
             "word_count": 54,
             "tokens_present": {}
@@ -352,7 +1121,7 @@
           "text": "I checked the gate. Right now: Right now the field reads \u039b(t) = +1.600, \u03c8 = 0.920, coherence_gamma = 0.951; Decompose this goal into 4\u20136 ordered steps, each tagged with the gate you would check before proceeding:. You asked: \u201cRight now the field reads \u039b(t) = +1.600, \u03c8 = 0.920, coherence_gamma = 0.951.\nDecompose this goal into 4\u20136 ordered steps, each tagged with the gate you would check before proceeding:\nGOAL: 'draft a research note that documents the current \u039b-state and what it implies for the next 30-minute window'.\u201d The coherence reading and the noise-cut say what they say; do not override them with wish. \u2014 that is what the numbers show.",
           "model": "persona-voice-local",
           "metrics": {
-            "latency_ms": 0.1,
+            "latency_ms": 0.0,
             "char_count": 648,
             "word_count": 112,
             "tokens_present": {}

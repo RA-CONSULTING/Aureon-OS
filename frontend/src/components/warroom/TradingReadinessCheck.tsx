@@ -64,7 +64,7 @@ export function TradingReadinessCheck() {
       results.push({
         name: 'Trading Mode',
         status: 'pass',
-        message: data?.trading_mode === 'live' ? '🔴 LIVE MODE' : '📝 Paper Mode',
+        message: data?.trading_mode === 'live' ? ' LIVE MODE' : ' Paper Mode',
       });
     } else {
       results.push({
@@ -97,10 +97,10 @@ export function TradingReadinessCheck() {
     <Card className="bg-card/50 backdrop-blur border-primary/20">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between text-base">
-          <span>✅ Trading Readiness</span>
+          <span> Trading Readiness</span>
           <Badge 
             variant={isReady ? 'default' : 'destructive'}
-            className={isReady ? 'bg-green-500' : ''}
+            className={isReady ? 'bg-success' : ''}
           >
             {isReady ? 'READY' : `${failCount} ISSUES`}
           </Badge>
@@ -115,9 +115,9 @@ export function TradingReadinessCheck() {
             >
               <div className="flex items-center gap-2">
                 {check.status === 'checking' && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-                {check.status === 'pass' && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+                {check.status === 'pass' && <CheckCircle2 className="h-4 w-4 text-success" />}
                 {check.status === 'fail' && <XCircle className="h-4 w-4 text-destructive" />}
-                {check.status === 'warn' && <AlertTriangle className="h-4 w-4 text-yellow-500" />}
+                {check.status === 'warn' && <AlertTriangle className="h-4 w-4 text-warning" />}
                 <span className="text-sm font-medium">{check.name}</span>
               </div>
               <span className="text-xs text-muted-foreground">{check.message}</span>

@@ -1,5 +1,5 @@
 /**
- * 🎯🦆 SNIPER LEADERBOARD ☘️
+ *  SNIPER LEADERBOARD 
  * ==========================
  * 
  * Rankings of symbols by penny-profit kills.
@@ -86,11 +86,9 @@ export function SniperLeaderboard({
   return (
     <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-primary/20 overflow-hidden">
       {/* Header */}
-      <CardHeader className="bg-gradient-to-r from-green-600/30 via-slate-800 to-orange-500/30 border-b border-slate-700 pb-3">
+      <CardHeader className="bg-gradient-to-r from-success/30 via-slate-800 to-warning/30 border-b border-slate-700 pb-3">
         <CardTitle className="flex items-center justify-center gap-3 text-lg">
-          <span className="text-xl animate-pulse">🎯</span>
-          <span className="font-extrabold tracking-wider text-white">SNIPER LEADERBOARD</span>
-          <span className="text-xl animate-pulse">☘️</span>
+          <span className="font-extrabold tracking-wider text-foreground">Signal Leaderboard</span>
         </CardTitle>
         <p className="text-center text-xs text-gray-400 italic mt-1">
           "{QUANTUM_QUACKERS.signature}"
@@ -129,7 +127,7 @@ export function SniperLeaderboard({
             <span className="text-xs text-gray-400 uppercase">Total Kills</span>
           </div>
           <div className="text-center p-3 bg-slate-800/50 rounded-lg">
-            <span className="block text-2xl font-bold text-green-400">+${totals.pnl.toFixed(2)}</span>
+            <span className="block text-2xl font-bold text-success">+${totals.pnl.toFixed(2)}</span>
             <span className="text-xs text-gray-400 uppercase">Total PnL</span>
           </div>
           <div className="text-center p-3 bg-slate-800/50 rounded-lg">
@@ -142,16 +140,16 @@ export function SniperLeaderboard({
         <div className="flex items-center gap-2 mb-4 flex-wrap">
           <span className="text-xs text-gray-400">Sort by:</span>
           {[
-            { key: 'kills', label: '🎯 Kills' },
-            { key: 'pnl', label: '💰 PnL' },
-            { key: 'quickKillRate', label: '⚡ Speed' },
-            { key: 'avgBars', label: '📊 Bars' },
+            { key: 'kills', label: ' Kills' },
+            { key: 'pnl', label: ' PnL' },
+            { key: 'quickKillRate', label: ' Speed' },
+            { key: 'avgBars', label: ' Bars' },
           ].map(({ key, label }) => (
             <Button
               key={key}
               size="sm"
               variant={currentSort === key ? 'default' : 'outline'}
-              className={`text-xs h-7 ${currentSort === key ? 'bg-green-600' : ''}`}
+              className={`text-xs h-7 ${currentSort === key ? 'bg-success' : ''}`}
               onClick={() => setCurrentSort(key as SortField)}
             >
               {label}
@@ -163,7 +161,7 @@ export function SniperLeaderboard({
         <ScrollArea className="h-[350px]">
           {symbolStats.length === 0 && (
             <div className="flex flex-col items-center justify-center h-[320px] text-center px-6">
-              <span className="text-3xl mb-2 opacity-60">🎯</span>
+              <span className="text-3xl mb-2 opacity-60"></span>
               <p className="text-sm text-gray-300 font-semibold">No sniper telemetry yet</p>
               <p className="text-xs text-gray-500 mt-1">
                 Awaiting live trades — kill stats populate from real executions as they happen.
@@ -183,7 +181,7 @@ export function SniperLeaderboard({
                 const duck = getDuckForExchange(ex);
                 return (
                   <div key={ex} className="text-center" title={duck?.realName || ex}>
-                    {duck?.avatar || '💱'}
+                    {duck?.avatar || ''}
                   </div>
                 );
               })}
@@ -194,29 +192,29 @@ export function SniperLeaderboard({
               <div
                 key={stat.symbol}
                 className={`grid grid-cols-10 gap-1 text-xs p-2 rounded transition-colors hover:bg-slate-700/50 ${
-                  index === 0 ? 'bg-yellow-500/10' : 
+                  index === 0 ? 'bg-warning/10' : 
                   index === 1 ? 'bg-gray-400/10' : 
-                  index === 2 ? 'bg-orange-500/10' : ''
+                  index === 2 ? 'bg-warning/10' : ''
                 }`}
               >
                 <div className="text-center font-bold">
-                  {index === 0 && '🥇'}
-                  {index === 1 && '🥈'}
-                  {index === 2 && '🥉'}
+                  {index === 0 && ''}
+                  {index === 1 && ''}
+                  {index === 2 && ''}
                   {index >= 3 && index + 1}
                 </div>
                 <div className="col-span-2 font-bold text-white">{stat.symbol}</div>
                 <div className="text-center text-white">{stat.totalKills}</div>
-                <div className={`text-center ${stat.totalPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                <div className={`text-center ${stat.totalPnl >= 0 ? 'text-success' : 'text-destructive'}`}>
                   {stat.totalPnl >= 0 ? '+' : ''}${stat.totalPnl.toFixed(2)}
                 </div>
                 <div className="text-center">
-                  <span className={stat.quickKillRate >= 0.9 ? 'text-yellow-400 font-bold' : 'text-gray-300'}>
+                  <span className={stat.quickKillRate >= 0.9 ? 'text-warning font-bold' : 'text-gray-300'}>
                     {(stat.quickKillRate * 100).toFixed(1)}%
                   </span>
                 </div>
                 <div className="text-center">
-                  <span className={stat.avgBarsToProfit <= 2 ? 'text-green-400 font-bold' : 'text-gray-300'}>
+                  <span className={stat.avgBarsToProfit <= 2 ? 'text-success font-bold' : 'text-gray-300'}>
                     {stat.avgBarsToProfit.toFixed(1)}
                   </span>
                 </div>

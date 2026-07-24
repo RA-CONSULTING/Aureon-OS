@@ -26,9 +26,9 @@ export const PositionHeatPanel = () => {
   const heatPercent = (heatState.totalHeat / 0.9) * 100;
   
   const getHeatColor = (percent: number) => {
-    if (percent < 50) return 'text-green-500';
-    if (percent < 75) return 'text-yellow-500';
-    return 'text-red-500';
+    if (percent < 50) return 'text-success';
+    if (percent < 75) return 'text-warning';
+    return 'text-destructive';
   };
 
   const heatGroups = [
@@ -60,14 +60,14 @@ export const PositionHeatPanel = () => {
         <div className="grid grid-cols-2 gap-2">
           <div className={cn(
             "flex items-center justify-center gap-2 p-2 rounded text-xs",
-            heatState.canAddPosition ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
+            heatState.canAddPosition ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
           )}>
             <ThermometerSun className="h-3 w-3" />
             {heatState.canAddPosition ? 'Can Add' : 'Heat Limit'}
           </div>
           <div className={cn(
             "flex items-center justify-center gap-2 p-2 rounded text-xs",
-            heatState.maxHeatReached ? "bg-red-500/10 text-red-500" : "bg-muted/30 text-muted-foreground"
+            heatState.maxHeatReached ? "bg-destructive/10 text-destructive" : "bg-muted/30 text-muted-foreground"
           )}>
             {heatState.maxHeatReached ? '⚠️ Max Heat' : '✓ OK'}
           </div>

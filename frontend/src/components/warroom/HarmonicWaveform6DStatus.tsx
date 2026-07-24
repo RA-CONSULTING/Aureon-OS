@@ -26,10 +26,10 @@ const dimensionLabels = {
 };
 
 const waveStateColors: Record<WaveState, string> = {
-  CRYSTALLINE: 'text-emerald-400 bg-emerald-500/20',
-  RESONANT: 'text-cyan-400 bg-cyan-500/20',
-  TURBULENT: 'text-yellow-400 bg-yellow-500/20',
-  CHAOTIC: 'text-red-400 bg-red-500/20',
+  CRYSTALLINE: 'text-success bg-success/20',
+  RESONANT: 'text-primary bg-primary/20',
+  TURBULENT: 'text-warning bg-warning/20',
+  CHAOTIC: 'text-destructive bg-destructive/20',
 };
 
 export function HarmonicWaveform6DStatus({ waveform }: HarmonicWaveform6DStatusProps) {
@@ -59,7 +59,7 @@ export function HarmonicWaveform6DStatus({ waveform }: HarmonicWaveform6DStatusP
             {waveform.waveState}
           </span>
           {waveform.harmonicLock && (
-            <span className="px-2 py-0.5 rounded text-xs font-medium text-green-400 bg-green-500/20 animate-pulse">
+            <span className="px-2 py-0.5 rounded text-xs font-medium text-success bg-success/20 animate-pulse">
               528 Hz LOCK
             </span>
           )}
@@ -126,7 +126,7 @@ export function HarmonicWaveform6DStatus({ waveform }: HarmonicWaveform6DStatusP
 }
 
 function MetricBox({ label, value }: { label: string; value: number }) {
-  const color = value > 0.7 ? 'text-emerald-400' : value > 0.5 ? 'text-cyan-400' : 'text-yellow-400';
+  const color = value > 0.7 ? 'text-success' : value > 0.5 ? 'text-primary' : 'text-warning';
   
   return (
     <div className="text-center p-1.5 rounded bg-background/30">
@@ -139,7 +139,7 @@ function MetricBox({ label, value }: { label: string; value: number }) {
 }
 
 function getActionColor(action: string): string {
-  if (action.includes('BUY')) return 'bg-emerald-500/20 text-emerald-400';
-  if (action.includes('SELL')) return 'bg-red-500/20 text-red-400';
+  if (action.includes('BUY')) return 'bg-success/20 text-success';
+  if (action.includes('SELL')) return 'bg-destructive/20 text-destructive';
   return 'bg-muted/50 text-muted-foreground';
 }

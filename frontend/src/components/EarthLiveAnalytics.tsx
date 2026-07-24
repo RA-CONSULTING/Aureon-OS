@@ -60,7 +60,7 @@ export const EarthLiveAnalytics = () => {
             <CardTitle className="text-sm">Ionosphere</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-emerald-500">
+            <div className="text-2xl font-bold text-success">
               {(ionosphereActivity * 100).toFixed(1)}%
             </div>
             <Progress value={ionosphereActivity * 100} className="mt-2" />
@@ -72,7 +72,7 @@ export const EarthLiveAnalytics = () => {
             <CardTitle className="text-sm">Solar Wind</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-violet-500">
+            <div className="text-2xl font-bold text-primary">
               {(solarWind * 100).toFixed(1)}%
             </div>
             <Progress value={solarWind * 100} className="mt-2" />
@@ -84,12 +84,12 @@ export const EarthLiveAnalytics = () => {
             <CardTitle className="text-sm">Schumann Resonance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-500">
+            <div className="text-2xl font-bold text-warning">
               {schumannFrequency.toFixed(2)} Hz
             </div>
             <Progress value={(schumannFrequency / 8.5) * 100} className="mt-2" />
             {coherenceBoost > 0.05 && (
-              <Badge variant="default" className="mt-2 bg-emerald-500">+{(coherenceBoost * 100).toFixed(1)}% Boost</Badge>
+              <Badge variant="default" className="mt-2 bg-success">+{(coherenceBoost * 100).toFixed(1)}% Boost</Badge>
             )}
           </CardContent>
         </Card>
@@ -115,7 +115,7 @@ export const EarthLiveAnalytics = () => {
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-bold">{sensor.value.toFixed(1)}</span>
                     <div className={`w-3 h-3 rounded-full ${
-                      sensor.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'
+                      sensor.status === 'active' ? 'bg-success' : 'bg-warning'
                     }`} />
                   </div>
                 </div>
@@ -136,7 +136,7 @@ export const EarthLiveAnalytics = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Update Rate</span>
-                <span className="font-bold text-emerald-500">{streamStats.updateRate.toFixed(1)} Hz</span>
+                <span className="font-bold text-success">{streamStats.updateRate.toFixed(1)} Hz</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Accuracy</span>
@@ -144,7 +144,7 @@ export const EarthLiveAnalytics = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Coverage</span>
-                <span className="font-bold text-violet-500">{(streamStats.coverage * 100).toFixed(1)}%</span>
+                <span className="font-bold text-primary">{(streamStats.coverage * 100).toFixed(1)}%</span>
               </div>
             </div>
           </CardContent>

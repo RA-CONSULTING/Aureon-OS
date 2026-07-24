@@ -23,6 +23,7 @@ Routes:
   GET  /api/approvals          the director's desk: big plays prepared, awaiting Gary's decision
   POST /api/approvals/<id>     record Gary's approve/reject (the human gate; never executes the move)
   GET  /api/company            the full workforce: every role across 8 departments, crew-staffable
+  GET  /api/defense            the bio family: sensor lanes · statistical-validity dossier · immune layer
   GET  /api/manifests/<name>   a frontend manifest, rendered live (JSON)
   POST /api/manifests/refresh  rebuild catalog + rewrite frontend manifests
 
@@ -397,6 +398,21 @@ def register_saas_routes(app: Any) -> Any:
             ts = "no_data"
         return jsonify(_stamp(data, ts))
 
+    @app.get("/api/org")
+    @_guarded
+    def saas_org():
+        # The organization behind Aureon OS — R&A Consulting and Brokerage Services Ltd
+        # (trading as Aureon Zorza Technologies), its company number, the Innovate NI Silver
+        # recognition, community support and contact — verifiable public facts transcribed
+        # from COMPANY.md. Distinct from /api/company, which is the agent workforce roster.
+        try:
+            from aureon.saas.company_profile import build_company_profile
+
+            profile = build_company_profile()
+            return jsonify(_stamp(profile, profile.get("truth_status", "real_derived")))
+        except Exception as exc:  # noqa: BLE001 — degrade honestly, never 500
+            return jsonify(_stamp({"available": False, "error": str(exc)[:200]}, "no_data"))
+
     @app.get("/api/consciousness")
     @_guarded
     def saas_consciousness():
@@ -412,6 +428,23 @@ def register_saas_routes(app: Any) -> Any:
         except Exception as exc:  # noqa: BLE001 — degrade honestly, never 500
             return jsonify(_stamp(
                 {"available": False, "categories": {}, "surfaces": [], "error": str(exc)[:200]},
+                "no_data"))
+
+    @app.get("/api/defense")
+    @_guarded
+    def saas_defense():
+        # The bio family — sensor lanes, the statistical-validity dossier, and the cognitive
+        # immune layer (integrity guard · swarm defense · MCP membrane) — grouped, with real
+        # passed/metrics/evidence from the committed Tier-A benchmark report and a live
+        # bus-trace overlay where a module has run. Read-only; no bio module is run on request.
+        try:
+            from aureon.saas.defense_catalog import build_defense_catalog
+
+            cat = build_defense_catalog()
+            return jsonify(_stamp(cat, cat.get("truth_status", "no_data")))
+        except Exception as exc:  # noqa: BLE001 — degrade honestly, never 500
+            return jsonify(_stamp(
+                {"groups": {}, "group_order": [], "counts": {}, "error": str(exc)[:200]},
                 "no_data"))
 
     @app.get("/api/automation")

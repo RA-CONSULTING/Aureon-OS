@@ -64,7 +64,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
                     aria-checked={isThinkingMode}
                     id="thinking-mode"
                     onClick={() => onToggleThinkingMode(!isThinkingMode)}
-                    className={`${isThinkingMode ? 'bg-sky-500' : 'bg-gray-600'} relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-gray-800`}
+                    className={`${isThinkingMode ? 'bg-primary' : 'bg-gray-600'} relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-800`}
                 >
                     <span className={`${isThinkingMode ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}/>
                 </button>
@@ -78,11 +78,11 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
         {messages.map((msg, index) => (
           <div key={index} className={`flex items-start gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
             {msg.role === 'model' && (
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary flex items-center justify-center flex-shrink-0">
                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14M12 5l7 7-7 7"></path></svg>
               </div>
             )}
-            <div className={`max-w-xl rounded-lg ${msg.role === 'user' ? 'bg-sky-800' : 'bg-gray-700'}`}>
+            <div className={`max-w-xl rounded-lg ${msg.role === 'user' ? 'bg-primary' : 'bg-gray-700'}`}>
               <div
                 className="chat-content text-sm p-3"
                 dangerouslySetInnerHTML={renderMessageContent(msg.content)}
@@ -98,7 +98,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
                           target="_blank" 
                           rel="noopener noreferrer" 
                           title={source.uri} 
-                          className="text-sky-400 hover:text-sky-300 hover:underline"
+                          className="text-primary hover:text-primary hover:underline"
                         >
                           {source.title}
                         </a>
@@ -112,14 +112,14 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
         ))}
          {isLoading && messages[messages.length - 1]?.role === 'model' && (
             <div className="flex items-start gap-3">
-                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary flex items-center justify-center flex-shrink-0">
                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14M12 5l7 7-7 7"></path></svg>
                 </div>
                 <div className="max-w-xl p-3 rounded-lg bg-gray-700">
                     <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-sky-400 rounded-full animate-pulse"></div>
-                        <div className="w-2 h-2 bg-sky-400 rounded-full animate-pulse [animation-delay:0.2s]"></div>
-                        <div className="w-2 h-2 bg-sky-400 rounded-full animate-pulse [animation-delay:0.4s]"></div>
+                        <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                        <div className="w-2 h-2 bg-primary rounded-full animate-pulse [animation-delay:0.2s]"></div>
+                        <div className="w-2 h-2 bg-primary rounded-full animate-pulse [animation-delay:0.4s]"></div>
                     </div>
                 </div>
             </div>
@@ -132,7 +132,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
           value={inputValue}
           onChange={(e) => onInputChange(e.target.value)}
           placeholder={isRecording ? "Listening..." : "Enter tactical query..."}
-          className="w-full bg-gray-900 border border-gray-600 rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-sky-500"
+          className="w-full bg-gray-900 border border-gray-600 rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary"
           disabled={isLoading || isRecording}
         />
         <button
@@ -141,7 +141,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
           disabled={isLoading}
           className={`p-2 rounded-full transition-colors ${
             isRecording 
-              ? 'bg-red-600 hover:bg-red-700 animate-pulse' 
+              ? 'bg-destructive hover:bg-destructive animate-pulse' 
               : 'bg-gray-600 hover:bg-gray-500'
           } disabled:bg-gray-700 disabled:cursor-not-allowed text-white`}
           aria-label={isRecording ? "Stop recording" : "Start recording"}
@@ -159,7 +159,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
         <button
           type="submit"
           disabled={isLoading || !inputValue.trim() || isRecording}
-          className="bg-sky-600 hover:bg-sky-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold p-2 rounded-full transition-colors"
+          className="bg-primary hover:bg-primary disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold p-2 rounded-full transition-colors"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
         </button>

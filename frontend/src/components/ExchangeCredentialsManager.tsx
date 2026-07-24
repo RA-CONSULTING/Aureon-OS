@@ -462,7 +462,7 @@ export function ExchangeCredentialsManager() {
     const envMissing = localEnvStatus?.exchanges?.[name]?.missing_keys || onboarding.requiredKeys;
 
     return (
-      <Card className={`border ${isConnected ? 'border-green-500/30 bg-green-500/5' : 'border-border'}`}>
+      <Card className={`border ${isConnected ? 'border-success/30 bg-success/5' : 'border-border'}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
@@ -473,14 +473,14 @@ export function ExchangeCredentialsManager() {
               <CardDescription className="text-xs">{description}</CardDescription>
             </div>
             <div className="flex flex-col items-end gap-1">
-              <Badge variant={isConnected ? 'default' : 'secondary'} className={isConnected ? 'bg-green-500' : ''}>
+              <Badge variant={isConnected ? 'default' : 'secondary'} className={isConnected ? 'bg-success' : ''}>
                 {isConnected ? (
                   <><CheckCircle2 className="h-3 w-3 mr-1" /> .env ready</>
                 ) : (
                   <><XCircle className="h-3 w-3 mr-1" /> missing keys</>
                 )}
               </Badge>
-              <Badge variant={runtimeFiring ? 'default' : 'outline'} className={runtimeFiring ? 'bg-cyan-500' : ''}>
+              <Badge variant={runtimeFiring ? 'default' : 'outline'} className={runtimeFiring ? 'bg-primary' : ''}>
                 {runtimeFiring ? 'runtime firing' : 'runtime waiting'}
               </Badge>
             </div>
@@ -541,7 +541,7 @@ export function ExchangeCredentialsManager() {
           
           {/* Test result display */}
           {testResult && (
-            <div className={`text-xs p-2 rounded ${testResult.success ? 'bg-green-500/10 text-green-500' : 'bg-destructive/10 text-destructive'}`}>
+            <div className={`text-xs p-2 rounded ${testResult.success ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
               {testResult.success ? '✓' : '✗'} {testResult.message}
             </div>
           )}
@@ -608,7 +608,7 @@ export function ExchangeCredentialsManager() {
         </div>
         <div className="mt-4 h-3 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-green-500 transition-all"
+            className="h-full rounded-full bg-success transition-all"
             style={{ width: `${Math.max(0, Math.min(100, operationalPercent))}%` }}
           />
         </div>
@@ -671,12 +671,12 @@ export function ExchangeCredentialsManager() {
         </Button>
       </div>
       {localEnvError && (
-        <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3 text-xs text-yellow-100">
+        <div className="rounded-md border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
           {localEnvError}
         </div>
       )}
       {restartRequired && (
-        <div className="rounded-md border border-green-500/30 bg-green-500/10 p-3 text-xs text-green-100">
+        <div className="rounded-md border border-success/30 bg-success/10 p-3 text-xs text-success">
           New .env credentials are staged. The production supervisor will reload them on the next approved restart window.
         </div>
       )}

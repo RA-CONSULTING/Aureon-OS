@@ -28,7 +28,7 @@ import { globalSystemsManager } from '@/core/globalSystemsManager';
 function SystemIndicator({ name, active, icon: Icon }: { name: string; active: boolean; icon: React.ElementType }) {
   return (
     <div className="flex items-center gap-2 text-xs">
-      <div className={cn("h-2 w-2 rounded-full", active ? "bg-green-400" : "bg-muted-foreground")} />
+      <div className={cn("h-2 w-2 rounded-full", active ? "bg-success" : "bg-muted-foreground")} />
       <Icon className="h-3 w-3 text-muted-foreground" />
       <span className={cn(active ? "text-foreground" : "text-muted-foreground")}>{name}</span>
     </div>
@@ -89,8 +89,8 @@ export default function AureonDashboard() {
 
   const getPrismColor = () => {
     switch (prismState) {
-      case 'MANIFEST': return 'text-green-400';
-      case 'CONVERGING': return 'text-yellow-400';
+      case 'MANIFEST': return 'text-success';
+      case 'CONVERGING': return 'text-warning';
       default: return 'text-muted-foreground';
     }
   };
@@ -141,7 +141,7 @@ export default function AureonDashboard() {
             </Badge>
             
             <Badge variant={isActive ? "default" : "secondary"} className="gap-1">
-              <div className={cn("h-1.5 w-1.5 rounded-full", isActive ? "bg-green-400 animate-pulse" : "bg-muted-foreground")} />
+              <div className={cn("h-1.5 w-1.5 rounded-full", isActive ? "bg-success animate-pulse" : "bg-muted-foreground")} />
               {isActive ? 'ACTIVE' : 'IDLE'}
             </Badge>
             
@@ -233,7 +233,7 @@ export default function AureonDashboard() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-xs text-muted-foreground">P/L</span>
-                    <span className={cn("text-sm font-mono", totalPnl >= 0 ? "text-green-400" : "text-red-400")}>
+                    <span className={cn("text-sm font-mono", totalPnl >= 0 ? "text-success" : "text-destructive")}>
                       {totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)}
                     </span>
                   </div>
@@ -266,7 +266,7 @@ export default function AureonDashboard() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-xs text-muted-foreground">Momentum</span>
-                    <span className={cn("text-sm font-mono", marketData.momentum >= 0 ? "text-green-400" : "text-red-400")}>
+                    <span className={cn("text-sm font-mono", marketData.momentum >= 0 ? "text-success" : "text-destructive")}>
                       {marketData.momentum >= 0 ? '+' : ''}{(marketData.momentum * 100).toFixed(2)}%
                     </span>
                   </div>
@@ -352,7 +352,7 @@ export default function AureonDashboard() {
                           </div>
                           <div className="flex items-center gap-3">
                             <span className="text-muted-foreground">{trade.quantity}</span>
-                            <span className={cn("font-mono", trade.pnl >= 0 ? "text-green-400" : "text-red-400")}>
+                            <span className={cn("font-mono", trade.pnl >= 0 ? "text-success" : "text-destructive")}>
                               {trade.pnl >= 0 ? '+' : ''}{trade.pnl.toFixed(2)}
                             </span>
                           </div>

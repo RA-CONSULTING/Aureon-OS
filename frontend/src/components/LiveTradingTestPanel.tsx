@@ -148,14 +148,14 @@ export const LiveTradingTestPanel = ({ hasCredentials, userId }: LiveTradingTest
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center gap-2 text-sm">
             {hasCredentials ? (
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <CheckCircle2 className="h-4 w-4 text-success" />
             ) : (
               <XCircle className="h-4 w-4 text-destructive" />
             )}
             <span>Binance Credentials</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <CheckCircle2 className="h-4 w-4 text-success" />
             <span>Edge Function Ready</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
@@ -169,9 +169,9 @@ export const LiveTradingTestPanel = ({ hasCredentials, userId }: LiveTradingTest
         </div>
 
         {/* Safety Warning */}
-        <Alert className="border-yellow-500/30 bg-yellow-500/5">
-          <AlertTriangle className="h-4 w-4 text-yellow-500" />
-          <AlertDescription className="text-yellow-500">
+        <Alert className="border-warning/30 bg-warning/5">
+          <AlertTriangle className="h-4 w-4 text-warning" />
+          <AlertDescription className="text-warning">
             This will execute a REAL trade on Binance using your credentials.
             Ensure you have at least ${MIN_POSITION_USD} USDT available.
           </AlertDescription>
@@ -209,17 +209,17 @@ export const LiveTradingTestPanel = ({ hasCredentials, userId }: LiveTradingTest
         {testResult && (
           <div className={`rounded-lg p-4 ${
             testResult.success 
-              ? 'bg-green-500/10 border border-green-500/20' 
+              ? 'bg-success/10 border border-success/20' 
               : 'bg-destructive/10 border border-destructive/20'
           }`}>
             <div className="flex items-center gap-2 mb-3">
               {testResult.success ? (
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <CheckCircle2 className="h-5 w-5 text-success" />
               ) : (
                 <XCircle className="h-5 w-5 text-destructive" />
               )}
               <span className={`font-semibold ${
-                testResult.success ? 'text-green-500' : 'text-destructive'
+                testResult.success ? 'text-success' : 'text-destructive'
               }`}>
                 {testResult.success ? 'Trade Executed Successfully!' : 'Trade Failed'}
               </span>
@@ -249,7 +249,7 @@ export const LiveTradingTestPanel = ({ hasCredentials, userId }: LiveTradingTest
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Status</span>
-                  <Badge variant="outline" className="text-green-500 border-green-500">
+                  <Badge variant="outline" className="text-success border-success">
                     {testResult.status}
                   </Badge>
                 </div>

@@ -134,19 +134,19 @@ export const LiveValidationProtocol: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
             <div className="text-center">
               <div className="font-medium">Coherence</div>
-              <div className={metrics.coherence >= 0.65 ? "text-green-600" : "text-gray-600"}>
+              <div className={metrics.coherence >= 0.65 ? "text-success" : "text-gray-600"}>
                 {metrics.coherence.toFixed(3)}
               </div>
             </div>
             <div className="text-center">
               <div className="font-medium">Lock</div>
-              <div className={metrics.schumannLock >= 0.65 ? "text-green-600" : "text-gray-600"}>
+              <div className={metrics.schumannLock >= 0.65 ? "text-success" : "text-gray-600"}>
                 {metrics.schumannLock.toFixed(3)}
               </div>
             </div>
             <div className="text-center">
               <div className="font-medium">TSV Gain</div>
-              <div className={metrics.tsvGain < 0.92 ? "text-green-600" : "text-red-600"}>
+              <div className={metrics.tsvGain < 0.92 ? "text-success" : "text-destructive"}>
                 {metrics.tsvGain.toFixed(3)}
               </div>
             </div>

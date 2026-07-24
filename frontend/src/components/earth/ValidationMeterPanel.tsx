@@ -28,7 +28,7 @@ export function ValidationMeterPanel({ validation }: Props) {
       formula: 'Σcos(Δφ)/n',
       icon: Target,
       threshold: 0.75,
-      color: validation.fieldAlignment >= 0.75 ? 'text-green-500' : 'text-amber-500'
+      color: validation.fieldAlignment >= 0.75 ? 'text-success' : 'text-warning'
     },
     { 
       key: 'harmonicCoherence',
@@ -37,7 +37,7 @@ export function ValidationMeterPanel({ validation }: Props) {
       formula: '√(Σγ²/n)',
       icon: Activity,
       threshold: 0.6,
-      color: validation.harmonicCoherence >= 0.6 ? 'text-green-500' : 'text-amber-500'
+      color: validation.harmonicCoherence >= 0.6 ? 'text-success' : 'text-warning'
     },
     { 
       key: 'resonanceStability',
@@ -46,7 +46,7 @@ export function ValidationMeterPanel({ validation }: Props) {
       formula: '1-σ/f₀',
       icon: Gauge,
       threshold: 0.95,
-      color: validation.resonanceStability >= 0.95 ? 'text-green-500' : 'text-amber-500'
+      color: validation.resonanceStability >= 0.95 ? 'text-success' : 'text-warning'
     },
     { 
       key: 'phaseLockStrength',
@@ -55,7 +55,7 @@ export function ValidationMeterPanel({ validation }: Props) {
       formula: '|⟨e^(iΔφ)⟩|',
       icon: Lock,
       threshold: 0.8,
-      color: validation.phaseLockStrength >= 0.8 ? 'text-green-500' : 'text-amber-500'
+      color: validation.phaseLockStrength >= 0.8 ? 'text-success' : 'text-warning'
     }
   ];
   
@@ -69,7 +69,7 @@ export function ValidationMeterPanel({ validation }: Props) {
           </CardTitle>
           <Badge 
             variant={validation.isValid ? "default" : "destructive"}
-            className={validation.isValid ? "bg-green-500" : ""}
+            className={validation.isValid ? "bg-success" : ""}
           >
             {validation.isValid ? (
               <><CheckCircle2 className="w-3 h-3 mr-1" /> VALID</>

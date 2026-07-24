@@ -254,7 +254,7 @@ export const BinancePortfolioWidget = () => {
                   <div className="flex items-center gap-2 mb-3">
                     {portfolio.canTrade ? (
                       <>
-                        <CheckCircle className="h-5 w-5 text-green-500" />
+                        <CheckCircle className="h-5 w-5 text-success" />
                         <span className="text-sm font-medium">Trading Enabled</span>
                       </>
                     ) : (

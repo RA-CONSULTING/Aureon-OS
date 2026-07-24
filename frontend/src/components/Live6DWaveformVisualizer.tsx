@@ -190,10 +190,10 @@ export function Live6DWaveformVisualizer() {
 
   const getWaveStateColor = () => {
     switch (waveform?.waveState) {
-      case 'CRYSTALLINE': return 'text-cyan-400';
-      case 'RESONANT': return 'text-green-400';
-      case 'TURBULENT': return 'text-yellow-400';
-      case 'CHAOTIC': return 'text-red-400';
+      case 'CRYSTALLINE': return 'text-primary';
+      case 'RESONANT': return 'text-success';
+      case 'TURBULENT': return 'text-warning';
+      case 'CHAOTIC': return 'text-destructive';
       default: return 'text-muted-foreground';
     }
   };
@@ -208,7 +208,7 @@ export function Live6DWaveformVisualizer() {
           </CardTitle>
           <div className="flex items-center gap-2">
             {waveform?.harmonicLock && (
-              <Badge variant="default" className="text-[10px] bg-green-500/20 text-green-400 border-green-500/50">
+              <Badge variant="default" className="text-[10px] bg-success/20 text-success border-success/50">
                 <Zap className="h-3 w-3 mr-1" />
                 528 Hz LOCK
               </Badge>
@@ -263,7 +263,7 @@ function MetricBox({
   icon?: React.ReactNode 
 }) {
   const percentage = (value * 100).toFixed(1);
-  const color = value > 0.8 ? 'text-green-400' : value > 0.5 ? 'text-yellow-400' : 'text-muted-foreground';
+  const color = value > 0.8 ? 'text-success' : value > 0.5 ? 'text-warning' : 'text-muted-foreground';
   
   return (
     <div className="text-center">

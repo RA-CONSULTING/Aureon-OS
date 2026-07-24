@@ -86,22 +86,22 @@ export function LiveDataPuller() {
 
   if (!isAuthenticated) {
     return (
-      <Card className="bg-black/40 border-red-500/30">
+      <Card className="bg-black/40 border-destructive/30">
         <CardHeader>
-          <CardTitle className="text-red-300">Live Data Access Denied</CardTitle>
+          <CardTitle className="text-destructive">Live Data Access Denied</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-red-400">Authentication required for live data streams</p>
+          <p className="text-destructive">Authentication required for live data streams</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="bg-black/40 border-purple-500/30">
+    <Card className="bg-black/40 border-primary/30">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-purple-300 flex items-center gap-2">
+          <CardTitle className="text-primary flex items-center gap-2">
             📡 Live Data Streams
             <Badge variant={isConnected ? "default" : "destructive"}>
               {isConnected ? 'Connected' : 'Disconnected'}
@@ -111,7 +111,7 @@ export function LiveDataPuller() {
             onClick={clearStreams}
             variant="outline"
             size="sm"
-            className="border-purple-500 text-purple-300"
+            className="border-primary text-primary"
           >
             Clear
           </Button>
@@ -120,7 +120,7 @@ export function LiveDataPuller() {
       <CardContent>
         <div className="space-y-2 max-h-96 overflow-y-auto">
           {streams.length === 0 ? (
-            <div className="text-center py-8 text-purple-400">
+            <div className="text-center py-8 text-primary">
               Waiting for live data streams...
             </div>
           ) : (
@@ -130,9 +130,9 @@ export function LiveDataPuller() {
                   <Badge 
                     variant="outline" 
                     className={`
-                      ${stream.source === 'schumann' ? 'border-blue-400 text-blue-300' : ''}
-                      ${stream.source === 'aura' ? 'border-green-400 text-green-300' : ''}
-                      ${stream.source === 'validation' ? 'border-purple-400 text-purple-300' : ''}
+                      ${stream.source === 'schumann' ? 'border-primary text-primary' : ''}
+                      ${stream.source === 'aura' ? 'border-success text-success' : ''}
+                      ${stream.source === 'validation' ? 'border-primary text-primary' : ''}
                     `}
                   >
                     {stream.source}

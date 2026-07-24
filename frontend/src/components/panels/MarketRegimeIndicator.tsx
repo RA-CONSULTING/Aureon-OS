@@ -8,9 +8,9 @@ import { cn } from '@/lib/utils';
 type MarketRegime = 'TRENDING' | 'VOLATILE' | 'RANGING' | 'NORMAL';
 
 const regimeConfig: Record<MarketRegime, { icon: typeof Activity; color: string; bg: string }> = {
-  'TRENDING': { icon: TrendingUp, color: 'text-green-500', bg: 'bg-green-500/10' },
-  'VOLATILE': { icon: Activity, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  'RANGING': { icon: Minus, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
+  'TRENDING': { icon: TrendingUp, color: 'text-success', bg: 'bg-success/10' },
+  'VOLATILE': { icon: Activity, color: 'text-primary', bg: 'bg-primary/10' },
+  'RANGING': { icon: Minus, color: 'text-warning', bg: 'bg-warning/10' },
   'NORMAL': { icon: Minus, color: 'text-muted-foreground', bg: 'bg-muted/30' }
 };
 

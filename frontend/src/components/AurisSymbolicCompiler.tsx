@@ -97,7 +97,7 @@ export const AurisSymbolicCompiler: React.FC<{
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+          <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
           Auris Symbolic Compiler
         </CardTitle>
       </CardHeader>

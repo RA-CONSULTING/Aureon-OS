@@ -33,15 +33,15 @@ export const TrailingStopPanel = () => {
           </div>
           <div className="text-center p-2 rounded bg-muted/30">
             <div className="text-muted-foreground">Active</div>
-            <div className="font-mono font-bold text-yellow-500">{stats.activeStops}</div>
+            <div className="font-mono font-bold text-warning">{stats.activeStops}</div>
           </div>
           <div className="text-center p-2 rounded bg-muted/30">
             <div className="text-muted-foreground">Triggered</div>
-            <div className="font-mono font-bold text-red-500">{stats.triggeredCount}</div>
+            <div className="font-mono font-bold text-destructive">{stats.triggeredCount}</div>
           </div>
           <div className="text-center p-2 rounded bg-muted/30">
             <div className="text-muted-foreground">Avg P&L</div>
-            <div className={cn("font-mono font-bold", stats.avgUnrealizedPnl >= 0 ? "text-green-500" : "text-red-500")}>
+            <div className={cn("font-mono font-bold", stats.avgUnrealizedPnl >= 0 ? "text-success" : "text-destructive")}>
               {stats.avgUnrealizedPnl.toFixed(2)}%
             </div>
           </div>
@@ -65,11 +65,11 @@ export const TrailingStopPanel = () => {
                 </div>
                 <div className="flex items-center gap-1">
                   {stop.unrealizedPnlPct >= 0 ? (
-                    <TrendingUp className="h-3 w-3 text-green-500" />
+                    <TrendingUp className="h-3 w-3 text-success" />
                   ) : (
-                    <TrendingDown className="h-3 w-3 text-red-500" />
+                    <TrendingDown className="h-3 w-3 text-destructive" />
                   )}
-                  <span className={cn("font-mono", stop.unrealizedPnlPct >= 0 ? "text-green-500" : "text-red-500")}>
+                  <span className={cn("font-mono", stop.unrealizedPnlPct >= 0 ? "text-success" : "text-destructive")}>
                     {stop.unrealizedPnlPct.toFixed(2)}%
                   </span>
                 </div>

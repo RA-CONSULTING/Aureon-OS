@@ -171,24 +171,24 @@ export function CymaticsFieldVisualizer() {
   const getPatternBadge = () => {
     switch (pattern.patternType) {
       case 'sacred':
-        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">SACRED GEOMETRY</Badge>;
+        return <Badge className="bg-success/20 text-success border-success/30">SACRED GEOMETRY</Badge>;
       case 'geometric':
-        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">GEOMETRIC</Badge>;
+        return <Badge className="bg-warning/20 text-warning border-warning/30">GEOMETRIC</Badge>;
       case 'forming':
-        return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">FORMING</Badge>;
+        return <Badge className="bg-primary/20 text-primary border-primary/30">FORMING</Badge>;
       default:
-        return <Badge className="bg-red-500/20 text-red-400 border-red-500/30">CHAOS</Badge>;
+        return <Badge className="bg-destructive/20 text-destructive border-destructive/30">CHAOS</Badge>;
     }
   };
 
   const getDataStatusBadge = () => {
     switch (dataStatus) {
       case 'LIVE':
-        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px]">LIVE</Badge>;
+        return <Badge className="bg-success/20 text-success border-success/30 text-[10px]">LIVE</Badge>;
       case 'STALE':
-        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-[10px]">STALE</Badge>;
+        return <Badge className="bg-warning/20 text-warning border-warning/30 text-[10px]">STALE</Badge>;
       default:
-        return <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[10px]">NO DATA</Badge>;
+        return <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px]">NO DATA</Badge>;
     }
   };
 
@@ -204,7 +204,7 @@ export function CymaticsFieldVisualizer() {
           {getPatternBadge()}
         </div>
         {dataStatus === 'NO_DATA' && (
-          <div className="flex items-center gap-1 text-[10px] text-yellow-500 mt-1">
+          <div className="flex items-center gap-1 text-[10px] text-warning mt-1">
             <AlertTriangle className="h-3 w-3" />
             <span>Awaiting ecosystem data...</span>
           </div>

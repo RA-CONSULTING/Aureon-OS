@@ -107,25 +107,25 @@ const HocusPatternPipelineVisualizer: React.FC = () => {
   
   const getStageColor = (stage: string) => {
     switch (stage) {
-      case 'HOCUS': return 'bg-red-500/20 text-red-400 border-red-500/50';
-      case 'PATTERN': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
-      case 'TEMPLATE': return 'bg-green-500/20 text-green-400 border-green-500/50';
+      case 'HOCUS': return 'bg-destructive/20 text-destructive border-destructive/50';
+      case 'PATTERN': return 'bg-warning/20 text-warning border-warning/50';
+      case 'TEMPLATE': return 'bg-success/20 text-success border-success/50';
       default: return 'bg-muted text-muted-foreground';
     }
   };
   
   const getModeColor = (mode: ModeState) => {
-    if (mode.isTemplate) return 'bg-green-500/20 text-green-400';
-    if (mode.coherence > 0.5) return 'bg-yellow-500/20 text-yellow-400';
-    return 'bg-red-500/20 text-red-400';
+    if (mode.isTemplate) return 'bg-success/20 text-success';
+    if (mode.coherence > 0.5) return 'bg-warning/20 text-warning';
+    return 'bg-destructive/20 text-destructive';
   };
 
   const getPhaseColor = (phase: string) => {
     switch (phase) {
-      case 'grounding': return 'text-amber-400';
-      case 'growth': return 'text-yellow-400';
-      case 'love': return 'text-green-400';
-      case 'transcendence': return 'text-purple-400';
+      case 'grounding': return 'text-warning';
+      case 'growth': return 'text-warning';
+      case 'love': return 'text-success';
+      case 'transcendence': return 'text-primary';
       default: return 'text-muted-foreground';
     }
   };
@@ -139,7 +139,7 @@ const HocusPatternPipelineVisualizer: React.FC = () => {
           </CardTitle>
           <div className="flex items-center gap-2">
             {state?.codexEnhanced && (
-              <Badge variant="outline" className="bg-purple-500/20 text-purple-400 border-purple-500/50 text-[10px]">
+              <Badge variant="outline" className="bg-primary/20 text-primary border-primary/50 text-[10px]">
                 🔮 CODEX
               </Badge>
             )}
@@ -165,9 +165,9 @@ const HocusPatternPipelineVisualizer: React.FC = () => {
         
         {/* Ecosystem Enhancement Status */}
         {state?.codexEnhanced && (
-          <div className="bg-purple-500/10 rounded-lg p-2 border border-purple-500/30">
+          <div className="bg-primary/10 rounded-lg p-2 border border-primary/30">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-purple-400 font-mono">Ecosystem Enhanced</span>
+              <span className="text-primary font-mono">Ecosystem Enhanced</span>
               <div className="flex items-center gap-3">
                 <span className={`font-mono ${getPhaseColor(state.dominantEmotionalPhase)}`}>
                   {state.dominantEmotionalPhase.toUpperCase()}
@@ -241,7 +241,7 @@ const HocusPatternPipelineVisualizer: React.FC = () => {
                   {mode.frequency} Hz
                 </div>
                 {mode.codexName && mode.codexName !== `Mode-${Math.round(mode.frequency)}` && (
-                  <div className="text-[9px] text-purple-400 truncate mt-0.5">
+                  <div className="text-[9px] text-primary truncate mt-0.5">
                     {mode.codexName}
                   </div>
                 )}
@@ -251,7 +251,7 @@ const HocusPatternPipelineVisualizer: React.FC = () => {
                 <div className="flex items-center justify-center gap-1 text-[10px] mt-1">
                   <span>T = {mode.isTemplate ? '1' : '0'}</span>
                   {mode.aurisBoost && mode.aurisBoost > 1 && (
-                    <span className="text-purple-400">↑</span>
+                    <span className="text-primary">↑</span>
                   )}
                 </div>
               </div>

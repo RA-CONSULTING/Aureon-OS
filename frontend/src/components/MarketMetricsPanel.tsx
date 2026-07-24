@@ -42,7 +42,7 @@ export const MarketMetricsPanel = () => {
           Market Metrics
           <span className={cn(
             "ml-auto text-xs",
-            connected ? "text-green-500" : "text-red-500"
+            connected ? "text-success" : "text-destructive"
           )}>
             {connected ? '● Live' : '○ Offline'}
           </span>
@@ -66,7 +66,7 @@ export const MarketMetricsPanel = () => {
           </div>
           <span className={cn(
             "font-mono text-sm",
-            metrics && parseFloat(metrics.momentum) > 0 ? "text-green-500" : "text-red-500"
+            metrics && parseFloat(metrics.momentum) > 0 ? "text-success" : "text-destructive"
           )}>
             {metrics?.momentum ?? '---'}
           </span>

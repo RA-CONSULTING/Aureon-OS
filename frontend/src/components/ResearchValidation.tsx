@@ -88,11 +88,11 @@ export const ResearchValidation = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card className="p-6 bg-gradient-to-br from-purple-500/5 to-background border-2 border-purple-500/20">
+      <Card className="p-6 bg-gradient-to-br from-primary/5 to-background border-2 border-primary/20">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-2xl font-bold flex items-center gap-2">
-              <BookOpen className="h-6 w-6 text-purple-500" />
+              <BookOpen className="h-6 w-6 text-primary" />
               Research Validation
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
@@ -201,7 +201,7 @@ export const ResearchValidation = () => {
                             <span className="text-muted-foreground">Prime:</span> <span className="font-mono font-semibold">{layer.prime}</span>
                           </div>
                         </div>
-                        <div className={`flex items-center gap-2 ${layer.pass ? 'text-green-500' : 'text-yellow-500'}`}>
+                        <div className={`flex items-center gap-2 ${layer.pass ? 'text-success' : 'text-warning'}`}>
                           {layer.pass ? <CheckCircle2 className="h-5 w-5" /> : <Activity className="h-5 w-5" />}
                           <span className="text-sm font-semibold">{layer.pass ? 'PASS' : 'BASELINE'}</span>
                         </div>
@@ -389,15 +389,15 @@ export const ResearchValidation = () => {
             <h5 className="font-semibold text-sm mb-3">HNC Framework Validation</h5>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
                 <span>QSSR mode achieved 98.13% coherence (C = 0.9813)</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
                 <span>Master Equation ΔM = Ψ₀ΩΛΦΣ validated experimentally</span>
               </li>
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
                 <span>Lumina subsystem: Γ_coherence &gt; 0.945 sustained</span>
               </li>
             </ul>
@@ -407,15 +407,15 @@ export const ResearchValidation = () => {
             <h5 className="font-semibold text-sm mb-3">Baseline Measurements</h5>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
-                <Activity className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                <Activity className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
                 <span>13 Fibonacci-Prime layers tested at ~8.89 Hz</span>
               </li>
               <li className="flex items-start gap-2">
-                <Activity className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                <Activity className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
                 <span>Phase coherence baseline: 0.5-1.7% (pre-optimization)</span>
               </li>
               <li className="flex items-start gap-2">
-                <Activity className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                <Activity className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
                 <span>Latency range: 1.37-3.33 ms across layers</span>
               </li>
             </ul>

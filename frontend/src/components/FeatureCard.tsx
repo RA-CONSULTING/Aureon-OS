@@ -16,8 +16,8 @@ interface FeatureCardProps {
 
 export function FeatureCard({ title, description, icon, actions, status = 'inactive' }: FeatureCardProps) {
   const statusColors = {
-    active: 'border-green-500 bg-green-50',
-    processing: 'border-yellow-500 bg-yellow-50',
+    active: 'border-success bg-success',
+    processing: 'border-warning bg-warning',
     inactive: 'border-gray-200 bg-white'
   };
 

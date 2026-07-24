@@ -20,8 +20,8 @@ export function ProbabilityMatrixDisplay({ fusion }: ProbabilityMatrixDisplayPro
   const ActionIcon = fusion.action.includes('BUY') ? TrendingUp : 
                      fusion.action.includes('SELL') ? TrendingDown : Minus;
   
-  const actionColor = fusion.action.includes('BUY') ? 'text-emerald-400' :
-                      fusion.action.includes('SELL') ? 'text-red-400' : 'text-muted-foreground';
+  const actionColor = fusion.action.includes('BUY') ? 'text-success' :
+                      fusion.action.includes('SELL') ? 'text-destructive' : 'text-muted-foreground';
 
   return (
     <Card className="p-4 bg-card/50 border-border/50">
@@ -36,19 +36,19 @@ export function ProbabilityMatrixDisplay({ fusion }: ProbabilityMatrixDisplayPro
           label="6D Harmonic" 
           value={fusion.probability6D} 
           weight={fusion.weight6D}
-          color="bg-violet-500"
+          color="bg-primary"
         />
         <ProbabilityBar 
           label="HNC" 
           value={fusion.probabilityHNC} 
           weight={fusion.weightHNC}
-          color="bg-cyan-500"
+          color="bg-primary"
         />
         <ProbabilityBar 
           label="Lighthouse" 
           value={fusion.probabilityLighthouse} 
           weight={fusion.weightLighthouse}
-          color="bg-amber-500"
+          color="bg-warning"
         />
       </div>
 
@@ -63,7 +63,7 @@ export function ProbabilityMatrixDisplay({ fusion }: ProbabilityMatrixDisplayPro
         
         <div className="relative h-6 bg-muted/30 rounded-full overflow-hidden mb-3">
           {/* Gradient bar */}
-          <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-yellow-500 to-emerald-500 opacity-30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-destructive via-warning to-success opacity-30" />
           {/* Indicator */}
           <div 
             className="absolute top-0 bottom-0 w-1 bg-white shadow-lg transition-all duration-500"
@@ -101,9 +101,9 @@ export function ProbabilityMatrixDisplay({ fusion }: ProbabilityMatrixDisplayPro
 
         {/* Harmonic Lock Indicator */}
         {fusion.harmonicLock && (
-          <div className="mt-2 flex items-center justify-center gap-2 py-1.5 rounded bg-emerald-500/10 border border-emerald-500/30">
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-medium text-emerald-400">HARMONIC LOCK ACTIVE</span>
+          <div className="mt-2 flex items-center justify-center gap-2 py-1.5 rounded bg-success/10 border border-success/30">
+            <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
+            <span className="text-xs font-medium text-success">HARMONIC LOCK ACTIVE</span>
           </div>
         )}
       </div>
@@ -123,7 +123,7 @@ function ProbabilityBar({
   color: string;
 }) {
   const direction = value >= 0.5 ? 'BULL' : 'BEAR';
-  const directionColor = value >= 0.5 ? 'text-emerald-400' : 'text-red-400';
+  const directionColor = value >= 0.5 ? 'text-success' : 'text-destructive';
   
   return (
     <div>

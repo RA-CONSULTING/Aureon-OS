@@ -143,7 +143,7 @@ export default function ApprovalsPage() {
             {data.recent.filter((r) => r.status !== "pending").slice(0, 8).map((r) => (
               <div key={r.id} className="flex items-center justify-between gap-2 rounded-md border px-3 py-1.5 text-sm">
                 <span className="min-w-0 truncate"><span className="capitalize">{r.kind}</span> — {r.summary}</span>
-                <Badge variant="outline" className={`text-[10px] ${r.status === "approved" ? "text-emerald-600" : "text-rose-600"}`}>
+                <Badge variant="outline" className={`text-[10px] ${r.status === "approved" ? "text-success" : "text-destructive"}`}>
                   {r.status}
                 </Badge>
               </div>

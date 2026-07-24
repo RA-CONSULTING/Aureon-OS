@@ -32,17 +32,17 @@ export function FrequencyHarmonizationPanel() {
   };
 
   const getBiasColor = () => {
-    if (harmonization.tradingBias === 'BULLISH') return 'text-green-500';
-    if (harmonization.tradingBias === 'BEARISH') return 'text-red-500';
-    return 'text-yellow-500';
+    if (harmonization.tradingBias === 'BULLISH') return 'text-success';
+    if (harmonization.tradingBias === 'BEARISH') return 'text-destructive';
+    return 'text-warning';
   };
 
   const getResonanceTypeColor = (type: string) => {
     switch (type) {
-      case 'FOUNDATION': return 'bg-red-500/20 text-red-400';
-      case 'HEART': return 'bg-green-500/20 text-green-400';
-      case 'VISION': return 'bg-blue-500/20 text-blue-400';
-      case 'UNITY': return 'bg-purple-500/20 text-purple-400';
+      case 'FOUNDATION': return 'bg-destructive/20 text-destructive';
+      case 'HEART': return 'bg-success/20 text-success';
+      case 'VISION': return 'bg-primary/20 text-primary';
+      case 'UNITY': return 'bg-primary/20 text-primary';
       default: return 'bg-gray-500/20 text-gray-400';
     }
   };
@@ -61,7 +61,7 @@ export function FrequencyHarmonizationPanel() {
             </p>
           </div>
           {harmonization.optimalEntryWindow && (
-            <Badge variant="default" className="bg-green-500 text-white animate-pulse">
+            <Badge variant="default" className="bg-success text-white animate-pulse">
               <Zap className="w-3 h-3 mr-1" />
               OPTIMAL WINDOW
             </Badge>
@@ -91,7 +91,7 @@ export function FrequencyHarmonizationPanel() {
           <div>
             <div className="flex justify-between text-xs mb-1">
               <span className="text-muted-foreground">Coherence Boost</span>
-              <span className={harmonization.coherenceBoost > 0 ? 'text-green-500' : 'text-red-500'}>
+              <span className={harmonization.coherenceBoost > 0 ? 'text-success' : 'text-destructive'}>
                 {harmonization.coherenceBoost > 0 ? '+' : ''}{(harmonization.coherenceBoost * 100).toFixed(1)}%
               </span>
             </div>

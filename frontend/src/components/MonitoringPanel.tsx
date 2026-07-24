@@ -8,11 +8,11 @@ interface MonitoringPanelProps {
 
 const StageTag: React.FC<{ stage: string }> = ({ stage }) => {
     const stageConfigMap: Record<string, {label: string, style: string}> = {
-        aqts_initialized: { label: 'System Init', style: 'bg-blue-500/20 text-blue-300' },
-        backtest_loaded: { label: 'Backtest Loaded', style: 'bg-purple-500/20 text-purple-300' },
-        signal_detected: { label: 'Signal Detected', style: 'bg-amber-500/20 text-amber-300' },
-        trade_executed: { label: 'Trade Executed', style: 'bg-green-500/20 text-green-300' },
-        risk_update: { label: 'Risk Update', style: 'bg-sky-500/20 text-sky-300' },
+        aqts_initialized: { label: 'System Init', style: 'bg-primary/20 text-primary' },
+        backtest_loaded: { label: 'Backtest Loaded', style: 'bg-primary/20 text-primary' },
+        signal_detected: { label: 'Signal Detected', style: 'bg-warning/20 text-warning' },
+        trade_executed: { label: 'Trade Executed', style: 'bg-success/20 text-success' },
+        risk_update: { label: 'Risk Update', style: 'bg-primary/20 text-primary' },
     };
     const config = stageConfigMap[stage] || { label: stage.replace(/_/g, ' '), style: 'bg-gray-500/20 text-gray-300' };
     return <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.style}`}>{config.label}</span>;
@@ -31,7 +31,7 @@ const MonitoringPanel: React.FC<MonitoringPanelProps> = ({ events }) => {
 
             // Special formatting for trade side
             if (key === 'side') {
-                const color = String(value).toUpperCase().includes('LONG') || String(value).toUpperCase().includes('BUY') ? 'text-green-400' : 'text-red-400';
+                const color = String(value).toUpperCase().includes('LONG') || String(value).toUpperCase().includes('BUY') ? 'text-success' : 'text-destructive';
                  return <div key={key}><span className="font-semibold text-gray-300 capitalize">{key}:</span> <span className={color}>{String(displayValue)}</span></div>
             }
 

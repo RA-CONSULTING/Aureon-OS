@@ -9,10 +9,10 @@ export function SchumannResonanceMonitor() {
 
   const getPhaseColor = (phase: string) => {
     switch (phase) {
-      case 'peak': return 'bg-green-500';
-      case 'elevated': return 'bg-blue-500';
-      case 'stable': return 'bg-yellow-500';
-      case 'disturbed': return 'bg-red-500';
+      case 'peak': return 'bg-success';
+      case 'elevated': return 'bg-primary';
+      case 'stable': return 'bg-warning';
+      case 'disturbed': return 'bg-destructive';
       default: return 'bg-gray-500';
     }
   };
@@ -46,13 +46,13 @@ export function SchumannResonanceMonitor() {
 
   return (
     <Card className="bg-card/50 backdrop-blur border-border/50 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-blue-500/5 to-purple-500/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-success/5 via-primary/5 to-primary/5" />
       
       <CardHeader className="relative">
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Radio className="w-5 h-5 text-green-500" />
+              <Radio className="w-5 h-5 text-success" />
               Schumann Resonance Monitor
             </CardTitle>
             <CardDescription>
@@ -67,13 +67,13 @@ export function SchumannResonanceMonitor() {
 
       <CardContent className="relative space-y-4">
         {/* Fundamental Frequency Display */}
-        <div className="flex items-center justify-center p-6 bg-gradient-to-br from-green-500/10 to-blue-500/10 rounded-lg border border-border/50">
+        <div className="flex items-center justify-center p-6 bg-gradient-to-br from-success/10 to-primary/10 rounded-lg border border-border/50">
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <Waves className="w-6 h-6 text-green-500" />
+              <Waves className="w-6 h-6 text-success" />
               <span className="text-sm text-muted-foreground font-medium">Fundamental Frequency</span>
             </div>
-            <div className="text-5xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+            <div className="text-5xl font-bold bg-gradient-to-r from-success to-primary bg-clip-text text-transparent">
               {schumannData.fundamentalHz.toFixed(3)} Hz
             </div>
             <div className="text-xs text-muted-foreground mt-1">
@@ -86,7 +86,7 @@ export function SchumannResonanceMonitor() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-4 bg-background/50 rounded-lg border border-border/50">
             <div className="flex items-center gap-2 mb-2">
-              <Activity className="w-4 h-4 text-blue-500" />
+              <Activity className="w-4 h-4 text-primary" />
               <span className="text-xs text-muted-foreground">Amplitude</span>
             </div>
             <div className="text-2xl font-bold">{schumannData.amplitude.toFixed(2)}</div>
@@ -95,7 +95,7 @@ export function SchumannResonanceMonitor() {
 
           <div className="p-4 bg-background/50 rounded-lg border border-border/50">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4 text-green-500" />
+              <TrendingUp className="w-4 h-4 text-success" />
               <span className="text-xs text-muted-foreground">Quality</span>
             </div>
             <div className="text-2xl font-bold">{(schumannData.quality * 100).toFixed(0)}%</div>
@@ -104,19 +104,19 @@ export function SchumannResonanceMonitor() {
 
           <div className="p-4 bg-background/50 rounded-lg border border-border/50">
             <div className="flex items-center gap-2 mb-2">
-              <Waves className="w-4 h-4 text-purple-500" />
+              <Waves className="w-4 h-4 text-primary" />
               <span className="text-xs text-muted-foreground">Variance</span>
             </div>
             <div className="text-2xl font-bold">{(schumannData.variance * 1000).toFixed(1)}</div>
             <div className="text-xs text-muted-foreground mt-1">mHz</div>
           </div>
 
-          <div className="p-4 bg-gradient-to-br from-green-500/20 to-blue-500/20 rounded-lg border border-green-500/50">
+          <div className="p-4 bg-gradient-to-br from-success/20 to-primary/20 rounded-lg border border-success/50">
             <div className="flex items-center gap-2 mb-2">
-              <Activity className="w-4 h-4 text-green-400" />
-              <span className="text-xs text-green-200">Coherence Boost</span>
+              <Activity className="w-4 h-4 text-success" />
+              <span className="text-xs text-success">Coherence Boost</span>
             </div>
-            <div className="text-2xl font-bold text-green-400">+{(schumannData.coherenceBoost * 100).toFixed(1)}%</div>
+            <div className="text-2xl font-bold text-success">+{(schumannData.coherenceBoost * 100).toFixed(1)}%</div>
             <Progress value={coherencePercent} className="mt-2 h-1" />
           </div>
         </div>
@@ -137,8 +137,8 @@ export function SchumannResonanceMonitor() {
 
         {/* Real-time Insights */}
         {schumannData.resonancePhase === 'peak' && (
-          <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-            <p className="text-sm text-green-400 font-medium">
+          <div className="p-4 bg-success/10 border border-success/30 rounded-lg">
+            <p className="text-sm text-success font-medium">
               ⚡ Peak resonance detected! Earth's electromagnetic field is highly coherent. 
               AUREON coherence boosted by {(schumannData.coherenceBoost * 100).toFixed(1)}%.
             </p>
@@ -146,8 +146,8 @@ export function SchumannResonanceMonitor() {
         )}
 
         {schumannData.resonancePhase === 'disturbed' && (
-          <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-            <p className="text-sm text-red-400 font-medium">
+          <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
+            <p className="text-sm text-destructive font-medium">
               ⚠️ Geomagnetic disturbance detected. Schumann resonance variance elevated. 
               Trading signals may be affected by field instability.
             </p>

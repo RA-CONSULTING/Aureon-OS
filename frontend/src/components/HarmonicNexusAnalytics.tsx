@@ -60,7 +60,7 @@ export const HarmonicNexusAnalytics = () => {
             <CardTitle className="text-sm">Field Amplitude</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-emerald-500">
+            <div className="text-2xl font-bold text-success">
               {(resonanceData.amplitude * 100).toFixed(1)}%
             </div>
             <Progress value={resonanceData.amplitude * 100} className="mt-2" />
@@ -72,12 +72,12 @@ export const HarmonicNexusAnalytics = () => {
             <CardTitle className="text-sm">Coherence Γ</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-violet-500">
+            <div className="text-2xl font-bold text-primary">
               {(resonanceData.coherence * 100).toFixed(1)}%
             </div>
             <Progress value={resonanceData.coherence * 100} className="mt-2" />
             {harmonicLock && (
-              <Badge variant="default" className="mt-2 bg-emerald-500">528 Hz LOCKED</Badge>
+              <Badge variant="default" className="mt-2 bg-success">528 Hz LOCKED</Badge>
             )}
           </CardContent>
         </Card>
@@ -87,7 +87,7 @@ export const HarmonicNexusAnalytics = () => {
             <CardTitle className="text-sm">Field Strength</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-500">
+            <div className="text-2xl font-bold text-warning">
               {(resonanceData.fieldStrength * 100).toFixed(1)}%
             </div>
             <Progress value={resonanceData.fieldStrength * 100} className="mt-2" />

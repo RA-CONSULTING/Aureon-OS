@@ -227,7 +227,7 @@ export default function ConnectionsPage() {
                         onChange={(e) => patch(c.id, { extra: { ...d.extra, [env]: e.target.value } })} />
                     ))}
                     {c.category === "exchange" && (
-                      <p className="text-[11px] text-amber-600">Saved to .env — the trading process applies it on restart.</p>
+                      <p className="text-[11px] text-warning">Saved to .env — the trading process applies it on restart.</p>
                     )}
 
                     <div className="mt-auto flex items-center justify-between pt-1">

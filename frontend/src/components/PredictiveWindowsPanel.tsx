@@ -58,9 +58,9 @@ export function PredictiveWindowsPanel() {
   }
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.8) return 'text-green-500';
-    if (confidence >= 0.6) return 'text-yellow-500';
-    return 'text-orange-500';
+    if (confidence >= 0.8) return 'text-success';
+    if (confidence >= 0.6) return 'text-warning';
+    return 'text-warning';
   };
 
   const getConfidenceLabel = (confidence: number) => {

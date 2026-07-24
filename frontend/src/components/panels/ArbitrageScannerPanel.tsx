@@ -39,7 +39,7 @@ export const ArbitrageScannerPanel = () => {
           </div>
           <div className="text-center p-2 rounded bg-muted/30">
             <div className="text-muted-foreground">Profit</div>
-            <div className="font-mono font-bold text-green-500">${stats.totalProfit.toFixed(2)}</div>
+            <div className="font-mono font-bold text-success">${stats.totalProfit.toFixed(2)}</div>
           </div>
         </div>
 
@@ -57,7 +57,7 @@ export const ArbitrageScannerPanel = () => {
                     {opp.buyExchange} → {opp.sellExchange}
                   </span>
                 </div>
-                <div className="flex items-center gap-1 text-green-500">
+                <div className="flex items-center gap-1 text-success">
                   <TrendingUp className="h-3 w-3" />
                   <span className="font-mono">{(opp.spreadPct * 100).toFixed(2)}%</span>
                 </div>

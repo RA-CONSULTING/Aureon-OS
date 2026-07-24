@@ -15,8 +15,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LiveDataNotice } from "@/shell/Page";
+import { type TruthStatus, TRUTH_STATUS_STYLE } from "../truthStatus";
 
-type TruthStatus = "live" | "real_derived" | "cached_real" | "no_data" | "test_fixture";
 
 interface Voice { stance?: string; verdict?: string; truth_status?: TruthStatus; [k: string]: unknown }
 
@@ -50,13 +50,7 @@ interface Soul {
   truth_status: TruthStatus;
 }
 
-const STATUS_STYLE: Record<TruthStatus, string> = {
-  live: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
-  real_derived: "bg-sky-500/15 text-sky-600 border-sky-500/30",
-  cached_real: "bg-amber-500/15 text-amber-600 border-amber-500/30",
-  no_data: "bg-muted text-muted-foreground border-border",
-  test_fixture: "bg-purple-500/15 text-purple-600 border-purple-500/30",
-};
+const STATUS_STYLE = TRUTH_STATUS_STYLE;
 
 const STANCE = {
   act: { icon: Check, cls: "text-emerald-600", label: "resolved — will act" },
@@ -142,7 +136,7 @@ export default function SoulPage() {
               <CardContent className="space-y-2">
                 <p className="text-sm">{data.determination}</p>
                 {data.what_gary_would_say && (
-                  <p className="text-xs text-muted-foreground">🔱 Gary would say: “{data.what_gary_would_say}”</p>
+                  <p className="text-xs text-muted-foreground"> Gary would say: “{data.what_gary_would_say}”</p>
                 )}
                 {data.proposed_action && (
                   <p className="text-xs font-mono text-muted-foreground">
@@ -150,7 +144,7 @@ export default function SoulPage() {
                   </p>
                 )}
                 {data.dissent.length > 0 && (
-                  <p className="text-xs text-amber-600">dissent: {data.dissent.join(", ")}</p>
+                  <p className="text-xs text-warning">dissent: {data.dissent.join(", ")}</p>
                 )}
               </CardContent>
             </Card>

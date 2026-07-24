@@ -40,7 +40,7 @@ export function ExchangeBalances({ totalEquityUsd, exchanges }: ExchangeBalances
               <div className="flex items-center gap-2">
                 <div className={cn(
                   "h-1.5 w-1.5 rounded-full",
-                  exchange.connected ? "bg-green-400" : "bg-red-400"
+                  exchange.connected ? "bg-success" : "bg-destructive"
                 )} />
                 <span className="capitalize">{exchange.exchange}</span>
               </div>

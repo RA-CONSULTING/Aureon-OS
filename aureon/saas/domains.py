@@ -2,13 +2,13 @@
 Aureon SaaS — domain taxonomy + capability adapters ("connected").
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Reconciles the repo's three taxonomies and gives each of the 24 filesystem
-domains a canonical entry point:
+Reconciles the repo's three taxonomies and gives every filesystem domain under
+aureon/ a product-domain home + a canonical entry point:
 
   • product domains  — the 6 the React console groups by
                        (trading · accounting · research · cognition · security ·
                         self-improvement)
-  • filesystem domains — the 24 folders under aureon/ (docs/MODULES_AT_A_GLANCE.md)
+  • filesystem domains — every folder under aureon/ (docs/MODULES_AT_A_GLANCE.md)
   • capability categories — the 12 SystemRegistry semantic classes (in catalog.py)
 
 `domain_report()` probes each filesystem domain's entry point by import (cheap —
@@ -40,6 +40,14 @@ _FS_TO_PRODUCT: Dict[str, str] = {
     "autonomous": "self-improvement", "monitors": "self-improvement",
     "command_centers": "self-improvement", "core": "self-improvement",
     "saas": "self-improvement",
+    # previously-unmapped real packages under aureon/ — categorized so the whole
+    # body is surfaced/probed instead of silently defaulting to self-improvement.
+    "bio": "research", "alignment": "research", "search": "research",
+    "observer": "cognition", "inhouse_ai": "cognition", "miner": "cognition",
+    "swarm_motion": "cognition",
+    "integrations": "security",
+    "code_architect": "self-improvement", "vault": "self-improvement",
+    "generated": "self-improvement",
 }
 
 # Canonical entry point per filesystem domain: (module, attribute, kind).
@@ -50,6 +58,8 @@ _ADAPTERS: Dict[str, Tuple[str, str, str]] = {
     "operator": ("aureon.operator.aureon_operator", "run_operator", "function"),
     "cognition": ("aureon.operator.cognition", "AureonCognition", "class"),
     "data_feeds": ("aureon.data_feeds.aureon_real_data_feed_hub", "get_feed_hub", "singleton"),
+    "bio": ("aureon.bio.celestial_observatory", "observe", "function"),
+    "observer": ("aureon.observer", "get_observer", "singleton"),
 }
 
 

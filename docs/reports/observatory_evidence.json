@@ -1,0 +1,173 @@
+{
+  "boundary": "The \u03c6 Celestial Observatory reports statistical structure in derived signals only, across every sky/cosmic lane, through one unchanged \u03c6 engine - NOT a claim about the nature, composition, or behaviour of any celestial object, and no efficacy claim. Each verdict is exactly what the pre-registered test returned.",
+  "lattice_converged": null,
+  "lattice_scored": null,
+  "n_lanes": 16,
+  "n_separable": 1,
+  "n_valid": 16,
+  "out_path": null,
+  "readings": [
+    {
+      "domain": "starlight (emission)",
+      "lane": "Hydrogen Balmer",
+      "n_tones": 7,
+      "note": "",
+      "structure_present": false,
+      "test_A_p": 0.9069767441860465,
+      "test_B_p": 0.574750830564784,
+      "valid": true
+    },
+    {
+      "domain": "sunlight (absorption)",
+      "lane": "Solar Fraunhofer",
+      "n_tones": 21,
+      "note": "",
+      "structure_present": false,
+      "test_A_p": 0.18604651162790697,
+      "test_B_p": 0.4019933554817276,
+      "valid": true
+    },
+    {
+      "domain": "nightglow (self-emission)",
+      "lane": "Airglow",
+      "n_tones": 10,
+      "note": "",
+      "structure_present": false,
+      "test_A_p": 0.8770764119601329,
+      "test_B_p": 0.654485049833887,
+      "valid": true
+    },
+    {
+      "domain": "diffuse background (anchor)",
+      "lane": "Diffuse night sky",
+      "n_tones": 0,
+      "note": "",
+      "structure_present": false,
+      "test_A_p": null,
+      "test_B_p": null,
+      "valid": true
+    },
+    {
+      "domain": "host-star colour",
+      "lane": "NASA stellar Wien",
+      "n_tones": 1000,
+      "note": "1000 hosts",
+      "structure_present": true,
+      "test_A_p": 0.0033222591362126247,
+      "test_B_p": 0.0033222591362126247,
+      "valid": true
+    },
+    {
+      "domain": "ionosphere (ELF)",
+      "lane": "Schumann modes",
+      "n_tones": 7,
+      "note": "",
+      "structure_present": false,
+      "test_A_p": 1.0,
+      "test_B_p": 0.8471760797342193,
+      "valid": true
+    },
+    {
+      "domain": "orbital (Cosmic Octave)",
+      "lane": "Planetary tones",
+      "n_tones": 6,
+      "note": "",
+      "structure_present": false,
+      "test_A_p": 1.0,
+      "test_B_p": 0.4883720930232558,
+      "valid": true
+    },
+    {
+      "domain": "solar (Kp/ap/F10.7)",
+      "lane": "Space weather",
+      "n_tones": 14,
+      "note": "",
+      "structure_present": false,
+      "test_A_p": 0.0033222591362126247,
+      "test_B_p": 0.3554817275747508,
+      "valid": true
+    },
+    {
+      "domain": "planetary coherence",
+      "lane": "DE440 coherence",
+      "n_tones": 23,
+      "note": "",
+      "structure_present": false,
+      "test_A_p": 0.9401993355481728,
+      "test_B_p": 0.7043189368770764,
+      "valid": true
+    },
+    {
+      "domain": "Earth grid (ancient sites)",
+      "lane": "Stargate lattice",
+      "n_tones": 12,
+      "note": "",
+      "structure_present": false,
+      "test_A_p": 0.9003322259136213,
+      "test_B_p": 0.24916943521594684,
+      "valid": true
+    },
+    {
+      "domain": "chamber (solstice)",
+      "lane": "Maeshowe solstice",
+      "n_tones": 18,
+      "note": "",
+      "structure_present": false,
+      "test_A_p": 1.0,
+      "test_B_p": 0.654485049833887,
+      "valid": true
+    },
+    {
+      "domain": "\u03c6-geometry (13-sphere)",
+      "lane": "Metatron geometry",
+      "n_tones": 12,
+      "note": "",
+      "structure_present": false,
+      "test_A_p": 0.8970099667774086,
+      "test_B_p": 0.2823920265780731,
+      "valid": true
+    },
+    {
+      "domain": "HNC substrate (6 modes)",
+      "lane": "Master Formula \u039b(t)",
+      "n_tones": 6,
+      "note": "",
+      "structure_present": false,
+      "test_A_p": 1.0,
+      "test_B_p": 0.36212624584717606,
+      "valid": true
+    },
+    {
+      "domain": "tree-tones (\u03c6-scaled)",
+      "lane": "Celtic Ogham",
+      "n_tones": 15,
+      "note": "",
+      "structure_present": false,
+      "test_A_p": 0.8438538205980066,
+      "test_B_p": 0.6910299003322259,
+      "valid": true
+    },
+    {
+      "domain": "ancestral (Solfeggio)",
+      "lane": "Ghost Dance",
+      "n_tones": 9,
+      "note": "",
+      "structure_present": false,
+      "test_A_p": 1.0,
+      "test_B_p": 0.7043189368770764,
+      "valid": true
+    },
+    {
+      "domain": "\u03c6/Fibonacci canon",
+      "lane": "Counter-frequency",
+      "n_tones": 16,
+      "note": "",
+      "structure_present": false,
+      "test_A_p": 0.3023255813953488,
+      "test_B_p": 0.0664451827242525,
+      "valid": true
+    }
+  ],
+  "sky_map_converged": null,
+  "sky_map_scored": null
+}

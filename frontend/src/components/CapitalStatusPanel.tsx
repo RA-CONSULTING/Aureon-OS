@@ -59,7 +59,7 @@ export const CapitalStatusPanel: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           {data?.connected ? (
-            <Badge className="bg-green-500/20 text-green-400 text-xs">Connected</Badge>
+            <Badge className="bg-success/20 text-success text-xs">Connected</Badge>
           ) : (
             <Badge variant="outline" className="text-xs">Offline</Badge>
           )}

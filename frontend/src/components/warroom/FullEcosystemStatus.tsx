@@ -95,26 +95,26 @@ export function FullEcosystemStatus() {
           <MetricCard 
             label="Hive Mind" 
             value={`${(metrics.hiveMindCoherence * 100).toFixed(0)}%`}
-            color={metrics.hiveMindCoherence > 0.8 ? 'text-green-400' : 'text-yellow-400'}
+            color={metrics.hiveMindCoherence > 0.8 ? 'text-success' : 'text-warning'}
           />
           <MetricCard 
             label="Consensus" 
             value={metrics.consensusSignal}
             color={
-              metrics.consensusSignal === 'BUY' ? 'text-green-400' :
-              metrics.consensusSignal === 'SELL' ? 'text-red-400' :
+              metrics.consensusSignal === 'BUY' ? 'text-success' :
+              metrics.consensusSignal === 'SELL' ? 'text-destructive' :
               'text-muted-foreground'
             }
           />
           <MetricCard 
             label="Confidence" 
             value={`${(metrics.consensusConfidence * 100).toFixed(0)}%`}
-            color={metrics.consensusConfidence > 0.7 ? 'text-green-400' : 'text-yellow-400'}
+            color={metrics.consensusConfidence > 0.7 ? 'text-success' : 'text-warning'}
           />
           <MetricCard 
             label="JSON Loaded" 
             value={ecosystemState?.jsonEnhancementsLoaded ? '✓' : '✗'}
-            color={ecosystemState?.jsonEnhancementsLoaded ? 'text-green-400' : 'text-red-400'}
+            color={ecosystemState?.jsonEnhancementsLoaded ? 'text-success' : 'text-destructive'}
           />
         </div>
 
@@ -154,8 +154,8 @@ export function FullEcosystemStatus() {
             {/* 6D Harmonic */}
             <div className="flex justify-between">
               <span className="text-muted-foreground">6D Wave</span>
-              <span className={metrics.harmonicLock ? 'text-green-400' : 'text-muted-foreground'}>
-                {metrics.waveState} {metrics.harmonicLock && '🔒'}
+              <span className={metrics.harmonicLock ? 'text-success' : 'text-muted-foreground'}>
+                {metrics.waveState} {metrics.harmonicLock && ''}
               </span>
             </div>
             
@@ -174,16 +174,16 @@ export function FullEcosystemStatus() {
             {/* HNC */}
             <div className="flex justify-between">
               <span className="text-muted-foreground">HNC Fidelity</span>
-              <span className={metrics.rainbowBridgeOpen ? 'text-green-400' : 'text-muted-foreground'}>
-                {metrics.harmonicFidelity.toFixed(0)}% {metrics.rainbowBridgeOpen && '🌈'}
+              <span className={metrics.rainbowBridgeOpen ? 'text-success' : 'text-muted-foreground'}>
+                {metrics.harmonicFidelity.toFixed(0)}% {metrics.rainbowBridgeOpen && ''}
               </span>
             </div>
             
             {/* Temporal */}
             <div className="flex justify-between">
               <span className="text-muted-foreground">Temporal Anchor</span>
-              <span className={metrics.temporalAnchorStrength > 0.7 ? 'text-green-400' : 'text-yellow-400'}>
-                {(metrics.temporalAnchorStrength * 100).toFixed(0)}% {metrics.surgeWindowActive && '⚡'}
+              <span className={metrics.temporalAnchorStrength > 0.7 ? 'text-success' : 'text-warning'}>
+                {(metrics.temporalAnchorStrength * 100).toFixed(0)}% {metrics.surgeWindowActive && ''}
               </span>
             </div>
           </div>
@@ -211,15 +211,15 @@ function SystemBadge({
 }) {
   const statusColor = system.online 
     ? system.coherence > 0.8 
-      ? 'bg-green-500/20 text-green-400 border-green-500/30' 
-      : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-    : 'bg-red-500/20 text-red-400 border-red-500/30';
+      ? 'bg-success/20 text-success border-success/30' 
+      : 'bg-warning/20 text-warning border-warning/30'
+    : 'bg-destructive/20 text-destructive border-destructive/30';
 
   return (
     <div className={`flex items-center gap-1.5 px-2 py-1 rounded border text-xs ${statusColor}`}>
       {icon || <Activity className="w-3 h-3" />}
       <span className="truncate">{formatSystemName(system.name)}</span>
-      {system.publishedToBus && <span className="text-[10px]">📡</span>}
+      {system.publishedToBus && <span className="text-[10px]"></span>}
     </div>
   );
 }

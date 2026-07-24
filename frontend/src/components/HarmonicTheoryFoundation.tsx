@@ -14,20 +14,20 @@ import frequencyAnalysis from "@/assets/research/harmonic-theory/frequency-symme
 export function HarmonicTheoryFoundation() {
   return (
     <Card className="bg-card/50 backdrop-blur border-border/50 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-indigo-500/5 to-cyan-500/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/5 to-primary/5" />
       
       <CardHeader className="relative">
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Atom className="w-5 h-5 text-purple-500" />
+              <Atom className="w-5 h-5 text-primary" />
               Harmonic Theory Foundation
             </CardTitle>
             <CardDescription>
               Mathematical Substrate of Reality Field Coherence
             </CardDescription>
           </div>
-          <Badge variant="outline" className="text-purple-500 border-purple-500/30">
+          <Badge variant="outline" className="text-primary border-primary/30">
             Theoretical Framework
           </Badge>
         </div>
@@ -62,9 +62,9 @@ export function HarmonicTheoryFoundation() {
           {/* Temporal Harmonic Regulators */}
           <TabsContent value="regulators" className="space-y-4">
             <div className="grid grid-cols-1 gap-4">
-              <div className="p-4 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-lg border border-border/50">
+              <div className="p-4 bg-gradient-to-br from-primary/10 to-primary/10 rounded-lg border border-border/50">
                 <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                  <Waves className="w-4 h-4 text-indigo-500" />
+                  <Waves className="w-4 h-4 text-primary" />
                   Temporal Harmonic Regulator Fields
                 </h3>
                 <p className="text-xs text-muted-foreground mb-3">
@@ -78,9 +78,9 @@ export function HarmonicTheoryFoundation() {
                 />
               </div>
 
-              <div className="p-4 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-lg border border-border/50">
+              <div className="p-4 bg-gradient-to-br from-primary/10 to-primary/10 rounded-lg border border-border/50">
                 <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                  <Radio className="w-4 h-4 text-cyan-500" />
+                  <Radio className="w-4 h-4 text-primary" />
                   Phase-Locked Echo Fields
                 </h3>
                 <p className="text-xs text-muted-foreground mb-3">
@@ -99,9 +99,9 @@ export function HarmonicTheoryFoundation() {
           {/* Field Evolution & Analysis */}
           <TabsContent value="fields" className="space-y-4">
             <div className="grid grid-cols-1 gap-4">
-              <div className="p-4 bg-gradient-to-br from-pink-500/10 to-purple-500/10 rounded-lg border border-border/50">
+              <div className="p-4 bg-gradient-to-br from-primary/10 to-primary/10 rounded-lg border border-border/50">
                 <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-pink-500" />
+                  <Zap className="w-4 h-4 text-primary" />
                   LEV Field Evolution (Auris v5)
                 </h3>
                 <p className="text-xs text-muted-foreground mb-3">
@@ -115,9 +115,9 @@ export function HarmonicTheoryFoundation() {
                 />
               </div>
 
-              <div className="p-4 bg-gradient-to-br from-purple-500/10 to-indigo-500/10 rounded-lg border border-border/50">
+              <div className="p-4 bg-gradient-to-br from-primary/10 to-primary/10 rounded-lg border border-border/50">
                 <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                  <Target className="w-4 h-4 text-purple-500" />
+                  <Target className="w-4 h-4 text-primary" />
                   Frequency Symmetry Analysis
                 </h3>
                 <p className="text-xs text-muted-foreground mb-3">
@@ -136,9 +136,9 @@ export function HarmonicTheoryFoundation() {
           {/* Projections & Multiversial Coordinates */}
           <TabsContent value="projections" className="space-y-4">
             <div className="grid grid-cols-1 gap-4">
-              <div className="p-4 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-lg border border-border/50">
+              <div className="p-4 bg-gradient-to-br from-warning/10 to-warning/10 rounded-lg border border-border/50">
                 <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                  <Target className="w-4 h-4 text-yellow-500" />
+                  <Target className="w-4 h-4 text-warning" />
                   Crown Unlock Field Projection (Ω)
                 </h3>
                 <p className="text-xs text-muted-foreground mb-3">
@@ -152,9 +152,9 @@ export function HarmonicTheoryFoundation() {
                 />
               </div>
 
-              <div className="p-4 bg-gradient-to-br from-green-500/10 to-cyan-500/10 rounded-lg border border-border/50">
+              <div className="p-4 bg-gradient-to-br from-success/10 to-primary/10 rounded-lg border border-border/50">
                 <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                  <Atom className="w-4 h-4 text-green-500" />
+                  <Atom className="w-4 h-4 text-success" />
                   Harmonic Nexus Phase Field (Tandem View)
                 </h3>
                 <p className="text-xs text-muted-foreground mb-3">
@@ -168,9 +168,9 @@ export function HarmonicTheoryFoundation() {
                 />
               </div>
 
-              <div className="p-4 bg-gradient-to-br from-teal-500/10 to-cyan-500/10 rounded-lg border border-border/50">
+              <div className="p-4 bg-gradient-to-br from-primary/10 to-primary/10 rounded-lg border border-border/50">
                 <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                  <Radio className="w-4 h-4 text-teal-500" />
+                  <Radio className="w-4 h-4 text-primary" />
                   Echo Return Field (Peace Codex Pulse)
                 </h3>
                 <p className="text-xs text-muted-foreground mb-3">
@@ -188,7 +188,7 @@ export function HarmonicTheoryFoundation() {
         </Tabs>
 
         {/* Theory Summary */}
-        <div className="mt-4 p-4 bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-cyan-500/10 rounded-lg border border-border/50">
+        <div className="mt-4 p-4 bg-gradient-to-r from-primary/10 via-primary/10 to-primary/10 rounded-lg border border-border/50">
           <p className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">Unified Theory:</span>{' '}
             These visualizations represent the mathematical and energetic substrate of the 

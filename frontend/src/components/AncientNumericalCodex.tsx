@@ -27,7 +27,7 @@ const FOUNDATION_SYMBOLS: HarmonicSymbol[] = [
     frequency: 528,
     meaning: 'Pure Unity - The Love Frequency',
     resonance: 'Perfect coherence, zero divergence',
-    color: 'text-green-500',
+    color: 'text-success',
   },
   {
     glyph: '△',
@@ -36,7 +36,7 @@ const FOUNDATION_SYMBOLS: HarmonicSymbol[] = [
     frequency: 432,
     meaning: 'Golden Ratio - Natural Harmony',
     resonance: 'Fibonacci spiral, growth pattern',
-    color: 'text-yellow-500',
+    color: 'text-warning',
   },
   {
     glyph: '◯',
@@ -45,7 +45,7 @@ const FOUNDATION_SYMBOLS: HarmonicSymbol[] = [
     frequency: 396,
     meaning: 'Release & Liberation',
     resonance: 'Field boundary, containment',
-    color: 'text-blue-500',
+    color: 'text-primary',
   },
   {
     glyph: '◇',
@@ -54,7 +54,7 @@ const FOUNDATION_SYMBOLS: HarmonicSymbol[] = [
     frequency: 639,
     meaning: 'Connection & Relationship',
     resonance: 'Grid intersection, node point',
-    color: 'text-purple-500',
+    color: 'text-primary',
   },
   {
     glyph: '☆',
@@ -63,7 +63,7 @@ const FOUNDATION_SYMBOLS: HarmonicSymbol[] = [
     frequency: 741,
     meaning: 'Expression & Awakening',
     resonance: 'Five-point symmetry, stargate',
-    color: 'text-cyan-500',
+    color: 'text-primary',
   },
   {
     glyph: '✦',
@@ -72,7 +72,7 @@ const FOUNDATION_SYMBOLS: HarmonicSymbol[] = [
     frequency: 852,
     meaning: 'Intuition & Higher Order',
     resonance: 'Six-fold symmetry, crystalline',
-    color: 'text-pink-500',
+    color: 'text-primary',
   },
   {
     glyph: '◈',
@@ -81,7 +81,7 @@ const FOUNDATION_SYMBOLS: HarmonicSymbol[] = [
     frequency: 963,
     meaning: 'Crown Activation - Unity Consciousness',
     resonance: 'Dimensional bridge, transcendence',
-    color: 'text-violet-500',
+    color: 'text-primary',
   },
 ];
 
@@ -433,9 +433,9 @@ export function AncientNumericalCodex() {
             </div>
 
             {/* Unity Frequency Highlight */}
-            <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+            <div className="p-4 bg-success/10 border border-success/30 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
-                <Infinity className="h-5 w-5 text-green-500" />
+                <Infinity className="h-5 w-5 text-success" />
                 <h3 className="font-semibold text-foreground">528 Hz - The Unity Constant</h3>
               </div>
               <p className="text-sm text-muted-foreground mb-3">

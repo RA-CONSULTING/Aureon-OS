@@ -227,13 +227,13 @@ export const PriceAlerts = ({ symbolData }: PriceAlertsProps) => {
               <h4 className="text-sm font-medium mb-2">Triggered ({triggeredAlerts.length})</h4>
               <div className="space-y-2">
                 {triggeredAlerts.map(alert => (
-                  <Card key={alert.id} className="p-3 bg-green-500/10 border-green-500/20">
+                  <Card key={alert.id} className="p-3 bg-success/10 border-success/20">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <Bell className="h-4 w-4 text-green-500" />
+                          <Bell className="h-4 w-4 text-success" />
                           <span className="font-semibold text-sm">{alert.symbol}</span>
-                          <Badge className="text-xs bg-green-500">Triggered</Badge>
+                          <Badge className="text-xs bg-success">Triggered</Badge>
                         </div>
                         <p className="text-sm">
                           Target: {alert.alert_type.includes('percent') ? `${alert.target_value}%` : `$${alert.target_value.toLocaleString()}`}

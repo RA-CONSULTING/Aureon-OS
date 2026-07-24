@@ -12,11 +12,11 @@ interface QuantumTelescopePanelProps {
 }
 
 const solidConfig: Record<GeometricSolid, { icon: React.ReactNode; color: string; element: string }> = {
-  [GeometricSolid.Tetrahedron]: { icon: <Triangle className="h-4 w-4" />, color: 'text-red-500', element: 'Fire' },
-  [GeometricSolid.Hexahedron]: { icon: <Square className="h-4 w-4" />, color: 'text-amber-600', element: 'Earth' },
-  [GeometricSolid.Octahedron]: { icon: <Hexagon className="h-4 w-4" />, color: 'text-sky-400', element: 'Air' },
-  [GeometricSolid.Icosahedron]: { icon: <Circle className="h-4 w-4" />, color: 'text-blue-500', element: 'Water' },
-  [GeometricSolid.Dodecahedron]: { icon: <Star className="h-4 w-4" />, color: 'text-purple-500', element: 'Ether' },
+  [GeometricSolid.Tetrahedron]: { icon: <Triangle className="h-4 w-4" />, color: 'text-destructive', element: 'Fire' },
+  [GeometricSolid.Hexahedron]: { icon: <Square className="h-4 w-4" />, color: 'text-warning', element: 'Earth' },
+  [GeometricSolid.Octahedron]: { icon: <Hexagon className="h-4 w-4" />, color: 'text-primary', element: 'Air' },
+  [GeometricSolid.Icosahedron]: { icon: <Circle className="h-4 w-4" />, color: 'text-primary', element: 'Water' },
+  [GeometricSolid.Dodecahedron]: { icon: <Star className="h-4 w-4" />, color: 'text-primary', element: 'Ether' },
 };
 
 const solidOrder = [
@@ -33,7 +33,7 @@ export function QuantumTelescopePanel({ observation, prismFrequency, prismState 
       <Card className="bg-card/50 backdrop-blur border-border/50">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-sm">
-            <Telescope className="h-4 w-4 text-purple-400" />
+            <Telescope className="h-4 w-4 text-primary" />
             Quantum Telescope
           </CardTitle>
         </CardHeader>
@@ -48,11 +48,11 @@ export function QuantumTelescopePanel({ observation, prismFrequency, prismState 
 
   const { geometricAlignment, dominantSolid, probabilitySpectrum, holographicProjection, focalCoherence, prismBoostFactor } = observation;
 
-  const alignmentColor = geometricAlignment > 0.7 ? 'text-green-400' : geometricAlignment > 0.4 ? 'text-yellow-400' : 'text-red-400';
+  const alignmentColor = geometricAlignment > 0.7 ? 'text-success' : geometricAlignment > 0.4 ? 'text-warning' : 'text-destructive';
   const directionIcon = holographicProjection.direction === 'UP' 
-    ? <ArrowUp className="h-4 w-4 text-green-400" />
+    ? <ArrowUp className="h-4 w-4 text-success" />
     : holographicProjection.direction === 'DOWN'
-    ? <ArrowDown className="h-4 w-4 text-red-400" />
+    ? <ArrowDown className="h-4 w-4 text-destructive" />
     : <Minus className="h-4 w-4 text-muted-foreground" />;
 
   return (
@@ -60,7 +60,7 @@ export function QuantumTelescopePanel({ observation, prismFrequency, prismState 
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
-            <Telescope className="h-4 w-4 text-purple-400" />
+            <Telescope className="h-4 w-4 text-primary" />
             Quantum Telescope
           </div>
           <Badge variant="outline" className={alignmentColor}>
@@ -113,14 +113,14 @@ export function QuantumTelescopePanel({ observation, prismFrequency, prismState 
         <div className="flex items-center justify-between border-t border-border/50 pt-3">
           <div className="space-y-1">
             <div className="text-xs text-muted-foreground">Prism Boost</div>
-            <span className={`font-mono text-sm ${prismBoostFactor > 1 ? 'text-green-400' : prismBoostFactor < 1 ? 'text-red-400' : ''}`}>
+            <span className={`font-mono text-sm ${prismBoostFactor > 1 ? 'text-success' : prismBoostFactor < 1 ? 'text-destructive' : ''}`}>
               ×{prismBoostFactor.toFixed(3)}
             </span>
           </div>
           {prismFrequency !== undefined && (
             <div className="text-right space-y-1">
               <div className="text-xs text-muted-foreground">Prism Frequency</div>
-              <span className={`font-mono text-sm ${prismFrequency === 528 ? 'text-green-400' : ''}`}>
+              <span className={`font-mono text-sm ${prismFrequency === 528 ? 'text-success' : ''}`}>
                 {prismFrequency} Hz {prismState && <span className="text-xs">({prismState})</span>}
               </span>
             </div>

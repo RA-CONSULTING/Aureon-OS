@@ -52,7 +52,7 @@ export const HarmonicSurgeField: React.FC = () => {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="text-amber-400">6D Harmonic Surge Field</CardTitle>
+        <CardTitle className="text-warning">6D Harmonic Surge Field</CardTitle>
         <div className="text-xs text-gray-400 font-mono">
           Timestamp: {timestamp.toFixed(3)}s | Points: {surgeData.length}
         </div>
@@ -78,7 +78,7 @@ export const HarmonicSurgeField: React.FC = () => {
             })}
           </svg>
           
-          <div className="absolute top-2 left-2 text-xs text-amber-400">
+          <div className="absolute top-2 left-2 text-xs text-warning">
             <div>Surge Phase Projection (X)</div>
             <div>Curvature + Feedback (Y)</div>
             <div>Memory Loop + Frequency Drift (Z)</div>

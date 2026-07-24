@@ -8,11 +8,11 @@ interface QuantumTelescopeDisplayProps {
 }
 
 const solidConfig: Record<GeometricSolid, { emoji: string; element: string; color: string }> = {
-  [GeometricSolid.Tetrahedron]: { emoji: '🔥', element: 'Fire', color: 'text-orange-400' },
-  [GeometricSolid.Hexahedron]: { emoji: '🌍', element: 'Earth', color: 'text-amber-600' },
-  [GeometricSolid.Octahedron]: { emoji: '💨', element: 'Air', color: 'text-sky-400' },
-  [GeometricSolid.Icosahedron]: { emoji: '💧', element: 'Water', color: 'text-blue-400' },
-  [GeometricSolid.Dodecahedron]: { emoji: '✨', element: 'Ether', color: 'text-violet-400' },
+  [GeometricSolid.Tetrahedron]: { emoji: '🔥', element: 'Fire', color: 'text-warning' },
+  [GeometricSolid.Hexahedron]: { emoji: '🌍', element: 'Earth', color: 'text-warning' },
+  [GeometricSolid.Octahedron]: { emoji: '💨', element: 'Air', color: 'text-primary' },
+  [GeometricSolid.Icosahedron]: { emoji: '💧', element: 'Water', color: 'text-primary' },
+  [GeometricSolid.Dodecahedron]: { emoji: '✨', element: 'Ether', color: 'text-primary' },
 };
 
 const solidOrder: GeometricSolid[] = [
@@ -43,9 +43,9 @@ export function QuantumTelescopeDisplay({ observation }: QuantumTelescopeDisplay
   }
 
   const directionColors = {
-    UP: 'bg-emerald-500',
-    DOWN: 'bg-red-500',
-    NEUTRAL: 'bg-yellow-500',
+    UP: 'bg-success',
+    DOWN: 'bg-destructive',
+    NEUTRAL: 'bg-warning',
   };
 
   const directionEmoji = {
@@ -76,9 +76,9 @@ export function QuantumTelescopeDisplay({ observation }: QuantumTelescopeDisplay
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium">Geometric Alignment</span>
             <Badge variant="outline" className={
-              alignmentStatus === 'STRONG' ? 'border-emerald-500 text-emerald-400' :
-              alignmentStatus === 'MODERATE' ? 'border-yellow-500 text-yellow-400' :
-              'border-red-500 text-red-400'
+              alignmentStatus === 'STRONG' ? 'border-success text-success' :
+              alignmentStatus === 'MODERATE' ? 'border-warning text-warning' :
+              'border-destructive text-destructive'
             }>
               {alignmentStatus}
             </Badge>

@@ -43,25 +43,25 @@ export function PrismFrequencyPanel() {
   }
   
   const stateEmoji = {
-    FORMING: '🔶',
-    CONVERGING: '🔷',
-    MANIFEST: '💚',
-  }[prismOutput.state] || '⚪';
+    FORMING: '',
+    CONVERGING: '',
+    MANIFEST: '',
+  }[prismOutput.state] || '';
   
   const levelLabels = ['HNC', 'IN', 'CREATE', 'REFLECT', 'UNITY', 'LOVE'];
   
   return (
     <Card className={`bg-card/50 backdrop-blur border-primary/20 transition-all duration-500 ${
-      prismOutput.isLoveLocked ? 'border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.3)]' : ''
+      prismOutput.isLoveLocked ? 'border-success/50 shadow-[0_0_20px_rgba(34,197,94,0.3)]' : ''
     }`}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Sparkles className="w-5 h-5 text-violet-500" />
+            <Sparkles className="w-5 h-5 text-primary" />
             The Prism
           </CardTitle>
           {prismOutput.isLoveLocked && (
-            <Badge className="bg-green-500 animate-pulse">
+            <Badge className="bg-success animate-pulse">
               <Heart className="w-3 h-3 mr-1" /> 528Hz LOCKED
             </Badge>
           )}
@@ -127,7 +127,7 @@ export function PrismFrequencyPanel() {
         {/* 528 Hz Distance */}
         <div className="flex items-center justify-between text-xs p-2 bg-background/30 rounded-lg">
           <span className="text-muted-foreground">Distance to 528 Hz</span>
-          <span className={prismOutput.isLoveLocked ? 'text-green-400 font-bold' : ''}>
+          <span className={prismOutput.isLoveLocked ? 'text-success font-bold' : ''}>
             {prismOutput.isLoveLocked ? '✓ ALIGNED' : `${Math.abs(prismOutput.frequency - 528)} Hz`}
           </span>
         </div>

@@ -83,19 +83,19 @@ export function KillConfirmationBanner({
   const exchangeLabel = kill.exchange.charAt(0).toUpperCase() + kill.exchange.slice(1);
 
   return (
-    <Card className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border-green-500/50 animate-in slide-in-from-top-4 duration-500 shadow-lg shadow-green-500/20 mb-4">
+    <Card className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border-success/50 animate-in slide-in-from-top-4 duration-500 shadow-lg shadow-success/20 mb-4">
       {/* Irish Tricolor Animated Border */}
       <div className="absolute top-0 left-0 right-0 h-1 flex">
-        <div className="flex-1 bg-green-600 animate-pulse" />
+        <div className="flex-1 bg-success animate-pulse" />
         <div className="flex-1 bg-white animate-pulse [animation-delay:100ms]" />
-        <div className="flex-1 bg-orange-500 animate-pulse [animation-delay:200ms]" />
+        <div className="flex-1 bg-warning animate-pulse [animation-delay:200ms]" />
       </div>
 
       <CardContent className="p-4 pt-5">
         {/* Header */}
         <div className="flex items-center justify-center gap-3 mb-3">
           <span className="text-2xl animate-bounce">☘️</span>
-          <span className="text-xl font-extrabold tracking-wider bg-gradient-to-r from-green-500 via-white to-orange-500 bg-clip-text text-transparent">
+          <span className="text-xl font-extrabold tracking-wider bg-gradient-to-r from-success via-white to-warning bg-clip-text text-transparent">
             KILL CONFIRMED
           </span>
           <span className="text-2xl animate-bounce">☘️</span>
@@ -129,19 +129,19 @@ export function KillConfirmationBanner({
           >
             {duck?.exchangeEmoji || '💱'} {exchangeLabel}
           </Badge>
-          <span className={`text-xl font-extrabold ${kill.pnl >= 0 ? 'text-green-400 drop-shadow-[0_0_10px_rgba(0,255,136,0.5)]' : 'text-red-400'}`}>
+          <span className={`text-xl font-extrabold ${kill.pnl >= 0 ? 'text-success drop-shadow-[0_0_10px_rgba(0,255,136,0.5)]' : 'text-destructive'}`}>
             {kill.pnl >= 0 ? '+' : ''}${kill.pnl.toFixed(4)}
           </span>
         </div>
 
         {/* Victory Quote */}
-        <p className="text-center text-yellow-400 italic mb-2 text-sm drop-shadow-[0_0_10px_rgba(255,215,0,0.3)]">
+        <p className="text-center text-warning italic mb-2 text-sm drop-shadow-[0_0_10px_rgba(255,215,0,0.3)]">
           "{quote}"
         </p>
 
         {/* Milestone Quote (if applicable) */}
         {milestoneQuote && (
-          <p className="text-center text-orange-400 font-bold text-sm mb-2 animate-pulse">
+          <p className="text-center text-warning font-bold text-sm mb-2 animate-pulse">
             👑 {milestoneQuote}
           </p>
         )}
@@ -154,7 +154,7 @@ export function KillConfirmationBanner({
         {/* Countdown Bar */}
         <div className="h-1 bg-slate-700 rounded-full overflow-hidden">
           <div 
-            className="h-full bg-gradient-to-r from-green-500 via-white to-orange-500 transition-all duration-100"
+            className="h-full bg-gradient-to-r from-success via-white to-warning transition-all duration-100"
             style={{ width: `${countdown}%` }}
           />
         </div>

@@ -56,26 +56,26 @@ export function RealBinanceBalances() {
           <div className="grid grid-cols-3 gap-2">
             <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
               <div className="flex items-center gap-1 mb-1">
-                <DollarSign className="h-3 w-3 text-green-500" />
+                <DollarSign className="h-3 w-3 text-success" />
                 <span className="text-xs text-muted-foreground">USDT</span>
               </div>
-              <div className="text-lg font-bold text-green-500">${totals.USDT.toFixed(2)}</div>
+              <div className="text-lg font-bold text-success">${totals.USDT.toFixed(2)}</div>
             </div>
             
             <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
               <div className="flex items-center gap-1 mb-1">
-                <Bitcoin className="h-3 w-3 text-orange-500" />
+                <Bitcoin className="h-3 w-3 text-warning" />
                 <span className="text-xs text-muted-foreground">BTC</span>
               </div>
-              <div className="text-lg font-bold text-orange-500">{totals.BTC.toFixed(6)}</div>
+              <div className="text-lg font-bold text-warning">{totals.BTC.toFixed(6)}</div>
             </div>
             
             <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
               <div className="flex items-center gap-1 mb-1">
-                <span className="text-xs text-blue-500">Ξ</span>
+                <span className="text-xs text-primary">Ξ</span>
                 <span className="text-xs text-muted-foreground">ETH</span>
               </div>
-              <div className="text-lg font-bold text-blue-500">{totals.ETH.toFixed(6)}</div>
+              <div className="text-lg font-bold text-primary">{totals.ETH.toFixed(6)}</div>
             </div>
           </div>
 
@@ -91,14 +91,14 @@ export function RealBinanceBalances() {
                       {account.error ? (
                         <Badge variant="destructive" className="text-xs">Error</Badge>
                       ) : account.canTrade ? (
-                        <Badge className="bg-green-500/20 text-green-400 text-xs">Active</Badge>
+                        <Badge className="bg-success/20 text-success text-xs">Active</Badge>
                       ) : (
                         <Badge variant="outline" className="text-xs">Restricted</Badge>
                       )}
                     </div>
                     
                     {account.error ? (
-                      <div className="text-xs text-red-500">{account.error}</div>
+                      <div className="text-xs text-destructive">{account.error}</div>
                     ) : (
                       <div className="grid grid-cols-3 gap-1 text-xs">
                         {Object.entries(account.balances)

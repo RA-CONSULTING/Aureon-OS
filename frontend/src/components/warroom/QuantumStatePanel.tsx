@@ -9,15 +9,15 @@ interface Props {
 
 export function QuantumStatePanel({ quantumState, hiveMindCoherence }: Props) {
   const getCoherenceColor = (coherence: number) => {
-    if (coherence >= 0.945) return 'text-green-500';
-    if (coherence >= 0.85) return 'text-yellow-500';
-    return 'text-red-500';
+    if (coherence >= 0.945) return 'text-success';
+    if (coherence >= 0.85) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getPrismColor = (level: number) => {
-    if (level >= 4) return 'text-purple-500';
-    if (level >= 3) return 'text-blue-500';
-    if (level >= 2) return 'text-yellow-500';
+    if (level >= 4) return 'text-primary';
+    if (level >= 3) return 'text-primary';
+    if (level >= 2) return 'text-warning';
     return 'text-gray-500';
   };
 
@@ -25,10 +25,10 @@ export function QuantumStatePanel({ quantumState, hiveMindCoherence }: Props) {
     <Card className="bg-card/50 backdrop-blur border-primary/20">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>🌊 Quantum Field State</span>
+          <span> Quantum Field State</span>
           {quantumState.isLHE && (
             <Badge variant="destructive" className="animate-pulse">
-              🔥 LHE ACTIVE
+               LHE ACTIVE
             </Badge>
           )}
         </CardTitle>
@@ -54,7 +54,7 @@ export function QuantumStatePanel({ quantumState, hiveMindCoherence }: Props) {
           {/* Lighthouse Signal */}
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Lighthouse (L)</p>
-            <p className="text-2xl font-bold text-blue-500">
+            <p className="text-2xl font-bold text-primary">
               {quantumState.lighthouseSignal.toFixed(2)}
             </p>
           </div>
@@ -70,7 +70,7 @@ export function QuantumStatePanel({ quantumState, hiveMindCoherence }: Props) {
           {/* Dominant Node */}
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Dominant Node</p>
-            <p className="text-lg font-bold text-yellow-500">
+            <p className="text-lg font-bold text-warning">
               {quantumState.dominantNode || 'None'}
             </p>
           </div>
@@ -86,7 +86,7 @@ export function QuantumStatePanel({ quantumState, hiveMindCoherence }: Props) {
           {/* Hive Mind Coherence */}
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Hive Mind</p>
-            <p className="text-lg font-bold text-purple-500">
+            <p className="text-lg font-bold text-primary">
               {(hiveMindCoherence * 100).toFixed(0)}%
             </p>
           </div>
@@ -94,7 +94,7 @@ export function QuantumStatePanel({ quantumState, hiveMindCoherence }: Props) {
           {/* Frequency */}
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Frequency</p>
-            <p className="text-lg font-bold text-green-500">
+            <p className="text-lg font-bold text-success">
               {quantumState.dominantFrequency ? `${quantumState.dominantFrequency}Hz` : '--'}
             </p>
           </div>

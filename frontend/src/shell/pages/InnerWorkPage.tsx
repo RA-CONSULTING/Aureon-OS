@@ -15,8 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LiveDataNotice } from "@/shell/Page";
+import { type TruthStatus } from "../truthStatus";
 
-type TruthStatus = "live" | "real_derived" | "cached_real" | "no_data" | "test_fixture";
 
 interface Inner {
   available: boolean;
@@ -156,7 +156,7 @@ export default function InnerWorkPage() {
                       className={`flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm ${
                         current ? "border-primary/50 bg-primary/5" : cleared ? "opacity-80" : "opacity-50"}`}>
                       <div className="flex items-center gap-2 min-w-0">
-                        <span>{cleared ? "🔆" : current ? "⟳" : "○"}</span>
+                        <span>{cleared ? "" : current ? "⟳" : "○"}</span>
                         <span className="font-medium">{c.name}</span>
                         <span className="text-muted-foreground truncate">— {c.work}</span>
                       </div>

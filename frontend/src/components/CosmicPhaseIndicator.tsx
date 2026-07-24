@@ -10,32 +10,32 @@ interface CosmicPhaseIndicatorProps {
 const phaseConfig: Record<CosmicPhase, { emoji: string; color: string; bgColor: string; description: string }> = {
   [CosmicPhase.UNITY]: { 
     emoji: '🌈', 
-    color: 'text-violet-400', 
-    bgColor: 'bg-violet-500/20 border-violet-500/30',
+    color: 'text-primary', 
+    bgColor: 'bg-primary/20 border-primary/30',
     description: 'Perfect cosmic sync - maximum position size'
   },
   [CosmicPhase.COHERENCE]: { 
     emoji: '🔵', 
-    color: 'text-blue-400', 
-    bgColor: 'bg-blue-500/20 border-blue-500/30',
+    color: 'text-primary', 
+    bgColor: 'bg-primary/20 border-primary/30',
     description: 'Strong alignment - increase position'
   },
   [CosmicPhase.HARMONIC]: { 
     emoji: '🟢', 
-    color: 'text-emerald-400', 
-    bgColor: 'bg-emerald-500/20 border-emerald-500/30',
+    color: 'text-success', 
+    bgColor: 'bg-success/20 border-success/30',
     description: 'Good alignment - normal trading'
   },
   [CosmicPhase.TRANSITION]: { 
     emoji: '🟡', 
-    color: 'text-yellow-400', 
-    bgColor: 'bg-yellow-500/20 border-yellow-500/30',
+    color: 'text-warning', 
+    bgColor: 'bg-warning/20 border-warning/30',
     description: 'Mixed signals - reduce position'
   },
   [CosmicPhase.DISTORTION]: { 
     emoji: '🔴', 
-    color: 'text-red-400', 
-    bgColor: 'bg-red-500/20 border-red-500/30',
+    color: 'text-destructive', 
+    bgColor: 'bg-destructive/20 border-destructive/30',
     description: '440 Hz dominance - avoid trading'
   },
 };
@@ -108,7 +108,7 @@ export function CosmicPhaseIndicator({ cosmicState }: CosmicPhaseIndicatorProps)
             <div className="text-xs text-muted-foreground mb-1">Planetary Torque</div>
             <div className="flex items-center gap-2">
               <span className="text-2xl font-bold">{cosmicState.torqueMultiplier.toFixed(2)}x</span>
-              {cosmicState.torqueMultiplier >= 1.5 && <span className="text-xs text-emerald-400">⚡ High</span>}
+              {cosmicState.torqueMultiplier >= 1.5 && <span className="text-xs text-success">⚡ High</span>}
             </div>
           </div>
 
@@ -159,7 +159,7 @@ export function CosmicPhaseIndicator({ cosmicState }: CosmicPhaseIndicatorProps)
         </div>
 
         {/* Trading Decision */}
-        <div className={`p-3 rounded-lg border ${cosmicState.shouldTrade ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+        <div className={`p-3 rounded-lg border ${cosmicState.shouldTrade ? 'bg-success/10 border-success/30' : 'bg-destructive/10 border-destructive/30'}`}>
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Trading Allowed</span>
             <Badge variant={cosmicState.shouldTrade ? "default" : "destructive"}>

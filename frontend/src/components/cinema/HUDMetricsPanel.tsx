@@ -148,9 +148,9 @@ export function HUDMetricsPanel({
           <StateBadge label="Market" state={hncMarketState} colorMap={marketColors} />
           <StateBadge label="Gaia" state={gaiaLatticeState} colorMap={gaiaColors} />
           <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-orange-400 shadow-[0_0_4px_rgba(251,146,60,0.6)]" />
+            <div className="w-1.5 h-1.5 rounded-full bg-warning shadow-[0_0_4px_rgba(251,146,60,0.6)]" />
             <span className="text-[9px] text-white/35 uppercase tracking-wider">Node</span>
-            <span className="text-[9px] font-medium text-orange-400">{dominantNode}</span>
+            <span className="text-[9px] font-medium text-warning">{dominantNode}</span>
           </div>
         </div>
 

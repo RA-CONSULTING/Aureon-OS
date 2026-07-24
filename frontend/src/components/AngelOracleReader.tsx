@@ -77,9 +77,9 @@ const AngelOracleReader: React.FC = () => {
 
   const getBorderColor = (color: string) => {
     switch (color) {
-      case 'blue': return 'border-blue-400';
-      case 'gold': return 'border-yellow-400';
-      case 'purple': return 'border-purple-400';
+      case 'blue': return 'border-primary';
+      case 'gold': return 'border-warning';
+      case 'purple': return 'border-primary';
       default: return 'border-gray-400';
     }
   };
@@ -97,9 +97,9 @@ const AngelOracleReader: React.FC = () => {
     <div className="space-y-6">
       <div className="text-center space-y-4">
         <div className="flex items-center justify-center gap-2 mb-4">
-          <Sparkles className="w-6 h-6 text-yellow-400" />
+          <Sparkles className="w-6 h-6 text-warning" />
           <h2 className="text-2xl font-bold text-white">Angel Answers Oracle</h2>
-          <Heart className="w-6 h-6 text-pink-400" />
+          <Heart className="w-6 h-6 text-primary" />
         </div>
         
         <p className="text-gray-300 max-w-2xl mx-auto">
@@ -128,7 +128,7 @@ const AngelOracleReader: React.FC = () => {
         <Button
           onClick={drawCard}
           disabled={isShuffling || !question.trim()}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg"
+          className="bg-gradient-to-r from-primary to-primary hover:from-primary hover:to-primary text-white px-8 py-3 text-lg"
         >
           {isShuffling ? (
             <>
@@ -176,23 +176,23 @@ const AngelOracleReader: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="bg-slate-800/50 p-4 rounded-lg">
-              <h4 className="text-yellow-400 font-semibold mb-2">✨ Oracle Summary</h4>
+              <h4 className="text-warning font-semibold mb-2">✨ Oracle Summary</h4>
               <p className="text-gray-300">{selectedCard.oracle_summary}</p>
             </div>
             {selectedCard.yes_no_value && (
               <div className="bg-slate-800/50 p-4 rounded-lg">
-                <h4 className="text-blue-400 font-semibold mb-2">🔮 Answer</h4>
+                <h4 className="text-primary font-semibold mb-2">🔮 Answer</h4>
                 <p className="text-gray-300 font-semibold text-lg">{selectedCard.yes_no_value.replace('_', ' ').toUpperCase()}</p>
               </div>
             )}
             {selectedCard.time_window && (
               <div className="bg-slate-800/50 p-4 rounded-lg">
-                <h4 className="text-green-400 font-semibold mb-2">⏰ Timing</h4>
+                <h4 className="text-success font-semibold mb-2">⏰ Timing</h4>
                 <p className="text-gray-300">{selectedCard.time_window}</p>
               </div>
             )}
             <div className="bg-slate-800/50 p-4 rounded-lg">
-              <h4 className="text-purple-400 font-semibold mb-2">🏷️ Tags</h4>
+              <h4 className="text-primary font-semibold mb-2">🏷️ Tags</h4>
               <div className="flex flex-wrap gap-2">
                 {selectedCard.tags.map((tag, index) => (
                   <Badge key={index} variant="secondary" className="text-xs">
@@ -213,17 +213,17 @@ const AngelOracleReader: React.FC = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div className="text-center">
-                <div className="text-blue-400 text-2xl mb-2">💙</div>
+                <div className="text-primary text-2xl mb-2">💙</div>
                 <h4 className="text-white font-semibold">Yes/No Cards</h4>
                 <p className="text-gray-400">Clear answers to direct questions</p>
               </div>
               <div className="text-center">
-                <div className="text-yellow-400 text-2xl mb-2">⏰</div>
+                <div className="text-warning text-2xl mb-2">⏰</div>
                 <h4 className="text-white font-semibold">Timing Cards</h4>
                 <p className="text-gray-400">When things will happen</p>
               </div>
               <div className="text-center">
-                <div className="text-purple-400 text-2xl mb-2">💜</div>
+                <div className="text-primary text-2xl mb-2">💜</div>
                 <h4 className="text-white font-semibold">Angel Messages</h4>
                 <p className="text-gray-400">Divine guidance and wisdom</p>
               </div>

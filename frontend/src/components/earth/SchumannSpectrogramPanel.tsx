@@ -22,11 +22,11 @@ export function SchumannSpectrogramPanel({ currentSchumann, coherenceIndex }: Pr
   }
   
   const modes = [
-    { freq: 7.83, label: 'Mode 1', amplitude: currentSchumann.A7_83, envelope: currentSchumann.envelope_7_83, color: 'bg-red-500', key: 'C' },
-    { freq: 14.3, label: 'Mode 2', amplitude: currentSchumann.A14_3, envelope: currentSchumann.envelope_14_3, color: 'bg-orange-500', key: 'G' },
-    { freq: 20.8, label: 'Mode 3', amplitude: currentSchumann.A20_8, envelope: currentSchumann.envelope_20_8, color: 'bg-yellow-500', key: 'D' },
-    { freq: 27.3, label: 'Mode 4', amplitude: currentSchumann.A27_3, envelope: currentSchumann.envelope_27_3, color: 'bg-green-500', key: 'A' },
-    { freq: 33.8, label: 'Mode 5', amplitude: currentSchumann.A33_8, envelope: currentSchumann.envelope_33_8, color: 'bg-cyan-500', key: 'E' }
+    { freq: 7.83, label: 'Mode 1', amplitude: currentSchumann.A7_83, envelope: currentSchumann.envelope_7_83, color: 'bg-destructive', key: 'C' },
+    { freq: 14.3, label: 'Mode 2', amplitude: currentSchumann.A14_3, envelope: currentSchumann.envelope_14_3, color: 'bg-warning', key: 'G' },
+    { freq: 20.8, label: 'Mode 3', amplitude: currentSchumann.A20_8, envelope: currentSchumann.envelope_20_8, color: 'bg-warning', key: 'D' },
+    { freq: 27.3, label: 'Mode 4', amplitude: currentSchumann.A27_3, envelope: currentSchumann.envelope_27_3, color: 'bg-success', key: 'A' },
+    { freq: 33.8, label: 'Mode 5', amplitude: currentSchumann.A33_8, envelope: currentSchumann.envelope_33_8, color: 'bg-primary', key: 'E' }
   ];
   
   const maxAmplitude = Math.max(...modes.map(m => m.amplitude));

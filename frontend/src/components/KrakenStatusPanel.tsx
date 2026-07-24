@@ -85,7 +85,7 @@ export const KrakenStatusPanel: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           {isConnected ? (
-            <Badge className="bg-green-500/20 text-green-400 text-xs">
+            <Badge className="bg-success/20 text-success text-xs">
               <Wifi className="h-3 w-3 mr-1" />
               LIVE
             </Badge>
@@ -115,11 +115,11 @@ export const KrakenStatusPanel: React.FC = () => {
               <p className="text-xs text-muted-foreground mb-1">Status</p>
               <div className="flex items-center gap-2">
                 {isConnected ? (
-                  <Activity className="h-4 w-4 text-green-500 animate-pulse" />
+                  <Activity className="h-4 w-4 text-success animate-pulse" />
                 ) : (
                   <WifiOff className="h-4 w-4 text-muted-foreground" />
                 )}
-                <span className={isConnected ? 'text-green-400 text-sm' : 'text-muted-foreground text-sm'}>
+                <span className={isConnected ? 'text-success text-sm' : 'text-muted-foreground text-sm'}>
                   {isConnected ? 'Connected' : 'Disconnected'}
                 </span>
               </div>
@@ -137,14 +137,14 @@ export const KrakenStatusPanel: React.FC = () => {
               <div className="p-2 rounded bg-muted/20 border border-border/30">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">BTC</span>
-                  {btcPrice && <TrendingUp className="h-3 w-3 text-green-500" />}
+                  {btcPrice && <TrendingUp className="h-3 w-3 text-success" />}
                 </div>
                 <p className="text-lg font-bold text-primary">{formatPrice(btcPrice)}</p>
               </div>
               <div className="p-2 rounded bg-muted/20 border border-border/30">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">ETH</span>
-                  {ethPrice && <TrendingUp className="h-3 w-3 text-green-500" />}
+                  {ethPrice && <TrendingUp className="h-3 w-3 text-success" />}
                 </div>
                 <p className="text-lg font-bold text-primary">{formatPrice(ethPrice)}</p>
               </div>
@@ -153,9 +153,9 @@ export const KrakenStatusPanel: React.FC = () => {
 
           {/* API Status */}
           {apiData?.success && (
-            <div className="p-2 rounded bg-green-500/10 border border-green-500/30">
+            <div className="p-2 rounded bg-success/10 border border-success/30">
               <div className="flex items-center justify-between">
-                <Badge className="bg-green-500/20 text-green-400 text-xs">{apiData.dataSource}</Badge>
+                <Badge className="bg-success/20 text-success text-xs">{apiData.dataSource}</Badge>
                 <span className="text-xs text-muted-foreground">{apiData.latencyMs}ms</span>
               </div>
             </div>

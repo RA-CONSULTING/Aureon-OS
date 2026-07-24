@@ -30,14 +30,14 @@ function StepRow({ step, isLast }: { step: ValidationStep; isLast: boolean }) {
     <div className="relative">
       <div className={cn(
         'flex items-start gap-3 p-3 rounded-lg transition-colors',
-        step.status === 'success' && 'bg-emerald-500/10',
+        step.status === 'success' && 'bg-success/10',
         step.status === 'failed' && 'bg-destructive/10',
         step.status === 'running' && 'bg-primary/10 animate-pulse',
         step.status === 'pending' && 'bg-muted/50',
       )}>
         {/* Status icon */}
         <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center">
-          {step.status === 'success' && <CheckCircle2 className="h-5 w-5 text-emerald-500" />}
+          {step.status === 'success' && <CheckCircle2 className="h-5 w-5 text-success" />}
           {step.status === 'failed' && <XCircle className="h-5 w-5 text-destructive" />}
           {step.status === 'running' && <Loader2 className="h-5 w-5 text-primary animate-spin" />}
           {step.status === 'pending' && <Clock className="h-5 w-5 text-muted-foreground" />}

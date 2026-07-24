@@ -145,7 +145,7 @@ export const NanoParticleVisualizer: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           🔬 Nano-Particle Field Visualizer
-          {isActive && <span className="text-sm text-green-500 animate-pulse">LIVE</span>}
+          {isActive && <span className="text-sm text-success animate-pulse">LIVE</span>}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

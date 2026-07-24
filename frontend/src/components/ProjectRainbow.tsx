@@ -7,14 +7,14 @@ const ProjectRainbow = () => {
   const [activeFreq, setActiveFreq] = useState<string | null>(null);
 
   const frequencies = [
-    { note: 'C', hz: 256, emotion: 'SAFETY / BELONGING', color: 'bg-red-500' },
-    { note: 'D', hz: 288, emotion: 'HOPE / YEARNING', color: 'bg-orange-500' },
-    { note: 'E', hz: 324, emotion: 'JOY / POSSIBILITY', color: 'bg-yellow-500' },
-    { note: 'F', hz: 341, emotion: 'HEART / HEALING', color: 'bg-green-500' },
-    { note: 'G', hz: 384, emotion: 'CONFIDENCE / TRUST', color: 'bg-blue-500' },
-    { note: 'A', hz: 432, emotion: 'INSPIRATION / TRANSCENDENCE', color: 'bg-indigo-500' },
-    { note: 'B', hz: 486, emotion: 'AWAKENING / UNITY', color: 'bg-purple-500' },
-    { note: 'High C', hz: 512, emotion: 'WHY, OH WHY CAN\'T I?', color: 'bg-pink-500' }
+    { note: 'C', hz: 256, emotion: 'SAFETY / BELONGING', color: 'bg-destructive' },
+    { note: 'D', hz: 288, emotion: 'HOPE / YEARNING', color: 'bg-warning' },
+    { note: 'E', hz: 324, emotion: 'JOY / POSSIBILITY', color: 'bg-warning' },
+    { note: 'F', hz: 341, emotion: 'HEART / HEALING', color: 'bg-success' },
+    { note: 'G', hz: 384, emotion: 'CONFIDENCE / TRUST', color: 'bg-primary' },
+    { note: 'A', hz: 432, emotion: 'INSPIRATION / TRANSCENDENCE', color: 'bg-primary' },
+    { note: 'B', hz: 486, emotion: 'AWAKENING / UNITY', color: 'bg-primary' },
+    { note: 'High C', hz: 512, emotion: 'WHY, OH WHY CAN\'T I?', color: 'bg-primary' }
   ];
 
   const outcomes = [
@@ -25,22 +25,22 @@ const ProjectRainbow = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-primary via-primary to-primary p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 mb-4">
+          <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-warning to-warning mb-4">
             PROJECT RAINBOW
           </h1>
-          <h2 className="text-3xl font-bold text-yellow-400 mb-2">VALIDATION</h2>
-          <p className="text-xl text-blue-300">22 AUGUST 2025 • 9-10 AM BROADCAST WINDOW</p>
+          <h2 className="text-3xl font-bold text-warning mb-2">VALIDATION</h2>
+          <p className="text-xl text-primary">22 AUGUST 2025 • 9-10 AM BROADCAST WINDOW</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Predictions */}
-          <Card className="bg-black/40 border-yellow-500/30">
+          <Card className="bg-black/40 border-warning/30">
             <CardHeader>
-              <CardTitle className="text-3xl text-yellow-400">PREDICTIONS</CardTitle>
+              <CardTitle className="text-3xl text-warning">PREDICTIONS</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
@@ -50,13 +50,13 @@ const ProjectRainbow = () => {
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-lg text-blue-300 font-semibold">Emotional Frequencies Encoded into Schumann Resonance</h4>
+                <h4 className="text-lg text-primary font-semibold">Emotional Frequencies Encoded into Schumann Resonance</h4>
                 {frequencies.map((freq, index) => (
                   <div 
                     key={freq.note}
                     className={`p-3 rounded-lg border cursor-pointer transition-all ${
                       activeFreq === freq.note 
-                        ? 'border-yellow-400 bg-yellow-400/10' 
+                        ? 'border-warning bg-warning/10' 
                         : 'border-gray-600 hover:border-gray-400'
                     }`}
                     onClick={() => setActiveFreq(activeFreq === freq.note ? null : freq.note)}
@@ -64,7 +64,7 @@ const ProjectRainbow = () => {
                     <div className="flex items-center gap-4">
                       <div className={`w-4 h-4 rounded-full ${freq.color}`}></div>
                       <span className="text-lg font-bold text-white">{freq.note}</span>
-                      <span className="text-yellow-400">({freq.hz} Hz)</span>
+                      <span className="text-warning">({freq.hz} Hz)</span>
                     </div>
                     <div className="text-sm text-gray-300 mt-1">{freq.emotion}</div>
                   </div>
@@ -74,22 +74,22 @@ const ProjectRainbow = () => {
           </Card>
 
           {/* Outcomes */}
-          <Card className="bg-black/40 border-green-500/30">
+          <Card className="bg-black/40 border-success/30">
             <CardHeader>
-              <CardTitle className="text-3xl text-green-400">OUTCOMES</CardTitle>
+              <CardTitle className="text-3xl text-success">OUTCOMES</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {outcomes.map((outcome, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                  <div className="w-2 h-2 bg-success rounded-full"></div>
                   <span className="text-white text-lg">{outcome}</span>
                 </div>
               ))}
 
               {/* Spectrogram Visualization */}
               <div className="mt-8">
-                <h4 className="text-lg text-blue-300 font-semibold mb-4">OBSERVED ELF (SCHUMANN) RESONANCES</h4>
-                <div className="bg-gradient-to-b from-purple-600 via-pink-500 to-yellow-400 h-64 rounded-lg relative overflow-hidden">
+                <h4 className="text-lg text-primary font-semibold mb-4">OBSERVED ELF (SCHUMANN) RESONANCES</h4>
+                <div className="bg-gradient-to-b from-primary via-primary to-warning h-64 rounded-lg relative overflow-hidden">
                   <div className="absolute inset-0 opacity-60">
                     {Array.from({ length: 20 }).map((_, i) => (
                       <div 
@@ -134,26 +134,26 @@ const ProjectRainbow = () => {
 
         {/* Rainbow Arrow */}
         <div className="flex justify-center my-8">
-          <div className="w-32 h-16 bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 clip-path-arrow opacity-80"></div>
+          <div className="w-32 h-16 bg-gradient-to-r from-destructive via-warning via-success via-primary to-primary clip-path-arrow opacity-80"></div>
         </div>
 
         {/* Bottom Stats */}
         <div className="grid md:grid-cols-3 gap-6 mt-8">
-          <Card className="bg-black/40 border-blue-500/30 text-center">
+          <Card className="bg-black/40 border-primary/30 text-center">
             <CardContent className="p-6">
-              <div className="text-3xl font-bold text-blue-400">7.83 Hz</div>
+              <div className="text-3xl font-bold text-primary">7.83 Hz</div>
               <div className="text-sm text-gray-300">Primary Schumann Resonance</div>
             </CardContent>
           </Card>
-          <Card className="bg-black/40 border-green-500/30 text-center">
+          <Card className="bg-black/40 border-success/30 text-center">
             <CardContent className="p-6">
-              <div className="text-3xl font-bold text-green-400">+276%</div>
+              <div className="text-3xl font-bold text-success">+276%</div>
               <div className="text-sm text-gray-300">Field Amplification</div>
             </CardContent>
           </Card>
-          <Card className="bg-black/40 border-purple-500/30 text-center">
+          <Card className="bg-black/40 border-primary/30 text-center">
             <CardContent className="p-6">
-              <div className="text-3xl font-bold text-purple-400">8 Bands</div>
+              <div className="text-3xl font-bold text-primary">8 Bands</div>
               <div className="text-sm text-gray-300">Emotional Frequencies</div>
             </CardContent>
           </Card>

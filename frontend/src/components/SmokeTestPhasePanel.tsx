@@ -32,13 +32,13 @@ import {
 const getStatusIcon = (status: PhaseStatus) => {
   switch (status) {
     case 'PASSED':
-      return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
+      return <CheckCircle2 className="h-4 w-4 text-success" />;
     case 'FAILED':
       return <XCircle className="h-4 w-4 text-destructive" />;
     case 'GHOST_DETECTED':
-      return <Ghost className="h-4 w-4 text-purple-500" />;
+      return <Ghost className="h-4 w-4 text-primary" />;
     case 'VALIDATING':
-      return <Loader2 className="h-4 w-4 text-amber-500 animate-spin" />;
+      return <Loader2 className="h-4 w-4 text-warning animate-spin" />;
     case 'PENDING':
     default:
       return <Clock className="h-4 w-4 text-muted-foreground" />;
@@ -47,10 +47,10 @@ const getStatusIcon = (status: PhaseStatus) => {
 
 const getStatusBadge = (status: PhaseStatus) => {
   const variants: Record<PhaseStatus, string> = {
-    'PASSED': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    'PASSED': 'bg-success/20 text-success border-success/30',
     'FAILED': 'bg-destructive/20 text-destructive border-destructive/30',
-    'GHOST_DETECTED': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-    'VALIDATING': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+    'GHOST_DETECTED': 'bg-primary/20 text-primary border-primary/30',
+    'VALIDATING': 'bg-warning/20 text-warning border-warning/30',
     'PENDING': 'bg-muted text-muted-foreground border-border',
   };
   
@@ -69,8 +69,8 @@ const PhaseCard = ({ phase, isCurrent }: { phase: PhaseValidation; isCurrent: bo
       className={`
         p-3 rounded-lg border transition-all duration-300
         ${isCurrent ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10' : 'border-border bg-card/50'}
-        ${phase.status === 'PASSED' ? 'border-emerald-500/50' : ''}
-        ${phase.status === 'GHOST_DETECTED' ? 'border-purple-500/50 animate-pulse' : ''}
+        ${phase.status === 'PASSED' ? 'border-success/50' : ''}
+        ${phase.status === 'GHOST_DETECTED' ? 'border-primary/50 animate-pulse' : ''}
       `}
     >
       <div className="flex items-center justify-between mb-2">
@@ -99,8 +99,8 @@ const PhaseCard = ({ phase, isCurrent }: { phase: PhaseValidation; isCurrent: bo
       </div>
       
       {phase.ghostsDetected.length > 0 && (
-        <div className="mt-2 p-2 rounded bg-purple-500/10 border border-purple-500/30">
-          <div className="flex items-center gap-1 text-xs text-purple-400">
+        <div className="mt-2 p-2 rounded bg-primary/10 border border-primary/30">
+          <div className="flex items-center gap-1 text-xs text-primary">
             <Ghost className="h-3 w-3" />
             <span>GHOSTS: {phase.ghostsDetected.join(', ')}</span>
           </div>
@@ -141,10 +141,10 @@ export const SmokeTestPhasePanel = () => {
 
   const getOverallStatusColor = () => {
     switch (state.overallStatus) {
-      case 'PASSED': return 'text-emerald-500';
+      case 'PASSED': return 'text-success';
       case 'FAILED': return 'text-destructive';
-      case 'GHOST_ALERT': return 'text-purple-500';
-      case 'RUNNING': return 'text-amber-500';
+      case 'GHOST_ALERT': return 'text-primary';
+      case 'RUNNING': return 'text-warning';
       default: return 'text-muted-foreground';
     }
   };
@@ -213,7 +213,7 @@ export const SmokeTestPhasePanel = () => {
             variant="ghost"
             onClick={() => smokeTestPhaseValidator.forceAdvance()}
             disabled={state.overallStatus !== 'RUNNING'}
-            className="text-amber-500"
+            className="text-warning"
           >
             <AlertTriangle className="h-4 w-4" />
           </Button>
@@ -223,14 +223,14 @@ export const SmokeTestPhasePanel = () => {
         <div className={`
           p-3 rounded-lg border text-center
           ${state.lighthouseValidated 
-            ? 'bg-emerald-500/10 border-emerald-500/30' 
+            ? 'bg-success/10 border-success/30' 
             : 'bg-muted/50 border-border'
           }
         `}>
           <div className="text-xs font-mono text-muted-foreground mb-1">
             LIGHTHOUSE PROTOCOL
           </div>
-          <div className={`font-mono font-bold ${state.lighthouseValidated ? 'text-emerald-500' : 'text-muted-foreground'}`}>
+          <div className={`font-mono font-bold ${state.lighthouseValidated ? 'text-success' : 'text-muted-foreground'}`}>
             {state.lighthouseValidated ? '✓ VALIDATED' : 'AWAITING VALIDATION'}
           </div>
         </div>
@@ -248,12 +248,12 @@ export const SmokeTestPhasePanel = () => {
 
         {/* Ghost Alert */}
         {state.overallStatus === 'GHOST_ALERT' && (
-          <div className="p-4 rounded-lg bg-purple-500/20 border border-purple-500/50 animate-pulse">
-            <div className="flex items-center gap-2 text-purple-400 font-mono">
+          <div className="p-4 rounded-lg bg-primary/20 border border-primary/50 animate-pulse">
+            <div className="flex items-center gap-2 text-primary font-mono">
               <Ghost className="h-5 w-5" />
               <span className="font-bold">SYSTEMIC GHOST PROBLEM DETECTED</span>
             </div>
-            <p className="text-xs text-purple-300 mt-2">
+            <p className="text-xs text-primary mt-2">
               Multiple systems are failing validation repeatedly. 
               Check for phantom registrations or stale connections.
             </p>

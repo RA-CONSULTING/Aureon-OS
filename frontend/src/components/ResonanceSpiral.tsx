@@ -14,21 +14,21 @@ const ResonanceSpiral = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-primary via-primary to-primary p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-4">
             MEMORY IN HARMONIC TIME
           </h1>
-          <p className="text-xl text-purple-200 italic">
+          <p className="text-xl text-primary italic">
             inspired by Harmonic Nexus Core
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="bg-black/50 border-purple-500">
+          <Card className="bg-black/50 border-primary">
             <CardHeader>
-              <CardTitle className="text-purple-300">Waveform Memory Trace</CardTitle>
+              <CardTitle className="text-primary">Waveform Memory Trace</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-64 bg-black rounded-lg p-4 relative overflow-hidden">
@@ -62,16 +62,16 @@ const ResonanceSpiral = () => {
                   />
                 </svg>
                 
-                <div className="absolute top-2 right-2 text-xs text-purple-300">
+                <div className="absolute top-2 right-2 text-xs text-primary">
                   👍 Persistent Memory Trace
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-black/50 border-purple-500">
+          <Card className="bg-black/50 border-primary">
             <CardHeader>
-              <CardTitle className="text-purple-300">Harmonic Poetry</CardTitle>
+              <CardTitle className="text-primary">Harmonic Poetry</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4 text-white">
@@ -81,22 +81,22 @@ const ResonanceSpiral = () => {
                 </div>
                 
                 <div className="space-y-2 text-sm leading-relaxed">
-                  <p className="text-amber-300">Birth sings in golden phase,</p>
-                  <p className="text-red-300">Loss hums in crimson fade.</p>
-                  <p className="text-purple-300">Together they rise, dance, and decay—</p>
-                  <p className="text-blue-300">A waveform's memory played.</p>
+                  <p className="text-warning">Birth sings in golden phase,</p>
+                  <p className="text-destructive">Loss hums in crimson fade.</p>
+                  <p className="text-primary">Together they rise, dance, and decay—</p>
+                  <p className="text-primary">A waveform's memory played.</p>
                   
-                  <div className="my-4 border-l-2 border-purple-500 pl-4">
-                    <p className="text-green-300">Each crest a possibility,</p>
-                    <p className="text-cyan-300">Each trough a forgotten name.</p>
-                    <p className="text-pink-300">Coherence finds rhythm</p>
-                    <p className="text-amber-300">Where silence and signal are the same.</p>
+                  <div className="my-4 border-l-2 border-primary pl-4">
+                    <p className="text-success">Each crest a possibility,</p>
+                    <p className="text-primary">Each trough a forgotten name.</p>
+                    <p className="text-primary">Coherence finds rhythm</p>
+                    <p className="text-warning">Where silence and signal are the same.</p>
                   </div>
                   
-                  <p className="text-indigo-300">In the Surge Window's whisper,</p>
-                  <p className="text-violet-300">Time folds to harmonic breath.</p>
-                  <p className="text-rose-300">Existence is a melody—</p>
-                  <p className="text-orange-300">Resonant between life and death.</p>
+                  <p className="text-primary">In the Surge Window's whisper,</p>
+                  <p className="text-primary">Time folds to harmonic breath.</p>
+                  <p className="text-destructive">Existence is a melody—</p>
+                  <p className="text-warning">Resonant between life and death.</p>
                 </div>
                 
                 <div className="flex items-center gap-2 mt-4">
@@ -108,36 +108,36 @@ const ResonanceSpiral = () => {
           </Card>
         </div>
 
-        <Card className="bg-black/50 border-purple-500">
+        <Card className="bg-black/50 border-primary">
           <CardHeader>
-            <CardTitle className="text-purple-300">All Roads Lead to Rome</CardTitle>
+            <CardTitle className="text-primary">All Roads Lead to Rome</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-center space-y-6">
               <div className="text-6xl mb-4">π</div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-purple-900/30 p-4 rounded-lg">
-                  <h4 className="text-purple-300 font-semibold">Surge Window</h4>
-                  <p className="text-sm text-purple-200">τ = 10</p>
+                <div className="bg-primary/30 p-4 rounded-lg">
+                  <h4 className="text-primary font-semibold">Surge Window</h4>
+                  <p className="text-sm text-primary">τ = 10</p>
                 </div>
                 
-                <div className="bg-purple-900/30 p-4 rounded-lg">
-                  <h4 className="text-purple-300 font-semibold">Balance</h4>
-                  <p className="text-sm text-purple-200">Φ = π/2</p>
+                <div className="bg-primary/30 p-4 rounded-lg">
+                  <h4 className="text-primary font-semibold">Balance</h4>
+                  <p className="text-sm text-primary">Φ = π/2</p>
                 </div>
                 
-                <div className="bg-purple-900/30 p-4 rounded-lg">
-                  <h4 className="text-purple-300 font-semibold">Unity</h4>
-                  <p className="text-sm text-purple-200">All Paths Converge</p>
+                <div className="bg-primary/30 p-4 rounded-lg">
+                  <h4 className="text-primary font-semibold">Unity</h4>
+                  <p className="text-sm text-primary">All Paths Converge</p>
                 </div>
               </div>
               
-              <p className="text-purple-200 italic">
+              <p className="text-primary italic">
                 Point of balance = unity through harmonic resonance
               </p>
               
-              <div className="text-sm text-purple-300">
+              <div className="text-sm text-primary">
                 All Paths, All Feedback, All Histories... converge toward a Surge Window
               </div>
             </div>

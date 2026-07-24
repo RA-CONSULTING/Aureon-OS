@@ -10,7 +10,7 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Search, Sparkles } from "lucide-react";
+import { Search } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -46,8 +46,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { HASH_REDIRECTS, NAV_SECTIONS, navItemForPath, sectionForPath } from "./nav";
+import { HASH_REDIRECTS, VISIBLE_NAV_SECTIONS, navItemForPath, sectionForPath } from "./nav";
 import { PageSkeleton, RouteErrorBoundary } from "./Page";
+import { BackendStatusBanner } from "@/components/BackendStatusBanner";
+import { LiveVitals } from "@/components/LiveVitals";
+import { SiteFooter } from "./SiteFooter";
+import { RiskDisclaimer } from "@/components/RiskDisclaimer";
+import { SupportProjectPrompt } from "@/components/SupportProjectPrompt";
 
 type PlatformHealth = "healthy" | "degraded" | "critical" | "unknown";
 
@@ -135,7 +140,7 @@ function CommandPalette() {
         <CommandInput placeholder="Search every surface in the platform…" />
         <CommandList>
           <CommandEmpty>No surface found.</CommandEmpty>
-          {NAV_SECTIONS.map((section) => (
+          {VISIBLE_NAV_SECTIONS.map((section) => (
             <CommandGroup key={section.label} heading={section.label}>
               {section.items.map((item) => (
                 <CommandItem key={item.path} value={`${section.label} ${item.label}`} onSelect={() => go(item.path)}>
@@ -157,18 +162,16 @@ function ShellSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
-            <Sparkles className="h-4 w-4 text-primary-foreground" />
-          </div>
+        <Link to="/" className="flex items-center gap-2 px-2 py-1.5">
+          <BrandMark size={32} className="shrink-0" />
           <div className="grid leading-tight group-data-[collapsible=icon]:hidden">
             <span className="font-semibold tracking-wide">AUREON</span>
-            <span className="text-[10px] text-muted-foreground">Harmonic Nexus Platform</span>
+            <span className="text-[10px] text-muted-foreground">Harmonic Nexus Core</span>
           </div>
-        </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent>
-        {NAV_SECTIONS.map((section) => (
+        {VISIBLE_NAV_SECTIONS.map((section) => (
           <SidebarGroup key={section.label}>
             <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
             <SidebarGroupContent>
@@ -211,7 +214,7 @@ function ShellBreadcrumb() {
       <BreadcrumbList>
         <BreadcrumbItem className="hidden md:block">
           <BreadcrumbLink asChild>
-            <Link to="/">Aureon</Link>
+            <Link to="/console">Aureon</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
         {section && section.label !== "Platform" && (
@@ -250,6 +253,8 @@ export default function ShellLayout() {
   useLegacyHashRedirect();
   const location = useLocation();
   const item = navItemForPath(location.pathname);
+  const section = sectionForPath(location.pathname);
+  const isTrading = section?.label === "Trading";
 
   return (
     <SidebarProvider>
@@ -260,6 +265,7 @@ export default function ShellLayout() {
           <Separator orientation="vertical" className="mr-2 h-4" />
           <ShellBreadcrumb />
           <div className="ml-auto flex items-center gap-3">
+            <LiveVitals />
             {item?.live && (
               <Badge variant="outline" className="hidden text-[10px] sm:inline-flex">
                 live surface
@@ -268,13 +274,21 @@ export default function ShellLayout() {
             <CommandPalette />
           </div>
         </header>
+        <BackendStatusBanner />
         <main className="flex-1 overflow-auto">
+          {isTrading && (
+            <div className="px-4 pt-4">
+              <RiskDisclaimer />
+            </div>
+          )}
           <RouteErrorBoundary key={location.pathname} name={item?.label ?? "This page"}>
             <Suspense fallback={<PageSkeleton />}>
               <Outlet />
             </Suspense>
           </RouteErrorBoundary>
+          <SiteFooter />
         </main>
+        <SupportProjectPrompt />
       </SidebarInset>
     </SidebarProvider>
   );

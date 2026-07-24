@@ -33,8 +33,8 @@ export function QuantumTabContent({ globalState }: QuantumTabContentProps) {
 
   const getPrismColor = () => {
     switch (prismState) {
-      case 'MANIFEST': return 'text-green-400';
-      case 'CONVERGING': return 'text-yellow-400';
+      case 'MANIFEST': return 'text-success';
+      case 'CONVERGING': return 'text-warning';
       default: return 'text-muted-foreground';
     }
   };
@@ -92,7 +92,7 @@ export function QuantumTabContent({ globalState }: QuantumTabContentProps) {
           <CardContent className="space-y-3">
             <div className={cn(
               "text-3xl font-mono font-bold text-center",
-              coherence >= 0.7 ? "text-green-400" : coherence >= 0.45 ? "text-yellow-400" : "text-red-400"
+              coherence >= 0.7 ? "text-success" : coherence >= 0.45 ? "text-warning" : "text-destructive"
             )}>
               {coherence.toFixed(4)}
             </div>
@@ -100,12 +100,12 @@ export function QuantumTabContent({ globalState }: QuantumTabContentProps) {
               value={coherence * 100} 
               className={cn(
                 "h-3",
-                coherence >= 0.7 ? "[&>div]:bg-green-500" : coherence >= 0.45 ? "[&>div]:bg-yellow-500" : "[&>div]:bg-red-500"
+                coherence >= 0.7 ? "[&>div]:bg-success" : coherence >= 0.45 ? "[&>div]:bg-warning" : "[&>div]:bg-destructive"
               )}
             />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>Trade threshold: 0.70</span>
-              <span className={coherence >= 0.7 ? "text-green-400" : "text-red-400"}>
+              <span className={coherence >= 0.7 ? "text-success" : "text-destructive"}>
                 {coherence >= 0.7 ? '✓ READY' : '✗ WAITING'}
               </span>
             </div>
@@ -124,7 +124,7 @@ export function QuantumTabContent({ globalState }: QuantumTabContentProps) {
             <div className="text-center">
               <div className={cn(
                 "text-3xl font-mono font-bold",
-                is528Lock ? "text-green-400" : "text-foreground"
+                is528Lock ? "text-success" : "text-foreground"
               )}>
                 {frequency.toFixed(1)} Hz
               </div>
@@ -204,7 +204,7 @@ export function QuantumTabContent({ globalState }: QuantumTabContentProps) {
           <CardContent className="space-y-3">
             <div className={cn(
               "text-3xl font-mono font-bold text-center",
-              lighthouseSignal >= 0.7 ? "text-green-400" : "text-yellow-400"
+              lighthouseSignal >= 0.7 ? "text-success" : "text-warning"
             )}>
               L = {lighthouseSignal.toFixed(4)}
             </div>

@@ -22,9 +22,9 @@ export function SmartAlertBanner() {
       case 'error':
         return 'bg-destructive/10 border-destructive/30 text-destructive';
       case 'warning':
-        return 'bg-yellow-500/10 border-yellow-500/30 text-yellow-500';
+        return 'bg-warning/10 border-warning/30 text-warning';
       case 'info':
-        return 'bg-blue-500/10 border-blue-500/30 text-blue-500';
+        return 'bg-primary/10 border-primary/30 text-primary';
     }
   };
 

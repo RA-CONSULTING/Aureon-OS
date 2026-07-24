@@ -195,12 +195,12 @@ const PrimeDNAHelix: React.FC = () => {
   }, [leftStrand, rightStrand, rotationPhase]);
 
   return (
-    <Card className="bg-black/50 border-amber-500">
+    <Card className="bg-black/50 border-warning">
       <CardHeader>
-        <CardTitle className="text-amber-400 text-center text-2xl">
+        <CardTitle className="text-warning text-center text-2xl">
           PRIME DNA HELIX
         </CardTitle>
-        <div className="text-center text-amber-300 text-sm">
+        <div className="text-center text-warning text-sm">
           String Vibration Model • Prime Ratio Frequencies
         </div>
       </CardHeader>
@@ -208,7 +208,7 @@ const PrimeDNAHelix: React.FC = () => {
         <div className="flex justify-center mb-4">
           <Button
             onClick={() => setIsActive(!isActive)}
-            className={`${isActive ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-600 hover:bg-amber-700'} text-white`}
+            className={`${isActive ? 'bg-destructive hover:bg-destructive' : 'bg-warning hover:bg-warning'} text-white`}
           >
             {isActive ? 'STOP ROTATION' : 'START ROTATION'}
           </Button>
@@ -218,21 +218,21 @@ const PrimeDNAHelix: React.FC = () => {
           ref={canvasRef}
           width={600}
           height={400}
-          className="w-full border border-amber-500 rounded mb-4"
+          className="w-full border border-warning rounded mb-4"
         />
         
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="text-center">
-            <Badge className="bg-yellow-600 text-black mb-2">Left Strand (Gold)</Badge>
-            <div className="text-sm text-amber-300">Prime Numerators</div>
+            <Badge className="bg-warning text-black mb-2">Left Strand (Gold)</Badge>
+            <div className="text-sm text-warning">Prime Numerators</div>
           </div>
           <div className="text-center">
-            <Badge className="bg-blue-600 text-white mb-2">Right Strand (Blue)</Badge>
-            <div className="text-sm text-blue-300">Prime Denominators</div>
+            <Badge className="bg-primary text-white mb-2">Right Strand (Blue)</Badge>
+            <div className="text-sm text-primary">Prime Denominators</div>
           </div>
         </div>
         
-        <div className="text-center text-amber-300 text-sm">
+        <div className="text-center text-warning text-sm">
           Active Prime Ratios: {primeRatios.length} • Phase: {rotationPhase.toFixed(3)} rad
         </div>
       </CardContent>

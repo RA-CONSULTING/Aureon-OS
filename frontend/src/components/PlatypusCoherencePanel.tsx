@@ -46,10 +46,10 @@ export default function PlatypusCoherencePanel({ compact = false }: PlatypusCohe
   }, []);
   
   const getCoherenceColor = (gamma: number) => {
-    if (gamma >= 0.75) return 'text-green-400 bg-green-500/20';
-    if (gamma >= 0.5) return 'text-yellow-400 bg-yellow-500/20';
-    if (gamma >= 0.25) return 'text-orange-400 bg-orange-500/20';
-    return 'text-red-400 bg-red-500/20';
+    if (gamma >= 0.75) return 'text-success bg-success/20';
+    if (gamma >= 0.5) return 'text-warning bg-warning/20';
+    if (gamma >= 0.25) return 'text-warning bg-warning/20';
+    return 'text-destructive bg-destructive/20';
   };
   
   const getCoherenceLabel = (gamma: number) => {
@@ -63,13 +63,13 @@ export default function PlatypusCoherencePanel({ compact = false }: PlatypusCohe
   if (compact) {
     return (
       <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border/30">
-        <Orbit className="w-4 h-4 text-purple-400" />
+        <Orbit className="w-4 h-4 text-primary" />
         <span className="text-sm font-medium">Γ</span>
-        <span className={`font-mono text-sm ${state.Gamma_t >= 0.75 ? 'text-green-400' : 'text-foreground'}`}>
+        <span className={`font-mono text-sm ${state.Gamma_t >= 0.75 ? 'text-success' : 'text-foreground'}`}>
           {state.Gamma_t.toFixed(3)}
         </span>
         {state.L_t && (
-          <Badge className="bg-yellow-500/30 text-yellow-300 text-xs animate-pulse">
+          <Badge className="bg-warning/30 text-warning text-xs animate-pulse">
             🔦 LIGHTHOUSE
           </Badge>
         )}
@@ -81,10 +81,10 @@ export default function PlatypusCoherencePanel({ compact = false }: PlatypusCohe
   }
   
   return (
-    <Card className="border-purple-500/30 bg-gradient-to-br from-purple-950/20 to-background">
+    <Card className="border-primary/30 bg-gradient-to-br from-primary/20 to-background">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center gap-2">
-          <Orbit className="w-5 h-5 text-purple-400 animate-spin" style={{ animationDuration: '8s' }} />
+          <Orbit className="w-5 h-5 text-primary animate-spin" style={{ animationDuration: '8s' }} />
           Song of the Sphaerae
           <Badge variant="outline" className="ml-auto text-xs">
             {state.ephemerisSource === 'DE440' ? '📡 DE440' : '🔮 Keplerian'}
@@ -94,12 +94,12 @@ export default function PlatypusCoherencePanel({ compact = false }: PlatypusCohe
       
       <CardContent className="space-y-4">
         {/* Main Coherence Display */}
-        <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-purple-500/30">
+        <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-primary/30">
           <div className="space-y-1">
             <div className="text-xs text-muted-foreground uppercase tracking-wide">
               Planetary Coherence Γ(t)
             </div>
-            <div className={`text-4xl font-mono font-bold ${state.Gamma_t >= 0.75 ? 'text-green-400' : state.Gamma_t >= 0.5 ? 'text-yellow-400' : 'text-foreground'}`}>
+            <div className={`text-4xl font-mono font-bold ${state.Gamma_t >= 0.75 ? 'text-success' : state.Gamma_t >= 0.5 ? 'text-warning' : 'text-foreground'}`}>
               {state.Gamma_t.toFixed(3)}
             </div>
             <Badge className={getCoherenceColor(state.Gamma_t)}>
@@ -109,11 +109,11 @@ export default function PlatypusCoherencePanel({ compact = false }: PlatypusCohe
           
           <div className="text-right space-y-1">
             <div className="text-xs text-muted-foreground">Cascade</div>
-            <div className="text-2xl font-mono text-purple-400">
+            <div className="text-2xl font-mono text-primary">
               ×{state.cascadeContribution.toFixed(2)}
             </div>
             {state.L_t && (
-              <Badge className="bg-yellow-500/30 text-yellow-300 animate-pulse">
+              <Badge className="bg-warning/30 text-warning animate-pulse">
                 🔦 LIGHTHOUSE
               </Badge>
             )}
@@ -122,9 +122,9 @@ export default function PlatypusCoherencePanel({ compact = false }: PlatypusCohe
         
         {/* Lighthouse Counter */}
         {state.lighthouseCount > 0 && (
-          <div className="flex items-center justify-center gap-2 py-2 rounded bg-yellow-500/10 border border-yellow-500/30">
-            <Sparkles className="w-4 h-4 text-yellow-400" />
-            <span className="text-sm text-yellow-300">
+          <div className="flex items-center justify-center gap-2 py-2 rounded bg-warning/10 border border-warning/30">
+            <Sparkles className="w-4 h-4 text-warning" />
+            <span className="text-sm text-warning">
               {state.lighthouseCount} Lighthouse Events Detected
             </span>
           </div>
@@ -136,12 +136,12 @@ export default function PlatypusCoherencePanel({ compact = false }: PlatypusCohe
             Process Tree S→Q→H→E→O→Λ→Γ
           </div>
           
-          <ProcessBar label="S(t) Spherical" value={state.S_t} icon={<Sun className="w-3 h-3" />} color="text-orange-400" />
-          <ProcessBar label="Q(t) Quality" value={state.Q_t} icon={<Activity className="w-3 h-3" />} color="text-blue-400" />
-          <ProcessBar label="H(t) Harmonic" value={state.H_t} icon={<Waves className="w-3 h-3" />} color="text-cyan-400" />
-          <ProcessBar label="E(t) Energy" value={state.E_t} icon={<Zap className="w-3 h-3" />} color="text-yellow-400" />
-          <ProcessBar label="O(t) Observer" value={state.O_t} icon={<Eye className="w-3 h-3" />} color="text-purple-400" />
-          <ProcessBar label="Λ(t) Memory" value={state.Lambda_t} icon={<Sparkles className="w-3 h-3" />} color="text-pink-400" />
+          <ProcessBar label="S(t) Spherical" value={state.S_t} icon={<Sun className="w-3 h-3" />} color="text-warning" />
+          <ProcessBar label="Q(t) Quality" value={state.Q_t} icon={<Activity className="w-3 h-3" />} color="text-primary" />
+          <ProcessBar label="H(t) Harmonic" value={state.H_t} icon={<Waves className="w-3 h-3" />} color="text-primary" />
+          <ProcessBar label="E(t) Energy" value={state.E_t} icon={<Zap className="w-3 h-3" />} color="text-warning" />
+          <ProcessBar label="O(t) Observer" value={state.O_t} icon={<Eye className="w-3 h-3" />} color="text-primary" />
+          <ProcessBar label="Λ(t) Memory" value={state.Lambda_t} icon={<Sparkles className="w-3 h-3" />} color="text-primary" />
         </div>
         
         {/* Top Aligned Planets */}
@@ -154,7 +154,7 @@ export default function PlatypusCoherencePanel({ compact = false }: PlatypusCohe
               <Badge 
                 key={planet} 
                 variant="outline" 
-                className={`${i === 0 ? 'border-green-500/50 text-green-400' : 'border-border/50'}`}
+                className={`${i === 0 ? 'border-success/50 text-success' : 'border-border/50'}`}
               >
                 {getPlanetEmoji(planet.split('=')[0])} {planet}
               </Badge>
@@ -175,7 +175,7 @@ export default function PlatypusCoherencePanel({ compact = false }: PlatypusCohe
               >
                 <div className="text-lg">{getPlanetEmoji(planet.name)}</div>
                 <div className="text-xs text-muted-foreground capitalize">{planet.name}</div>
-                <div className={`text-xs font-mono ${planet.quality > 0.7 ? 'text-green-400' : 'text-foreground'}`}>
+                <div className={`text-xs font-mono ${planet.quality > 0.7 ? 'text-success' : 'text-foreground'}`}>
                   q={planet.quality.toFixed(2)}
                 </div>
               </div>

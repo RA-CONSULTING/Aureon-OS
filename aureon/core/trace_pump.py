@@ -47,10 +47,16 @@ class PumpRoute:
 
 
 # The default routes: the two subscribe-based signals the earlier audit flagged as
-# silently broken across the process boundary.
+# silently broken across the process boundary, plus the cognitive immune layer's
+# breach/memory events so a neutralization sensed in one process reaches the
+# in-process immune-memory subscriber (and the Queen, who may observe) in another.
 DEFAULT_ROUTES: tuple[PumpRoute, ...] = (
     PumpRoute("auris_cosmic_state", "auris.throne.cosmic_state", seed_latest=True),
     PumpRoute("lighthouse_event", "lighthouse.event", seed_latest=False),
+    PumpRoute("integrity_guard", "bio.integrity_guard.run", seed_latest=False),
+    PumpRoute("swarm_defense", "bio.swarm_defense.run", seed_latest=False),
+    PumpRoute("immune_memory", "bio.immune_memory.run", seed_latest=False),
+    PumpRoute("immune_regulation", "bio.immune_regulation.run", seed_latest=False),
 )
 
 

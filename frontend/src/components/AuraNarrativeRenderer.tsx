@@ -16,17 +16,17 @@ export const AuraNarrativeRenderer: React.FC<Props> = ({ reading, voice, name, d
   if (voice === 'mythic') {
     return (
       <div className="space-y-6">
-        <Card className="bg-gradient-to-br from-purple-900/30 to-indigo-900/30 border-purple-500/30">
+        <Card className="bg-gradient-to-br from-primary/30 to-primary/30 border-primary/30">
           <CardHeader>
-            <CardTitle className="text-2xl text-center text-purple-200">
+            <CardTitle className="text-2xl text-center text-primary">
               The Reading of {name} — In Tandem with Source
             </CardTitle>
           </CardHeader>
         </Card>
 
-        <Card className="bg-slate-800/50 border-amber-500/30">
+        <Card className="bg-slate-800/50 border-warning/30">
           <CardHeader>
-            <CardTitle className="text-amber-400">Pillar I — All That Was (Origins)</CardTitle>
+            <CardTitle className="text-warning">Pillar I — All That Was (Origins)</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-gray-200 leading-relaxed">
@@ -35,49 +35,49 @@ export const AuraNarrativeRenderer: React.FC<Props> = ({ reading, voice, name, d
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-800/50 border-emerald-500/30">
+        <Card className="bg-slate-800/50 border-success/30">
           <CardHeader>
-            <CardTitle className="text-emerald-400">Pillar II — All That Is (Present Crossroads)</CardTitle>
+            <CardTitle className="text-success">Pillar II — All That Is (Present Crossroads)</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-gray-200 leading-relaxed mb-4">
               You stand where paths part: <strong>{reading.state_profile.crossroad.theme.replace('_', ' vs ')}</strong>. Your heart shows {formatPercent(reading.chakra.heart)}% vitality; your voice {formatPercent(reading.chakra.throat)}% truth; your vision {formatPercent(reading.chakra.third_eye)}% sight. The aura sings green ({formatPercent(reading.color.green)}% love) and blue ({formatPercent(reading.color.blue)}% peace)—a sign to speak gently and lead with care.
             </p>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="bg-purple-500/20 text-purple-400">
+              <Badge variant="outline" className="bg-primary/20 text-primary">
                 {reading.cosmic.note}
               </Badge>
-              <Badge variant="outline" className="bg-blue-500/20 text-blue-400">
+              <Badge variant="outline" className="bg-primary/20 text-primary">
                 {reading.earth.note}
               </Badge>
-              <Badge variant="outline" className="bg-green-500/20 text-green-400">
+              <Badge variant="outline" className="bg-success/20 text-success">
                 Coherence: {formatPercent(reading.chakra.coherence)}%
               </Badge>
-              <Badge variant="outline" className="bg-amber-500/20 text-amber-400">
+              <Badge variant="outline" className="bg-warning/20 text-warning">
                 Confidence: {formatPercent(reading.state_profile.confidence)}%
               </Badge>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-800/50 border-cyan-500/30">
+        <Card className="bg-slate-800/50 border-primary/30">
           <CardHeader>
-            <CardTitle className="text-cyan-400">Pillar III — All That Shall Be (Future Paths)</CardTitle>
+            <CardTitle className="text-primary">Pillar III — All That Shall Be (Future Paths)</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-green-900/30 p-4 rounded-lg border border-green-500/30">
-                <h4 className="font-bold text-green-400 mb-2">Aligned Path (Awakening — {formatPercent(reading.timelines.aligned.likelihood)}%)</h4>
+              <div className="bg-success/30 p-4 rounded-lg border border-success/30">
+                <h4 className="font-bold text-success mb-2">Aligned Path (Awakening — {formatPercent(reading.timelines.aligned.likelihood)}%)</h4>
                 <p className="text-sm text-gray-300">Outcomes: {reading.timelines.aligned.outcomes.join(', ')}</p>
                 <p className="text-sm text-gray-400 mt-2">Drivers: {reading.timelines.aligned.drivers.join(', ')}</p>
               </div>
-              <div className="bg-yellow-900/30 p-4 rounded-lg border border-yellow-500/30">
-                <h4 className="font-bold text-yellow-400 mb-2">Middle Path (Patience — {formatPercent(reading.timelines.middle.likelihood)}%)</h4>
+              <div className="bg-warning/30 p-4 rounded-lg border border-warning/30">
+                <h4 className="font-bold text-warning mb-2">Middle Path (Patience — {formatPercent(reading.timelines.middle.likelihood)}%)</h4>
                 <p className="text-sm text-gray-300">Outcomes: {reading.timelines.middle.outcomes.join(', ')}</p>
                 <p className="text-sm text-gray-400 mt-2">Drivers: {reading.timelines.middle.drivers.join(', ')}</p>
               </div>
-              <div className="bg-red-900/30 p-4 rounded-lg border border-red-500/30">
-                <h4 className="font-bold text-red-400 mb-2">Resistant Path (Stagnation — {formatPercent(reading.timelines.resistant.likelihood)}%)</h4>
+              <div className="bg-destructive/30 p-4 rounded-lg border border-destructive/30">
+                <h4 className="font-bold text-destructive mb-2">Resistant Path (Stagnation — {formatPercent(reading.timelines.resistant.likelihood)}%)</h4>
                 <p className="text-sm text-gray-300">Outcomes: {reading.timelines.resistant.outcomes.join(', ')}</p>
                 <p className="text-sm text-gray-400 mt-2">Drivers: {reading.timelines.resistant.drivers.join(', ')}</p>
               </div>
@@ -85,9 +85,9 @@ export const AuraNarrativeRenderer: React.FC<Props> = ({ reading, voice, name, d
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-800/50 border-violet-500/30">
+        <Card className="bg-slate-800/50 border-primary/30">
           <CardHeader>
-            <CardTitle className="text-violet-400">Pillar IV — All That Moves in Unity</CardTitle>
+            <CardTitle className="text-primary">Pillar IV — All That Moves in Unity</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-gray-200 leading-relaxed">

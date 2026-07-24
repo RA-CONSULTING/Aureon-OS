@@ -15,32 +15,32 @@ import { format } from "date-fns";
 // Mood-based color schemes
 function getMoodColor(mood: string): string {
   const moodLower = mood.toLowerCase();
-  if (moodLower.includes("confident") || moodLower.includes("aggressive")) return "text-green-500";
-  if (moodLower.includes("cautious") || moodLower.includes("defensive")) return "text-yellow-500";
-  if (moodLower.includes("alert") || moodLower.includes("veto")) return "text-red-500";
-  return "text-blue-500";
+  if (moodLower.includes("confident") || moodLower.includes("aggressive")) return "text-success";
+  if (moodLower.includes("cautious") || moodLower.includes("defensive")) return "text-warning";
+  if (moodLower.includes("alert") || moodLower.includes("veto")) return "text-destructive";
+  return "text-primary";
 }
 
 function getMoodBg(mood: string): string {
   const moodLower = mood.toLowerCase();
-  if (moodLower.includes("confident") || moodLower.includes("aggressive")) return "bg-green-500/20";
-  if (moodLower.includes("cautious") || moodLower.includes("defensive")) return "bg-yellow-500/20";
-  if (moodLower.includes("alert") || moodLower.includes("veto")) return "bg-red-500/20";
-  return "bg-blue-500/20";
+  if (moodLower.includes("confident") || moodLower.includes("aggressive")) return "bg-success/20";
+  if (moodLower.includes("cautious") || moodLower.includes("defensive")) return "bg-warning/20";
+  if (moodLower.includes("alert") || moodLower.includes("veto")) return "bg-destructive/20";
+  return "bg-primary/20";
 }
 
 function getMoodIcon(mood: string) {
   const moodLower = mood.toLowerCase();
   if (moodLower.includes("confident") || moodLower.includes("aggressive")) {
-    return <CheckCircle2 className="w-5 h-5 text-green-500" />;
+    return <CheckCircle2 className="w-5 h-5 text-success" />;
   }
   if (moodLower.includes("cautious") || moodLower.includes("defensive")) {
-    return <Shield className="w-5 h-5 text-yellow-500" />;
+    return <Shield className="w-5 h-5 text-warning" />;
   }
   if (moodLower.includes("alert") || moodLower.includes("veto")) {
-    return <AlertTriangle className="w-5 h-5 text-red-500" />;
+    return <AlertTriangle className="w-5 h-5 text-destructive" />;
   }
-  return <Radio className="w-5 h-5 text-blue-500" />;
+  return <Radio className="w-5 h-5 text-primary" />;
 }
 
 export function HiveStatePanel() {
@@ -48,10 +48,10 @@ export function HiveStatePanel() {
 
   if (loading && !hiveState.updated_at) {
     return (
-      <Card className="border-purple-500/30 bg-gradient-to-br from-background to-purple-500/5">
+      <Card className="border-primary/30 bg-gradient-to-br from-background to-primary/5">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Crown className="w-5 h-5 text-purple-500 animate-pulse" />
+            <Crown className="w-5 h-5 text-primary animate-pulse" />
             Queen Hive Mind
           </CardTitle>
         </CardHeader>
@@ -75,11 +75,11 @@ export function HiveStatePanel() {
   const coherencePct = Math.round(coherence_score * 100);
 
   return (
-    <Card className="border-purple-500/30 bg-gradient-to-br from-background to-purple-500/5">
+    <Card className="border-primary/30 bg-gradient-to-br from-background to-primary/5">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <Crown className="w-5 h-5 text-purple-500" />
+            <Crown className="w-5 h-5 text-primary" />
             Queen Hive Mind
           </CardTitle>
           {lastUpdated && (
@@ -126,10 +126,10 @@ export function HiveStatePanel() {
         </div>
 
         {/* Veto Stats */}
-        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-red-500" />
+              <Shield className="w-4 h-4 text-destructive" />
               <span className="text-sm font-medium">Veto Gate</span>
             </div>
             <Badge variant="destructive" className="font-mono">
@@ -137,14 +137,14 @@ export function HiveStatePanel() {
             </Badge>
           </div>
           <div className="text-xs text-muted-foreground">
-            Last: <span className="text-red-400">{last_veto_reason}</span>
+            Last: <span className="text-destructive">{last_veto_reason}</span>
           </div>
         </div>
 
         {/* Queen's Voice Log */}
-        <div className="p-3 rounded-lg bg-purple-500/5 border border-purple-500/20">
+        <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
           <div className="flex items-center gap-2 mb-2">
-            <Crown className="w-4 h-4 text-purple-500" />
+            <Crown className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium">Queen's Voice</span>
           </div>
           <div className="space-y-1 max-h-32 overflow-y-auto">

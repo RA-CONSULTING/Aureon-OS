@@ -13,7 +13,7 @@ export function FieldPullMetricsPanel() {
       <Card className="bg-card/50 backdrop-blur border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-cyan-500 animate-pulse" />
+            <Activity className="w-5 h-5 text-primary animate-pulse" />
             Field Pull Metrics
           </CardTitle>
           <CardDescription>Loading real-time measurements...</CardDescription>
@@ -27,11 +27,11 @@ export function FieldPullMetricsPanel() {
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'OK':
-        return { color: 'text-green-500', bg: 'bg-green-500/20', label: '✓ OK', glow: 'shadow-[0_0_20px_rgba(34,197,94,0.5)]' };
+        return { color: 'text-success', bg: 'bg-success/20', label: '✓ OK', glow: 'shadow-[0_0_20px_rgba(34,197,94,0.5)]' };
       case 'WARNING':
-        return { color: 'text-yellow-500', bg: 'bg-yellow-500/20', label: '⚠ WARNING', glow: '' };
+        return { color: 'text-warning', bg: 'bg-warning/20', label: '⚠ WARNING', glow: '' };
       case 'CRITICAL':
-        return { color: 'text-red-500', bg: 'bg-red-500/20', label: '⚠ CRITICAL', glow: '' };
+        return { color: 'text-destructive', bg: 'bg-destructive/20', label: '⚠ CRITICAL', glow: '' };
       default:
         return { color: 'text-gray-500', bg: 'bg-gray-500/20', label: 'UNKNOWN', glow: '' };
     }
@@ -49,13 +49,13 @@ export function FieldPullMetricsPanel() {
 
   return (
     <Card className="bg-card/50 backdrop-blur border-border/50 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-blue-500/5 to-indigo-500/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/5 to-primary/5" />
       
       <CardHeader className="relative">
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-cyan-500" />
+              <Activity className="w-5 h-5 text-primary" />
               Field Pull Metrics
             </CardTitle>
             <CardDescription>
@@ -74,10 +74,10 @@ export function FieldPullMetricsPanel() {
           {/* Coherence Index */}
           <div className="p-4 bg-background/50 rounded-lg border border-border/50">
             <div className="flex items-center gap-2 mb-3">
-              <Radio className="w-4 h-4 text-cyan-500" />
+              <Radio className="w-4 h-4 text-primary" />
               <span className="text-xs text-muted-foreground font-medium">Coherence Index</span>
             </div>
-            <div className="text-2xl font-bold text-cyan-500 mb-2">
+            <div className="text-2xl font-bold text-primary mb-2">
               {(latestMetric.coherenceIndex * 100).toFixed(2)}%
             </div>
             <Progress value={latestMetric.coherenceIndex * 100} className="h-2" />
@@ -89,10 +89,10 @@ export function FieldPullMetricsPanel() {
           {/* Schumann Lock */}
           <div className="p-4 bg-background/50 rounded-lg border border-border/50">
             <div className="flex items-center gap-2 mb-3">
-              <Lock className="w-4 h-4 text-indigo-500" />
+              <Lock className="w-4 h-4 text-primary" />
               <span className="text-xs text-muted-foreground font-medium">Schumann Lock</span>
             </div>
-            <div className="text-2xl font-bold text-indigo-500 mb-2">
+            <div className="text-2xl font-bold text-primary mb-2">
               {(latestMetric.schumannLock * 100).toFixed(2)}%
             </div>
             <Progress value={latestMetric.schumannLock * 100} className="h-2" />
@@ -104,10 +104,10 @@ export function FieldPullMetricsPanel() {
           {/* Lattice ID Match */}
           <div className="p-4 bg-background/50 rounded-lg border border-border/50">
             <div className="flex items-center gap-2 mb-3">
-              <Shield className="w-4 h-4 text-purple-500" />
+              <Shield className="w-4 h-4 text-primary" />
               <span className="text-xs text-muted-foreground font-medium">Lattice ID Match</span>
             </div>
-            <div className="text-2xl font-bold text-purple-500 mb-2">
+            <div className="text-2xl font-bold text-primary mb-2">
               {(latestMetric.latticeIdMatch * 100).toFixed(2)}%
             </div>
             <Progress value={latestMetric.latticeIdMatch * 100} className="h-2" />
@@ -119,10 +119,10 @@ export function FieldPullMetricsPanel() {
           {/* Resonance Gain */}
           <div className="p-4 bg-background/50 rounded-lg border border-border/50">
             <div className="flex items-center gap-2 mb-3">
-              <Zap className="w-4 h-4 text-yellow-500" />
+              <Zap className="w-4 h-4 text-warning" />
               <span className="text-xs text-muted-foreground font-medium">Resonance Gain</span>
             </div>
-            <div className="text-2xl font-bold text-yellow-500 mb-2">
+            <div className="text-2xl font-bold text-warning mb-2">
               {latestMetric.resonanceGainDb.toFixed(2)} dB
             </div>
             <div className="text-xs text-muted-foreground mt-1">
@@ -132,10 +132,10 @@ export function FieldPullMetricsPanel() {
         </div>
 
         {/* Prime 10-9-1 Balance */}
-        <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 rounded-lg border border-border/50">
+        <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/10 rounded-lg border border-border/50">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-cyan-500" />
+              <TrendingUp className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium">Prime 10-9-1 Balance</span>
             </div>
             <span className="text-sm font-bold text-foreground">
@@ -144,7 +144,7 @@ export function FieldPullMetricsPanel() {
           </div>
           <Progress value={latestMetric.prime1091Balance * 100} className="h-2" />
           <div className="mt-2 text-xs text-muted-foreground">
-            Probability Uplift: <span className="font-bold text-cyan-500">+{latestMetric.probabilityUpliftProxy.toFixed(2)}%</span>
+            Probability Uplift: <span className="font-bold text-primary">+{latestMetric.probabilityUpliftProxy.toFixed(2)}%</span>
           </div>
         </div>
 
@@ -171,7 +171,7 @@ export function FieldPullMetricsPanel() {
         </div>
 
         {/* Field Theory */}
-        <div className="p-4 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-lg border border-border/50">
+        <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/10 rounded-lg border border-border/50">
           <p className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">Field Pull Verification:</span>{' '}
             Real-time measurements confirm harmonic nexus coherence with the prime timeline.

@@ -140,6 +140,30 @@ IRA_TRAINING_FILE = "sniper_million_model.json"
 WISDOM_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "wisdom_data")
 
 
+def merge_canonical_into_qc(qc_ctx: Dict[str, Any], field: Any) -> Dict[str, Any]:
+    """Self-source the miner's harmonic context from the ONE canonical HNC field.
+
+    Fills ``piano_lambda`` (Λ), ``planetary_gamma`` (Γ) and ``quantum_coherence`` (Ψ) into ``qc_ctx``
+    ONLY where the caller left them ``None`` — an explicitly-injected value always wins; this merely
+    fills gaps so the adaptive cycle is directed by the shared ``symbolic.life.pulse`` instead of the
+    static 0.5/1.0 defaults. Also records ``hnc_field_source``. Mutates and returns ``qc_ctx``; a
+    ``field`` that is unavailable/None leaves it untouched. Pure and side-effect-free beyond ``qc_ctx``,
+    so the runtime-direction audit (b43) and a unit test can exercise it without running a full cycle.
+    """
+    if not getattr(field, "available", False):
+        return qc_ctx
+    canonical = {
+        "piano_lambda": getattr(field, "lambda_t", None),
+        "planetary_gamma": getattr(field, "coherence_gamma", None),
+        "quantum_coherence": getattr(field, "consciousness_psi", None),
+    }
+    for key, val in canonical.items():
+        if val is not None and qc_ctx.get(key) is None:
+            qc_ctx[key] = val
+    qc_ctx.setdefault("hnc_field_source", getattr(field, "source", None) or "canonical")
+    return qc_ctx
+
+
 # ═══════════════════════════════════════════════════════════════
 # 🧬 SANDBOX EVOLVED PARAMETERS - Learned Through 454 Generations
 # ═══════════════════════════════════════════════════════════════
@@ -5441,7 +5465,18 @@ class MinerBrain:
         # Store quantum context for use throughout cycle; force dict for safety
         self._quantum_context = quantum_context if isinstance(quantum_context, dict) else {}
         qc_ctx = self._quantum_context
-        
+
+        # HNC direction: self-source the harmonic context from the ONE canonical field when the caller
+        # did not inject it, so the miner's adaptive cycle is directed by the shared symbolic.life.pulse
+        # (Λ/Γ/Ψ) instead of the static 0.5/1.0 defaults. An explicitly-injected value always wins; this
+        # only fills gaps. Guarded/offline-safe — a missing daemon leaves the pre-existing defaults intact.
+        try:
+            from aureon.core.hnc_field import read_canonical_field
+
+            merge_canonical_into_qc(qc_ctx, read_canonical_field())
+        except Exception:  # noqa: BLE001 — the canonical field is best-effort enrichment, never fatal
+            pass
+
         # ═══════════════════════════════════════════════════════════
         # PHASE -2: SANDBOX EVOLUTION INTEGRATION (NEW!)
         # ═══════════════════════════════════════════════════════════

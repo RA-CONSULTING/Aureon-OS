@@ -128,11 +128,11 @@ const systemFamilies: SystemFamily[] = [
 const getStatusColor = (status: string) => {
   switch (status) {
     case "online":
-      return "text-green-500";
+      return "text-success";
     case "offline":
-      return "text-red-500";
+      return "text-destructive";
     case "degraded":
-      return "text-yellow-500";
+      return "text-warning";
     default:
       return "text-muted-foreground";
   }
@@ -186,7 +186,7 @@ const SystemRegistryPanel = () => {
         </Card>
         <Card className="bg-card border-border">
           <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-green-500">{onlineSystems}</div>
+            <div className="text-2xl font-bold text-success">{onlineSystems}</div>
             <div className="text-sm text-muted-foreground">Online</div>
           </CardContent>
         </Card>

@@ -53,7 +53,7 @@ function AuraRing({m}:{m: AuraMetrics}){
         <circle cx="120" cy="120" r="86" stroke={ring.stroke} strokeWidth="12" fill="none" filter="url(#glow)"/>
         <circle cx="120" cy="120" r="78" fill={ring.fill} opacity="0.25"/>
       </svg>
-      <div className="absolute bottom-3 text-xs text-zinc-200 bg-zinc-900/70 px-2 py-1 rounded-xl">
+      <div className="absolute bottom-3 text-xs text-foreground bg-background/70 px-2 py-1 rounded-xl">
         calm {fmt(m?.calm_index,2)} · 10:9:1 {fmt(m?.prime_concordance_10_9_1,2)}
       </div>
     </div>
@@ -81,9 +81,9 @@ function roleFrom(m: AurisMetrics, a: AuraMetrics){
 
 function ToneBadge({tone, children}:{tone:string; children:React.ReactNode}){
   const map: Record<string,string> = {
-    emerald: "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30",
-    sky:     "bg-sky-500/15 text-sky-300 ring-sky-500/30",
-    zinc:    "bg-zinc-700/40 text-zinc-200 ring-zinc-500/20",
+    emerald: "bg-success/15 text-success ring-success/30",
+    sky:     "bg-primary/15 text-primary ring-primary/30",
+    zinc:    "bg-muted/40 text-foreground ring-border",
   };
   return <span className={`px-2 py-1 rounded-xl text-xs ring-1 ${map[tone]||map.zinc}`}>{children}</span>
 }
@@ -95,8 +95,8 @@ import { useLatency } from "./LatencyHook";
 export default function NexusLiveDashboard(){
   const {connected, auris, aura, wsCtl} = useAurisWS();
   const latency = useLatency("ws://localhost:8787");
-  const [name, setName] = useState("Gary Leckey");
-  const [dob, setDob] = useState("1991-11-02");
+  const [name, setName] = useState("");
+  const [dob, setDob] = useState("");
   const [t0, setT0] = useState<string>("");
 
   const t0Hz = useMemo(() => t0 ? Number(t0) : deriveT0Hz(dob), [t0, dob]);
@@ -125,21 +125,21 @@ export default function NexusLiveDashboard(){
   };
 
   return (
-    <div className="min-h-screen bg-zinc-900 text-zinc-100 p-6">
+    <div className="bg-background text-foreground p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         
         {/* Header */}
         <header className="flex items-center justify-between">
           <div className="text-center flex-1">
-            <h1 className="text-3xl font-bold text-zinc-100">Harmonic Nexus Charter</h1>
-            <p className="text-zinc-400">Real-time biofield validation instrument</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Harmonic Nexus Charter</h1>
+            <p className="text-muted-foreground">Real-time biofield validation instrument</p>
           </div>
           <div className="flex items-center gap-4 text-xs">
-            <div className={`flex items-center gap-2 ${connected?'text-emerald-300':'text-zinc-400'}`}>
-              <span className={`w-2 h-2 rounded-full ${connected? 'bg-emerald-400':'bg-zinc-500'}`}></span>
+            <div className={`flex items-center gap-2 ${connected?'text-success':'text-muted-foreground'}`}>
+              <span className={`w-2 h-2 rounded-full ${connected? 'bg-success':'bg-muted-foreground'}`}></span>
               {connected? 'stream connected':'waiting for stream'}
             </div>
-            <div className="px-2 py-1 rounded-lg bg-zinc-800 text-zinc-300 font-mono">
+            <div className="px-2 py-1 rounded-lg bg-card text-muted-foreground font-mono">
               {latency !== null ? `${latency} ms` : '— ms'}
             </div>
           </div>
@@ -148,38 +148,38 @@ export default function NexusLiveDashboard(){
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Identity Panel */}
-          <div className="bg-zinc-800/50 rounded-xl p-6 space-y-4">
+          <div className="bg-card/50 rounded-xl p-6 space-y-4">
             <h2 className="text-xl font-semibold">Identity Binding</h2>
             <div className="space-y-3">
               <input 
                 type="text" 
                 value={name} 
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-zinc-700 text-zinc-200 px-3 py-2 rounded-lg"
+                className="w-full bg-muted text-foreground px-3 py-2 rounded-lg"
                 placeholder="Full Name"
               />
               <input 
                 type="date" 
                 value={dob} 
                 onChange={(e) => setDob(e.target.value)}
-                className="w-full bg-zinc-700 text-zinc-200 px-3 py-2 rounded-lg"
+                className="w-full bg-muted text-foreground px-3 py-2 rounded-lg"
               />
               <input 
                 type="number" 
                 value={t0} 
                 onChange={(e) => setT0(e.target.value)}
-                className="w-full bg-zinc-700 text-zinc-200 px-3 py-2 rounded-lg"
+                className="w-full bg-muted text-foreground px-3 py-2 rounded-lg"
                 placeholder={`t₀ Hz (auto: ${t0Hz})`}
               />
             </div>
-            <div className="pt-4 border-t border-zinc-700">
-              <div className="text-sm text-zinc-300">φ·Gaia: {phiGaia} Hz</div>
+            <div className="pt-4 border-t border-border">
+              <div className="text-sm text-muted-foreground">φ·Gaia: {phiGaia} Hz</div>
               <div className="mt-2"><ToneBadge tone={role.tone}>{role.label}</ToneBadge></div>
             </div>
           </div>
 
           {/* Aura Ring */}
-          <div className="bg-zinc-800/50 rounded-xl p-6">
+          <div className="bg-card/50 rounded-xl p-6">
             <h2 className="text-xl font-semibold mb-4">Aura Field</h2>
             <AuraRing m={aura} />
             <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
@@ -191,7 +191,7 @@ export default function NexusLiveDashboard(){
           </div>
 
           {/* Lattice Metrics */}
-          <div className="bg-zinc-800/50 rounded-xl p-6 space-y-4">
+          <div className="bg-card/50 rounded-xl p-6 space-y-4">
             <h2 className="text-xl font-semibold">Lattice Metrics</h2>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
@@ -223,7 +223,7 @@ export default function NexusLiveDashboard(){
             <div className="mt-4 text-center">
               <button
                 onClick={handleSnapshot}
-                className="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition-colors">
+                className="px-6 py-3 rounded-xl bg-success hover:bg-success text-foreground font-medium transition-colors">
                 Snapshot Current State ⌘S
               </button>
             </div>

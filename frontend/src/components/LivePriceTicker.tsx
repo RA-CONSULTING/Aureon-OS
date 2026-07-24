@@ -26,7 +26,7 @@ export const LivePriceTicker = () => {
       {/* Connection Status */}
       <div className={cn(
         "flex items-center gap-1.5 text-xs font-medium shrink-0",
-        connected ? "text-green-500" : "text-red-500"
+        connected ? "text-success" : "text-destructive"
       )}>
         {connected ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
         {connected ? 'LIVE' : 'OFFLINE'}
@@ -50,7 +50,7 @@ export const LivePriceTicker = () => {
             {data && (
               <span className={cn(
                 "flex items-center gap-0.5 text-xs font-medium",
-                isPositive ? "text-green-500" : "text-red-500"
+                isPositive ? "text-success" : "text-destructive"
               )}>
                 {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                 {isPositive ? '+' : ''}{data.priceChange24h.toFixed(2)}%

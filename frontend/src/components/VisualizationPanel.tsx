@@ -114,19 +114,19 @@ export const VisualizationPanel: React.FC<{ tool: string }> = ({ tool }) => {
         
         <div className="grid grid-cols-3 gap-4 text-xs">
           <div className="text-center p-2 bg-slate-50 rounded">
-            <div className="font-semibold text-blue-600">φ Phase</div>
+            <div className="font-semibold text-primary">φ Phase</div>
             <div className="text-slate-600">
               {timepoint === 'early' ? '0.234' : timepoint === 'mid' ? '0.567' : '0.891'}
             </div>
           </div>
           <div className="text-center p-2 bg-slate-50 rounded">
-            <div className="font-semibold text-green-600">κ Coherence</div>
+            <div className="font-semibold text-success">κ Coherence</div>
             <div className="text-slate-600">
               {timepoint === 'early' ? '0.123' : timepoint === 'mid' ? '0.456' : '0.789'}
             </div>
           </div>
           <div className="text-center p-2 bg-slate-50 rounded">
-            <div className="font-semibold text-purple-600">ψ Amplitude</div>
+            <div className="font-semibold text-primary">ψ Amplitude</div>
             <div className="text-slate-600">
               {timepoint === 'early' ? '0.345' : timepoint === 'mid' ? '0.678' : '0.234'}
             </div>

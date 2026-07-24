@@ -33,13 +33,13 @@ export function PrimeSealPanel() {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
             {isLocked ? (
-              <Lock className="h-5 w-5 text-green-500" />
+              <Lock className="h-5 w-5 text-success" />
             ) : (
-              <Unlock className="h-5 w-5 text-amber-500" />
+              <Unlock className="h-5 w-5 text-warning" />
             )}
             10-9-1 Prime Seal
           </CardTitle>
-          <Badge variant={isLocked ? 'default' : 'secondary'} className={isLocked ? 'bg-green-600' : 'bg-amber-600'}>
+          <Badge variant={isLocked ? 'default' : 'secondary'} className={isLocked ? 'bg-success' : 'bg-warning'}>
             {isLocked ? '🔒 LOCKED' : '🔓 UNLOCKED'}
           </Badge>
         </div>
@@ -49,21 +49,21 @@ export function PrimeSealPanel() {
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Prime Coherence (Γ)</span>
-            <span className={`font-mono font-bold ${isLocked ? 'text-green-500' : 'text-amber-500'}`}>
+            <span className={`font-mono font-bold ${isLocked ? 'text-success' : 'text-warning'}`}>
               {primeCoherence.toFixed(4)}
             </span>
           </div>
           <div className="relative">
             <Progress value={coherencePercent} className="h-3" />
             <div 
-              className="absolute top-0 h-3 w-px bg-red-500" 
+              className="absolute top-0 h-3 w-px bg-destructive" 
               style={{ left: `${lockThreshold}%` }}
               title={`Lock threshold: ${lockThreshold}%`}
             />
           </div>
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>0%</span>
-            <span className="text-red-400">↑ 94.5% lock threshold</span>
+            <span className="text-destructive">↑ 94.5% lock threshold</span>
             <span>100%</span>
           </div>
         </div>
@@ -71,36 +71,36 @@ export function PrimeSealPanel() {
         {/* 10-9-1 Weight Breakdown */}
         <div className="grid grid-cols-3 gap-2">
           {/* Unity (10x) */}
-          <div className="rounded-lg bg-purple-500/10 p-2 text-center">
-            <div className="flex items-center justify-center gap-1 text-purple-400">
+          <div className="rounded-lg bg-primary/10 p-2 text-center">
+            <div className="flex items-center justify-center gap-1 text-primary">
               <Zap className="h-4 w-4" />
               <span className="text-xs font-bold">10×</span>
             </div>
-            <div className="text-lg font-mono font-bold text-purple-300">
+            <div className="text-lg font-mono font-bold text-primary">
               {(unityCoherence * 100).toFixed(1)}%
             </div>
             <div className="text-xs text-muted-foreground">Unity</div>
           </div>
 
           {/* Flow (9x) */}
-          <div className="rounded-lg bg-cyan-500/10 p-2 text-center">
-            <div className="flex items-center justify-center gap-1 text-cyan-400">
+          <div className="rounded-lg bg-primary/10 p-2 text-center">
+            <div className="flex items-center justify-center gap-1 text-primary">
               <Waves className="h-4 w-4" />
               <span className="text-xs font-bold">9×</span>
             </div>
-            <div className="text-lg font-mono font-bold text-cyan-300">
+            <div className="text-lg font-mono font-bold text-primary">
               {(flowCoherence * 100).toFixed(1)}%
             </div>
             <div className="text-xs text-muted-foreground">Flow</div>
           </div>
 
           {/* Anchor (1x) */}
-          <div className="rounded-lg bg-amber-500/10 p-2 text-center">
-            <div className="flex items-center justify-center gap-1 text-amber-400">
+          <div className="rounded-lg bg-warning/10 p-2 text-center">
+            <div className="flex items-center justify-center gap-1 text-warning">
               <Anchor className="h-4 w-4" />
               <span className="text-xs font-bold">1×</span>
             </div>
-            <div className="text-lg font-mono font-bold text-amber-300">
+            <div className="text-lg font-mono font-bold text-warning">
               {(anchorCoherence * 100).toFixed(1)}%
             </div>
             <div className="text-xs text-muted-foreground">Anchor</div>
@@ -117,7 +117,7 @@ export function PrimeSealPanel() {
         </div>
 
         {/* Lock Status Message */}
-        <div className={`rounded-lg p-2 text-center text-sm ${isLocked ? 'bg-green-500/10 text-green-400' : 'bg-amber-500/10 text-amber-400'}`}>
+        <div className={`rounded-lg p-2 text-center text-sm ${isLocked ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}`}>
           {lockReason}
         </div>
 

@@ -62,12 +62,12 @@ const PositionLine = ({
     <div className="flex items-center justify-between gap-3 font-mono text-[11px]">
       <div className="flex items-center gap-2">
         <span className="font-semibold text-foreground">{symbol}</span>
-        <span className={cn('text-[10px]', side === 'LONG' ? 'text-green-500' : 'text-red-500')}>
+        <span className={cn('text-[10px]', side === 'LONG' ? 'text-success' : 'text-destructive')}>
           {side}
         </span>
         {exchange && <span className="text-[10px] uppercase text-muted-foreground">{exchange}</span>}
       </div>
-      <span className={cn(pnlPercent >= 0 ? 'text-green-500' : 'text-red-500')}>
+      <span className={cn(pnlPercent >= 0 ? 'text-success' : 'text-destructive')}>
         {formatSigned(pnlPercent, 2)}%
       </span>
     </div>
@@ -104,13 +104,13 @@ const ShadowLine = ({
     <div className="flex items-center justify-between gap-3 font-mono text-[11px]">
       <div className="flex items-center gap-2">
         <span className="font-semibold text-foreground">{symbol}</span>
-        <span className={cn('text-[10px]', side === 'LONG' ? 'text-green-500' : 'text-red-500')}>
+        <span className={cn('text-[10px]', side === 'LONG' ? 'text-success' : 'text-destructive')}>
           {side}
         </span>
         {exchange && <span className="text-[10px] uppercase text-muted-foreground">{exchange}</span>}
-        {validated && <span className="text-[10px] text-amber-400">VALID</span>}
+        {validated && <span className="text-[10px] text-warning">VALID</span>}
       </div>
-      <span className={cn(movePercent >= 0 ? 'text-green-500' : 'text-red-500')}>
+      <span className={cn(movePercent >= 0 ? 'text-success' : 'text-destructive')}>
         {formatSigned(movePercent, 3)}%
       </span>
     </div>
@@ -315,7 +315,7 @@ export function LiveTerminalStats() {
             onClick={() => setVoiceEnabled((current) => !current)}
             className={cn(
               'rounded border px-2 py-1 font-mono text-[10px]',
-              voiceEnabled ? 'border-green-500/50 text-green-500' : 'border-border/50 text-muted-foreground',
+              voiceEnabled ? 'border-success/50 text-success' : 'border-border/50 text-muted-foreground',
             )}
           >
             {voiceEnabled ? 'Voice On' : 'Voice Off'}
@@ -349,7 +349,7 @@ export function LiveTerminalStats() {
           <div className="mb-2 font-mono text-xs font-semibold text-foreground">KRAKEN</div>
           <div className="space-y-1.5">
             <ExchangeMetric label="Equity" value={`$${krakenEquity.toFixed(2)}`} />
-            <ExchangeMetric label="Session P&L" value={formatSigned(krakenPnl, 2, '$')} className={krakenPnl >= 0 ? 'text-green-500' : 'text-red-500'} />
+            <ExchangeMetric label="Session P&L" value={formatSigned(krakenPnl, 2, '$')} className={krakenPnl >= 0 ? 'text-success' : 'text-destructive'} />
             <ExchangeMetric label="Open Positions" value={`${krakenOpen}`} />
             <ExchangeMetric label="Shadows" value={`${safeNumber(summary?.krakenShadows, krakenShadows.length)}`} />
           </div>
@@ -398,7 +398,7 @@ export function LiveTerminalStats() {
           <div className="mb-2 font-mono text-xs font-semibold text-foreground">CAPITAL</div>
           <div className="space-y-1.5">
             <ExchangeMetric label="Equity" value={`£${capitalEquity.toFixed(2)}`} />
-            <ExchangeMetric label="Session P&L" value={formatSigned(capitalPnl, 2, '£')} className={capitalPnl >= 0 ? 'text-green-500' : 'text-red-500'} />
+            <ExchangeMetric label="Session P&L" value={formatSigned(capitalPnl, 2, '£')} className={capitalPnl >= 0 ? 'text-success' : 'text-destructive'} />
             <ExchangeMetric label="Open Positions" value={`${capitalOpen}`} />
             <ExchangeMetric label="Shadows" value={`${safeNumber(summary?.capitalShadows, capitalShadows.length)}`} />
           </div>
@@ -411,31 +411,31 @@ export function LiveTerminalStats() {
               </div>
               <div className="flex justify-between gap-2">
                 <span>Stress Buffer</span>
-                <span className={safeNumber(capitalRisk.stress_buffer_before_gbp) >= 0 ? 'text-green-500' : 'text-red-500'}>
+                <span className={safeNumber(capitalRisk.stress_buffer_before_gbp) >= 0 ? 'text-success' : 'text-destructive'}>
                   GBP {safeNumber(capitalRisk.stress_buffer_before_gbp).toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between gap-2">
                 <span>Dynamic Slots</span>
-                <span className={capitalRisk.dynamic_lane_expansion_enabled ? 'text-green-500' : 'text-muted-foreground'}>
+                <span className={capitalRisk.dynamic_lane_expansion_enabled ? 'text-success' : 'text-muted-foreground'}>
                   {capitalRisk.dynamic_lane_expansion_enabled ? 'armed' : 'base lanes'}
                 </span>
               </div>
               <div className="flex justify-between gap-2">
                 <span>Waveform</span>
-                <span className={capitalWaveform.ok === false ? 'text-red-500' : 'text-green-500'}>
+                <span className={capitalWaveform.ok === false ? 'text-destructive' : 'text-success'}>
                   {capitalWaveform.ok === false ? 'contradiction' : 'clear'}
                 </span>
               </div>
               <div className="flex justify-between gap-2">
                 <span>Ratchet</span>
-                <span className={capitalRatchet.ok === false ? 'text-yellow-500' : 'text-green-500'}>
+                <span className={capitalRatchet.ok === false ? 'text-warning' : 'text-success'}>
                   {capitalRatchet.reason || 'ready'}
                 </span>
               </div>
               <div className="flex justify-between gap-2">
                 <span>No-loss queue</span>
-                <span className={safeNumber(capitalNoLossQueue.losing_position_count) > 0 ? 'text-yellow-500' : 'text-muted-foreground'}>
+                <span className={safeNumber(capitalNoLossQueue.losing_position_count) > 0 ? 'text-warning' : 'text-muted-foreground'}>
                   {safeNumber(capitalNoLossQueue.losing_position_count)} held
                 </span>
               </div>
@@ -492,7 +492,7 @@ export function LiveTerminalStats() {
                     <span className="font-semibold text-foreground">
                       #{index + 1} {trade.symbol} {trade.side}
                     </span>
-                    <span className="text-green-500">{formatSigned(trade.pnl, 2, trade.exchange === 'capital' ? '£' : '$')}</span>
+                    <span className="text-success">{formatSigned(trade.pnl, 2, trade.exchange === 'capital' ? '£' : '$')}</span>
                   </div>
                   <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-muted-foreground">
                     <span>{trade.exchange || 'local'}</span>
@@ -517,7 +517,7 @@ export function LiveTerminalStats() {
           <ExchangeMetric
             label="Session"
             value={formatSigned(totalPnl, 2, '€')}
-            className={totalPnl >= 0 ? 'text-green-500' : 'text-red-500'}
+            className={totalPnl >= 0 ? 'text-success' : 'text-destructive'}
           />
         </div>
         {state.latestMonitorLine && (

@@ -27,9 +27,9 @@ function compact(value: unknown): string {
 }
 
 function tone(status: string): string {
-  if (status.includes("blocker")) return "border-yellow-500/40 bg-yellow-500/10 text-yellow-100";
+  if (status.includes("blocker")) return "border-warning/40 bg-warning/10 text-warning";
   if (status.includes("archive")) return "border-slate-500/40 bg-slate-500/10 text-slate-100";
-  if (status.includes("adapter") || status.includes("link")) return "border-green-500/40 bg-green-500/10 text-green-100";
+  if (status.includes("adapter") || status.includes("link")) return "border-success/40 bg-success/10 text-success";
   return "border-border bg-muted/20 text-muted-foreground";
 }
 
@@ -82,9 +82,9 @@ export function AureonWorkOrderExecutionConsole() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-2">
-          <Badge variant="outline" className="border-green-500/40 bg-green-500/10 text-green-100">{report.status || "pending"}</Badge>
+          <Badge variant="outline" className="border-success/40 bg-success/10 text-success">{report.status || "pending"}</Badge>
           <Badge variant="outline" className="border-border bg-muted/20 text-muted-foreground">updated {report.generated_at ? new Date(report.generated_at).toLocaleTimeString() : "pending"}</Badge>
-          <Badge variant="outline" className="border-cyan-500/40 bg-cyan-500/10 text-cyan-100">code materialized {materializedPatchCount}</Badge>
+          <Badge variant="outline" className="border-primary/40 bg-primary/10 text-primary">code materialized {materializedPatchCount}</Badge>
         </div>
         <div className="grid gap-2 md:grid-cols-5">
           <Stat label="orders executed" value={summary.executed_count} />
@@ -100,31 +100,31 @@ export function AureonWorkOrderExecutionConsole() {
           <Stat label="validation failures" value={summary.failed_validation_count || validation.failed_validation_count || 0} />
           <Stat label="queue drained" value={movement.queue_drained ? "yes" : "no"} />
         </div>
-        <div className="rounded-md border border-cyan-500/25 bg-cyan-500/10 p-3">
-          <div className="mb-2 text-sm font-medium text-cyan-50">Materialized Repo Code</div>
+        <div className="rounded-md border border-primary/25 bg-primary/10 p-3">
+          <div className="mb-2 text-sm font-medium text-primary">Materialized Repo Code</div>
           <div className="grid gap-2 md:grid-cols-4">
             <Stat label="generated TS patches" value={materializedPatchCount} />
             <Stat label="active in code" value={materializedActivePatchCount} />
             <Stat label="module status" value={AUREON_EVOLUTION_RUNTIME_PATCH_SUMMARY.status} />
             <Stat label="source queue" value={AUREON_EVOLUTION_RUNTIME_PATCH_SUMMARY.sourceQueueCount} />
           </div>
-          <div className="mt-2 font-mono text-[11px] text-cyan-50/75">
+          <div className="mt-2 font-mono text-[11px] text-primary/75">
             frontend/src/components/generated/aureonEvolutionRuntimePatches.ts is imported by this runtime console.
           </div>
         </div>
-        <div className="rounded-md border border-green-500/25 bg-green-500/10 p-3">
-          <div className="mb-2 text-sm font-medium text-green-50">Runtime Patch Activation</div>
+        <div className="rounded-md border border-success/25 bg-success/10 p-3">
+          <div className="mb-2 text-sm font-medium text-success">Runtime Patch Activation</div>
           <div className="grid gap-2 md:grid-cols-3">
             {activePatches.slice(0, 6).map((patch: JsonMap) => (
-              <div key={patch.patch_id} className="rounded border border-green-300/20 bg-background/20 px-2 py-1 text-[11px] text-green-50/80">
+              <div key={patch.patch_id} className="rounded border border-success/20 bg-background/20 px-2 py-1 text-[11px] text-success/80">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-medium">{String(patch.patch_type || "patch").replace(/_/g, " ")}</span>
-                  <Badge variant="outline" className="border-green-500/40 bg-green-500/10 text-green-100">{patch.status}</Badge>
+                  <Badge variant="outline" className="border-success/40 bg-success/10 text-success">{patch.status}</Badge>
                 </div>
-                <div className="mt-1 truncate font-mono text-green-50/70">{patch.source_path}</div>
+                <div className="mt-1 truncate font-mono text-success/70">{patch.source_path}</div>
               </div>
             ))}
-            {!activePatches.length ? <div className="text-xs text-green-50/70">No runtime patch registry loaded yet.</div> : null}
+            {!activePatches.length ? <div className="text-xs text-success/70">No runtime patch registry loaded yet.</div> : null}
           </div>
         </div>
         <ScrollArea className="h-[420px] pr-3">
@@ -143,15 +143,15 @@ export function AureonWorkOrderExecutionConsole() {
                     </div>
                     <div className="flex flex-wrap gap-1">
                       <Badge variant="outline" className={tone(String(item.execution_status || ""))}>{item.execution_status}</Badge>
-                      <Badge variant="outline" className={item.queue_state === "completed_validated" ? "border-green-500/40 bg-green-500/10 text-green-100" : "border-yellow-500/40 bg-yellow-500/10 text-yellow-100"}>{item.queue_state}</Badge>
+                      <Badge variant="outline" className={item.queue_state === "completed_validated" ? "border-success/40 bg-success/10 text-success" : "border-warning/40 bg-warning/10 text-warning"}>{item.queue_state}</Badge>
                       <Badge variant="outline" className="border-border bg-muted/20 text-muted-foreground">{item.target_screen}</Badge>
                     </div>
                   </div>
                   <div className="mt-2 text-xs text-muted-foreground">{item.next_action}</div>
-                  <div className="mt-2 text-[11px] text-green-100">
+                  <div className="mt-2 text-[11px] text-success">
                     moved from queue: {item.queue_transition?.moved_from_queue ? "yes" : "no"} | validation: {item.validation?.status || "waiting"} | patch: {item.runtime_patch?.status || "waiting"}
                   </div>
-                  <div className="mt-2 text-[11px] text-yellow-100">{item.safety_boundary}</div>
+                  <div className="mt-2 text-[11px] text-warning">{item.safety_boundary}</div>
                 </div>
               );
             }) : (

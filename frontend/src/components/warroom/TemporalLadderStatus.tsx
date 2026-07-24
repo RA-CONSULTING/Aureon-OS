@@ -57,8 +57,8 @@ export function TemporalLadderStatus() {
               <div 
                 className={cn(
                   "h-full rounded-full transition-all",
-                  state.hiveMindCoherence > 0.8 ? "bg-green-400" :
-                  state.hiveMindCoherence > 0.5 ? "bg-yellow-400" : "bg-red-400"
+                  state.hiveMindCoherence > 0.8 ? "bg-success" :
+                  state.hiveMindCoherence > 0.5 ? "bg-warning" : "bg-destructive"
                 )}
                 style={{ width: `${state.hiveMindCoherence * 100}%` }}
               />
@@ -75,9 +75,9 @@ export function TemporalLadderStatus() {
               <div key={name} className="flex items-center gap-1.5 text-xs">
                 <div className={cn(
                   "h-1.5 w-1.5 rounded-full",
-                  status.active && status.health > 0.7 ? "bg-green-400" :
-                  status.active && status.health > 0.3 ? "bg-yellow-400" :
-                  status.active ? "bg-red-400" : "bg-muted-foreground/30"
+                  status.active && status.health > 0.7 ? "bg-success" :
+                  status.active && status.health > 0.3 ? "bg-warning" :
+                  status.active ? "bg-destructive" : "bg-muted-foreground/30"
                 )} />
                 <span className={cn(
                   "truncate max-w-[80px]",

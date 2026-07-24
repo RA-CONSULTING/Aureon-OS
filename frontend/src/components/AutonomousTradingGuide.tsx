@@ -51,19 +51,19 @@ const PHASES = [
 
 const AutonomousTradingGuide: React.FC = () => {
   return (
-    <section className="bg-gray-900/50 border border-amber-500/30 rounded-xl shadow-2xl overflow-hidden">
-      <div className="bg-gradient-to-r from-amber-400/20 via-orange-400/10 to-amber-500/20 px-6 py-4 border-b border-amber-500/40">
-        <h3 className="text-2xl font-bold text-amber-300 tracking-wide">Autonomous Execution Guardrails</h3>
-        <p className="text-sm text-amber-100/80 mt-1">Read this before activating live trading on QGITA.</p>
+    <section className="bg-gray-900/50 border border-warning/30 rounded-xl shadow-2xl overflow-hidden">
+      <div className="bg-gradient-to-r from-warning/20 via-warning/10 to-warning/20 px-6 py-4 border-b border-warning/40">
+        <h3 className="text-2xl font-bold text-warning tracking-wide">Autonomous Execution Guardrails</h3>
+        <p className="text-sm text-warning/80 mt-1">Read this before activating live trading on QGITA.</p>
       </div>
 
       <div className="p-6 space-y-8 text-sm text-gray-200 leading-relaxed">
         <div>
-          <h4 className="text-lg font-semibold text-amber-200 mb-3">Critical Risk Disclosures</h4>
+          <h4 className="text-lg font-semibold text-warning mb-3">Critical Risk Disclosures</h4>
           <div className="grid gap-4 md:grid-cols-2">
             {RISK_WARNINGS.map((warning) => (
-              <div key={warning.title} className="bg-gray-800/60 border border-amber-500/20 rounded-lg p-4">
-                <h5 className="font-semibold text-amber-300 mb-2 uppercase tracking-wide text-xs">{warning.title}</h5>
+              <div key={warning.title} className="bg-gray-800/60 border border-warning/20 rounded-lg p-4">
+                <h5 className="font-semibold text-warning mb-2 uppercase tracking-wide text-xs">{warning.title}</h5>
                 <p className="text-gray-200 text-sm leading-snug">{warning.body}</p>
               </div>
             ))}
@@ -71,7 +71,7 @@ const AutonomousTradingGuide: React.FC = () => {
         </div>
 
         <div>
-          <h4 className="text-lg font-semibold text-amber-200 mb-3">Operational Best Practices</h4>
+          <h4 className="text-lg font-semibold text-warning mb-3">Operational Best Practices</h4>
           <ul className="list-disc list-inside space-y-2 text-gray-200">
             {BEST_PRACTICES.map((item) => (
               <li key={item}>{item}</li>
@@ -82,7 +82,7 @@ const AutonomousTradingGuide: React.FC = () => {
         <div className="space-y-4">
           {PHASES.map((phase) => (
             <div key={phase.title} className="bg-gray-800/50 border border-gray-700 rounded-lg p-5">
-              <h4 className="text-lg font-semibold text-amber-200 mb-3">{phase.title}</h4>
+              <h4 className="text-lg font-semibold text-warning mb-3">{phase.title}</h4>
               <ol className="list-decimal list-inside space-y-2 text-gray-200">
                 {phase.items.map((item, index) => (
                   <li key={`${phase.title}-${index}`}>{item}</li>
@@ -92,9 +92,9 @@ const AutonomousTradingGuide: React.FC = () => {
           ))}
         </div>
 
-        <div className="bg-gray-800/80 border border-amber-400/40 rounded-lg p-5">
-          <h4 className="text-lg font-semibold text-amber-200 mb-3">Binance Trading Permission Check (Python)</h4>
-          <pre className="bg-black/60 text-emerald-200 text-xs p-4 rounded-lg overflow-x-auto">
+        <div className="bg-gray-800/80 border border-warning/40 rounded-lg p-5">
+          <h4 className="text-lg font-semibold text-warning mb-3">Binance Trading Permission Check (Python)</h4>
+          <pre className="bg-black/60 text-success text-xs p-4 rounded-lg overflow-x-auto">
             <code>{`import time, hmac, hashlib
 from urllib.parse import urlencode
 import requests

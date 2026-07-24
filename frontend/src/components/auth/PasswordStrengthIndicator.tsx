@@ -22,9 +22,9 @@ export function PasswordStrengthIndicator({ password }: PasswordStrengthIndicato
     const metCount = requirements.filter(r => r.met).length;
     if (metCount === 0) return { level: 0, label: "", color: "" };
     if (metCount === 1) return { level: 1, label: "Weak", color: "bg-destructive" };
-    if (metCount === 2) return { level: 2, label: "Fair", color: "bg-amber-500" };
-    if (metCount === 3) return { level: 3, label: "Good", color: "bg-yellow-500" };
-    return { level: 4, label: "Strong", color: "bg-green-500" };
+    if (metCount === 2) return { level: 2, label: "Fair", color: "bg-warning" };
+    if (metCount === 3) return { level: 3, label: "Good", color: "bg-warning" };
+    return { level: 4, label: "Strong", color: "bg-success" };
   }, [requirements]);
 
   if (!password) return null;
@@ -45,9 +45,9 @@ export function PasswordStrengthIndicator({ password }: PasswordStrengthIndicato
         </div>
         {strength.label && (
           <span className={`text-xs font-medium ${
-            strength.level === 4 ? "text-green-500" :
-            strength.level === 3 ? "text-yellow-500" :
-            strength.level === 2 ? "text-amber-500" :
+            strength.level === 4 ? "text-success" :
+            strength.level === 3 ? "text-warning" :
+            strength.level === 2 ? "text-warning" :
             "text-destructive"
           }`}>
             {strength.label}
@@ -60,7 +60,7 @@ export function PasswordStrengthIndicator({ password }: PasswordStrengthIndicato
         {requirements.map((req) => (
           <div key={req.label} className="flex items-center gap-1.5 text-xs">
             {req.met ? (
-              <Check className="h-3 w-3 text-green-500" />
+              <Check className="h-3 w-3 text-success" />
             ) : (
               <X className="h-3 w-3 text-muted-foreground" />
             )}

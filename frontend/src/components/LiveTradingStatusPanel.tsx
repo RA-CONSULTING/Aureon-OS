@@ -83,7 +83,7 @@ export const LiveTradingStatusPanel: React.FC = () => {
     <Card className="bg-background/50 border-primary/20">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
-          <Radio className={`h-4 w-4 ${isStreaming ? 'text-green-400 animate-pulse' : 'text-red-400'}`} />
+          <Radio className={`h-4 w-4 ${isStreaming ? 'text-success animate-pulse' : 'text-destructive'}`} />
           Live Trading Status
         </CardTitle>
       </CardHeader>
@@ -92,9 +92,9 @@ export const LiveTradingStatusPanel: React.FC = () => {
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="flex items-center gap-2">
             {tradingReady ? (
-              <CheckCircle className="h-4 w-4 text-green-400" />
+              <CheckCircle className="h-4 w-4 text-success" />
             ) : (
-              <AlertTriangle className="h-4 w-4 text-yellow-400" />
+              <AlertTriangle className="h-4 w-4 text-warning" />
             )}
             <span className="text-muted-foreground">Trade Ready:</span>
             <Badge variant={tradingReady ? "default" : "secondary"} className="text-xs">
@@ -102,7 +102,7 @@ export const LiveTradingStatusPanel: React.FC = () => {
             </Badge>
           </div>
           <div className="flex items-center gap-2">
-            <Activity className={`h-4 w-4 ${isStreaming ? 'text-green-400' : 'text-red-400'}`} />
+            <Activity className={`h-4 w-4 ${isStreaming ? 'text-success' : 'text-destructive'}`} />
             <span className="text-muted-foreground">Data Stream:</span>
             <Badge variant={isStreaming ? "default" : "destructive"} className="text-xs">
               {isStreaming ? 'LIVE' : 'STALE'}
@@ -113,26 +113,26 @@ export const LiveTradingStatusPanel: React.FC = () => {
         {/* Probability Matrix Status */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Brain className="h-4 w-4 text-purple-400" />
+            <Brain className="h-4 w-4 text-primary" />
             Probability Matrix
           </div>
           {fusion ? (
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div className="bg-background/50 p-2 rounded border border-primary/10">
                 <div className="text-muted-foreground">6D Prob</div>
-                <div className="text-lg font-mono text-cyan-400">
+                <div className="text-lg font-mono text-primary">
                   {(fusion.probability6D * 100).toFixed(1)}%
                 </div>
               </div>
               <div className="bg-background/50 p-2 rounded border border-primary/10">
                 <div className="text-muted-foreground">HNC Prob</div>
-                <div className="text-lg font-mono text-purple-400">
+                <div className="text-lg font-mono text-primary">
                   {(fusion.probabilityHNC * 100).toFixed(1)}%
                 </div>
               </div>
               <div className="bg-background/50 p-2 rounded border border-primary/10">
                 <div className="text-muted-foreground">Fused</div>
-                <div className="text-lg font-mono text-green-400">
+                <div className="text-lg font-mono text-success">
                   {(fusion.fusedProbability * 100).toFixed(1)}%
                 </div>
               </div>
@@ -146,7 +146,7 @@ export const LiveTradingStatusPanel: React.FC = () => {
         {fusion && (
           <div className="flex items-center justify-between bg-background/50 p-2 rounded border border-primary/10">
             <div className="flex items-center gap-2">
-              <Zap className="h-4 w-4 text-yellow-400" />
+              <Zap className="h-4 w-4 text-warning" />
               <span className="text-xs text-muted-foreground">Action:</span>
             </div>
             <Badge 
@@ -165,7 +165,7 @@ export const LiveTradingStatusPanel: React.FC = () => {
         {/* Temporal Echo Status */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Timer className="h-4 w-4 text-cyan-400" />
+            <Timer className="h-4 w-4 text-primary" />
             Temporal Memory
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs">
@@ -175,7 +175,7 @@ export const LiveTradingStatusPanel: React.FC = () => {
             </div>
             <div className="bg-background/50 p-2 rounded border border-primary/10">
               <div className="text-muted-foreground">Temporal Stability</div>
-              <div className={`text-lg font-mono ${temporalStability > 0.7 ? 'text-green-400' : temporalStability > 0.4 ? 'text-yellow-400' : 'text-red-400'}`}>
+              <div className={`text-lg font-mono ${temporalStability > 0.7 ? 'text-success' : temporalStability > 0.4 ? 'text-warning' : 'text-destructive'}`}>
                 {(temporalStability * 100).toFixed(0)}%
               </div>
             </div>
@@ -185,7 +185,7 @@ export const LiveTradingStatusPanel: React.FC = () => {
         {/* Elephant Memory */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <TrendingUp className="h-4 w-4 text-pink-400" />
+            <TrendingUp className="h-4 w-4 text-primary" />
             Elephant Memory (Never Forgets)
           </div>
           <div className="grid grid-cols-3 gap-2 text-xs">
@@ -195,13 +195,13 @@ export const LiveTradingStatusPanel: React.FC = () => {
             </div>
             <div className="bg-background/50 p-2 rounded border border-primary/10">
               <div className="text-muted-foreground">Win Rate</div>
-              <div className={`text-lg font-mono ${elephantState.overallWinRate > 0.5 ? 'text-green-400' : 'text-red-400'}`}>
+              <div className={`text-lg font-mono ${elephantState.overallWinRate > 0.5 ? 'text-success' : 'text-destructive'}`}>
                 {(elephantState.overallWinRate * 100).toFixed(0)}%
               </div>
             </div>
             <div className="bg-background/50 p-2 rounded border border-primary/10">
               <div className="text-muted-foreground">Blacklisted</div>
-              <div className="text-lg font-mono text-red-400">{elephantState.blacklistedSymbols.length}</div>
+              <div className="text-lg font-mono text-destructive">{elephantState.blacklistedSymbols.length}</div>
             </div>
           </div>
         </div>

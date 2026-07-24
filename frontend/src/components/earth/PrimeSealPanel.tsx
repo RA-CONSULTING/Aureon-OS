@@ -28,8 +28,8 @@ export function PrimeSealPanel({ primeSeal, currentMarker }: Props) {
   }
   
   const sealColor = primeSeal.isLocked 
-    ? 'from-green-500/20 to-emerald-500/20 border-green-500/50' 
-    : 'from-amber-500/20 to-orange-500/20 border-amber-500/50';
+    ? 'from-success/20 to-success/20 border-success/50' 
+    : 'from-warning/20 to-warning/20 border-warning/50';
     
   const sealGlow = primeSeal.isLocked
     ? 'shadow-[0_0_30px_rgba(34,197,94,0.3)]'
@@ -41,15 +41,15 @@ export function PrimeSealPanel({ primeSeal, currentMarker }: Props) {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
             {primeSeal.isLocked ? (
-              <Lock className="w-5 h-5 text-green-500" />
+              <Lock className="w-5 h-5 text-success" />
             ) : (
-              <Unlock className="w-5 h-5 text-amber-500" />
+              <Unlock className="w-5 h-5 text-warning" />
             )}
             10-9-1 Prime Seal
           </CardTitle>
           <Badge 
             variant={primeSeal.isLocked ? "default" : "secondary"}
-            className={primeSeal.isLocked ? "bg-green-500 animate-pulse" : ""}
+            className={primeSeal.isLocked ? "bg-success animate-pulse" : ""}
           >
             {primeSeal.isLocked ? '🔒 SEALED' : '🔓 OPEN'}
           </Badge>
@@ -59,10 +59,10 @@ export function PrimeSealPanel({ primeSeal, currentMarker }: Props) {
         {/* Intent display */}
         <div className="p-4 bg-background/30 rounded-lg text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Heart className="w-5 h-5 text-pink-500" />
+            <Heart className="w-5 h-5 text-primary" />
             <span className="text-sm text-muted-foreground">Intent Broadcast</span>
           </div>
-          <div className="text-2xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+          <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary bg-clip-text text-transparent">
             "{primeSeal.intent}"
           </div>
         </div>
@@ -71,14 +71,14 @@ export function PrimeSealPanel({ primeSeal, currentMarker }: Props) {
         <div className="p-3 bg-background/30 rounded-lg">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium">Prime Coherence</span>
-            <span className={`text-xl font-bold ${primeSeal.coherence >= 0.945 ? 'text-green-400' : 'text-amber-400'}`}>
+            <span className={`text-xl font-bold ${primeSeal.coherence >= 0.945 ? 'text-success' : 'text-warning'}`}>
               {(primeSeal.coherence * 100).toFixed(1)}%
             </span>
           </div>
           <Progress value={primeSeal.coherence * 100} className="h-3" />
           <div className="flex justify-between mt-1">
             <span className="text-xs text-muted-foreground">0%</span>
-            <span className="text-xs text-green-400">Lock: 94.5%</span>
+            <span className="text-xs text-success">Lock: 94.5%</span>
             <span className="text-xs text-muted-foreground">100%</span>
           </div>
         </div>
@@ -90,15 +90,15 @@ export function PrimeSealPanel({ primeSeal, currentMarker }: Props) {
             <div className="text-2xl font-bold text-primary">{primeSeal.weights.unity}</div>
             <Sparkles className="w-4 h-4 mx-auto mt-1 text-primary" />
           </div>
-          <div className="p-3 bg-background/30 rounded-lg text-center border-2 border-violet-500/30">
+          <div className="p-3 bg-background/30 rounded-lg text-center border-2 border-primary/30">
             <div className="text-xs text-muted-foreground mb-1">Flow (9)</div>
-            <div className="text-2xl font-bold text-violet-400">{primeSeal.weights.flow}</div>
-            <Sparkles className="w-4 h-4 mx-auto mt-1 text-violet-400" />
+            <div className="text-2xl font-bold text-primary">{primeSeal.weights.flow}</div>
+            <Sparkles className="w-4 h-4 mx-auto mt-1 text-primary" />
           </div>
-          <div className="p-3 bg-background/30 rounded-lg text-center border-2 border-amber-500/30">
+          <div className="p-3 bg-background/30 rounded-lg text-center border-2 border-warning/30">
             <div className="text-xs text-muted-foreground mb-1">Anchor (1)</div>
-            <div className="text-2xl font-bold text-amber-400">{primeSeal.weights.anchor}</div>
-            <Sparkles className="w-4 h-4 mx-auto mt-1 text-amber-400" />
+            <div className="text-2xl font-bold text-warning">{primeSeal.weights.anchor}</div>
+            <Sparkles className="w-4 h-4 mx-auto mt-1 text-warning" />
           </div>
         </div>
         

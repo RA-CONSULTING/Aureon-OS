@@ -117,16 +117,16 @@ export function TradingStatusPanel() {
             Trading Gates
           </span>
           <Badge variant={tradingMode === 'live' ? 'destructive' : 'secondary'}>
-            {tradingMode === 'live' ? '🔴 LIVE' : '📝 PAPER'}
+            {tradingMode === 'live' ? ' LIVE' : ' PAPER'}
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {/* Overall Status */}
-        <div className={`p-3 rounded-lg ${allGatesPassed ? 'bg-green-500/20 border border-green-500/30' : 'bg-destructive/20 border border-destructive/30'}`}>
+        <div className={`p-3 rounded-lg ${allGatesPassed ? 'bg-success/20 border border-success/30' : 'bg-destructive/20 border border-destructive/30'}`}>
           <div className="flex items-center justify-between">
             <span className="font-semibold">
-              {allGatesPassed ? '✅ READY TO TRADE' : '⛔ GATES BLOCKED'}
+              {allGatesPassed ? ' READY TO TRADE' : ' GATES BLOCKED'}
             </span>
             <span className="text-xs text-muted-foreground">
               Last scan: {lastScanTime}
@@ -140,14 +140,14 @@ export function TradingStatusPanel() {
             <div key={idx} className="flex items-center justify-between p-2 rounded bg-muted/30">
               <div className="flex items-center gap-2">
                 {gate.passed ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-4 w-4 text-success" />
                 ) : (
                   <XCircle className="h-4 w-4 text-destructive" />
                 )}
                 <span className="text-sm">{gate.name}</span>
               </div>
               <div className="flex items-center gap-2 text-xs">
-                <span className={gate.passed ? 'text-green-500' : 'text-destructive'}>
+                <span className={gate.passed ? 'text-success' : 'text-destructive'}>
                   {gate.value}
                 </span>
                 <span className="text-muted-foreground">({gate.threshold})</span>
@@ -159,7 +159,7 @@ export function TradingStatusPanel() {
         {/* Opportunities */}
         <div className="flex items-center justify-between text-sm p-2 rounded bg-muted/30">
           <span className="flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 text-amber-500" />
+            <AlertCircle className="h-4 w-4 text-warning" />
             Opportunities Found
           </span>
           <Badge variant="outline">{opportunitiesFound}</Badge>

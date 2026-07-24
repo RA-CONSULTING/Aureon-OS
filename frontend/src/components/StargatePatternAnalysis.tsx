@@ -16,10 +16,10 @@ export function StargatePatternAnalysis() {
 
   const getOpportunityColor = (opportunity: string) => {
     switch (opportunity) {
-      case 'excellent': return 'text-green-500';
-      case 'good': return 'text-blue-500';
-      case 'moderate': return 'text-yellow-500';
-      case 'poor': return 'text-red-500';
+      case 'excellent': return 'text-success';
+      case 'good': return 'text-primary';
+      case 'moderate': return 'text-warning';
+      case 'poor': return 'text-destructive';
       default: return 'text-muted-foreground';
     }
   };

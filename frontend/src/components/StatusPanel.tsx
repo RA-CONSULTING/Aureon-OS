@@ -71,7 +71,7 @@ const StatusPanel: React.FC = () => {
       text.includes('balance too low') ||
       text.includes('waiting for')
     ) {
-      return { label: 'waiting', color: 'text-amber-300' };
+      return { label: 'waiting', color: 'text-warning' };
     }
     if (
       text.includes('simulate buy') ||
@@ -83,7 +83,7 @@ const StatusPanel: React.FC = () => {
       text.includes('would place') ||
       text.includes('simulat')
     ) {
-      return { label: 'simulating', color: 'text-sky-300' };
+      return { label: 'simulating', color: 'text-primary' };
     }
     if (
       text.includes('✅') ||
@@ -98,7 +98,7 @@ const StatusPanel: React.FC = () => {
       text.includes('market buy') ||
       text.includes('market sell')
     ) {
-      return { label: 'active', color: 'text-green-400' };
+      return { label: 'active', color: 'text-success' };
     }
     return { label: 'running', color: 'text-gray-300' };
   };
@@ -147,7 +147,7 @@ const StatusPanel: React.FC = () => {
           )}
           <div className="flex items-center gap-2">
             <button
-              className={`text-xs px-2 py-1 rounded border ${soundEnabled ? 'border-green-500 text-green-300' : 'border-gray-600 text-gray-300'}`}
+              className={`text-xs px-2 py-1 rounded border ${soundEnabled ? 'border-success text-success' : 'border-gray-600 text-gray-300'}`}
               onClick={() => setSoundEnabled((v) => !v)}
               title="Toggle threshold alert sound"
             >
@@ -163,9 +163,9 @@ const StatusPanel: React.FC = () => {
           </div>
         </div>
       </div>
-      {error && <div className="text-red-400 text-xs mb-2">{error}</div>}
+      {error && <div className="text-destructive text-xs mb-2">{error}</div>}
       {showThresholdAlert && (
-        <div className="mb-2 rounded bg-green-600/20 border border-green-500/40 text-green-200 text-xs px-3 py-2">
+        <div className="mb-2 rounded bg-success/20 border border-success/40 text-success text-xs px-3 py-2">
           Trading unlocked: balance &ge; $10 notional. Bots will start.
         </div>
       )}
@@ -185,7 +185,7 @@ const StatusPanel: React.FC = () => {
           </div>
           <div className="bg-gray-900/40 rounded p-2">
             <div className="text-gray-400 text-xs">Trading</div>
-            <div className={`text-gray-100 font-mono ${balance.canTrade ? 'text-green-400' : 'text-red-400'}`}>{balance.canTrade ? 'ENABLED' : 'DISABLED'}</div>
+            <div className={`text-gray-100 font-mono ${balance.canTrade ? 'text-success' : 'text-destructive'}`}>{balance.canTrade ? 'ENABLED' : 'DISABLED'}</div>
           </div>
         </div>
       ) : (

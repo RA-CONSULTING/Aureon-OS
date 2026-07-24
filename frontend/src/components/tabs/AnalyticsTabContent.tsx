@@ -49,7 +49,7 @@ export function AnalyticsTabContent({ globalState }: AnalyticsTabContentProps) {
             </div>
             <div className={cn(
               "text-2xl font-mono font-bold",
-              totalPnl >= 0 ? "text-green-400" : "text-red-400"
+              totalPnl >= 0 ? "text-success" : "text-destructive"
             )}>
               {totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)}
             </div>
@@ -64,7 +64,7 @@ export function AnalyticsTabContent({ globalState }: AnalyticsTabContentProps) {
             </div>
             <div className={cn(
               "text-2xl font-mono font-bold",
-              winRate >= 51 ? "text-green-400" : "text-yellow-400"
+              winRate >= 51 ? "text-success" : "text-warning"
             )}>
               {winRate.toFixed(1)}%
             </div>
@@ -72,7 +72,7 @@ export function AnalyticsTabContent({ globalState }: AnalyticsTabContentProps) {
               value={winRate} 
               className={cn(
                 "h-1 mt-2",
-                winRate >= 51 ? "[&>div]:bg-green-500" : "[&>div]:bg-yellow-500"
+                winRate >= 51 ? "[&>div]:bg-success" : "[&>div]:bg-warning"
               )}
             />
           </CardContent>
@@ -88,8 +88,8 @@ export function AnalyticsTabContent({ globalState }: AnalyticsTabContentProps) {
               {totalTrades}
             </div>
             <div className="flex gap-2 mt-2 text-xs">
-              <span className="text-green-400">W: {winningTrades}</span>
-              <span className="text-red-400">L: {losingTrades}</span>
+              <span className="text-success">W: {winningTrades}</span>
+              <span className="text-destructive">L: {losingTrades}</span>
             </div>
           </CardContent>
         </Card>
@@ -102,7 +102,7 @@ export function AnalyticsTabContent({ globalState }: AnalyticsTabContentProps) {
             </div>
             <div className={cn(
               "text-2xl font-mono font-bold",
-              expectancy >= 0 ? "text-green-400" : "text-red-400"
+              expectancy >= 0 ? "text-success" : "text-destructive"
             )}>
               ${expectancy.toFixed(2)}
             </div>
@@ -124,11 +124,11 @@ export function AnalyticsTabContent({ globalState }: AnalyticsTabContentProps) {
           <CardContent className="space-y-3">
             <div className="flex justify-between text-xs">
               <span className="text-muted-foreground">Average Win</span>
-              <span className="font-mono text-green-400">+${avgWin.toFixed(2)}</span>
+              <span className="font-mono text-success">+${avgWin.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-muted-foreground">Average Loss</span>
-              <span className="font-mono text-red-400">${avgLoss.toFixed(2)}</span>
+              <span className="font-mono text-destructive">${avgLoss.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-muted-foreground">Risk/Reward</span>
@@ -162,7 +162,7 @@ export function AnalyticsTabContent({ globalState }: AnalyticsTabContentProps) {
               <span className="text-muted-foreground">Current Coherence</span>
               <span className={cn(
                 "font-mono",
-                coherence >= 0.7 ? "text-green-400" : "text-yellow-400"
+                coherence >= 0.7 ? "text-success" : "text-warning"
               )}>
                 {coherence.toFixed(3)}
               </span>
@@ -196,9 +196,9 @@ export function AnalyticsTabContent({ globalState }: AnalyticsTabContentProps) {
                 >
                   <div className="flex items-center gap-3">
                     {trade.pnl >= 0 ? (
-                      <TrendingUp className="h-4 w-4 text-green-400" />
+                      <TrendingUp className="h-4 w-4 text-success" />
                     ) : (
-                      <TrendingDown className="h-4 w-4 text-red-400" />
+                      <TrendingDown className="h-4 w-4 text-destructive" />
                     )}
                     <Badge variant={trade.side === 'BUY' ? 'default' : 'secondary'}>
                       {trade.side}
@@ -209,7 +209,7 @@ export function AnalyticsTabContent({ globalState }: AnalyticsTabContentProps) {
                     <span className="text-muted-foreground">Qty: {trade.quantity}</span>
                     <span className={cn(
                       "font-mono font-bold",
-                      trade.pnl >= 0 ? "text-green-400" : "text-red-400"
+                      trade.pnl >= 0 ? "text-success" : "text-destructive"
                     )}>
                       {trade.pnl >= 0 ? '+' : ''}${trade.pnl.toFixed(2)}
                     </span>
@@ -234,39 +234,39 @@ export function AnalyticsTabContent({ globalState }: AnalyticsTabContentProps) {
             <div>
               <div className="flex justify-between text-xs mb-1">
                 <span className="text-muted-foreground">Win Rate (Target: 51%+)</span>
-                <span className={cn("font-mono", winRate >= 51 ? "text-green-400" : "text-red-400")}>
+                <span className={cn("font-mono", winRate >= 51 ? "text-success" : "text-destructive")}>
                   {winRate.toFixed(1)}%
                 </span>
               </div>
               <Progress 
                 value={winRate} 
-                className={cn("h-2", winRate >= 51 ? "[&>div]:bg-green-500" : "[&>div]:bg-red-500")}
+                className={cn("h-2", winRate >= 51 ? "[&>div]:bg-success" : "[&>div]:bg-destructive")}
               />
             </div>
             
             <div>
               <div className="flex justify-between text-xs mb-1">
                 <span className="text-muted-foreground">Coherence (Target: 0.70+)</span>
-                <span className={cn("font-mono", coherence >= 0.7 ? "text-green-400" : "text-yellow-400")}>
+                <span className={cn("font-mono", coherence >= 0.7 ? "text-success" : "text-warning")}>
                   {coherence.toFixed(3)}
                 </span>
               </div>
               <Progress 
                 value={coherence * 100} 
-                className={cn("h-2", coherence >= 0.7 ? "[&>div]:bg-green-500" : "[&>div]:bg-yellow-500")}
+                className={cn("h-2", coherence >= 0.7 ? "[&>div]:bg-success" : "[&>div]:bg-warning")}
               />
             </div>
             
             <div>
               <div className="flex justify-between text-xs mb-1">
                 <span className="text-muted-foreground">Net Profit</span>
-                <span className={cn("font-mono", totalPnl >= 0 ? "text-green-400" : "text-red-400")}>
+                <span className={cn("font-mono", totalPnl >= 0 ? "text-success" : "text-destructive")}>
                   {totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)}
                 </span>
               </div>
               <Progress 
                 value={totalPnl >= 0 ? Math.min(totalPnl / 100, 100) : 0} 
-                className={cn("h-2", totalPnl >= 0 ? "[&>div]:bg-green-500" : "[&>div]:bg-red-500")}
+                className={cn("h-2", totalPnl >= 0 ? "[&>div]:bg-success" : "[&>div]:bg-destructive")}
               />
             </div>
           </div>

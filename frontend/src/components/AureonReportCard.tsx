@@ -8,9 +8,9 @@ interface AureonReportCardProps {
 
 const SignalDisplay: React.FC<{ status: 'Blue' | 'Gold' | 'Red' | 'Unknown' }> = ({ status }) => {
     const statusConfig = {
-        'Blue': { color: 'bg-sky-500', text: 'NEUTRAL', description: "No significant LHEs detected. Market is in a low-conviction phase." },
-        'Gold': { color: 'bg-amber-400', text: 'WATCH', description: "Anomalies detected. A Lighthouse Event may be forming. Risk is moderate." },
-        'Red': { color: 'bg-red-500', text: 'ACTION', description: "High-confidence LHE triggered. A significant market move is imminent." },
+        'Blue': { color: 'bg-primary', text: 'NEUTRAL', description: "No significant LHEs detected. Market is in a low-conviction phase." },
+        'Gold': { color: 'bg-warning', text: 'WATCH', description: "Anomalies detected. A Lighthouse Event may be forming. Risk is moderate." },
+        'Red': { color: 'bg-destructive', text: 'ACTION', description: "High-confidence LHE triggered. A significant market move is imminent." },
         'Unknown': { color: 'bg-gray-600', text: 'CALIBRATING...', description: "Awaiting sufficient data to determine market state." },
     };
     const config = statusConfig[status];
@@ -25,7 +25,7 @@ const SignalDisplay: React.FC<{ status: 'Blue' | 'Gold' | 'Red' | 'Unknown' }> =
 
 const MetricDisplay: React.FC<{ label: string; value: string | number; tooltip: string }> = ({ label, value, tooltip }) => (
     <div title={tooltip} className="bg-gray-900/50 p-3 rounded-md text-center flex-1">
-        <p className="text-2xl font-bold text-amber-300">{value}</p>
+        <p className="text-2xl font-bold text-warning">{value}</p>
         <p className="text-xs text-gray-400 mt-1 truncate">{label}</p>
     </div>
 );

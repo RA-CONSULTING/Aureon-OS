@@ -73,7 +73,7 @@ export const AurisAnalytics = () => {
             <CardTitle className="text-sm">Symbol Processing</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-emerald-500">
+            <div className="text-2xl font-bold text-success">
               {(symbolProcessing * 100).toFixed(1)}%
             </div>
             <Progress value={symbolProcessing * 100} className="mt-2" />
@@ -85,7 +85,7 @@ export const AurisAnalytics = () => {
             <CardTitle className="text-sm">Quantum Link</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-violet-500">
+            <div className="text-2xl font-bold text-primary">
               {(quantumEntanglement * 100).toFixed(1)}%
             </div>
             <Progress value={quantumEntanglement * 100} className="mt-2" />
@@ -97,7 +97,7 @@ export const AurisAnalytics = () => {
             <CardTitle className="text-sm">Data Integrity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-500">
+            <div className="text-2xl font-bold text-warning">
               {(dataIntegrity * 100).toFixed(1)}%
             </div>
             <Progress value={dataIntegrity * 100} className="mt-2" />
@@ -149,7 +149,7 @@ export const AurisAnalytics = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Throughput</span>
-                <span className="font-bold text-emerald-500">{streamData.throughput.toFixed(1)} MB/s</span>
+                <span className="font-bold text-success">{streamData.throughput.toFixed(1)} MB/s</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Latency</span>
@@ -157,7 +157,7 @@ export const AurisAnalytics = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Systems Online</span>
-                <span className="font-bold text-violet-500">{systemsOnline}</span>
+                <span className="font-bold text-primary">{systemsOnline}</span>
               </div>
             </div>
           </CardContent>

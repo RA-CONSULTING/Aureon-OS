@@ -268,8 +268,8 @@ export default function LiveValidationDashboard() {
               <div 
                 key={idx} 
                 className={`flex items-center justify-between p-3 rounded-lg border ${
-                  phase.active ? 'bg-blue-50 border-blue-200' : 
-                  phase.complete ? 'bg-green-50 border-green-200' : 
+                  phase.active ? 'bg-primary border-primary' : 
+                  phase.complete ? 'bg-success border-success' : 
                   'bg-gray-50 border-gray-200'
                 }`}
               >
@@ -295,7 +295,7 @@ export default function LiveValidationDashboard() {
           <CardContent>
             <div className="grid grid-cols-4 gap-2">
               {snapshots.map((timestamp, idx) => (
-                <div key={idx} className="p-2 bg-green-50 rounded text-sm text-center">
+                <div key={idx} className="p-2 bg-success rounded text-sm text-center">
                   Snap {idx + 1}
                 </div>
               ))}

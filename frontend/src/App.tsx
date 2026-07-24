@@ -1473,22 +1473,22 @@ const screenIcons: Record<string, typeof Activity> = {
 };
 
 const statusTone: Record<string, string> = {
-  wired: "border-green-500/30 bg-green-500/10 text-green-300",
-  partial: "border-blue-500/30 bg-blue-500/10 text-blue-300",
-  orphaned: "border-yellow-500/30 bg-yellow-500/10 text-yellow-300",
-  legacy: "border-orange-500/30 bg-orange-500/10 text-orange-300",
-  generated_output: "border-cyan-500/30 bg-cyan-500/10 text-cyan-300",
-  security_blocker: "border-red-500/30 bg-red-500/10 text-red-300",
+  wired: "border-success/30 bg-success/10 text-success",
+  partial: "border-primary/30 bg-primary/10 text-primary",
+  orphaned: "border-warning/30 bg-warning/10 text-warning",
+  legacy: "border-warning/30 bg-warning/10 text-warning",
+  generated_output: "border-primary/30 bg-primary/10 text-primary",
+  security_blocker: "border-destructive/30 bg-destructive/10 text-destructive",
   unknown: "border-border bg-muted/20 text-muted-foreground",
 };
 
 const safetyTone: Record<string, string> = {
-  observation: "border-green-500/30 bg-green-500/10 text-green-300",
-  credential_or_auth_boundary: "border-yellow-500/30 bg-yellow-500/10 text-yellow-300",
-  live_trading_boundary: "border-red-500/30 bg-red-500/10 text-red-300",
-  payment_or_kyc_boundary: "border-red-500/30 bg-red-500/10 text-red-300",
-  manual_filing_boundary: "border-orange-500/30 bg-orange-500/10 text-orange-300",
-  admin_or_tenant_boundary: "border-yellow-500/30 bg-yellow-500/10 text-yellow-300",
+  observation: "border-success/30 bg-success/10 text-success",
+  credential_or_auth_boundary: "border-warning/30 bg-warning/10 text-warning",
+  live_trading_boundary: "border-destructive/30 bg-destructive/10 text-destructive",
+  payment_or_kyc_boundary: "border-destructive/30 bg-destructive/10 text-destructive",
+  manual_filing_boundary: "border-warning/30 bg-warning/10 text-warning",
+  admin_or_tenant_boundary: "border-warning/30 bg-warning/10 text-warning",
 };
 
 type DashboardTabId = "overview" | "repo-map" | "live-ops" | "coding" | "trading" | "security" | "inventory" | "agents" | "evidence";
@@ -2165,13 +2165,13 @@ function MetricTile({
 
 function SecurityBlockerCard({ blocker }: { blocker: SecurityBlockerWorkOrder }) {
   return (
-    <Card className="border-yellow-500/30 bg-yellow-500/10">
+    <Card className="border-warning/30 bg-warning/10">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center gap-2 text-base">
-          <Lock className="h-4 w-4 text-yellow-200" />
+          <Lock className="h-4 w-4 text-warning" />
           {blocker.title}
-          <Pill label={blocker.priority} tone="border-yellow-500/40 bg-yellow-500/15 text-yellow-100" />
-          <Pill label={blocker.status} tone="border-red-500/35 bg-red-500/10 text-red-200" />
+          <Pill label={blocker.priority} tone="border-warning/40 bg-warning/15 text-warning" />
+          <Pill label={blocker.status} tone="border-destructive/35 bg-destructive/10 text-destructive" />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -2184,7 +2184,7 @@ function SecurityBlockerCard({ blocker }: { blocker: SecurityBlockerWorkOrder })
           <div className="rounded-md border border-border/40 bg-black/25 p-3">
             <div className="text-[11px] uppercase text-muted-foreground">target screen</div>
             <div className="mt-1 text-sm font-semibold">{blocker.target}</div>
-            <div className="mt-2 text-xs text-yellow-100/80">{blocker.reason}</div>
+            <div className="mt-2 text-xs text-warning/80">{blocker.reason}</div>
           </div>
           <div className="rounded-md border border-border/40 bg-black/25 p-3">
             <div className="text-[11px] uppercase text-muted-foreground">next action</div>
@@ -2193,7 +2193,7 @@ function SecurityBlockerCard({ blocker }: { blocker: SecurityBlockerWorkOrder })
         </div>
         <div className="flex flex-wrap gap-2">
           {blocker.boundaries.map((boundary) => (
-            <Pill key={boundary} label={boundary} tone="border-yellow-500/30 bg-yellow-500/10 text-yellow-100" />
+            <Pill key={boundary} label={boundary} tone="border-warning/30 bg-warning/10 text-warning" />
           ))}
         </div>
       </CardContent>
@@ -2203,11 +2203,11 @@ function SecurityBlockerCard({ blocker }: { blocker: SecurityBlockerWorkOrder })
 
 function SaaSCredentialManagementPanel({ comparison }: { comparison: HNCPacketSecurityComparison | null }) {
   return (
-    <section className="space-y-4 rounded-md border border-green-500/30 bg-green-500/5 p-4">
+    <section className="space-y-4 rounded-md border border-success/30 bg-success/5 p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 text-base font-semibold">
-            <Lock className="h-4 w-4 text-green-300" />
+            <Lock className="h-4 w-4 text-success" />
             Secure exchange key management
           </h2>
           <p className="mt-1 max-w-4xl text-sm text-muted-foreground">
@@ -2216,8 +2216,8 @@ function SaaSCredentialManagementPanel({ comparison }: { comparison: HNCPacketSe
         </div>
         <div className="flex flex-wrap gap-2">
           <Pill label="add or update keys" tone={statusTone.wired} />
-          <Pill label="stored values hidden" tone="border-green-500/30 bg-green-500/10 text-green-200" />
-          <Pill label="withdrawals must stay disabled" tone="border-yellow-500/30 bg-yellow-500/10 text-yellow-100" />
+          <Pill label="stored values hidden" tone="border-success/30 bg-success/10 text-success" />
+          <Pill label="withdrawals must stay disabled" tone="border-warning/30 bg-warning/10 text-warning" />
         </div>
       </div>
       <HNCPacketSecurityComparisonPanel comparison={comparison} />
@@ -2233,11 +2233,11 @@ function HNCPacketSecurityComparisonPanel({ comparison }: { comparison: HNCPacke
     .sort((a, b) => asNumber(b.score) - asNumber(a.score))
     .slice(0, 4);
   return (
-    <Card className="border-cyan-500/30 bg-cyan-500/5">
+    <Card className="border-primary/30 bg-primary/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-cyan-300" />
+            <ShieldCheck className="h-4 w-4 text-primary" />
             HNC packet security comparison
           </span>
           <Pill
@@ -2297,18 +2297,18 @@ function CapitalEcosystemIntelligencePanel({ ecosystem }: { ecosystem: CapitalEc
   const ready = String(ecosystem?.status || "").includes("ready") && blockers.length === 0;
 
   return (
-    <Card className="border-sky-500/30 bg-sky-500/5">
+    <Card className="border-primary/30 bg-primary/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <LineChart className="h-4 w-4 text-sky-300" />
+            <LineChart className="h-4 w-4 text-primary" />
             Capital Ecosystem Intelligence
           </span>
           <div className="flex flex-wrap gap-1">
             <Pill label={ready ? "ecosystem ready" : "ecosystem attention"} tone={ready ? statusTone.wired : statusTone.orphaned} />
-            <Pill label={`${formatCompact(summary.active_watchlist_count)}/${formatCompact(summary.active_watchlist_limit || 40)} active`} tone="border-sky-500/30 bg-sky-500/10 text-sky-100" />
+            <Pill label={`${formatCompact(summary.active_watchlist_count)}/${formatCompact(summary.active_watchlist_limit || 40)} active`} tone="border-primary/30 bg-primary/10 text-primary" />
             <Pill label={`${formatCompact(summary.bench_watchlist_count)}/${formatCompact(summary.bench_watchlist_limit || 100)} bench`} tone="border-border bg-muted/20 text-muted-foreground" />
-            <Pill label="/aureon_capital_ecosystem_intelligence_company.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+            <Pill label="/aureon_capital_ecosystem_intelligence_company.json" tone="border-primary/30 bg-primary/10 text-primary" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -2326,7 +2326,7 @@ function CapitalEcosystemIntelligencePanel({ ecosystem }: { ecosystem: CapitalEc
           ].map(([label, value]) => (
             <div key={String(label)} className="rounded-md border border-border/40 bg-black/20 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">{String(label)}</div>
-              <div className="mt-1 font-mono text-sm font-semibold text-sky-100">
+              <div className="mt-1 font-mono text-sm font-semibold text-primary">
                 {typeof value === "number" ? formatCompact(value) : String(value ?? "0")}
               </div>
             </div>
@@ -2337,14 +2337,14 @@ function CapitalEcosystemIntelligencePanel({ ecosystem }: { ecosystem: CapitalEc
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">Top velocity candidates</div>
-              <Pill label="fast profit velocity" tone="border-sky-500/30 bg-sky-500/10 text-sky-100" />
+              <Pill label="fast profit velocity" tone="border-primary/30 bg-primary/10 text-primary" />
             </div>
             <div className="grid gap-2 md:grid-cols-2">
               {topCandidates.length ? topCandidates.slice(0, 8).map((item) => (
                 <div key={String(item.candidate_id || item.symbol)} className="rounded-md border border-border/40 bg-muted/10 px-3 py-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium">{String(item.symbol || item.epic || "capital")}</span>
-                    <span className="font-mono text-sky-100">{formatCompact(item.fast_profit_velocity_score)}</span>
+                    <span className="font-mono text-primary">{formatCompact(item.fast_profit_velocity_score)}</span>
                   </div>
                   <div className="mt-1 truncate text-muted-foreground">
                     {String(item.side || "WATCH")} / {String(item.asset_class || "cfd")} / spread {formatCompact(item.spread_pct)}
@@ -2464,18 +2464,18 @@ function CapitalThreePMissionPanel({
   const readyNow = asNumber(liveGateSummary.ready_now_candidate_count);
 
   return (
-    <Card className="border-lime-500/30 bg-lime-500/5">
+    <Card className="border-success/30 bg-success/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <Gauge className="h-4 w-4 text-lime-300" />
+            <Gauge className="h-4 w-4 text-success" />
             Capital 3p Mission
           </span>
           <div className="flex flex-wrap gap-1">
-            <Pill label={`3p floor GBP ${formatCompact(threePGoal)}`} tone="border-lime-500/30 bg-lime-500/10 text-lime-100" />
+            <Pill label={`3p floor GBP ${formatCompact(threePGoal)}`} tone="border-success/30 bg-success/10 text-success" />
             <Pill label={liveArmed ? "live gates armed" : "live gates held"} tone={liveArmed ? statusTone.wired : statusTone.orphaned} />
             <Pill label={`${formatCompact(readyNow)} ready now`} tone={readyNow ? statusTone.wired : statusTone.orphaned} />
-            <Pill label="read-only evidence" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+            <Pill label="read-only evidence" tone="border-primary/30 bg-primary/10 text-primary" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -2496,7 +2496,7 @@ function CapitalThreePMissionPanel({
           ].map(([label, value]) => (
             <div key={String(label)} className="rounded-md border border-border/40 bg-black/20 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">{String(label)}</div>
-              <div className="mt-1 font-mono text-sm font-semibold text-lime-100">
+              <div className="mt-1 font-mono text-sm font-semibold text-success">
                 {typeof value === "number" ? formatCompact(value) : String(value ?? "0")}
               </div>
             </div>
@@ -2507,14 +2507,14 @@ function CapitalThreePMissionPanel({
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">Top 3p-eligible candidates</div>
-              <Pill label="Capital only" tone="border-lime-500/30 bg-lime-500/10 text-lime-100" />
+              <Pill label="Capital only" tone="border-success/30 bg-success/10 text-success" />
             </div>
             <div className="grid gap-2 md:grid-cols-2">
               {netRows.length ? netRows.slice(0, 8).map((item) => (
                 <div key={String(item.candidate_id || item.route_key || item.symbol)} className="rounded-md border border-border/40 bg-muted/10 px-3 py-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium">{String(item.symbol || item.epic || "capital")}</span>
-                    <span className="font-mono text-lime-100">{formatCompact(item.expected_net_revenue)}</span>
+                    <span className="font-mono text-success">{formatCompact(item.expected_net_revenue)}</span>
                   </div>
                   <div className="mt-1 truncate text-muted-foreground">
                     {String(item.side || "WATCH")} / 3p {String(item.three_p_floor_passed ?? "unknown")} / route {String(item.route_key || "pending")}
@@ -2637,18 +2637,18 @@ function CapitalThreePLiveExecutionCertificationPanel({ audit }: { audit: Capita
   const rowBlockers = (value: unknown) => (Array.isArray(value) ? value.map((item) => String(item)).filter(Boolean) : []);
 
   return (
-    <Card className="border-green-500/30 bg-green-500/5">
+    <Card className="border-success/30 bg-success/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-green-300" />
+            <ShieldCheck className="h-4 w-4 text-success" />
             3p Live Execution Certification
           </span>
           <div className="flex flex-wrap gap-1">
             <Pill label={statusLabel} tone={ready ? statusTone.wired : statusTone.orphaned} />
             <Pill label={`${formatCompact(summary.ready_for_intent_count)} ready for intent`} tone={summary.ready_for_intent_count ? statusTone.wired : statusTone.orphaned} />
-            <Pill label={`${formatCompact(summary.net_positive_candidate_count)} 3p candidates`} tone="border-green-500/30 bg-green-500/10 text-green-100" />
-            <Pill label="/aureon_capital_3p_live_execution_certification_audit.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+            <Pill label={`${formatCompact(summary.net_positive_candidate_count)} 3p candidates`} tone="border-success/30 bg-success/10 text-success" />
+            <Pill label="/aureon_capital_3p_live_execution_certification_audit.json" tone="border-primary/30 bg-primary/10 text-primary" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -2668,7 +2668,7 @@ function CapitalThreePLiveExecutionCertificationPanel({ audit }: { audit: Capita
           ].map(([label, value]) => (
             <div key={String(label)} className="rounded-md border border-border/40 bg-black/20 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">{String(label)}</div>
-              <div className="mt-1 font-mono text-sm font-semibold text-green-100">
+              <div className="mt-1 font-mono text-sm font-semibold text-success">
                 {typeof value === "number" ? formatCompact(value) : String(value ?? "0")}
               </div>
             </div>
@@ -2679,7 +2679,7 @@ function CapitalThreePLiveExecutionCertificationPanel({ audit }: { audit: Capita
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">Why not live now</div>
-              <Pill label="existing executor path only" tone="border-green-500/30 bg-green-500/10 text-green-100" />
+              <Pill label="existing executor path only" tone="border-success/30 bg-success/10 text-success" />
             </div>
             <div className="grid gap-2 md:grid-cols-2">
               {rows.length ? rows.slice(0, 8).map((item) => {
@@ -2688,7 +2688,7 @@ function CapitalThreePLiveExecutionCertificationPanel({ audit }: { audit: Capita
                   <div key={String(item.candidate_id || item.route_key || item.symbol)} className="rounded-md border border-border/40 bg-muted/10 px-3 py-2 text-xs">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium">{String(item.symbol || item.epic || "capital")}</span>
-                      <span className="font-mono text-green-100">{formatCompact(item.expected_net_revenue)}</span>
+                      <span className="font-mono text-success">{formatCompact(item.expected_net_revenue)}</span>
                     </div>
                     <div className="mt-1 truncate text-muted-foreground">
                       {String(item.side || "WATCH")} / {String(item.execution_state || "blocked before intent").replace(/_/g, " ")}
@@ -2769,18 +2769,18 @@ function CapitalThreePBlockerBurndownPanel({ audit }: { audit: CapitalThreePBloc
   const rowBlockers = (value: unknown) => (Array.isArray(value) ? value.map((item) => String(item)).filter(Boolean) : []);
 
   return (
-    <Card className="border-amber-500/30 bg-amber-500/5">
+    <Card className="border-warning/30 bg-warning/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-amber-300" />
+            <AlertTriangle className="h-4 w-4 text-warning" />
             3p Blocker Burn-Down
           </span>
           <div className="flex flex-wrap gap-1">
             <Pill label={statusLabel} tone={ready ? statusTone.wired : statusTone.security_blocker} />
             <Pill label={`${formatCompact(summary.ready_for_capital_intent_count)} ready`} tone={summary.ready_for_capital_intent_count ? statusTone.wired : statusTone.orphaned} />
             <Pill label={`${formatCompact(summary.blocker_count)} blockers`} tone={summary.blocker_count ? statusTone.security_blocker : statusTone.wired} />
-            <Pill label="/aureon_capital_3p_blocker_burndown_audit.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+            <Pill label="/aureon_capital_3p_blocker_burndown_audit.json" tone="border-primary/30 bg-primary/10 text-primary" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -2800,7 +2800,7 @@ function CapitalThreePBlockerBurndownPanel({ audit }: { audit: CapitalThreePBloc
           ].map(([label, value]) => (
             <div key={String(label)} className="rounded-md border border-border/40 bg-black/20 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">{String(label)}</div>
-              <div className="mt-1 font-mono text-sm font-semibold text-amber-100">
+              <div className="mt-1 font-mono text-sm font-semibold text-warning">
                 {typeof value === "number" ? formatCompact(value) : String(value ?? "0")}
               </div>
             </div>
@@ -2811,7 +2811,7 @@ function CapitalThreePBlockerBurndownPanel({ audit }: { audit: CapitalThreePBloc
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">Capital candidate burn-down</div>
-              <Pill label="Capital executor only" tone="border-amber-500/30 bg-amber-500/10 text-amber-100" />
+              <Pill label="Capital executor only" tone="border-warning/30 bg-warning/10 text-warning" />
             </div>
             <div className="grid gap-2 md:grid-cols-2">
               {rows.length ? rows.slice(0, 8).map((item) => {
@@ -2820,7 +2820,7 @@ function CapitalThreePBlockerBurndownPanel({ audit }: { audit: CapitalThreePBloc
                   <div key={String(item.candidate_id || item.route_key || item.symbol)} className="rounded-md border border-border/40 bg-muted/10 px-3 py-2 text-xs">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium">{String(item.symbol || item.epic || "capital")}</span>
-                      <span className="font-mono text-amber-100">{formatCompact(item.expected_net_revenue)}</span>
+                      <span className="font-mono text-warning">{formatCompact(item.expected_net_revenue)}</span>
                     </div>
                     <div className="mt-1 truncate text-muted-foreground">
                       {String(item.side || "WATCH")} / {String(item.route_key || "route pending")}
@@ -2884,10 +2884,10 @@ function CapitalThreePBlockerBurndownPanel({ audit }: { audit: CapitalThreePBloc
             <div className="text-xs uppercase text-muted-foreground">External route leak evidence</div>
             <div className="grid gap-2 md:grid-cols-3">
               {externalRows.filter((row) => String(row.status || "").includes("leak")).slice(0, 6).map((item, index) => (
-                <div key={`${String(item.route_key || item.venue || "external")}-${index}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                <div key={`${String(item.route_key || item.venue || "external")}-${index}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium">{String(item.venue || "external")}</span>
-                    <span className="font-mono text-red-100">{String(item.leak_type || "leak").replace(/_/g, " ")}</span>
+                    <span className="font-mono text-destructive">{String(item.leak_type || "leak").replace(/_/g, " ")}</span>
                   </div>
                   <div className="mt-1 truncate text-muted-foreground">{String(item.route_key || item.symbol || "route missing")}</div>
                   {item.reason ? <div className="mt-1 text-muted-foreground">{String(item.reason)}</div> : null}
@@ -2923,18 +2923,18 @@ function PerformanceReadinessPanel({ audit }: { audit: PerformanceReadinessAudit
   const allScriptsWired = Boolean(summary.script_count && summary.scripts_wired_count === summary.script_count);
 
   return (
-    <Card className="border-sky-500/30 bg-sky-500/5">
+    <Card className="border-primary/30 bg-primary/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <Gauge className="h-4 w-4 text-sky-300" />
+            <Gauge className="h-4 w-4 text-primary" />
             Performance Readiness
           </span>
           <div className="flex flex-wrap gap-1">
             <Pill label={statusLabel} tone={ready ? statusTone.wired : statusTone.orphaned} />
             <Pill label={`${formatCompact(summary.scripts_wired_count)}/${formatCompact(summary.script_count)} scripts`} tone={allScriptsWired ? statusTone.wired : statusTone.orphaned} />
             <Pill label={summary.no_broker_mutation ? "no broker mutation" : "mutation check attention"} tone={summary.no_broker_mutation ? statusTone.wired : statusTone.security_blocker} />
-            <Pill label="/aureon_performance_readiness_audit.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+            <Pill label="/aureon_performance_readiness_audit.json" tone="border-primary/30 bg-primary/10 text-primary" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -2954,7 +2954,7 @@ function PerformanceReadinessPanel({ audit }: { audit: PerformanceReadinessAudit
           ].map(([label, value]) => (
             <div key={String(label)} className="rounded-md border border-border/40 bg-black/20 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">{String(label)}</div>
-              <div className="mt-1 font-mono text-sm font-semibold text-sky-100">
+              <div className="mt-1 font-mono text-sm font-semibold text-primary">
                 {typeof value === "number" ? formatCompact(value) : String(value ?? "0")}
               </div>
             </div>
@@ -2965,7 +2965,7 @@ function PerformanceReadinessPanel({ audit }: { audit: PerformanceReadinessAudit
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">Latest diagnostic scripts</div>
-              <Pill label="organism validation domain" tone="border-sky-500/30 bg-sky-500/10 text-sky-100" />
+              <Pill label="organism validation domain" tone="border-primary/30 bg-primary/10 text-primary" />
             </div>
             <div className="grid gap-2 md:grid-cols-2">
               {scriptRows.length ? scriptRows.map((row) => {
@@ -3003,7 +3003,7 @@ function PerformanceReadinessPanel({ audit }: { audit: PerformanceReadinessAudit
                 <div key={String(row.key)} className="rounded-md border border-border/40 bg-black/20 px-3 py-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate uppercase text-muted-foreground">{String(row.key).replace(/_/g, " ")}</span>
-                    <span className={row.present ? "font-mono text-sky-100" : "font-mono text-amber-100"}>{row.present ? "present" : "missing"}</span>
+                    <span className={row.present ? "font-mono text-primary" : "font-mono text-warning"}>{row.present ? "present" : "missing"}</span>
                   </div>
                   <div className="mt-1 truncate text-muted-foreground">{String(row.path || "")}</div>
                 </div>
@@ -3036,18 +3036,18 @@ function AureonMurgeUnityPanel({ bridge }: { bridge: AureonMurgeUnityBridge | nu
   const statusLabel = String(bridge?.status || "unity bridge pending").replace(/_/g, " ");
 
   return (
-    <Card className="border-cyan-500/30 bg-cyan-500/5">
+    <Card className="border-primary/30 bg-primary/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <Server className="h-4 w-4 text-cyan-300" />
+            <Server className="h-4 w-4 text-primary" />
             Aureon MURGE Unity Bridge
           </span>
           <div className="flex flex-wrap gap-1">
             <Pill label={statusLabel} tone={ready ? statusTone.wired : statusTone.orphaned} />
-            <Pill label={`${formatCompact(summary.staged_track_count)}/${formatCompact(summary.track_count)} tracks staged`} tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-100" />
+            <Pill label={`${formatCompact(summary.staged_track_count)}/${formatCompact(summary.track_count)} tracks staged`} tone="border-primary/30 bg-primary/10 text-primary" />
             <Pill label={`${formatCompact(summary.collision_count)} collisions`} tone={summary.collision_count ? statusTone.security_blocker : statusTone.wired} />
-            <Pill label="/aureon_murge_unity_bridge.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+            <Pill label="/aureon_murge_unity_bridge.json" tone="border-primary/30 bg-primary/10 text-primary" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -3063,7 +3063,7 @@ function AureonMurgeUnityPanel({ bridge }: { bridge: AureonMurgeUnityBridge | nu
           ].map(([label, value]) => (
             <div key={String(label)} className="rounded-md border border-border/40 bg-black/20 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">{String(label)}</div>
-              <div className="mt-1 font-mono text-sm font-semibold text-cyan-100">
+              <div className="mt-1 font-mono text-sm font-semibold text-primary">
                 {typeof value === "number" ? formatCompact(value) : String(value ?? "0")}
               </div>
             </div>
@@ -3074,7 +3074,7 @@ function AureonMurgeUnityPanel({ bridge }: { bridge: AureonMurgeUnityBridge | nu
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">Unity tracks</div>
-              <Pill label="namespaced, no overwrite" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-100" />
+              <Pill label="namespaced, no overwrite" tone="border-primary/30 bg-primary/10 text-primary" />
             </div>
             <div className="grid gap-2 md:grid-cols-2">
               {tracks.length ? tracks.slice(0, 8).map((row) => (
@@ -3097,7 +3097,7 @@ function AureonMurgeUnityPanel({ bridge }: { bridge: AureonMurgeUnityBridge | nu
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">Adapter relation</div>
-              <Pill label={`${formatCompact(adapters.length)} rows`} tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-100" />
+              <Pill label={`${formatCompact(adapters.length)} rows`} tone="border-primary/30 bg-primary/10 text-primary" />
             </div>
             <div className="grid gap-2">
               {adapters.length ? adapters.slice(0, 6).map((row) => (
@@ -3151,7 +3151,7 @@ function AureonMurgeUnityPanel({ bridge }: { bridge: AureonMurgeUnityBridge | nu
             <div className="grid gap-2">
               {actions.slice(0, 5).map((row) => (
                 <div key={String(row.id)} className="rounded-md border border-border/40 bg-black/20 px-3 py-2 text-xs">
-                  <div className="font-mono text-cyan-100">{String(row.priority || "P?")} {String(row.id || "")}</div>
+                  <div className="font-mono text-primary">{String(row.priority || "P?")} {String(row.id || "")}</div>
                   <div className="mt-1 text-muted-foreground">{String(row.action || "wire next adapter")}</div>
                 </div>
               ))}
@@ -3187,18 +3187,18 @@ function AureonMurgeRuntimeActivationPanel({ audit }: { audit: AureonMurgeRuntim
   const statusLabel = String(audit?.status || "runtime activation pending").replace(/_/g, " ");
 
   return (
-    <Card className="border-sky-500/30 bg-sky-500/5">
+    <Card className="border-primary/30 bg-primary/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <Radio className="h-4 w-4 text-sky-300" />
+            <Radio className="h-4 w-4 text-primary" />
             MURGE Runtime Activation
           </span>
           <div className="flex flex-wrap gap-1">
             <Pill label={statusLabel} tone={ready ? statusTone.wired : statusTone.orphaned} />
             <Pill label={`${formatCompact(summary.service_health_pass_count)}/${formatCompact(summary.service_count)} health`} tone={summary.service_health_pass_count === summary.service_count ? statusTone.wired : statusTone.orphaned} />
             <Pill label={summary.no_trading_gate_bypass ? "no trading bypass" : "gate attention"} tone={summary.no_trading_gate_bypass ? statusTone.wired : statusTone.security_blocker} />
-            <Pill label="/aureon_murge_runtime_activation_stress_audit.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+            <Pill label="/aureon_murge_runtime_activation_stress_audit.json" tone="border-primary/30 bg-primary/10 text-primary" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -3216,7 +3216,7 @@ function AureonMurgeRuntimeActivationPanel({ audit }: { audit: AureonMurgeRuntim
           ].map(([label, value]) => (
             <div key={String(label)} className="rounded-md border border-border/40 bg-black/20 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">{String(label)}</div>
-              <div className="mt-1 font-mono text-sm font-semibold text-sky-100">
+              <div className="mt-1 font-mono text-sm font-semibold text-primary">
                 {typeof value === "number" ? formatCompact(value) : String(value ?? "0")}
               </div>
             </div>
@@ -3227,7 +3227,7 @@ function AureonMurgeRuntimeActivationPanel({ audit }: { audit: AureonMurgeRuntim
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">Local services</div>
-              <Pill label="localhost only" tone="border-sky-500/30 bg-sky-500/10 text-sky-100" />
+              <Pill label="localhost only" tone="border-primary/30 bg-primary/10 text-primary" />
             </div>
             <div className="grid gap-2 md:grid-cols-3">
               {services.length ? services.map((row) => (
@@ -3269,7 +3269,7 @@ function AureonMurgeRuntimeActivationPanel({ audit }: { audit: AureonMurgeRuntim
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">Dependency readiness</div>
-              <Pill label="npm ci lockfile baseline" tone="border-sky-500/30 bg-sky-500/10 text-sky-100" />
+              <Pill label="npm ci lockfile baseline" tone="border-primary/30 bg-primary/10 text-primary" />
             </div>
             <div className="grid gap-2">
               {dependencies.length ? dependencies.map((row) => {
@@ -3357,7 +3357,7 @@ function AureonMurgeRuntimeActivationPanel({ audit }: { audit: AureonMurgeRuntim
               ))}
               {actions.slice(0, 2).map((row) => (
                 <div key={String(row.id)} className="rounded-md border border-border/40 bg-muted/10 px-3 py-2 text-xs">
-                  <div className="font-mono text-sky-100">{String(row.priority || "P?")} {String(row.id || "")}</div>
+                  <div className="font-mono text-primary">{String(row.priority || "P?")} {String(row.id || "")}</div>
                   <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.action || "")}</div>
                 </div>
               ))}
@@ -3481,11 +3481,11 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
   const stressLabel = String(stress?.status || "stress audit pending").replace(/_/g, " ");
 
   return (
-    <Card className="border-sky-500/30 bg-sky-500/5">
+    <Card className="border-primary/30 bg-primary/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <Radio className="h-4 w-4 text-sky-300" />
+            <Radio className="h-4 w-4 text-primary" />
             Parallel Trading Systems
           </span>
           <div className="flex flex-wrap gap-1">
@@ -3493,8 +3493,8 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             <Pill label={summary.unified_executor_authoritative ? "one executor" : "executor attention"} tone={summary.unified_executor_authoritative ? statusTone.wired : statusTone.security_blocker} />
             <Pill label={directMutation ? "direct mutation leak" : "workers signal only"} tone={directMutation ? statusTone.security_blocker : statusTone.wired} />
             <Pill label={stressLabel} tone={stressCertified ? statusTone.wired : statusTone.orphaned} />
-            <Pill label="/aureon_parallel_strategy_unity.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
-            <Pill label="/aureon_parallel_strategy_unity_stress_audit.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+            <Pill label="/aureon_parallel_strategy_unity.json" tone="border-primary/30 bg-primary/10 text-primary" />
+            <Pill label="/aureon_parallel_strategy_unity_stress_audit.json" tone="border-primary/30 bg-primary/10 text-primary" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -3602,14 +3602,14 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
           ].map(([label, value]) => (
             <div key={String(label)} className="rounded-md border border-border/40 bg-black/20 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">{String(label)}</div>
-              <div className="mt-1 truncate font-mono text-sm font-semibold text-sky-100">
+              <div className="mt-1 truncate font-mono text-sm font-semibold text-primary">
                 {typeof value === "number" ? formatCompact(value) : String(value ?? "0")}
               </div>
             </div>
           ))}
         </div>
 
-        <div className="rounded-md border border-sky-500/20 bg-black/20 p-3">
+        <div className="rounded-md border border-primary/20 bg-black/20 p-3">
           <div className="mb-2 flex items-center justify-between gap-2">
             <div className="text-xs uppercase text-muted-foreground">Stress audit burn-down</div>
             <div className="flex flex-wrap gap-1">
@@ -3709,18 +3709,18 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             ].map(([label, value]) => (
               <div key={String(label)} className="rounded-md border border-border/40 bg-muted/10 px-3 py-2 text-xs">
                 <div className="uppercase text-muted-foreground">{String(label)}</div>
-                <div className="mt-1 truncate font-mono text-sky-100">{typeof value === "number" ? formatCompact(value) : String(value ?? "0")}</div>
+                <div className="mt-1 truncate font-mono text-primary">{typeof value === "number" ? formatCompact(value) : String(value ?? "0")}</div>
               </div>
             ))}
           </div>
           {ghostPhaseRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-violet-500/20 bg-violet-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-primary/20 bg-primary/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Ghost Dance API phase protocol</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={summary.ghost_dance_enabled || stressSummary.ghost_dance_enabled ? "phase active" : "phase attention"} tone={summary.ghost_dance_enabled || stressSummary.ghost_dance_enabled ? statusTone.wired : statusTone.orphaned} />
                   <Pill label={`${formatCompact(stressSummary.ghost_phase_collision_count ?? summary.ghost_phase_collision_count)} collision(s)`} tone={asNumber(stressSummary.ghost_phase_collision_count ?? summary.ghost_phase_collision_count) ? statusTone.security_blocker : statusTone.wired} />
-                  <Pill label={`${formatCompact(stressSummary.ghost_api_key_lock_family_count ?? summary.api_key_lock_family_count)} API locks`} tone="border-violet-500/30 bg-violet-500/10 text-violet-200" />
+                  <Pill label={`${formatCompact(stressSummary.ghost_api_key_lock_family_count ?? summary.api_key_lock_family_count)} API locks`} tone="border-primary/30 bg-primary/10 text-primary" />
                   <Pill label={`${formatCompact(stressSummary.ghost_stale_historical_intent_phase_count)} old rows`} tone="border-slate-500/30 bg-slate-500/10 text-slate-200" />
                 </div>
               </div>
@@ -3729,7 +3729,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
                   <div key={`ghost-phase-${String(row.worker_id || index)}`} className="rounded-md border border-border/40 bg-black/20 px-3 py-2 text-xs">
                     <div className="flex items-center justify-between gap-2">
                       <span className="truncate font-medium">{String(row.worker_id || "worker").replace(/_/g, " ")}</span>
-                      <Pill label={`phase ${String(row.ghost_phase_index ?? "?")}/${String(row.ghost_phase_count ?? "?")}`} tone="border-violet-500/30 bg-violet-500/10 text-violet-200" />
+                      <Pill label={`phase ${String(row.ghost_phase_index ?? "?")}/${String(row.ghost_phase_count ?? "?")}`} tone="border-primary/30 bg-primary/10 text-primary" />
                     </div>
                     <div className="mt-1 truncate text-muted-foreground">{String(row.api_key_lock_family || "api lock pending")}</div>
                     <div className="mt-1 grid grid-cols-2 gap-1 text-[11px] text-muted-foreground">
@@ -3742,13 +3742,13 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {[...ghostCollisionRows, ...ghostMissingRows, ...ghostHistoricalRows].length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {ghostCollisionRows.slice(0, 2).map((row, index) => (
-                    <div key={`ghost-collision-${String(row.api_key_lock_family || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`ghost-collision-${String(row.api_key_lock_family || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">Ghost phase collision</div>
                       <div className="mt-1 truncate text-muted-foreground">{String(row.api_key_lock_family || "api lock")} phase {String(row.ghost_phase_index ?? "?")}</div>
                     </div>
                   ))}
                   {ghostMissingRows.slice(0, 2).map((row, index) => (
-                    <div key={`ghost-missing-${String(row.worker_id || row.lease_id || index)}`} className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs">
+                    <div key={`ghost-missing-${String(row.worker_id || row.lease_id || index)}`} className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs">
                       <div className="font-medium">Ghost phase proof missing</div>
                       <div className="mt-1 truncate text-muted-foreground">{String(row.worker_id || row.lease_id || "row")} missing {String((row.missing_fields as string[] | undefined)?.join(", ") || "phase proof")}</div>
                     </div>
@@ -3764,12 +3764,12 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {pianoKeyRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-cyan-500/20 bg-cyan-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-primary/20 bg-primary/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Harmonic API Piano</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={summary.harmonic_api_piano_enabled || stressSummary.harmonic_api_piano_enabled ? "tempo active" : "tempo attention"} tone={summary.harmonic_api_piano_enabled || stressSummary.harmonic_api_piano_enabled ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`tempo ${String(summary.harmonic_tempo_multiplier ?? stressSummary.harmonic_tempo_multiplier ?? "0")}`} tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+                  <Pill label={`tempo ${String(summary.harmonic_tempo_multiplier ?? stressSummary.harmonic_tempo_multiplier ?? "0")}`} tone="border-primary/30 bg-primary/10 text-primary" />
                   <Pill label={`${formatCompact(stressSummary.song_stop_risk_count)} song-stop risk`} tone={asNumber(stressSummary.song_stop_risk_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -3778,7 +3778,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
                   <div key={`piano-key-${String(row.piano_key_id || row.worker_id || index)}`} className="rounded-md border border-border/40 bg-black/20 px-3 py-2 text-xs">
                     <div className="flex items-center justify-between gap-2">
                       <span className="truncate font-medium">{String(row.worker_id || "worker").replace(/_/g, " ")}</span>
-                      <Pill label={`key ${String(row.piano_key_rank ?? "?")}`} tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+                      <Pill label={`key ${String(row.piano_key_rank ?? "?")}`} tone="border-primary/30 bg-primary/10 text-primary" />
                     </div>
                     <div className="mt-1 truncate text-muted-foreground">{String(row.piano_key_id || row.api_key_lock_family || "api key lock")}</div>
                     <div className="mt-1 grid grid-cols-2 gap-1 text-[11px] text-muted-foreground">
@@ -3793,13 +3793,13 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {[...pianoMissingRows, ...pianoHistoricalRows, ...pianoSongStopRows].length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {pianoSongStopRows.slice(0, 2).map((row, index) => (
-                    <div key={`piano-risk-${String(row.piano_key_id || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`piano-risk-${String(row.piano_key_id || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">Song-stop risk</div>
                       <div className="mt-1 truncate text-muted-foreground">{String(row.worker_id || "worker")} {String(row.song_stop_guard || "risk")}</div>
                     </div>
                   ))}
                   {pianoMissingRows.slice(0, 2).map((row, index) => (
-                    <div key={`piano-missing-${String(row.worker_id || row.lease_id || index)}`} className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs">
+                    <div key={`piano-missing-${String(row.worker_id || row.lease_id || index)}`} className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs">
                       <div className="font-medium">Piano tempo proof missing</div>
                       <div className="mt-1 truncate text-muted-foreground">{String(row.worker_id || row.lease_id || "row")} missing {String((row.missing_fields as string[] | undefined)?.join(", ") || "tempo proof")}</div>
                     </div>
@@ -3815,13 +3815,13 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {rainbowRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-emerald-500/20 bg-emerald-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-success/20 bg-success/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Rainbow Harmonic Frequency Ladder</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={summary.rainbow_harmonic_ladder_enabled || stressSummary.rainbow_harmonic_ladder_enabled ? "ladder active" : "ladder attention"} tone={summary.rainbow_harmonic_ladder_enabled || stressSummary.rainbow_harmonic_ladder_enabled ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(summary.rainbow_ladder_step_count ?? stressSummary.rainbow_ladder_step_count)} steps`} tone="border-emerald-500/30 bg-emerald-500/10 text-emerald-200" />
-                  <Pill label={`${String(summary.rainbow_base_frequency_hz ?? stressSummary.rainbow_base_frequency_hz ?? "0")} Hz base`} tone="border-emerald-500/30 bg-emerald-500/10 text-emerald-200" />
+                  <Pill label={`${formatCompact(summary.rainbow_ladder_step_count ?? stressSummary.rainbow_ladder_step_count)} steps`} tone="border-success/30 bg-success/10 text-success" />
+                  <Pill label={`${String(summary.rainbow_base_frequency_hz ?? stressSummary.rainbow_base_frequency_hz ?? "0")} Hz base`} tone="border-success/30 bg-success/10 text-success" />
                   <Pill label={`${formatCompact(stressSummary.rainbow_song_continuity_risk_count)} continuity risk`} tone={asNumber(stressSummary.rainbow_song_continuity_risk_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -3830,7 +3830,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
                   <div key={`rainbow-row-${String(row.harmony_lane_id || row.worker_id || index)}`} className="rounded-md border border-border/40 bg-black/20 px-3 py-2 text-xs">
                     <div className="flex items-center justify-between gap-2">
                       <span className="truncate font-medium">{String(row.worker_id || "worker").replace(/_/g, " ")}</span>
-                      <Pill label={String(row.rainbow_step_name || "step").replace(/_/g, " ")} tone="border-emerald-500/30 bg-emerald-500/10 text-emerald-200" />
+                      <Pill label={String(row.rainbow_step_name || "step").replace(/_/g, " ")} tone="border-success/30 bg-success/10 text-success" />
                     </div>
                     <div className="mt-1 truncate text-muted-foreground">{String(row.harmony_lane_id || "harmony lane")}</div>
                     <div className="mt-1 grid grid-cols-2 gap-1 text-[11px] text-muted-foreground">
@@ -3845,13 +3845,13 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {[...rainbowMissingRows, ...rainbowHistoricalRows, ...rainbowRiskRows].length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {rainbowRiskRows.slice(0, 2).map((row, index) => (
-                    <div key={`rainbow-risk-${String(row.harmony_lane_id || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`rainbow-risk-${String(row.harmony_lane_id || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">Rainbow continuity risk</div>
                       <div className="mt-1 truncate text-muted-foreground">{String(row.worker_id || "worker")} {String(row.song_continuity_guard || "risk")}</div>
                     </div>
                   ))}
                   {rainbowMissingRows.slice(0, 2).map((row, index) => (
-                    <div key={`rainbow-missing-${String(row.worker_id || row.lease_id || index)}`} className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs">
+                    <div key={`rainbow-missing-${String(row.worker_id || row.lease_id || index)}`} className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs">
                       <div className="font-medium">Rainbow ladder proof missing</div>
                       <div className="mt-1 truncate text-muted-foreground">{String(row.worker_id || row.lease_id || "row")} missing {String((row.missing_fields as string[] | undefined)?.join(", ") || "ladder proof")}</div>
                     </div>
@@ -3867,13 +3867,13 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {powerRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-fuchsia-500/20 bg-fuchsia-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-primary/20 bg-primary/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Power Station Request Governor</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={summary.power_station_request_governor_enabled || stressSummary.power_station_request_governor_enabled ? "metadata governing" : "metadata attention"} tone={summary.power_station_request_governor_enabled || stressSummary.power_station_request_governor_enabled ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.power_station_outbound_request_count ?? summary.power_station_outbound_request_count)} outbound`} tone="border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-200" />
-                  <Pill label={`${formatCompact(stressSummary.power_station_internal_request_count ?? summary.power_station_internal_request_count)} internal`} tone="border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-200" />
+                  <Pill label={`${formatCompact(stressSummary.power_station_outbound_request_count ?? summary.power_station_outbound_request_count)} outbound`} tone="border-primary/30 bg-primary/10 text-primary" />
+                  <Pill label={`${formatCompact(stressSummary.power_station_internal_request_count ?? summary.power_station_internal_request_count)} internal`} tone="border-primary/30 bg-primary/10 text-primary" />
                   <Pill label={`${formatCompact(stressSummary.power_station_authority_violation_count)} authority gaps`} tone={asNumber(stressSummary.power_station_authority_violation_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -3882,7 +3882,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
                   <div key={`power-row-${String(row.lease_id || row.request_id || index)}`} className="rounded-md border border-border/40 bg-black/20 px-3 py-2 text-xs">
                     <div className="flex items-center justify-between gap-2">
                       <span className="truncate font-medium">{String(row.worker_id || "worker").replace(/_/g, " ")}</span>
-                      <Pill label={String(row.request_class || "request").replace(/_/g, " ")} tone={row.request_owner_authority === "denied_non_executor_mutation" ? statusTone.security_blocker : "border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-200"} />
+                      <Pill label={String(row.request_class || "request").replace(/_/g, " ")} tone={row.request_owner_authority === "denied_non_executor_mutation" ? statusTone.security_blocker : "border-primary/30 bg-primary/10 text-primary"} />
                     </div>
                     <div className="mt-1 truncate text-muted-foreground">{String(row.request_direction || "direction")} / {String(row.request_governor_decision || "decision")}</div>
                     <div className="mt-1 grid grid-cols-2 gap-1 text-[11px] text-muted-foreground">
@@ -3897,13 +3897,13 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {[...powerAuthorityRows, ...powerMissingRows, ...powerHistoricalRows].length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {powerAuthorityRows.slice(0, 2).map((row, index) => (
-                    <div key={`power-auth-${String(row.lease_id || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`power-auth-${String(row.lease_id || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">Power Station authority gap</div>
                       <div className="mt-1 truncate text-muted-foreground">{String(row.worker_id || "worker")} {String(row.operation_type || "mutation")}</div>
                     </div>
                   ))}
                   {powerMissingRows.slice(0, 2).map((row, index) => (
-                    <div key={`power-missing-${String(row.worker_id || row.lease_id || index)}`} className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs">
+                    <div key={`power-missing-${String(row.worker_id || row.lease_id || index)}`} className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs">
                       <div className="font-medium">Power Station metadata missing</div>
                       <div className="mt-1 truncate text-muted-foreground">{String(row.worker_id || row.lease_id || "row")} missing {String((row.missing_fields as string[] | undefined)?.join(", ") || "metadata")}</div>
                     </div>
@@ -3919,14 +3919,14 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {auditSelfValidationRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-lime-500/20 bg-lime-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-success/20 bg-success/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Audit Self-Validation</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={stressSummary.audit_self_validation_passed ? "self checked" : "self attention"} tone={stressSummary.audit_self_validation_passed ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.audit_self_validation_check_count)} checks`} tone="border-lime-500/30 bg-lime-500/10 text-lime-200" />
+                  <Pill label={`${formatCompact(stressSummary.audit_self_validation_check_count)} checks`} tone="border-success/30 bg-success/10 text-success" />
                   <Pill label={`${formatCompact(stressSummary.audit_self_validation_failed_count)} failed`} tone={asNumber(stressSummary.audit_self_validation_failed_count) ? statusTone.security_blocker : statusTone.wired} />
-                  <Pill label={String(stressSummary.audit_self_validation_proof_basis || "proof basis pending").replace(/_/g, " ")} tone="border-lime-500/30 bg-lime-500/10 text-lime-200" />
+                  <Pill label={String(stressSummary.audit_self_validation_proof_basis || "proof basis pending").replace(/_/g, " ")} tone="border-success/30 bg-success/10 text-success" />
                 </div>
               </div>
               <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
@@ -3943,7 +3943,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditSelfValidationFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditSelfValidationFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`self-validation-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`self-validation-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed self check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "self-validation mismatch")}</div>
                     </div>
@@ -3953,12 +3953,12 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {auditReplayValidationRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-teal-500/20 bg-teal-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-primary/20 bg-primary/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Audit Replay Validation</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={stressSummary.audit_replay_validation_passed ? "replay checked" : "replay attention"} tone={stressSummary.audit_replay_validation_passed ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.audit_replay_validation_check_count)} checks`} tone="border-teal-500/30 bg-teal-500/10 text-teal-200" />
+                  <Pill label={`${formatCompact(stressSummary.audit_replay_validation_check_count)} checks`} tone="border-primary/30 bg-primary/10 text-primary" />
                   <Pill label={`${formatCompact(stressSummary.audit_replay_validation_failed_count)} failed`} tone={asNumber(stressSummary.audit_replay_validation_failed_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -3980,7 +3980,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditReplayValidationFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditReplayValidationFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`replay-validation-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`replay-validation-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed replay check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "audit replay mismatch")}</div>
                     </div>
@@ -3990,12 +3990,12 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {auditIntegrityValidationRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-blue-500/20 bg-blue-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-primary/20 bg-primary/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Audit Integrity Triangulation</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={stressSummary.audit_integrity_validation_passed ? "integrity checked" : "integrity attention"} tone={stressSummary.audit_integrity_validation_passed ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.audit_integrity_validation_check_count)} checks`} tone="border-blue-500/30 bg-blue-500/10 text-blue-200" />
+                  <Pill label={`${formatCompact(stressSummary.audit_integrity_validation_check_count)} checks`} tone="border-primary/30 bg-primary/10 text-primary" />
                   <Pill label={`${formatCompact(stressSummary.audit_integrity_validation_failed_count)} failed`} tone={asNumber(stressSummary.audit_integrity_validation_failed_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -4013,7 +4013,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditIntegrityValidationFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditIntegrityValidationFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`integrity-validation-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`integrity-validation-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed integrity check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "audit integrity mismatch")}</div>
                     </div>
@@ -4023,12 +4023,12 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {auditValidationQuorumRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-indigo-500/20 bg-indigo-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-primary/20 bg-primary/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Audit Validation Quorum</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={stressSummary.audit_validation_quorum_passed ? "quorum trusted" : "quorum attention"} tone={stressSummary.audit_validation_quorum_passed ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.audit_validation_quorum_pass_count)}/${formatCompact(stressSummary.audit_validation_quorum_required_count)} mirrors`} tone="border-indigo-500/30 bg-indigo-500/10 text-indigo-200" />
+                  <Pill label={`${formatCompact(stressSummary.audit_validation_quorum_pass_count)}/${formatCompact(stressSummary.audit_validation_quorum_required_count)} mirrors`} tone="border-primary/30 bg-primary/10 text-primary" />
                   <Pill label={`${formatCompact(stressSummary.audit_validation_quorum_failed_count)} failed`} tone={asNumber(stressSummary.audit_validation_quorum_failed_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -4046,7 +4046,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditValidationQuorumFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditValidationQuorumFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`validation-quorum-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`validation-quorum-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed quorum check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "validation quorum mismatch")}</div>
                     </div>
@@ -4056,12 +4056,12 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {auditArtifactProvenanceRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-cyan-500/20 bg-cyan-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-primary/20 bg-primary/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Audit Artifact Provenance</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={stressSummary.audit_artifact_provenance_passed ? "artifacts matched" : "artifact attention"} tone={stressSummary.audit_artifact_provenance_passed ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.audit_artifact_provenance_json_match_count)}/${formatCompact(stressSummary.audit_artifact_provenance_json_artifact_count)} hashes`} tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+                  <Pill label={`${formatCompact(stressSummary.audit_artifact_provenance_json_match_count)}/${formatCompact(stressSummary.audit_artifact_provenance_json_artifact_count)} hashes`} tone="border-primary/30 bg-primary/10 text-primary" />
                   <Pill label={`${formatCompact(stressSummary.audit_artifact_provenance_failed_count)} failed`} tone={asNumber(stressSummary.audit_artifact_provenance_failed_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -4079,7 +4079,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditArtifactProvenanceFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditArtifactProvenanceFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`artifact-provenance-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`artifact-provenance-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed artifact check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "artifact provenance mismatch")}</div>
                     </div>
@@ -4112,7 +4112,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditServedArtifactFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditServedArtifactFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`served-artifact-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`served-artifact-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed served check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "served artifact mismatch")}</div>
                     </div>
@@ -4122,12 +4122,12 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {auditFreshnessSlaRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-emerald-500/20 bg-emerald-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-success/20 bg-success/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Audit Freshness SLA</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={stressSummary.audit_freshness_sla_passed ? "fresh" : "stale attention"} tone={stressSummary.audit_freshness_sla_passed ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.audit_freshness_sla_age_sec)}s age`} tone="border-emerald-500/30 bg-emerald-500/10 text-emerald-200" />
+                  <Pill label={`${formatCompact(stressSummary.audit_freshness_sla_age_sec)}s age`} tone="border-success/30 bg-success/10 text-success" />
                   <Pill label={`${formatCompact(stressSummary.audit_freshness_sla_failed_count)} failed`} tone={asNumber(stressSummary.audit_freshness_sla_failed_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -4145,7 +4145,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditFreshnessSlaFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditFreshnessSlaFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`freshness-sla-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`freshness-sla-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed freshness check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "freshness SLA mismatch")}</div>
                     </div>
@@ -4155,12 +4155,12 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {auditOperatorSurfaceRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-cyan-500/20 bg-cyan-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-primary/20 bg-primary/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Audit Operator Surface</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={stressSummary.audit_operator_surface_passed ? "surface stable" : "surface attention"} tone={stressSummary.audit_operator_surface_passed ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.audit_operator_surface_required_panel_count)} panels`} tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+                  <Pill label={`${formatCompact(stressSummary.audit_operator_surface_required_panel_count)} panels`} tone="border-primary/30 bg-primary/10 text-primary" />
                   <Pill label={`${formatCompact(stressSummary.audit_operator_surface_mutation_control_count)} controls`} tone={asNumber(stressSummary.audit_operator_surface_mutation_control_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -4178,7 +4178,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditOperatorSurfaceFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditOperatorSurfaceFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`operator-surface-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`operator-surface-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed surface check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "operator surface mismatch")}</div>
                     </div>
@@ -4188,12 +4188,12 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {auditTestCoverageRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-lime-500/20 bg-lime-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-success/20 bg-success/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Audit Test Coverage</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={stressSummary.audit_test_coverage_passed ? "tests mapped" : "test attention"} tone={stressSummary.audit_test_coverage_passed ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.audit_test_coverage_validator_test_count)}/${formatCompact(stressSummary.audit_test_coverage_validator_expected_count)} validators`} tone="border-lime-500/30 bg-lime-500/10 text-lime-200" />
+                  <Pill label={`${formatCompact(stressSummary.audit_test_coverage_validator_test_count)}/${formatCompact(stressSummary.audit_test_coverage_validator_expected_count)} validators`} tone="border-success/30 bg-success/10 text-success" />
                   <Pill label={`${formatCompact(stressSummary.audit_test_coverage_failed_count)} failed`} tone={asNumber(stressSummary.audit_test_coverage_failed_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -4222,7 +4222,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditTestCoverageFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditTestCoverageFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`test-coverage-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`test-coverage-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed coverage check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "test coverage mismatch")}</div>
                     </div>
@@ -4232,12 +4232,12 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {auditRepairCoverageRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-amber-500/20 bg-amber-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-warning/20 bg-warning/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Audit Repair Coverage</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={stressSummary.audit_repair_coverage_passed ? "repairs actionable" : "repair attention"} tone={stressSummary.audit_repair_coverage_passed ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.audit_repair_coverage_repair_action_count)} repair rows`} tone="border-amber-500/30 bg-amber-500/10 text-amber-200" />
+                  <Pill label={`${formatCompact(stressSummary.audit_repair_coverage_repair_action_count)} repair rows`} tone="border-warning/30 bg-warning/10 text-warning" />
                   <Pill label={`${formatCompact(stressSummary.audit_repair_coverage_generic_repair_count)} generic`} tone={asNumber(stressSummary.audit_repair_coverage_generic_repair_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -4255,7 +4255,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditRepairCoverageFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditRepairCoverageFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`repair-coverage-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`repair-coverage-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed repair check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "repair coverage mismatch")}</div>
                     </div>
@@ -4265,12 +4265,12 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {auditRuntimeRepairReadinessRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-orange-500/20 bg-orange-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-warning/20 bg-warning/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Audit Runtime Repair Readiness</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={stressSummary.audit_runtime_repair_readiness_passed ? "guarded ready" : "guard attention"} tone={stressSummary.audit_runtime_repair_readiness_passed ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.audit_runtime_repair_readiness_guarded_command_line_count)} lines`} tone="border-orange-500/30 bg-orange-500/10 text-orange-200" />
+                  <Pill label={`${formatCompact(stressSummary.audit_runtime_repair_readiness_guarded_command_line_count)} lines`} tone="border-warning/30 bg-warning/10 text-warning" />
                   <Pill label={`${formatCompact(stressSummary.audit_runtime_repair_readiness_unsafe_command_count)} unsafe`} tone={asNumber(stressSummary.audit_runtime_repair_readiness_unsafe_command_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -4288,7 +4288,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditRuntimeRepairReadinessFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditRuntimeRepairReadinessFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`runtime-repair-readiness-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`runtime-repair-readiness-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed runtime repair check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "runtime repair readiness mismatch")}</div>
                     </div>
@@ -4298,12 +4298,12 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {auditRepairAcceptanceRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-yellow-500/20 bg-yellow-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-warning/20 bg-warning/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Audit Repair Acceptance</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={stressSummary.audit_repair_acceptance_passed ? "acceptance mapped" : "acceptance attention"} tone={stressSummary.audit_repair_acceptance_passed ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.audit_repair_acceptance_acceptance_row_count)} blockers`} tone="border-yellow-500/30 bg-yellow-500/10 text-yellow-200" />
+                  <Pill label={`${formatCompact(stressSummary.audit_repair_acceptance_acceptance_row_count)} blockers`} tone="border-warning/30 bg-warning/10 text-warning" />
                   <Pill label={`${formatCompact(stressSummary.audit_repair_acceptance_missing_acceptance_count)} missing`} tone={asNumber(stressSummary.audit_repair_acceptance_missing_acceptance_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -4336,7 +4336,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditRepairAcceptanceFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditRepairAcceptanceFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`repair-acceptance-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`repair-acceptance-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed acceptance check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "repair acceptance mismatch")}</div>
                     </div>
@@ -4346,12 +4346,12 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {auditConsistencyMatrixRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-teal-500/20 bg-teal-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-primary/20 bg-primary/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Audit Consistency Matrix</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={stressSummary.audit_consistency_matrix_passed ? "matrix stable" : "matrix attention"} tone={stressSummary.audit_consistency_matrix_passed ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.audit_consistency_matrix_validator_pass_count)}/${formatCompact(stressSummary.audit_consistency_matrix_validator_count)} validators`} tone="border-teal-500/30 bg-teal-500/10 text-teal-200" />
+                  <Pill label={`${formatCompact(stressSummary.audit_consistency_matrix_validator_pass_count)}/${formatCompact(stressSummary.audit_consistency_matrix_validator_count)} validators`} tone="border-primary/30 bg-primary/10 text-primary" />
                   <Pill label={`${formatCompact(stressSummary.audit_consistency_matrix_inconsistent_validator_count)} drift`} tone={asNumber(stressSummary.audit_consistency_matrix_inconsistent_validator_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -4380,7 +4380,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditConsistencyMatrixFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditConsistencyMatrixFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`consistency-matrix-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`consistency-matrix-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed matrix check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "audit consistency drift")}</div>
                     </div>
@@ -4390,12 +4390,12 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {auditEvidenceLineageRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-emerald-500/20 bg-emerald-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-success/20 bg-success/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Audit Evidence Lineage</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={stressSummary.audit_evidence_lineage_passed ? "lineage stable" : "lineage attention"} tone={stressSummary.audit_evidence_lineage_passed ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.audit_evidence_lineage_section_row_count)} sections`} tone="border-emerald-500/30 bg-emerald-500/10 text-emerald-200" />
+                  <Pill label={`${formatCompact(stressSummary.audit_evidence_lineage_section_row_count)} sections`} tone="border-success/30 bg-success/10 text-success" />
                   <Pill label={`${formatCompact(stressSummary.audit_evidence_lineage_missing_lineage_count)} missing`} tone={asNumber(stressSummary.audit_evidence_lineage_missing_lineage_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -4424,7 +4424,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditEvidenceLineageFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditEvidenceLineageFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`evidence-lineage-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`evidence-lineage-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed lineage check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "evidence lineage mismatch")}</div>
                     </div>
@@ -4434,12 +4434,12 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {auditValidatorClosureRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-cyan-500/20 bg-cyan-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-primary/20 bg-primary/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Audit Validator Closure</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={stressSummary.audit_validator_closure_passed ? "closure stable" : "closure attention"} tone={stressSummary.audit_validator_closure_passed ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.audit_validator_closure_validator_count)} validators`} tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+                  <Pill label={`${formatCompact(stressSummary.audit_validator_closure_validator_count)} validators`} tone="border-primary/30 bg-primary/10 text-primary" />
                   <Pill label={`${formatCompact(stressSummary.audit_validator_closure_failed_source_count)} source gaps`} tone={asNumber(stressSummary.audit_validator_closure_failed_source_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -4470,7 +4470,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditValidatorClosureFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditValidatorClosureFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`validator-closure-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`validator-closure-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed closure check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "validator closure mismatch")}</div>
                     </div>
@@ -4480,12 +4480,12 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {auditPublicContractRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-sky-500/20 bg-sky-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-primary/20 bg-primary/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Audit Public Contract</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={stressSummary.audit_public_contract_passed ? "contract stable" : "contract attention"} tone={stressSummary.audit_public_contract_passed ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.audit_public_contract_required_summary_field_count)} fields`} tone="border-sky-500/30 bg-sky-500/10 text-sky-200" />
+                  <Pill label={`${formatCompact(stressSummary.audit_public_contract_required_summary_field_count)} fields`} tone="border-primary/30 bg-primary/10 text-primary" />
                   <Pill label={`${formatCompact(stressSummary.audit_public_contract_failed_count)} failed`} tone={asNumber(stressSummary.audit_public_contract_failed_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -4503,7 +4503,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditPublicContractFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditPublicContractFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`public-contract-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`public-contract-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed contract check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "public contract mismatch")}</div>
                     </div>
@@ -4513,12 +4513,12 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {auditValidationChainRows.length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-violet-500/20 bg-violet-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-primary/20 bg-primary/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Audit Validation Chain</div>
                 <div className="flex flex-wrap gap-1">
                   <Pill label={stressSummary.audit_validation_chain_passed ? "chain trusted" : "chain attention"} tone={stressSummary.audit_validation_chain_passed ? statusTone.wired : statusTone.orphaned} />
-                  <Pill label={`${formatCompact(stressSummary.audit_validation_chain_validator_pass_count)}/${formatCompact(stressSummary.audit_validation_chain_validator_count)} validators`} tone="border-violet-500/30 bg-violet-500/10 text-violet-200" />
+                  <Pill label={`${formatCompact(stressSummary.audit_validation_chain_validator_pass_count)}/${formatCompact(stressSummary.audit_validation_chain_validator_count)} validators`} tone="border-primary/30 bg-primary/10 text-primary" />
                   <Pill label={`${formatCompact(stressSummary.audit_validation_chain_failed_count)} failed`} tone={asNumber(stressSummary.audit_validation_chain_failed_count) ? statusTone.security_blocker : statusTone.wired} />
                 </div>
               </div>
@@ -4547,7 +4547,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {auditValidationChainFailedRows.length ? (
                 <div className="grid gap-2 md:grid-cols-2">
                   {auditValidationChainFailedRows.slice(0, 4).map((row, index) => (
-                    <div key={`validation-chain-failed-${String(row.check || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                    <div key={`validation-chain-failed-${String(row.check || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                       <div className="font-medium">{String(row.check || "failed chain check").replace(/_/g, " ")}</div>
                       <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.detail || "validation chain mismatch")}</div>
                     </div>
@@ -4588,7 +4588,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
                 <div key={`process-${String(row.pid || index)}`} className="rounded-md border border-border/40 bg-black/20 px-3 py-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate font-medium">{String(row.target || "runtime process").replace(/_/g, " ")}</span>
-                    <Pill label={`PID ${String(row.pid || "n/a")}`} tone="border-sky-500/30 bg-sky-500/10 text-sky-200" />
+                    <Pill label={`PID ${String(row.pid || "n/a")}`} tone="border-primary/30 bg-primary/10 text-primary" />
                   </div>
                   <div className="mt-1 truncate text-muted-foreground">{String(row.exe || row.name || "")}</div>
                   <div className="mt-1 truncate font-mono text-[11px] text-muted-foreground">{String(row.command_line || "")}</div>
@@ -4597,7 +4597,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
             </div>
           ) : null}
           {[...stopTargetRows, ...startTargetRows, ...postRestartRows].length ? (
-            <div className="mt-3 space-y-2 rounded-md border border-cyan-500/20 bg-cyan-500/5 p-3">
+            <div className="mt-3 space-y-2 rounded-md border border-primary/20 bg-primary/5 p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs uppercase text-muted-foreground">Single-owner restart plan</div>
                 <div className="flex flex-wrap gap-1">
@@ -4607,7 +4607,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               </div>
               <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                 {guardValidationRows.slice(0, 3).map((row, index) => (
-                  <div key={`guard-row-${String(row.check || index)}`} className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs">
+                  <div key={`guard-row-${String(row.check || index)}`} className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-xs">
                     <div className="flex items-center justify-between gap-2">
                       <span className="truncate font-medium">{String(row.check || "guard check").replace(/_/g, " ")}</span>
                       <Pill label={row.passing ? "pass" : "attention"} tone={row.passing ? statusTone.wired : statusTone.orphaned} />
@@ -4616,14 +4616,14 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
                   </div>
                 ))}
                 {stopTargetRows.slice(0, 4).map((row, index) => (
-                  <div key={`stop-target-${String(row.pid || index)}`} className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs">
+                  <div key={`stop-target-${String(row.pid || index)}`} className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs">
                     <div className="font-medium">Stop target PID {String(row.pid || "n/a")}</div>
                     <div className="mt-1 truncate text-muted-foreground">{String(row.reason || row.target || "")}</div>
                     <div className="mt-1 truncate font-mono text-[11px] text-muted-foreground">{String(row.command_preview || "")}</div>
                   </div>
                 ))}
                 {startTargetRows.slice(0, 3).map((row, index) => (
-                  <div key={`start-target-${String(row.target || index)}`} className="rounded-md border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-xs">
+                  <div key={`start-target-${String(row.target || index)}`} className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-xs">
                     <div className="font-medium">{String(row.target || "start target").replace(/_/g, " ")}</div>
                     <div className="mt-1 truncate text-muted-foreground">{String(row.recommended_action || "")}</div>
                     <div className="mt-1 truncate font-mono text-[11px] text-muted-foreground">{String(row.command_preview || "")}</div>
@@ -4639,7 +4639,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
               {guardedCommandLines.length ? (
                 <div className="rounded-md border border-border/40 bg-black/30 p-3">
                   <div className="mb-2 text-xs uppercase text-muted-foreground">Guarded command preview</div>
-                  <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-[11px] text-cyan-100">
+                  <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-[11px] text-primary">
                     {guardedCommandLines.slice(0, 12).join("\n")}
                   </pre>
                 </div>
@@ -4649,19 +4649,19 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
           {[...mutationRows, ...budgetRows, ...intentContractRows, ...repairRows].length ? (
             <div className="mt-3 grid gap-2 md:grid-cols-2">
               {mutationRows.slice(0, 2).map((row, index) => (
-                <div key={`mutation-${String(row.lease_id || row.intent_id || index)}`} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs">
+                <div key={`mutation-${String(row.lease_id || row.intent_id || index)}`} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs">
                   <div className="font-medium">Mutation authority gap</div>
                   <div className="mt-1 truncate text-muted-foreground">{String(row.worker_id || "worker")} / {String(row.operation_type || row.route_key || "mutation")}</div>
                 </div>
               ))}
               {budgetRows.slice(0, 2).map((row, index) => (
-                <div key={`budget-${String(row.lease_id || row.venue || index)}`} className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs">
+                <div key={`budget-${String(row.lease_id || row.venue || index)}`} className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs">
                   <div className="font-medium">API budget gap</div>
                   <div className="mt-1 truncate text-muted-foreground">{String(row.venue || "venue")} / {String(row.reason || row.state || "budget pressure")}</div>
                 </div>
               ))}
               {intentContractRows.slice(0, 2).map((row, index) => (
-                <div key={`intent-${String(row.intent_id || row.route_key || index)}`} className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs">
+                <div key={`intent-${String(row.intent_id || row.route_key || index)}`} className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs">
                   <div className="font-medium">Intent contract gap</div>
                   <div className="mt-1 truncate text-muted-foreground">{String(row.worker_id || "worker")} missing {String((row.missing_fields as string[] | undefined)?.join(", ") || "fields")}</div>
                 </div>
@@ -4734,7 +4734,7 @@ function ParallelTradingSystemsPanel({ unity, stress }: { unity: ParallelStrateg
                 <div key={String(venue.venue)} className="rounded-md border border-border/40 bg-black/20 px-3 py-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <span className="uppercase text-muted-foreground">{String(venue.venue || "venue")}</span>
-                    <span className="font-mono text-sky-100">{formatCompact(venue.rate_remaining)} left/min</span>
+                    <span className="font-mono text-primary">{formatCompact(venue.rate_remaining)} left/min</span>
                   </div>
                   <div className="mt-1 text-muted-foreground">
                     used {formatCompact(venue.rate_used)} / limit {formatCompact(venue.rate_limit_per_min)} / leases {formatCompact(venue.lease_count)}
@@ -4872,19 +4872,19 @@ function LiveSignalFabricPanel({
   const stressStatusLabel = String(stressSource?.status || stressProof.status || stressProof.state || "stress pending").replace(/_/g, " ");
 
   return (
-    <Card className="border-emerald-500/30 bg-emerald-500/5">
+    <Card className="border-success/30 bg-success/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <Brain className="h-4 w-4 text-emerald-300" />
+            <Brain className="h-4 w-4 text-success" />
             Live Signal Fabric
           </span>
           <div className="flex flex-wrap gap-1">
             <Pill label={statusLabel} tone={active ? statusTone.wired : statusTone.orphaned} />
             <Pill label={summary.thoughtbus_receiving ? "ThoughtBus receiving" : "ThoughtBus attention"} tone={summary.thoughtbus_receiving ? statusTone.wired : statusTone.orphaned} />
             <Pill label={summary.mycelium_receiving ? "Mycelium receiving" : "Mycelium attention"} tone={summary.mycelium_receiving ? statusTone.wired : statusTone.orphaned} />
-            <Pill label="/aureon_live_trade_signal_fabric.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
-            <Pill label="/aureon_live_trade_signal_fabric_stress_audit.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+            <Pill label="/aureon_live_trade_signal_fabric.json" tone="border-primary/30 bg-primary/10 text-primary" />
+            <Pill label="/aureon_live_trade_signal_fabric_stress_audit.json" tone="border-primary/30 bg-primary/10 text-primary" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -4935,24 +4935,24 @@ function LiveSignalFabricPanel({
             ].map(([label, value]) => (
             <div key={String(label)} className="rounded-md border border-border/40 bg-black/20 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">{String(label)}</div>
-              <div className="mt-1 font-mono text-sm font-semibold text-emerald-100">
+              <div className="mt-1 font-mono text-sm font-semibold text-success">
                 {typeof value === "number" ? formatCompact(value) : String(value ?? "0")}
               </div>
             </div>
           ))}
         </div>
 
-        <div className="rounded-md border border-cyan-500/20 bg-black/20 p-3">
+        <div className="rounded-md border border-primary/20 bg-black/20 p-3">
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <div>
               <div className="text-xs uppercase text-muted-foreground">A-to-B Gain Speed</div>
-              <div className="mt-1 text-sm text-cyan-50">
+              <div className="mt-1 text-sm text-primary">
                 {String(stressSummary.speed_current_answer || speedProof.answer || "Waiting for signal-to-gain timing evidence.")}
               </div>
             </div>
             <div className="flex flex-wrap gap-1">
               <Pill label={String(stressSummary.speed_latest_state || speedProof.latest_state || "speed pending").replace(/_/g, " ")} tone={asNumber(stressSummary.speed_positive_gain_count) ? statusTone.wired : statusTone.orphaned} />
-              <Pill label={stressSummary.speed_real_data_only_mode || speedProof.real_data_only ? "real data only" : "fabric evidence"} tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+              <Pill label={stressSummary.speed_real_data_only_mode || speedProof.real_data_only ? "real data only" : "fabric evidence"} tone="border-primary/30 bg-primary/10 text-primary" />
               <Pill label="no direct mutation" tone={statusTone.wired} />
             </div>
           </div>
@@ -4967,7 +4967,7 @@ function LiveSignalFabricPanel({
             ].map(([label, value]) => (
               <div key={String(label)} className="rounded-md border border-border/40 bg-muted/10 px-3 py-2 text-xs">
                 <div className="uppercase text-muted-foreground">{String(label)}</div>
-                <div className="mt-1 font-mono text-cyan-100">{String(value ?? "waiting")}</div>
+                <div className="mt-1 font-mono text-primary">{String(value ?? "waiting")}</div>
               </div>
             ))}
           </div>
@@ -4981,7 +4981,7 @@ function LiveSignalFabricPanel({
                 <div key={`${String(row.trace_id || "speed")}-${index}`} className="mt-2 border-t border-border/30 pt-2">
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate font-medium">{String(row.symbol || row.route_key || "trace")}</span>
-                    <span className={row.positive_gain_recorded ? "font-mono text-emerald-100" : "font-mono text-amber-100"}>{String(row.speed_state || "waiting").replace(/_/g, " ")}</span>
+                    <span className={row.positive_gain_recorded ? "font-mono text-success" : "font-mono text-warning"}>{String(row.speed_state || "waiting").replace(/_/g, " ")}</span>
                   </div>
                   <div className="mt-1 grid grid-cols-2 gap-1 text-[11px] text-muted-foreground">
                     <span>A-open {row.a_to_b_ms != null ? `${formatCompact(row.a_to_b_ms)}ms` : "waiting"}</span>
@@ -5031,7 +5031,7 @@ function LiveSignalFabricPanel({
           </div>
         </div>
 
-        <div className="rounded-md border border-emerald-500/20 bg-black/20 p-3">
+        <div className="rounded-md border border-success/20 bg-black/20 p-3">
           <div className="mb-2 flex items-center justify-between gap-2">
             <div className="text-xs uppercase text-muted-foreground">Stress certification</div>
             <Pill label={stressStatusLabel} tone={stressSummary.certified_trace_count && !stressSummary.broker_requirement_gap_count && !stressSummary.rate_budget_missing_count ? statusTone.wired : statusTone.orphaned} />
@@ -5045,7 +5045,7 @@ function LiveSignalFabricPanel({
             ].map(([label, value]) => (
               <div key={String(label)} className="rounded-md border border-border/40 bg-muted/10 px-3 py-2 text-xs">
                 <div className="uppercase text-muted-foreground">{String(label)}</div>
-                <div className="mt-1 font-mono text-emerald-100">{formatCompact(value as number)}</div>
+                <div className="mt-1 font-mono text-success">{formatCompact(value as number)}</div>
               </div>
             ))}
           </div>
@@ -5080,7 +5080,7 @@ function LiveSignalFabricPanel({
           ) : null}
         </div>
 
-        <div className="rounded-md border border-amber-500/20 bg-black/20 p-3">
+        <div className="rounded-md border border-warning/20 bg-black/20 p-3">
           <div className="mb-2 flex items-center justify-between gap-2">
             <div className="text-xs uppercase text-muted-foreground">Burn-down action rows</div>
             <div className="flex flex-wrap gap-1">
@@ -5134,7 +5134,7 @@ function LiveSignalFabricPanel({
             ].map(([label, value]) => (
               <div key={String(label)} className="rounded-md border border-border/40 bg-muted/10 px-3 py-2 text-xs">
                 <div className="uppercase text-muted-foreground">{String(label)}</div>
-                <div className="mt-1 font-mono text-amber-100">{formatCompact(value as number)}</div>
+                <div className="mt-1 font-mono text-warning">{formatCompact(value as number)}</div>
               </div>
             ))}
           </div>
@@ -5150,7 +5150,7 @@ function LiveSignalFabricPanel({
                   <div key={`${String(row.phase || "producer")}-${index}`} className="mt-2 border-t border-border/30 pt-2">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium">{String(row.phase || "phase").replace(/_/g, " ")}</span>
-                      <span className={row.state === "producer_wired" || row.state === "complete_a_to_b" ? "font-mono text-emerald-100" : "font-mono text-amber-100"}>{String(row.state || "pending").replace(/_/g, " ")}</span>
+                      <span className={row.state === "producer_wired" || row.state === "complete_a_to_b" ? "font-mono text-success" : "font-mono text-warning"}>{String(row.state || "pending").replace(/_/g, " ")}</span>
                     </div>
                     <div className="truncate text-muted-foreground">{String(row.producer || "producer pending")}</div>
                   </div>
@@ -5224,7 +5224,7 @@ function LiveSignalFabricPanel({
                     <div key={`${String(row.phase || "rate")}-${index}`} className="mt-2 border-t border-border/30 pt-2">
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-medium">{String(row.phase || "phase").replace(/_/g, " ")}</span>
-                        <span className={row.rate_budget_certified ? "font-mono text-emerald-100" : "font-mono text-amber-100"}>{row.rate_budget_certified ? "certified" : "missing"}</span>
+                        <span className={row.rate_budget_certified ? "font-mono text-success" : "font-mono text-warning"}>{row.rate_budget_certified ? "certified" : "missing"}</span>
                       </div>
                       <div className="truncate text-muted-foreground">{missingTags.length ? missingTags.slice(0, 2).join(", ") : String(row.api_budget_source || "proof present")}</div>
                     </div>
@@ -5254,7 +5254,7 @@ function LiveSignalFabricPanel({
                 <div key={`${String(row.classification || "repair")}-${index}`} className="rounded-md border border-border/40 bg-black/20 px-3 py-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate font-medium">{String(row.next_producer_to_fix || "producer pending")}</span>
-                    <span className="font-mono text-amber-100">{String(row.next_required_phase || "next proof")}</span>
+                    <span className="font-mono text-warning">{String(row.next_required_phase || "next proof")}</span>
                   </div>
                   <div className="mt-1 text-muted-foreground">{String(row.action || "Attach missing proof to the fabric event.")}</div>
                 </div>
@@ -5267,7 +5267,7 @@ function LiveSignalFabricPanel({
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">A-to-B traces</div>
-              <Pill label="existing executor path" tone="border-emerald-500/30 bg-emerald-500/10 text-emerald-100" />
+              <Pill label="existing executor path" tone="border-success/30 bg-success/10 text-success" />
             </div>
             <div className="grid gap-2 md:grid-cols-2">
               {traces.length ? traces.slice(0, 8).map((trace) => {
@@ -5288,7 +5288,7 @@ function LiveSignalFabricPanel({
                     </div>
                     <div className="mt-2 flex flex-wrap gap-1">
                       {(missing.length ? missing : phasesForTrace.slice(-5)).slice(0, 6).map((phase) => (
-                        <Pill key={phase} label={phase.replace(/_/g, " ")} tone={missing.length ? statusTone.orphaned : "border-emerald-500/30 bg-emerald-500/10 text-emerald-100"} />
+                        <Pill key={phase} label={phase.replace(/_/g, " ")} tone={missing.length ? statusTone.orphaned : "border-success/30 bg-success/10 text-success"} />
                       ))}
                     </div>
                   </div>
@@ -5304,7 +5304,7 @@ function LiveSignalFabricPanel({
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">Bus and mycelium proof</div>
-              <Pill label="active organism visibility" tone="border-emerald-500/30 bg-emerald-500/10 text-emerald-100" />
+              <Pill label="active organism visibility" tone="border-success/30 bg-success/10 text-success" />
             </div>
             <div className="grid gap-2">
               {[
@@ -5374,11 +5374,11 @@ function SwarmSearchMappingPanel({ audit }: { audit: SwarmSearchMappingStressAud
   const statusLabel = String(audit?.status || "swarm search pending").replace(/_/g, " ");
 
   return (
-    <Card className="border-cyan-500/30 bg-cyan-500/5">
+    <Card className="border-primary/30 bg-primary/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <Search className="h-4 w-4 text-cyan-300" />
+            <Search className="h-4 w-4 text-primary" />
             Swarm Search Fabric
           </span>
           <div className="flex flex-wrap gap-1">
@@ -5386,7 +5386,7 @@ function SwarmSearchMappingPanel({ audit }: { audit: SwarmSearchMappingStressAud
             <Pill label={summary.thoughtbus_receiving ? "ThoughtBus receiving" : "ThoughtBus waiting"} tone={summary.thoughtbus_receiving ? statusTone.wired : statusTone.orphaned} />
             <Pill label={summary.mycelium_receiving ? "Mycelium receiving" : "Mycelium waiting"} tone={summary.mycelium_receiving ? statusTone.wired : statusTone.orphaned} />
             <Pill label={summary.no_synthetic_capture ? "real capture only" : "capture attention"} tone={summary.no_synthetic_capture ? statusTone.wired : statusTone.security_blocker} />
-            <Pill label="/aureon_swarm_search_mapping_stress_audit.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+            <Pill label="/aureon_swarm_search_mapping_stress_audit.json" tone="border-primary/30 bg-primary/10 text-primary" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -5415,7 +5415,7 @@ function SwarmSearchMappingPanel({ audit }: { audit: SwarmSearchMappingStressAud
           ].map(([label, value]) => (
             <div key={String(label)} className="rounded-md border border-border/40 bg-black/20 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">{String(label)}</div>
-              <div className="mt-1 truncate font-mono text-sm font-semibold text-cyan-100">
+              <div className="mt-1 truncate font-mono text-sm font-semibold text-primary">
                 {typeof value === "number" ? formatCompact(value) : String(value ?? "0")}
               </div>
             </div>
@@ -5423,7 +5423,7 @@ function SwarmSearchMappingPanel({ audit }: { audit: SwarmSearchMappingStressAud
         </div>
 
         <div className="grid gap-3 xl:grid-cols-[1.05fr_0.95fr]">
-          <div className="rounded-md border border-cyan-500/20 bg-black/20 p-3">
+          <div className="rounded-md border border-primary/20 bg-black/20 p-3">
             <div className="mb-2 flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">Search producers</div>
               <Pill label={`${formatCompact(sourceRows.filter((row) => row.wired).length)} wired`} tone={summary.wired_source_system_count === summary.source_system_count ? statusTone.wired : statusTone.orphaned} />
@@ -5442,7 +5442,7 @@ function SwarmSearchMappingPanel({ audit }: { audit: SwarmSearchMappingStressAud
             </div>
           </div>
 
-          <div className="rounded-md border border-cyan-500/20 bg-black/20 p-3">
+          <div className="rounded-md border border-primary/20 bg-black/20 p-3">
             <div className="mb-2 flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">A-to-B search phases</div>
               <Pill label={`${formatCompact(summary.phase_seen_count)}/${formatCompact(summary.phase_expected_count)} seen`} tone={summary.phase_seen_count === summary.phase_expected_count ? statusTone.wired : statusTone.orphaned} />
@@ -5462,31 +5462,31 @@ function SwarmSearchMappingPanel({ audit }: { audit: SwarmSearchMappingStressAud
         </div>
 
         <div className="grid gap-3 xl:grid-cols-2">
-          <div className="rounded-md border border-cyan-500/20 bg-black/20 p-3">
+          <div className="rounded-md border border-primary/20 bg-black/20 p-3">
             <div className="mb-2 flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">Online research cinema</div>
               <Pill label={summary.online_research_cinema_active ? "active" : "waiting"} tone={summary.online_research_cinema_active ? statusTone.wired : statusTone.orphaned} />
             </div>
             <div className="mb-2 grid gap-2 sm:grid-cols-2">
-              <div className="rounded-md border border-cyan-500/20 bg-cyan-500/5 px-3 py-2 text-xs">
+              <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs">
                 <div className="truncate text-muted-foreground">topic</div>
-                <div className="mt-1 truncate font-mono text-cyan-100">{String(summary.online_research_topic || "none")}</div>
+                <div className="mt-1 truncate font-mono text-primary">{String(summary.online_research_topic || "none")}</div>
               </div>
-              <div className="rounded-md border border-cyan-500/20 bg-cyan-500/5 px-3 py-2 text-xs">
+              <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs">
                 <div className="truncate text-muted-foreground">paper / motion</div>
-                <div className="mt-1 truncate font-mono text-cyan-100">
+                <div className="mt-1 truncate font-mono text-primary">
                   {summary.online_research_paper_created ? "paper" : "no paper"} / {summary.online_research_motion_ready ? "motion" : "no motion"}
                 </div>
               </div>
-              <div className="rounded-md border border-cyan-500/20 bg-cyan-500/5 px-3 py-2 text-xs">
+              <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs">
                 <div className="truncate text-muted-foreground">coding handoff</div>
-                <div className="mt-1 truncate font-mono text-cyan-100">
+                <div className="mt-1 truncate font-mono text-primary">
                   {summary.research_coding_artifacts_created ? "files ready" : "waiting"}
                 </div>
               </div>
-              <div className="rounded-md border border-cyan-500/20 bg-cyan-500/5 px-3 py-2 text-xs">
+              <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs">
                 <div className="truncate text-muted-foreground">test command</div>
-                <div className="mt-1 truncate font-mono text-cyan-100">{String(codingHandoff.test_command || "pending")}</div>
+                <div className="mt-1 truncate font-mono text-primary">{String(codingHandoff.test_command || "pending")}</div>
               </div>
             </div>
             <div className="grid gap-2 md:grid-cols-2">
@@ -5506,7 +5506,7 @@ function SwarmSearchMappingPanel({ audit }: { audit: SwarmSearchMappingStressAud
               )}
             </div>
             {generatedFileRows.length ? (
-              <div className="mt-3 rounded-md border border-cyan-500/20 bg-black/20 p-3">
+              <div className="mt-3 rounded-md border border-primary/20 bg-black/20 p-3">
                 <div className="mb-2 text-xs uppercase text-muted-foreground">Generated coding files</div>
                 <div className="grid gap-2 md:grid-cols-2">
                   {generatedFileRows.slice(0, 8).map((row, index) => (
@@ -5522,26 +5522,26 @@ function SwarmSearchMappingPanel({ audit }: { audit: SwarmSearchMappingStressAud
               </div>
             ) : null}
             <div className="mt-2 flex flex-wrap gap-1">
-              <Pill label={String(onlinePaper.path || "paper pending")} tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
-              <Pill label={String(onlineMotion.public_html || "motion pending")} tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+              <Pill label={String(onlinePaper.path || "paper pending")} tone="border-primary/30 bg-primary/10 text-primary" />
+              <Pill label={String(onlineMotion.public_html || "motion pending")} tone="border-primary/30 bg-primary/10 text-primary" />
             </div>
           </div>
 
-          <div className="rounded-md border border-cyan-500/20 bg-black/20 p-3">
+          <div className="rounded-md border border-primary/20 bg-black/20 p-3">
             <div className="mb-2 flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">Metacognitive understanding</div>
               <Pill label={summary.research_metacognition_active ? "active" : "waiting"} tone={summary.research_metacognition_active ? statusTone.wired : statusTone.orphaned} />
             </div>
             <div className="mb-2 grid gap-2 sm:grid-cols-2">
-              <div className="rounded-md border border-cyan-500/20 bg-cyan-500/5 px-3 py-2 text-xs">
+              <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs">
                 <div className="truncate text-muted-foreground">understanding</div>
-                <div className="mt-1 truncate font-mono text-cyan-100">
+                <div className="mt-1 truncate font-mono text-primary">
                   {summary.metacognitive_understanding_published ? "published" : "waiting"}
                 </div>
               </div>
-              <div className="rounded-md border border-cyan-500/20 bg-cyan-500/5 px-3 py-2 text-xs">
+              <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs">
                 <div className="truncate text-muted-foreground">unknowns / actions</div>
-                <div className="mt-1 truncate font-mono text-cyan-100">
+                <div className="mt-1 truncate font-mono text-primary">
                   {formatCompact(summary.metacognitive_unknown_count)} / {formatCompact(summary.metacognitive_test_action_count)}
                 </div>
               </div>
@@ -5581,7 +5581,7 @@ function SwarmSearchMappingPanel({ audit }: { audit: SwarmSearchMappingStressAud
                 <Pill key={`${String(row.unknown_id || "unknown")}-${index}`} label={String(row.state || row.area || "unknown").replace(/_/g, " ")} tone={statusTone.orphaned} />
               ))}
               {metacognitionActionRows.slice(0, 3).map((row, index) => (
-                <Pill key={`${String(row.action_id || "action")}-${index}`} label={String(row.action_id || "test action").replace(/_/g, " ")} tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+                <Pill key={`${String(row.action_id || "action")}-${index}`} label={String(row.action_id || "test action").replace(/_/g, " ")} tone="border-primary/30 bg-primary/10 text-primary" />
               ))}
             </div>
           </div>
@@ -5607,9 +5607,9 @@ function SwarmSearchMappingPanel({ audit }: { audit: SwarmSearchMappingStressAud
               <div className="text-xs uppercase text-muted-foreground">Keyword read proof</div>
               <Pill label={summary.keyword_search_active ? "active" : "waiting"} tone={summary.keyword_search_active ? statusTone.wired : statusTone.orphaned} />
             </div>
-            <div className="mb-2 rounded-md border border-cyan-500/20 bg-cyan-500/5 px-3 py-2 text-xs">
+            <div className="mb-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs">
               <div className="truncate text-muted-foreground">latest query</div>
-              <div className="mt-1 truncate font-mono text-cyan-100">{String(summary.latest_keyword_query || "none")}</div>
+              <div className="mt-1 truncate font-mono text-primary">{String(summary.latest_keyword_query || "none")}</div>
               <div className="mt-1 text-[11px] text-muted-foreground">
                 scanned {formatCompact(summary.keyword_scanned_file_count)} / matches {formatCompact(summary.keyword_match_count)}
               </div>
@@ -5619,7 +5619,7 @@ function SwarmSearchMappingPanel({ audit }: { audit: SwarmSearchMappingStressAud
                 <div key={`${String(row.path || "keyword")}-${String(row.line || index)}`} className="rounded-md border border-border/40 bg-muted/10 px-3 py-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate font-medium">{String(row.path || "local file")}</span>
-                    <span className="font-mono text-cyan-100">L{formatCompact(row.line)}</span>
+                    <span className="font-mono text-primary">L{formatCompact(row.line)}</span>
                   </div>
                   <div className="mt-1 line-clamp-2 text-muted-foreground">{String(row.snippet || "")}</div>
                 </div>
@@ -5651,7 +5651,7 @@ function SwarmSearchMappingPanel({ audit }: { audit: SwarmSearchMappingStressAud
                 <div key={`${String(row.event_id || row.phase)}-${index}`} className="rounded-md border border-border/40 bg-muted/10 px-3 py-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate font-medium">{String(row.phase || "event").replace(/_/g, " ")}</span>
-                    <span className="font-mono text-cyan-100">{formatCompact(row.result_count)}</span>
+                    <span className="font-mono text-primary">{formatCompact(row.result_count)}</span>
                   </div>
                   <div className="mt-1 truncate text-muted-foreground">{String(row.source || row.source_system || "source")}</div>
                 </div>
@@ -5691,18 +5691,18 @@ function CapitalRevenueLogicStressPanel({ audit }: { audit: CapitalRevenueLogicS
   const statusLabel = String(audit?.status || "revenue logic pending").replace(/_/g, " ");
 
   return (
-    <Card className="border-emerald-500/30 bg-emerald-500/5">
+    <Card className="border-success/30 bg-success/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <LineChart className="h-4 w-4 text-emerald-300" />
+            <LineChart className="h-4 w-4 text-success" />
             Revenue Logic Stress
           </span>
           <div className="flex flex-wrap gap-1">
             <Pill label={statusLabel} tone={certified ? statusTone.wired : statusTone.orphaned} />
-            <Pill label={`${formatCompact(summary.net_positive_candidate_count)} net-positive`} tone="border-emerald-500/30 bg-emerald-500/10 text-emerald-100" />
+            <Pill label={`${formatCompact(summary.net_positive_candidate_count)} net-positive`} tone="border-success/30 bg-success/10 text-success" />
             <Pill label={`${formatCompact(summary.intent_eligible_candidate_count)} intent eligible`} tone={summary.intent_eligible_candidate_count ? statusTone.wired : statusTone.orphaned} />
-            <Pill label="/aureon_capital_revenue_logic_stress_audit.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+            <Pill label="/aureon_capital_revenue_logic_stress_audit.json" tone="border-primary/30 bg-primary/10 text-primary" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -5722,7 +5722,7 @@ function CapitalRevenueLogicStressPanel({ audit }: { audit: CapitalRevenueLogicS
           ].map(([label, value]) => (
             <div key={String(label)} className="rounded-md border border-border/40 bg-black/20 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">{String(label)}</div>
-              <div className="mt-1 font-mono text-sm font-semibold text-emerald-100">
+              <div className="mt-1 font-mono text-sm font-semibold text-success">
                 {typeof value === "number" ? formatCompact(value) : String(value ?? "0")}
               </div>
             </div>
@@ -5733,14 +5733,14 @@ function CapitalRevenueLogicStressPanel({ audit }: { audit: CapitalRevenueLogicS
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">Top net-positive candidates</div>
-              <Pill label="after spread, fees, slippage, floor, risk" tone="border-emerald-500/30 bg-emerald-500/10 text-emerald-100" />
+              <Pill label="after spread, fees, slippage, floor, risk" tone="border-success/30 bg-success/10 text-success" />
             </div>
             <div className="grid gap-2 md:grid-cols-2">
               {netRows.length ? netRows.slice(0, 8).map((item) => (
                 <div key={String(item.candidate_id || item.route_key || item.symbol)} className="rounded-md border border-border/40 bg-muted/10 px-3 py-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium">{String(item.symbol || item.epic || "capital")}</span>
-                    <span className="font-mono text-emerald-100">{formatCompact(item.expected_net_revenue)}</span>
+                    <span className="font-mono text-success">{formatCompact(item.expected_net_revenue)}</span>
                   </div>
                   <div className="mt-1 truncate text-muted-foreground">
                     {String(item.side || "WATCH")} / gross {formatCompact(item.gross_edge)} / blockers {formatCompact(blockerLabels(item.revenue_blockers).length)}
@@ -5757,7 +5757,7 @@ function CapitalRevenueLogicStressPanel({ audit }: { audit: CapitalRevenueLogicS
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">False-positive rejects</div>
-              <Pill label={`${formatCompact(summary.false_positive_reject_count)} rejected`} tone="border-amber-500/30 bg-amber-500/10 text-amber-100" />
+              <Pill label={`${formatCompact(summary.false_positive_reject_count)} rejected`} tone="border-warning/30 bg-warning/10 text-warning" />
             </div>
             <div className="grid gap-2">
               {rejectRows.length ? rejectRows.slice(0, 6).map((item) => (
@@ -5835,18 +5835,18 @@ function CapitalRevenueLiveGateReadinessPanel({ audit }: { audit: CapitalRevenue
   const passedStress = stressCases.filter((item) => Boolean(item.passed)).length;
 
   return (
-    <Card className="border-sky-500/30 bg-sky-500/5">
+    <Card className="border-primary/30 bg-primary/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-sky-300" />
+            <ShieldCheck className="h-4 w-4 text-primary" />
             Live Gate Readiness
           </span>
           <div className="flex flex-wrap gap-1">
             <Pill label={statusLabel} tone={ready ? statusTone.wired : statusTone.orphaned} />
             <Pill label={`${formatCompact(summary.ready_now_candidate_count)} ready now`} tone={summary.ready_now_candidate_count ? statusTone.wired : statusTone.orphaned} />
             <Pill label={`${formatCompact(summary.missing_gate_count)} missing gates`} tone={summary.missing_gate_count ? statusTone.security_blocker : statusTone.wired} />
-            <Pill label="/aureon_capital_revenue_live_gate_readiness_audit.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+            <Pill label="/aureon_capital_revenue_live_gate_readiness_audit.json" tone="border-primary/30 bg-primary/10 text-primary" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -5866,7 +5866,7 @@ function CapitalRevenueLiveGateReadinessPanel({ audit }: { audit: CapitalRevenue
           ].map(([label, value]) => (
             <div key={String(label)} className="rounded-md border border-border/40 bg-black/20 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">{String(label)}</div>
-              <div className="mt-1 font-mono text-sm font-semibold text-sky-100">
+              <div className="mt-1 font-mono text-sm font-semibold text-primary">
                 {typeof value === "number" ? formatCompact(value) : String(value ?? "0")}
               </div>
             </div>
@@ -5877,7 +5877,7 @@ function CapitalRevenueLiveGateReadinessPanel({ audit }: { audit: CapitalRevenue
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="text-xs uppercase text-muted-foreground">Current candidate readiness</div>
-              <Pill label="existing executor path only" tone="border-sky-500/30 bg-sky-500/10 text-sky-100" />
+              <Pill label="existing executor path only" tone="border-primary/30 bg-primary/10 text-primary" />
             </div>
             <div className="grid gap-2 md:grid-cols-2">
               {rows.length ? rows.slice(0, 8).map((item) => {
@@ -5886,7 +5886,7 @@ function CapitalRevenueLiveGateReadinessPanel({ audit }: { audit: CapitalRevenue
                   <div key={String(item.candidate_id || item.route_key || item.symbol)} className="rounded-md border border-border/40 bg-muted/10 px-3 py-2 text-xs">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-medium">{String(item.symbol || item.epic || "capital")}</span>
-                      <span className="font-mono text-sky-100">{formatCompact(item.expected_net_revenue)}</span>
+                      <span className="font-mono text-primary">{formatCompact(item.expected_net_revenue)}</span>
                     </div>
                     <div className="mt-1 truncate text-muted-foreground">
                       {String(item.side || "WATCH")} / {String(item.readiness_state || "blocked_by_live_gates").replace(/_/g, " ")}
@@ -6012,18 +6012,18 @@ function CapitalLiveDryStressPanel({ audit }: { audit: CapitalEcosystemLiveDrySt
   const recoveredExitStatus = String(summary.recovered_close_chain_status || recoveredExitProof.recovered_close_chain_status || "not_applicable");
 
   return (
-    <Card className="border-teal-500/30 bg-teal-500/5">
+    <Card className="border-primary/30 bg-primary/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <Gauge className="h-4 w-4 text-teal-300" />
+            <Gauge className="h-4 w-4 text-primary" />
             Capital Live Dry Stress
           </span>
           <div className="flex flex-wrap gap-1">
             <Pill label={certified ? "live dry certified" : String(audit?.status || "live dry pending").replace(/_/g, " ")} tone={certified ? statusTone.wired : statusTone.orphaned} />
-            <Pill label={`${formatCompact(summary.active_watchlist_count)}/40 active`} tone="border-teal-500/30 bg-teal-500/10 text-teal-100" />
+            <Pill label={`${formatCompact(summary.active_watchlist_count)}/40 active`} tone="border-primary/30 bg-primary/10 text-primary" />
             <Pill label={`${formatCompact(summary.bench_watchlist_count)}/100 bench`} tone="border-border bg-muted/20 text-muted-foreground" />
-            <Pill label="/aureon_capital_ecosystem_live_dry_stress_audit.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+            <Pill label="/aureon_capital_ecosystem_live_dry_stress_audit.json" tone="border-primary/30 bg-primary/10 text-primary" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -6043,7 +6043,7 @@ function CapitalLiveDryStressPanel({ audit }: { audit: CapitalEcosystemLiveDrySt
           ].map(([label, value]) => (
             <div key={String(label)} className="rounded-md border border-border/40 bg-black/20 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">{String(label)}</div>
-              <div className="mt-1 font-mono text-sm font-semibold text-teal-100">
+              <div className="mt-1 font-mono text-sm font-semibold text-primary">
                 {typeof value === "number" ? formatCompact(value) : String(value ?? "0")}
               </div>
             </div>
@@ -6077,7 +6077,7 @@ function CapitalLiveDryStressPanel({ audit }: { audit: CapitalEcosystemLiveDrySt
           </div>
         </div>
 
-        <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
+        <div className="rounded-md border border-warning/30 bg-warning/5 p-3">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div className="text-xs uppercase text-muted-foreground">Recovered position certification</div>
             <div className="flex flex-wrap gap-1">
@@ -6104,7 +6104,7 @@ function CapitalLiveDryStressPanel({ audit }: { audit: CapitalEcosystemLiveDrySt
             ].map(([label, value]) => (
               <div key={String(label)} className="rounded-md border border-border/40 bg-black/20 p-3 text-xs">
                 <div className="uppercase text-muted-foreground">{String(label)}</div>
-                <div className="mt-1 font-mono text-sm font-semibold text-amber-100">{formatCompact(value as number)}</div>
+                <div className="mt-1 font-mono text-sm font-semibold text-warning">{formatCompact(value as number)}</div>
               </div>
             ))}
           </div>
@@ -6121,7 +6121,7 @@ function CapitalLiveDryStressPanel({ audit }: { audit: CapitalEcosystemLiveDrySt
           ) : null}
         </div>
 
-        <div className="rounded-md border border-purple-500/30 bg-purple-500/5 p-3">
+        <div className="rounded-md border border-primary/30 bg-primary/5 p-3">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div className="text-xs uppercase text-muted-foreground">Recovered exit readiness</div>
             <div className="flex flex-wrap gap-1">
@@ -6129,7 +6129,7 @@ function CapitalLiveDryStressPanel({ audit }: { audit: CapitalEcosystemLiveDrySt
                 label={recoveredExitStatus.replace(/_/g, " ")}
                 tone={recoveredExitStatus === "recovered_outcome_recorded" ? statusTone.wired : statusTone.orphaned}
               />
-              <Pill label={`${formatCompact(summary.recovered_close_acknowledged_count)} close ack`} tone="border-purple-500/30 bg-purple-500/10 text-purple-100" />
+              <Pill label={`${formatCompact(summary.recovered_close_acknowledged_count)} close ack`} tone="border-primary/30 bg-primary/10 text-primary" />
               <Pill label={`${formatCompact(summary.recovered_position_absence_verified_count)} absent`} tone="border-border bg-muted/20 text-muted-foreground" />
               <Pill label={`${formatCompact(summary.recovered_outcome_recorded_count)} outcomes`} tone="border-border bg-muted/20 text-muted-foreground" />
             </div>
@@ -6144,7 +6144,7 @@ function CapitalLiveDryStressPanel({ audit }: { audit: CapitalEcosystemLiveDrySt
             ].map(([label, value]) => (
               <div key={String(label)} className="rounded-md border border-border/40 bg-black/20 p-3 text-xs">
                 <div className="uppercase text-muted-foreground">{String(label)}</div>
-                <div className="mt-1 font-mono text-sm font-semibold text-purple-100">{formatCompact(value as number)}</div>
+                <div className="mt-1 font-mono text-sm font-semibold text-primary">{formatCompact(value as number)}</div>
               </div>
             ))}
           </div>
@@ -6590,7 +6590,7 @@ function AppShell() {
                 label={runtime.connected ? (runtime.clearancePending ? "runtime feed checking" : "runtime feed live") : "runtime feed offline"}
                 tone={runtime.connected ? (runtime.clearancePending ? statusTone.orphaned : statusTone.wired) : statusTone.security_blocker}
               />
-              <Pill label={`view ${selectedDashboardTab.title}`} tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+              <Pill label={`view ${selectedDashboardTab.title}`} tone="border-primary/30 bg-primary/10 text-primary" />
               <Pill label={`checked ${formatFreshnessAge(timestampAgeSeconds(state?.loadedAt, now))} ago`} tone="border-border bg-muted/20 text-muted-foreground" />
             </div>
           </div>
@@ -6599,16 +6599,16 @@ function AppShell() {
             <MetricTile label="SaaS surfaces" value={formatCompact(summary.surface_count)} icon={Database} />
             <MetricTile label="Frontend surfaces" value={formatCompact(summary.frontend_surface_count)} icon={Activity} />
             <MetricTile label="Fresh domains" value={`${formatCompact(organismSummary.fresh_domain_count)}/${formatCompact(organismSummary.domain_count)}`} icon={Server} />
-            <MetricTile label="Evolution queue" value={formatCompact(evolutionSummary.queue_count)} icon={ShieldCheck} tone={asNumber(evolutionSummary.blocked_count) ? "text-yellow-300" : "text-green-300"} />
-            <MetricTile label="Capability modes" value={formatCompact(switchboardSummary.capability_count)} icon={Brain} tone={asNumber(switchboardSummary.blocker_count) ? "text-yellow-300" : "text-green-300"} />
+            <MetricTile label="Evolution queue" value={formatCompact(evolutionSummary.queue_count)} icon={ShieldCheck} tone={asNumber(evolutionSummary.blocked_count) ? "text-warning" : "text-success"} />
+            <MetricTile label="Capability modes" value={formatCompact(switchboardSummary.capability_count)} icon={Brain} tone={asNumber(switchboardSummary.blocker_count) ? "text-warning" : "text-success"} />
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-[1500px] px-4 py-5 lg:px-6">
         {state?.errors?.length ? (
-          <Card className="mb-4 border-yellow-500/30 bg-yellow-500/10">
-            <CardContent className="flex flex-col gap-2 p-4 text-sm text-yellow-100 md:flex-row md:items-center">
+          <Card className="mb-4 border-warning/30 bg-warning/10">
+            <CardContent className="flex flex-col gap-2 p-4 text-sm text-warning md:flex-row md:items-center">
               <AlertTriangle className="h-4 w-4 shrink-0" />
               <div>{state.errors.join(" ")}</div>
             </CardContent>
@@ -7109,15 +7109,15 @@ function OperatorBriefingPanel({
 
   return (
     <section data-testid="operator-briefing" className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-      <Card className="border-cyan-500/20 bg-cyan-500/5">
+      <Card className="border-primary/20 bg-primary/5">
         <CardHeader className="pb-3">
           <CardTitle className="flex flex-col gap-3 text-base md:flex-row md:items-center md:justify-between">
             <span className="flex items-center gap-2">
-              <Icon className="h-4 w-4 text-cyan-300" />
+              <Icon className="h-4 w-4 text-primary" />
               Operator Brief
             </span>
             <div className="flex flex-wrap gap-2">
-              <Pill label={`view ${tab.title}`} tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+              <Pill label={`view ${tab.title}`} tone="border-primary/30 bg-primary/10 text-primary" />
               <Pill label={`${percent}% ready`} tone={percent >= 80 ? statusTone.wired : statusTone.partial} />
               <Pill label={`${freshCount}/${Math.max(1, freshnessItems.length)} fresh`} tone={staleCount ? statusTone.orphaned : statusTone.wired} />
             </div>
@@ -7162,8 +7162,8 @@ function OperatorBriefingPanel({
               <RefreshCcw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               Refresh evidence
             </Button>
-            <Pill label="read-only gates preserved" tone="border-green-500/30 bg-green-500/10 text-green-200" />
-            <Pill label="no hidden mutation controls" tone="border-yellow-500/30 bg-yellow-500/10 text-yellow-100" />
+            <Pill label="read-only gates preserved" tone="border-success/30 bg-success/10 text-success" />
+            <Pill label="no hidden mutation controls" tone="border-warning/30 bg-warning/10 text-warning" />
           </div>
         </CardContent>
       </Card>
@@ -7177,7 +7177,7 @@ function OperatorBriefingPanel({
             </span>
             <div className="flex flex-wrap gap-2">
               <Pill label={`${freshCount} fresh`} tone={statusTone.wired} />
-              <Pill label={`${attentionCount} attention`} tone="border-yellow-500/30 bg-yellow-500/10 text-yellow-100" />
+              <Pill label={`${attentionCount} attention`} tone="border-warning/30 bg-warning/10 text-warning" />
               <Pill label={`${staleCount} stale/offline`} tone={staleCount ? statusTone.security_blocker : "border-border bg-muted/20 text-muted-foreground"} />
             </div>
           </CardTitle>
@@ -7349,7 +7349,7 @@ function RuntimeMirrorPanel({
         <div className="flex flex-wrap gap-2">
           <Pill label={runtime.connected ? (runtime.clearancePending ? "connected checking" : "connected clear") : "offline"} tone={runtime.connected ? (runtime.clearancePending ? statusTone.orphaned : statusTone.wired) : statusTone.partial} />
           <Pill label={runtime.generatedAt ? `updated ${new Date(runtime.generatedAt).toLocaleTimeString()}` : "no runtime timestamp"} tone="border-border bg-muted/20 text-muted-foreground" />
-          {runtime.endpoint ? <Pill label={runtime.endpoint.replace("http://127.0.0.1:", "")} tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-300" /> : null}
+          {runtime.endpoint ? <Pill label={runtime.endpoint.replace("http://127.0.0.1:", "")} tone="border-primary/30 bg-primary/10 text-primary" /> : null}
           {runtime.clearances.map((clearance) => (
             <Pill key={clearance} label={clearance} tone={statusTone.security_blocker} />
           ))}
@@ -7553,7 +7553,7 @@ function ScreenTabsPanel({
                 <TabsTrigger key={screen.id} value={screen.id} className="gap-2 whitespace-nowrap px-3 py-2">
                   <Icon className="h-4 w-4" />
                   <span>{screen.title}</span>
-                  {missing ? <span className="rounded bg-yellow-500/20 px-1.5 text-[10px] text-yellow-200">{missing}</span> : null}
+                  {missing ? <span className="rounded bg-warning/20 px-1.5 text-[10px] text-warning">{missing}</span> : null}
                 </TabsTrigger>
               );
             })}
@@ -7777,7 +7777,7 @@ function EvidencePanel({
                   <div className="min-w-0">
                     <div className="text-sm font-semibold">{item.label}</div>
                     {isLink ? (
-                      <a className="mt-1 block truncate font-mono text-[11px] text-cyan-200 hover:underline" href={item.path} target="_blank" rel="noreferrer">
+                      <a className="mt-1 block truncate font-mono text-[11px] text-primary hover:underline" href={item.path} target="_blank" rel="noreferrer">
                         {item.path}
                       </a>
                     ) : (
@@ -7785,7 +7785,7 @@ function EvidencePanel({
                     )}
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    <Pill label={item.type} tone="border-blue-500/30 bg-blue-500/10 text-blue-200" />
+                    <Pill label={item.type} tone="border-primary/30 bg-primary/10 text-primary" />
                     <Pill label={item.status} tone="border-border bg-muted/20 text-muted-foreground" />
                   </div>
                 </div>
@@ -7802,8 +7802,8 @@ function EvidencePanel({
 
 function freshnessTone(status: string): string {
   if (status === "fresh") return statusTone.wired;
-  if (status === "attention") return "border-yellow-500/30 bg-yellow-500/10 text-yellow-200";
-  if (status === "stale") return "border-orange-500/30 bg-orange-500/10 text-orange-200";
+  if (status === "attention") return "border-warning/30 bg-warning/10 text-warning";
+  if (status === "stale") return "border-warning/30 bg-warning/10 text-warning";
   if (status === "missing" || status === "broken") return statusTone.security_blocker;
   return statusTone.unknown;
 }
@@ -7843,7 +7843,7 @@ function OrganismPulsePanel({
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
             <Pill label={organism.status || "pulse pending"} tone={freshnessTone((organism.status || "").includes("blind") ? "attention" : "fresh")} />
-            <Pill label={`mode ${organism.mode || "safe_observation"}`} tone="border-blue-500/30 bg-blue-500/10 text-blue-200" />
+            <Pill label={`mode ${organism.mode || "safe_observation"}`} tone="border-primary/30 bg-primary/10 text-primary" />
             <Pill label={runtimeConnected ? "runtime feed connected" : "runtime feed offline"} tone={runtimeConnected ? statusTone.wired : statusTone.partial} />
             <Pill label={`updated ${organism.generated_at ? new Date(organism.generated_at).toLocaleTimeString() : "pending"}`} tone="border-border bg-muted/20 text-muted-foreground" />
           </div>
@@ -7855,17 +7855,17 @@ function OrganismPulsePanel({
             </div>
             <div className="rounded-md border border-border/40 bg-muted/10 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">fresh</div>
-              <div className="mt-1 text-lg font-semibold text-green-300">{formatCompact(summary.fresh_domain_count)}</div>
+              <div className="mt-1 text-lg font-semibold text-success">{formatCompact(summary.fresh_domain_count)}</div>
             </div>
             <div className="rounded-md border border-border/40 bg-muted/10 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">stale/missing</div>
-              <div className="mt-1 text-lg font-semibold text-yellow-200">
+              <div className="mt-1 text-lg font-semibold text-warning">
                 {formatCompact(asNumber(summary.stale_domain_count) + asNumber(summary.missing_domain_count))}
               </div>
             </div>
             <div className="rounded-md border border-border/40 bg-muted/10 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">blind spots</div>
-              <div className="mt-1 text-lg font-semibold text-red-200">{formatCompact(summary.blind_spot_count)}</div>
+              <div className="mt-1 text-lg font-semibold text-destructive">{formatCompact(summary.blind_spot_count)}</div>
             </div>
           </div>
 
@@ -7884,7 +7884,7 @@ function OrganismPulsePanel({
                     </div>
                   </div>
                   {domain.blind_spots?.length ? (
-                    <div className="mt-2 text-xs text-yellow-100">{domain.blind_spots.slice(0, 3).join(", ")}</div>
+                    <div className="mt-2 text-xs text-warning">{domain.blind_spots.slice(0, 3).join(", ")}</div>
                   ) : null}
                 </div>
               ))}
@@ -7908,14 +7908,14 @@ function OrganismPulsePanel({
                   <div key={spot.id} className="rounded-md border border-border/40 bg-muted/10 p-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="font-mono text-[11px] text-muted-foreground">{spot.id}</div>
-                      <Pill label={spot.severity} tone={spot.severity === "high" ? statusTone.security_blocker : "border-yellow-500/30 bg-yellow-500/10 text-yellow-200"} />
+                      <Pill label={spot.severity} tone={spot.severity === "high" ? statusTone.security_blocker : "border-warning/30 bg-warning/10 text-warning"} />
                     </div>
                     <div className="mt-2 text-sm">{spot.issue}</div>
                     {spot.next_action ? <div className="mt-2 text-xs text-muted-foreground">{spot.next_action}</div> : null}
                   </div>
                 ))
               ) : (
-                <div className="rounded-md border border-green-500/30 bg-green-500/10 p-4 text-sm text-green-100">
+                <div className="rounded-md border border-success/30 bg-success/10 p-4 text-sm text-success">
                   No blind spots in the current organism pulse.
                 </div>
               )}
@@ -7973,8 +7973,8 @@ function FrontendEvolutionPanel({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-2">
-          <Pill label={evolution.status || "queue pending"} tone={asNumber(summary.blocked_count) ? "border-yellow-500/30 bg-yellow-500/10 text-yellow-200" : statusTone.wired} />
-          <Pill label={`${formatCompact(summary.ready_adapter_count)} ready adapters`} tone="border-green-500/30 bg-green-500/10 text-green-200" />
+          <Pill label={evolution.status || "queue pending"} tone={asNumber(summary.blocked_count) ? "border-warning/30 bg-warning/10 text-warning" : statusTone.wired} />
+          <Pill label={`${formatCompact(summary.ready_adapter_count)} ready adapters`} tone="border-success/30 bg-success/10 text-success" />
           <Pill label={`${formatCompact(summary.blocked_count)} blocked`} tone={asNumber(summary.blocked_count) ? statusTone.security_blocker : "border-border bg-muted/20 text-muted-foreground"} />
           <Pill label={`updated ${evolution.generated_at ? new Date(evolution.generated_at).toLocaleTimeString() : "pending"}`} tone="border-border bg-muted/20 text-muted-foreground" />
         </div>
@@ -8013,14 +8013,14 @@ function FrontendEvolutionPanel({
                       <div className="mt-1 truncate font-mono text-[11px] text-muted-foreground">{order.source_path}</div>
                     </div>
                     <div className="flex flex-wrap gap-1">
-                      <Pill label={`P${order.priority}`} tone="border-blue-500/30 bg-blue-500/10 text-blue-200" />
+                      <Pill label={`P${order.priority}`} tone="border-primary/30 bg-primary/10 text-primary" />
                       <Pill label={order.status} tone={order.status.includes("blocked") ? statusTone.security_blocker : freshnessTone("attention")} />
                       <Pill label={order.target_title} tone="border-border bg-muted/20 text-muted-foreground" />
                     </div>
                   </div>
                   <div className="mt-2 text-xs text-muted-foreground">{order.capability_summary}</div>
                   {order.frontend_action ? <div className="mt-2 text-xs text-foreground">{order.frontend_action}</div> : null}
-                  {order.safety_boundary ? <div className="mt-2 text-[11px] text-yellow-100">{order.safety_boundary}</div> : null}
+                  {order.safety_boundary ? <div className="mt-2 text-[11px] text-warning">{order.safety_boundary}</div> : null}
                 </div>
               ))
             ) : (
@@ -8057,9 +8057,9 @@ function CapabilitySwitchboardPanel({ switchboard }: { switchboard: CapabilitySw
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            <Pill label={switchboard.status || "switchboard pending"} tone={asNumber(summary.blocker_count) ? "border-yellow-500/30 bg-yellow-500/10 text-yellow-200" : statusTone.wired} />
-            <Pill label={`${formatCompact(summary.autonomous_capability_count)} autonomous modes`} tone="border-green-500/30 bg-green-500/10 text-green-200" />
-            <Pill label={`${formatCompact(summary.presentation_intent_count)} presentation intents`} tone="border-blue-500/30 bg-blue-500/10 text-blue-200" />
+            <Pill label={switchboard.status || "switchboard pending"} tone={asNumber(summary.blocker_count) ? "border-warning/30 bg-warning/10 text-warning" : statusTone.wired} />
+            <Pill label={`${formatCompact(summary.autonomous_capability_count)} autonomous modes`} tone="border-success/30 bg-success/10 text-success" />
+            <Pill label={`${formatCompact(summary.presentation_intent_count)} presentation intents`} tone="border-primary/30 bg-primary/10 text-primary" />
             <Pill label={`updated ${switchboard.generated_at ? new Date(switchboard.generated_at).toLocaleTimeString() : "pending"}`} tone="border-border bg-muted/20 text-muted-foreground" />
           </div>
 
@@ -8070,7 +8070,7 @@ function CapabilitySwitchboardPanel({ switchboard }: { switchboard: CapabilitySw
             </div>
             <div className="rounded-md border border-border/40 bg-muted/10 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">blocked</div>
-              <div className="mt-1 text-lg font-semibold text-yellow-200">{formatCompact(summary.blocker_count)}</div>
+              <div className="mt-1 text-lg font-semibold text-warning">{formatCompact(summary.blocker_count)}</div>
             </div>
             <div className="rounded-md border border-border/40 bg-muted/10 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">app/UI queue</div>
@@ -8078,7 +8078,7 @@ function CapabilitySwitchboardPanel({ switchboard }: { switchboard: CapabilitySw
             </div>
             <div className="rounded-md border border-border/40 bg-muted/10 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">ready adapters</div>
-              <div className="mt-1 text-lg font-semibold text-green-300">{formatCompact(summary.ready_adapter_count)}</div>
+              <div className="mt-1 text-lg font-semibold text-success">{formatCompact(summary.ready_adapter_count)}</div>
             </div>
             <div className="rounded-md border border-border/40 bg-muted/10 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">runtime</div>
@@ -8105,7 +8105,7 @@ function CapabilitySwitchboardPanel({ switchboard }: { switchboard: CapabilitySw
                     {mode.systems?.length ? (
                       <div className="mt-2 flex flex-wrap gap-1">
                         {mode.systems.slice(0, 5).map((system) => (
-                          <Pill key={system} label={system} tone="border-blue-500/30 bg-blue-500/10 text-blue-100" />
+                          <Pill key={system} label={system} tone="border-primary/30 bg-primary/10 text-primary" />
                         ))}
                       </div>
                     ) : null}
@@ -8134,7 +8134,7 @@ function CapabilitySwitchboardPanel({ switchboard }: { switchboard: CapabilitySw
             <div className="text-[11px] uppercase text-muted-foreground">HNC anti-drift gates</div>
             <div className="mt-2 flex flex-wrap gap-1">
               {(gates.length ? gates : ["source_evidence_required", "safe_authority_boundary_checked"]).slice(0, 7).map((gate) => (
-                <Pill key={gate} label={gate.replace(/_/g, " ")} tone="border-green-500/30 bg-green-500/10 text-green-100" />
+                <Pill key={gate} label={gate.replace(/_/g, " ")} tone="border-success/30 bg-success/10 text-success" />
               ))}
             </div>
           </div>
@@ -8150,7 +8150,7 @@ function CapabilitySwitchboardPanel({ switchboard }: { switchboard: CapabilitySw
                         <div className="mt-1 text-xs text-muted-foreground">{intent.reason}</div>
                       </div>
                       <div className="flex flex-wrap gap-1">
-                        <Pill label={`P${intent.priority}`} tone="border-blue-500/30 bg-blue-500/10 text-blue-200" />
+                        <Pill label={`P${intent.priority}`} tone="border-primary/30 bg-primary/10 text-primary" />
                         <Pill label={intent.display_mode.replace(/_/g, " ")} tone="border-border bg-muted/20 text-muted-foreground" />
                       </div>
                     </div>
@@ -8268,11 +8268,11 @@ function LiveGoalTradeAuditPanel({ audit, runtime }: { audit: LiveGoalTradeAudit
   ];
 
   return (
-    <Card className="border-yellow-500/30 bg-yellow-500/5">
+    <Card className="border-warning/30 bg-warning/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <LineChart className="h-4 w-4 text-yellow-300" />
+            <LineChart className="h-4 w-4 text-warning" />
             GOLD Live Goal Trade Audit
           </span>
           <div className="flex flex-wrap gap-1">
@@ -8284,7 +8284,7 @@ function LiveGoalTradeAuditPanel({ audit, runtime }: { audit: LiveGoalTradeAudit
       <CardContent className="space-y-4">
         <div className="grid gap-2 md:grid-cols-4">
           {gateCards.map((gate, index) => (
-            <div key={gate.label} className={`rounded-md border p-3 ${gate.pass ? "border-green-500/30 bg-green-500/10" : "border-yellow-500/30 bg-yellow-500/10"}`}>
+            <div key={gate.label} className={`rounded-md border p-3 ${gate.pass ? "border-success/30 bg-success/10" : "border-warning/30 bg-warning/10"}`}>
               <div className="flex items-center justify-between gap-2">
                 <div className="text-[11px] uppercase text-muted-foreground">{index + 1}. {gate.label}</div>
                 <Pill label={gate.state} tone={gate.pass ? statusTone.wired : statusTone.orphaned} />
@@ -8297,7 +8297,7 @@ function LiveGoalTradeAuditPanel({ audit, runtime }: { audit: LiveGoalTradeAudit
         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
           <div className="rounded-md border border-border/40 bg-black/20 p-3">
             <div className="text-[11px] uppercase text-muted-foreground">live data</div>
-            <div className={`mt-1 font-mono text-sm font-semibold ${runtimeGoldDataFresh ? "text-green-300" : "text-yellow-200"}`}>
+            <div className={`mt-1 font-mono text-sm font-semibold ${runtimeGoldDataFresh ? "text-success" : "text-warning"}`}>
               {runtimeGoldDataFresh ? "fresh" : "held"}
             </div>
           </div>
@@ -8311,7 +8311,7 @@ function LiveGoalTradeAuditPanel({ audit, runtime }: { audit: LiveGoalTradeAudit
           </div>
           <div className="rounded-md border border-border/40 bg-black/20 p-3">
             <div className="text-[11px] uppercase text-muted-foreground">GOLD intents</div>
-            <div className={`mt-1 font-mono text-sm font-semibold ${goal.gold_order_intent_ready ? "text-green-300" : "text-red-300"}`}>
+            <div className={`mt-1 font-mono text-sm font-semibold ${goal.gold_order_intent_ready ? "text-success" : "text-destructive"}`}>
               {formatCompact(intent.gold_intent_count)}/{formatCompact(intent.intent_count)}
             </div>
           </div>
@@ -8321,20 +8321,20 @@ function LiveGoalTradeAuditPanel({ audit, runtime }: { audit: LiveGoalTradeAudit
           </div>
           <div className="rounded-md border border-border/40 bg-black/20 p-3">
             <div className="text-[11px] uppercase text-muted-foreground">handover</div>
-            <div className={`mt-1 font-mono text-sm font-semibold ${goal.handover_ready ? "text-green-300" : "text-yellow-200"}`}>
+            <div className={`mt-1 font-mono text-sm font-semibold ${goal.handover_ready ? "text-success" : "text-warning"}`}>
               {goal.handover_ready ? "ready" : "blocked"}
             </div>
           </div>
         </div>
 
         {intent.non_gold_intents_rejected_for_gold_proof ? (
-          <div className="rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-100">
+          <div className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
             Non-GOLD runtime intents are visible but rejected for GOLD proof. Only fresh Capital GOLD/XAU intents count here.
           </div>
         ) : null}
 
         {runtimeCandidateReady ? (
-          <div className="rounded-md border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-100">
+          <div className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-primary">
             Terminal-state is publishing a fresh {String(runtimeProof.candidate_symbol || "GOLD")} candidate with side {String(runtimeProof.candidate_side || "HOLD")}. Intent remains held until interval validation permits a GOLD order-intent.
           </div>
         ) : null}
@@ -8384,7 +8384,7 @@ function LiveGoalTradeAuditPanel({ audit, runtime }: { audit: LiveGoalTradeAudit
             <div className="text-xs uppercase text-muted-foreground">Current blockers</div>
             <div className="grid gap-2 md:grid-cols-2">
               {blockers.map((blocker) => (
-                <div key={blocker} className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-100">
+                <div key={blocker} className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
                   {blocker}
                 </div>
               ))}
@@ -8421,11 +8421,11 @@ function OrderLifecyclePanel({ audit, runtime }: { audit: LiveGoalTradeAudit | n
   const lifecycleReady = Boolean(state && Object.keys(state).length && continuityBlockers.length === 0);
 
   return (
-    <Card className="border-cyan-500/30 bg-cyan-500/5">
+    <Card className="border-primary/30 bg-primary/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <Activity className="h-4 w-4 text-cyan-300" />
+            <Activity className="h-4 w-4 text-primary" />
             Order Lifecycle
           </span>
           <div className="flex flex-wrap gap-1">
@@ -8456,7 +8456,7 @@ function OrderLifecyclePanel({ audit, runtime }: { audit: LiveGoalTradeAudit | n
           </div>
           <div className="rounded-md border border-border/40 bg-black/20 p-3">
             <div className="text-[11px] uppercase text-muted-foreground">missing links</div>
-            <div className={`mt-1 font-mono text-sm font-semibold ${missingLinks.length ? "text-yellow-200" : "text-green-300"}`}>
+            <div className={`mt-1 font-mono text-sm font-semibold ${missingLinks.length ? "text-warning" : "text-success"}`}>
               {missingLinks.length ? formatCompact(new Set(missingLinks).size) : "0"}
             </div>
           </div>
@@ -8518,7 +8518,7 @@ function OrderLifecyclePanel({ audit, runtime }: { audit: LiveGoalTradeAudit | n
               {events.map((event) => (
                 <div key={String(event.event_id || `${event.generated_at}-${event.status}`)} className="rounded-md border border-border/40 bg-black/20 px-3 py-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-cyan-100">{String(event.status || event.event_type || "event").replace(/_/g, " ")}</span>
+                    <span className="font-mono text-primary">{String(event.status || event.event_type || "event").replace(/_/g, " ")}</span>
                     <span className="text-muted-foreground">{event.generated_at ? new Date(String(event.generated_at)).toLocaleTimeString() : ""}</span>
                   </div>
                   <div className="mt-1 truncate text-muted-foreground">{String(event.symbol || "")} {String(event.route_key || event.lifecycle_id || "")}</div>
@@ -8568,11 +8568,11 @@ function OrderLifecycleStressPanel({
   const sandboxProbeMode = String(summary.sandbox_probe_mode || proof.sandbox_probe_mode || "guarded fixture");
 
   return (
-    <Card className="border-emerald-500/30 bg-emerald-500/5">
+    <Card className="border-success/30 bg-success/5">
       <CardHeader className="pb-3">
         <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-base">
           <span className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-emerald-300" />
+            <ShieldCheck className="h-4 w-4 text-success" />
             Lifecycle Stress Certification
           </span>
           <div className="flex flex-wrap gap-1">
@@ -8580,7 +8580,7 @@ function OrderLifecycleStressPanel({
             <Pill label={sandboxCertified ? "Sandbox/Paper Certified" : "Sandbox/Paper Attention"} tone={sandboxCertified ? statusTone.wired : statusTone.orphaned} />
             <Pill label={`${formatCompact(summary.passed_count ?? proof.passed_count)}/${formatCompact(summary.case_count ?? proof.case_count)} cases`} tone="border-border bg-muted/20 text-muted-foreground" />
             <Pill label={`${formatCompact(summary.covered_requirement_count ?? proof.covered_requirement_count)}/${formatCompact(summary.requirement_count ?? proof.requirement_count)} reqs`} tone="border-border bg-muted/20 text-muted-foreground" />
-            <Pill label="/aureon_order_lifecycle_stress_audit.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+            <Pill label="/aureon_order_lifecycle_stress_audit.json" tone="border-primary/30 bg-primary/10 text-primary" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -8600,7 +8600,7 @@ function OrderLifecycleStressPanel({
           ].map(([label, ok]) => (
             <div key={String(label)} className="rounded-md border border-border/40 bg-muted/10 p-3">
               <div className="text-[11px] uppercase text-muted-foreground">{String(label)}</div>
-              <div className={`mt-1 font-mono text-sm font-semibold ${ok ? "text-green-300" : "text-yellow-200"}`}>
+              <div className={`mt-1 font-mono text-sm font-semibold ${ok ? "text-success" : "text-warning"}`}>
                 {ok ? "proven" : "held"}
               </div>
             </div>
@@ -8608,13 +8608,13 @@ function OrderLifecycleStressPanel({
         </div>
 
         <div className="grid gap-2 md:grid-cols-3">
-          <div className="rounded-md border border-cyan-500/30 bg-cyan-500/10 p-3">
-            <div className="text-[11px] uppercase text-cyan-100/80">Mock broker tier</div>
-            <div className="mt-1 font-mono text-sm text-cyan-50">{String(summary.mock_broker_status || proof.mock_broker_status || source?.status || "pending").replace(/_/g, " ")}</div>
+          <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
+            <div className="text-[11px] uppercase text-primary/80">Mock broker tier</div>
+            <div className="mt-1 font-mono text-sm text-primary">{String(summary.mock_broker_status || proof.mock_broker_status || source?.status || "pending").replace(/_/g, " ")}</div>
           </div>
-          <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3">
-            <div className="text-[11px] uppercase text-emerald-100/80">Sandbox / paper tier</div>
-            <div className="mt-1 font-mono text-sm text-emerald-50">
+          <div className="rounded-md border border-success/30 bg-success/10 p-3">
+            <div className="text-[11px] uppercase text-success/80">Sandbox / paper tier</div>
+            <div className="mt-1 font-mono text-sm text-success">
               {formatCompact(summary.sandbox_paper_passed_count ?? proof.sandbox_paper_passed_count)}/{formatCompact(summary.sandbox_paper_case_count ?? proof.sandbox_paper_case_count)} cases / {String(summary.sandbox_paper_status || proof.sandbox_paper_status || "pending").replace(/_/g, " ")}
             </div>
           </div>
@@ -8648,7 +8648,7 @@ function OrderLifecycleStressPanel({
             <div className="text-xs uppercase text-muted-foreground">Broker correlation fields</div>
             <div className="flex flex-wrap gap-1">
               {(brokerFields.length ? brokerFields : ["client_order_id", "broker_order_id", "deal_reference", "deal_id", "venue_status", "verification_source"]).slice(0, 12).map((field) => (
-                <Pill key={field} label={field.replace(/_/g, " ")} tone="border-emerald-500/30 bg-emerald-500/10 text-emerald-100" />
+                <Pill key={field} label={field.replace(/_/g, " ")} tone="border-success/30 bg-success/10 text-success" />
               ))}
             </div>
             <div className="mt-3 text-xs text-muted-foreground">
@@ -8781,15 +8781,15 @@ function GlobalFinancialCoveragePanel({ coverage }: { coverage: GlobalFinancialC
             label={coverage?.generated_at ? `updated ${new Date(coverage.generated_at).toLocaleTimeString()}` : "no map timestamp"}
             tone="border-border bg-muted/20 text-muted-foreground"
           />
-          <Pill label="/aureon_global_financial_coverage_map.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+          <Pill label="/aureon_global_financial_coverage_map.json" tone="border-primary/30 bg-primary/10 text-primary" />
         </div>
 
-        <div className="rounded-md border border-cyan-500/30 bg-cyan-500/10 p-3">
+        <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="text-[11px] uppercase text-cyan-100/80">configured source coverage</div>
-              <div className="mt-1 text-lg font-semibold text-cyan-50">{coveragePercent}% mapped</div>
-              <div className="mt-1 text-xs text-cyan-50/70">
+              <div className="text-[11px] uppercase text-primary/80">configured source coverage</div>
+              <div className="mt-1 text-lg font-semibold text-primary">{coveragePercent}% mapped</div>
+              <div className="mt-1 text-xs text-primary/70">
                 {formatCompact(summary.usable_source_count)}/{formatCompact(summary.configured_reachable_source_count)} configured/reachable sources usable; {accountedPercent}% accounted.
               </div>
             </div>
@@ -8824,7 +8824,7 @@ function GlobalFinancialCoveragePanel({ coverage }: { coverage: GlobalFinancialC
           </div>
           <div className="rounded-md border border-border/40 bg-muted/10 p-3">
             <div className="text-[11px] uppercase text-muted-foreground">missing creds</div>
-            <div className="mt-1 text-lg font-semibold text-yellow-200">{formatCompact(summary.credential_missing_source_count)}</div>
+            <div className="mt-1 text-lg font-semibold text-warning">{formatCompact(summary.credential_missing_source_count)}</div>
           </div>
         </div>
 
@@ -8832,9 +8832,9 @@ function GlobalFinancialCoveragePanel({ coverage }: { coverage: GlobalFinancialC
           <div className="space-y-2">
             <div className="text-xs uppercase text-muted-foreground">Map gaps</div>
             {missing.map((item, index) => (
-              <div key={`${String(item.domain)}-${index}`} className="rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-xs">
-                <span className="font-semibold text-yellow-100">{String(item.domain || "unknown")}</span>
-                <span className="ml-2 text-yellow-100/80">{String(item.missing || "")}</span>
+              <div key={`${String(item.domain)}-${index}`} className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs">
+                <span className="font-semibold text-warning">{String(item.domain || "unknown")}</span>
+                <span className="ml-2 text-warning/80">{String(item.missing || "")}</span>
               </div>
             ))}
           </div>
@@ -8853,10 +8853,10 @@ function GlobalFinancialCoveragePanel({ coverage }: { coverage: GlobalFinancialC
                   </div>
                 </div>
                 <div className="mt-1 text-muted-foreground">{source.reason || source.next_action || "No blocker detail."}</div>
-                {source.decision_blocker ? <div className="mt-1 text-yellow-100">Decision hold: {source.decision_blocker.replace(/_/g, " ")}</div> : null}
+                {source.decision_blocker ? <div className="mt-1 text-warning">Decision hold: {source.decision_blocker.replace(/_/g, " ")}</div> : null}
                 <div className="mt-2 flex flex-wrap gap-1">
                   {(source.asset_classes || []).slice(0, 5).map((assetClass) => (
-                    <Pill key={`${source.source_id}-${assetClass}`} label={assetClass.replace(/_/g, " ")} tone="border-blue-500/30 bg-blue-500/10 text-blue-200" />
+                    <Pill key={`${source.source_id}-${assetClass}`} label={assetClass.replace(/_/g, " ")} tone="border-primary/30 bg-primary/10 text-primary" />
                   ))}
                 </div>
               </div>
@@ -8927,7 +8927,7 @@ function ExchangeMonitoringChecklistPanel({ checklist }: { checklist: ExchangeMo
             label={checklist?.generated_at ? `updated ${new Date(checklist.generated_at).toLocaleTimeString()}` : "no checklist timestamp"}
             tone="border-border bg-muted/20 text-muted-foreground"
           />
-          <Pill label="/aureon_exchange_monitoring_checklist.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+          <Pill label="/aureon_exchange_monitoring_checklist.json" tone="border-primary/30 bg-primary/10 text-primary" />
           {summary.stale_reason ? <Pill label={String(summary.stale_reason)} tone={statusTone.security_blocker} /> : null}
         </div>
 
@@ -8962,9 +8962,9 @@ function ExchangeMonitoringChecklistPanel({ checklist }: { checklist: ExchangeMo
           <div className="space-y-2">
             <div className="text-xs uppercase text-muted-foreground">Missing by exchange</div>
             {missing.map((item, index) => (
-              <div key={`${String(item.exchange)}-${index}`} className="rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-xs">
-                <span className="font-semibold text-yellow-100">{String(item.exchange || "unknown")}</span>
-                <span className="ml-2 text-yellow-100/80">{String(item.missing || "")}</span>
+              <div key={`${String(item.exchange)}-${index}`} className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs">
+                <span className="font-semibold text-warning">{String(item.exchange || "unknown")}</span>
+                <span className="ml-2 text-warning/80">{String(item.missing || "")}</span>
               </div>
             ))}
           </div>
@@ -8980,7 +8980,7 @@ function ExchangeMonitoringChecklistPanel({ checklist }: { checklist: ExchangeMo
                       <div className="text-sm font-medium">{row.label || row.exchange}</div>
                       <div className="mt-1 flex flex-wrap gap-1">
                         {(row.markets || []).slice(0, 4).map((market) => (
-                          <Pill key={market} label={market.replace(/_/g, " ")} tone="border-blue-500/30 bg-blue-500/10 text-blue-200" />
+                          <Pill key={market} label={market.replace(/_/g, " ")} tone="border-primary/30 bg-primary/10 text-primary" />
                         ))}
                       </div>
                     </div>
@@ -9010,11 +9010,11 @@ function ExchangeMonitoringChecklistPanel({ checklist }: { checklist: ExchangeMo
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1">
                     {(row.monitored_now || []).slice(0, 6).map((item) => (
-                      <Pill key={item} label={item.replace(/_/g, " ")} tone="border-green-500/30 bg-green-500/10 text-green-100" />
+                      <Pill key={item} label={item.replace(/_/g, " ")} tone="border-success/30 bg-success/10 text-success" />
                     ))}
                   </div>
                   {(row.missing || []).length ? (
-                    <div className="mt-2 text-xs text-yellow-100">{(row.missing || []).slice(0, 5).join(", ")}</div>
+                    <div className="mt-2 text-xs text-warning">{(row.missing || []).slice(0, 5).join(", ")}</div>
                   ) : null}
                 </div>
               ))
@@ -9052,7 +9052,7 @@ function ExchangeDataCapabilityMatrixPanel({ matrix }: { matrix: ExchangeDataCap
             label={matrix?.generated_at ? `updated ${new Date(matrix.generated_at).toLocaleTimeString()}` : "no matrix timestamp"}
             tone="border-border bg-muted/20 text-muted-foreground"
           />
-          <Pill label="/aureon_exchange_data_capability_matrix.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+          <Pill label="/aureon_exchange_data_capability_matrix.json" tone="border-primary/30 bg-primary/10 text-primary" />
           {summary.stale_reason ? <Pill label={String(summary.stale_reason)} tone={statusTone.security_blocker} /> : null}
         </div>
 
@@ -9099,7 +9099,7 @@ function ExchangeDataCapabilityMatrixPanel({ matrix }: { matrix: ExchangeDataCap
                       <div className="flex flex-wrap gap-1">
                         <Pill label={state.connected ? "client ready" : "client missing"} tone={state.connected ? statusTone.wired : statusTone.orphaned} />
                         <Pill label={state.fresh_feed ? "fresh feed" : state.active_feed ? "feed stale" : "feed missing"} tone={state.fresh_feed ? statusTone.wired : statusTone.partial} />
-                        <Pill label={policy.data_boost_eligible ? "data boost" : "execution reserve"} tone={policy.data_boost_eligible ? "border-cyan-500/30 bg-cyan-500/10 text-cyan-200" : "border-yellow-500/30 bg-yellow-500/10 text-yellow-200"} />
+                        <Pill label={policy.data_boost_eligible ? "data boost" : "execution reserve"} tone={policy.data_boost_eligible ? "border-primary/30 bg-primary/10 text-primary" : "border-warning/30 bg-warning/10 text-warning"} />
                       </div>
                     </div>
 
@@ -9124,7 +9124,7 @@ function ExchangeDataCapabilityMatrixPanel({ matrix }: { matrix: ExchangeDataCap
 
                     <div className="mt-2 flex flex-wrap gap-1">
                       {(row.trading_modes || []).slice(0, 5).map((mode) => (
-                        <Pill key={`${row.exchange}-${mode}`} label={mode.replace(/_/g, " ")} tone="border-blue-500/30 bg-blue-500/10 text-blue-200" />
+                        <Pill key={`${row.exchange}-${mode}`} label={mode.replace(/_/g, " ")} tone="border-primary/30 bg-primary/10 text-primary" />
                       ))}
                     </div>
 
@@ -9141,7 +9141,7 @@ function ExchangeDataCapabilityMatrixPanel({ matrix }: { matrix: ExchangeDataCap
                     </div>
 
                     {row.next_optimization ? <div className="mt-3 text-xs text-foreground">{row.next_optimization}</div> : null}
-                    {(row.gaps || []).length ? <div className="mt-2 text-xs text-yellow-100">{(row.gaps || []).slice(0, 5).join(", ")}</div> : null}
+                    {(row.gaps || []).length ? <div className="mt-2 text-xs text-warning">{(row.gaps || []).slice(0, 5).join(", ")}</div> : null}
                   </div>
                 );
               })
@@ -9192,7 +9192,7 @@ function TradingIntelligenceChecklistPanel({ checklist }: { checklist: TradingIn
             label={checklist?.generated_at ? `updated ${new Date(checklist.generated_at).toLocaleTimeString()}` : "no checklist timestamp"}
             tone="border-border bg-muted/20 text-muted-foreground"
           />
-          <Pill label="/aureon_trading_intelligence_checklist.json" tone="border-cyan-500/30 bg-cyan-500/10 text-cyan-200" />
+          <Pill label="/aureon_trading_intelligence_checklist.json" tone="border-primary/30 bg-primary/10 text-primary" />
           {summary.stale_reason ? <Pill label={String(summary.stale_reason)} tone={statusTone.security_blocker} /> : null}
         </div>
 
@@ -9215,7 +9215,7 @@ function TradingIntelligenceChecklistPanel({ checklist }: { checklist: TradingIn
           </div>
           <div className="rounded-md border border-border/40 bg-muted/10 p-3">
             <div className="text-[11px] uppercase text-muted-foreground">stale/blocked</div>
-            <div className="mt-1 text-lg font-semibold text-yellow-200">{formatCompact(summary.stale_or_blocked_count)}</div>
+            <div className="mt-1 text-lg font-semibold text-warning">{formatCompact(summary.stale_or_blocked_count)}</div>
           </div>
           <div className="rounded-md border border-border/40 bg-muted/10 p-3">
             <div className="text-[11px] uppercase text-muted-foreground">self trust</div>
@@ -9224,11 +9224,11 @@ function TradingIntelligenceChecklistPanel({ checklist }: { checklist: TradingIn
         </div>
 
         {trust ? (
-          <div className="rounded-md border border-cyan-500/30 bg-cyan-500/10 p-3">
+          <div className="rounded-md border border-primary/30 bg-primary/10 p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <div className="text-[11px] uppercase text-cyan-100/80">decision posture</div>
-                <div className="mt-1 font-mono text-sm font-semibold text-cyan-50">
+                <div className="text-[11px] uppercase text-primary/80">decision posture</div>
+                <div className="mt-1 font-mono text-sm font-semibold text-primary">
                   {String(trust.posture || summary.decision_posture || "checking").replace(/_/g, " ")}
                 </div>
               </div>
@@ -9237,17 +9237,17 @@ function TradingIntelligenceChecklistPanel({ checklist }: { checklist: TradingIn
                 <Pill label={trust.trust_to_act ? "live intent ready" : trust.trust_to_shadow ? "shadow ready" : "learning"} tone={trust.trust_to_act ? statusTone.wired : statusTone.partial} />
               </div>
             </div>
-            <div className="mt-2 text-xs text-cyan-50/80">{trust.self_instruction}</div>
-            <div className="mt-1 text-[11px] text-cyan-50/60">{trust.not_fear_reason}</div>
+            <div className="mt-2 text-xs text-primary/80">{trust.self_instruction}</div>
+            <div className="mt-1 text-[11px] text-primary/60">{trust.not_fear_reason}</div>
           </div>
         ) : null}
 
         {metaContext?.present ? (
-          <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3">
+          <div className="rounded-md border border-success/30 bg-success/10 p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <div className="text-[11px] uppercase text-emerald-100/80">metacognitive data ocean</div>
-                <div className="mt-1 text-sm text-emerald-50">
+                <div className="text-[11px] uppercase text-success/80">metacognitive data ocean</div>
+                <div className="mt-1 text-sm text-success">
                   {metaContext.state_phrase || "Global data context is being measured."}
                 </div>
               </div>
@@ -9263,28 +9263,28 @@ function TradingIntelligenceChecklistPanel({ checklist }: { checklist: TradingIn
               </div>
             </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
-              <div className="rounded-md border border-emerald-400/20 bg-background/30 p-2">
-                <div className="text-[10px] uppercase text-emerald-100/70">mapped</div>
-                <div className="font-mono text-sm text-emerald-50">{Math.round(asNumber(metaContext.coverage_percent))}%</div>
+              <div className="rounded-md border border-success/20 bg-background/30 p-2">
+                <div className="text-[10px] uppercase text-success/70">mapped</div>
+                <div className="font-mono text-sm text-success">{Math.round(asNumber(metaContext.coverage_percent))}%</div>
               </div>
-              <div className="rounded-md border border-emerald-400/20 bg-background/30 p-2">
-                <div className="text-[10px] uppercase text-emerald-100/70">live sources</div>
-                <div className="font-mono text-sm text-emerald-50">{formatCompact(metaContext.active_live_source_count)}</div>
+              <div className="rounded-md border border-success/20 bg-background/30 p-2">
+                <div className="text-[10px] uppercase text-success/70">live sources</div>
+                <div className="font-mono text-sm text-success">{formatCompact(metaContext.active_live_source_count)}</div>
               </div>
-              <div className="rounded-md border border-emerald-400/20 bg-background/30 p-2">
-                <div className="text-[10px] uppercase text-emerald-100/70">tickers</div>
-                <div className="font-mono text-sm text-emerald-50">{formatCompact(metaContext.live_ticker_count)}</div>
+              <div className="rounded-md border border-success/20 bg-background/30 p-2">
+                <div className="text-[10px] uppercase text-success/70">tickers</div>
+                <div className="font-mono text-sm text-success">{formatCompact(metaContext.live_ticker_count)}</div>
               </div>
-              <div className="rounded-md border border-emerald-400/20 bg-background/30 p-2">
-                <div className="text-[10px] uppercase text-emerald-100/70">history rows</div>
-                <div className="font-mono text-sm text-emerald-50">{formatCompact(metaContext.history_rows)}</div>
+              <div className="rounded-md border border-success/20 bg-background/30 p-2">
+                <div className="text-[10px] uppercase text-success/70">history rows</div>
+                <div className="font-mono text-sm text-success">{formatCompact(metaContext.history_rows)}</div>
               </div>
-              <div className="rounded-md border border-emerald-400/20 bg-background/30 p-2">
-                <div className="text-[10px] uppercase text-emerald-100/70">cleanliness</div>
-                <div className="font-mono text-sm text-emerald-50">{Math.round(asNumber(metaContext.cognitive_cleanliness_score) * 100)}%</div>
+              <div className="rounded-md border border-success/20 bg-background/30 p-2">
+                <div className="text-[10px] uppercase text-success/70">cleanliness</div>
+                <div className="font-mono text-sm text-success">{Math.round(asNumber(metaContext.cognitive_cleanliness_score) * 100)}%</div>
               </div>
             </div>
-            {metaContext.decision_blocker ? <div className="mt-2 text-[11px] text-yellow-100">{metaContext.decision_blocker}</div> : null}
+            {metaContext.decision_blocker ? <div className="mt-2 text-[11px] text-warning">{metaContext.decision_blocker}</div> : null}
           </div>
         ) : null}
 
@@ -9301,9 +9301,9 @@ function TradingIntelligenceChecklistPanel({ checklist }: { checklist: TradingIn
           <div className="space-y-2">
             <div className="text-xs uppercase text-muted-foreground">Top blockers</div>
             {blockers.map((blocker, index) => (
-              <div key={`${String(blocker.system)}-${index}`} className="rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-xs">
-                <span className="font-semibold text-yellow-100">{String(blocker.system || "unknown")}</span>
-                <span className="ml-2 text-yellow-100/80">{String(blocker.blocker || "")}</span>
+              <div key={`${String(blocker.system)}-${index}`} className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs">
+                <span className="font-semibold text-warning">{String(blocker.system || "unknown")}</span>
+                <span className="ml-2 text-warning/80">{String(blocker.blocker || "")}</span>
               </div>
             ))}
           </div>
@@ -9319,12 +9319,12 @@ function TradingIntelligenceChecklistPanel({ checklist }: { checklist: TradingIn
                     <div className="mt-1 truncate font-mono text-[11px] text-muted-foreground">{row.evidence_source}</div>
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    <Pill label={row.downstream_stage.replace(/_/g, " ")} tone="border-blue-500/30 bg-blue-500/10 text-blue-200" />
+                    <Pill label={row.downstream_stage.replace(/_/g, " ")} tone="border-primary/30 bg-primary/10 text-primary" />
                     <Pill label={row.fed_to_decision_logic ? "decision fed" : "not fed"} tone={row.fed_to_decision_logic ? statusTone.wired : statusTone.partial} />
                     <Pill label={row.usable_for_decision ? "fresh usable" : "held"} tone={row.usable_for_decision ? statusTone.wired : statusTone.orphaned} />
                   </div>
                 </div>
-                {row.blocker ? <div className="mt-2 text-xs text-yellow-100">{row.blocker}</div> : null}
+                {row.blocker ? <div className="mt-2 text-xs text-warning">{row.blocker}</div> : null}
               </div>
             ))}
             {!rows.length ? (
@@ -9416,7 +9416,7 @@ function ScreenPanel({
             {screen.safety_notes.length ? (
               <div className="flex flex-wrap gap-2">
                 {screen.safety_notes.map((note) => (
-                  <Pill key={note} label={note} tone="border-yellow-500/30 bg-yellow-500/10 text-yellow-200" />
+                  <Pill key={note} label={note} tone="border-warning/30 bg-warning/10 text-warning" />
                 ))}
               </div>
             ) : (
@@ -9428,7 +9428,7 @@ function ScreenPanel({
             <div className="space-y-2">
               <div className="text-xs uppercase text-muted-foreground">Missing or blocked</div>
               {screen.missing_capabilities.map((item) => (
-                <div key={item} className="rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-sm text-yellow-100">
+                <div key={item} className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
                   {item}
                 </div>
               ))}

@@ -35,11 +35,11 @@ export function TradeControlsHeader({
             <div className="flex items-center gap-2">
               <Badge 
                 variant={status === 'active' ? 'default' : status === 'emergency_stopped' ? 'destructive' : 'secondary'}
-                className={status === 'active' ? 'bg-green-500 animate-pulse' : ''}
+                className={status === 'active' ? 'bg-success animate-pulse' : ''}
               >
-                {status === 'idle' && '⏸️ IDLE'}
-                {status === 'active' && '🔥 ACTIVE'}
-                {status === 'emergency_stopped' && '🚨 STOPPED'}
+                {status === 'idle' && ' IDLE'}
+                {status === 'active' && ' ACTIVE'}
+                {status === 'emergency_stopped' && ' STOPPED'}
               </Badge>
               
               {globalState.isRunning && (
@@ -55,7 +55,7 @@ export function TradeControlsHeader({
           <div className="flex items-center gap-6">
             <div className="text-center">
               <p className="text-xs text-muted-foreground">Balance</p>
-              <p className="text-lg font-bold text-green-500">${currentBalance.toFixed(2)}</p>
+              <p className="text-lg font-bold text-success">${currentBalance.toFixed(2)}</p>
             </div>
             <div className="text-center">
               <p className="text-xs text-muted-foreground">Trades</p>
@@ -63,7 +63,7 @@ export function TradeControlsHeader({
             </div>
             <div className="text-center">
               <p className="text-xs text-muted-foreground">Net P&L</p>
-              <p className={`text-lg font-bold ${netPnL >= 0 ? 'text-green-500' : 'text-destructive'}`}>
+              <p className={`text-lg font-bold ${netPnL >= 0 ? 'text-success' : 'text-destructive'}`}>
                 {netPnL >= 0 ? '+' : ''}${netPnL.toFixed(2)}
               </p>
             </div>
@@ -81,7 +81,7 @@ export function TradeControlsHeader({
               <Button
                 size="lg"
                 onClick={onLaunchAssault}
-                className="bg-gradient-to-r from-green-500 to-primary hover:from-green-600 hover:to-primary/90 text-white font-bold"
+                className="bg-gradient-to-r from-success to-primary hover:from-success hover:to-primary/90 text-white font-bold"
               >
                 <Zap className="h-4 w-4 mr-2" />
                 LAUNCH ASSAULT
@@ -94,16 +94,16 @@ export function TradeControlsHeader({
                 onClick={onEmergencyStop}
                 className="font-bold animate-pulse"
               >
-                🚨 EMERGENCY STOP
+                 EMERGENCY STOP
               </Button>
             )}
             {status === 'emergency_stopped' && (
               <Button
                 size="lg"
                 onClick={onLaunchAssault}
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold"
+                className="bg-gradient-to-r from-warning to-warning hover:from-warning hover:to-warning text-white font-bold"
               >
-                🔄 RESUME TRADING
+                 RESUME TRADING
               </Button>
             )}
           </div>

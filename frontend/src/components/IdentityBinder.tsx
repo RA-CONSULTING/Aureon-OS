@@ -38,7 +38,7 @@ export function IdentityBinder({ onIdentityChange }: IdentityBinderProps) {
   };
 
   return (
-    <Card className="bg-gradient-to-br from-indigo-900 to-purple-900 text-white">
+    <Card className="bg-gradient-to-br from-primary to-primary text-white">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <span>🔮</span> Identity Binder
@@ -47,32 +47,32 @@ export function IdentityBinder({ onIdentityChange }: IdentityBinderProps) {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-sm text-indigo-200">Name</label>
+            <label className="text-sm text-primary">Name</label>
             <Input 
               value={name} 
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
-              className="bg-black/30 border-indigo-500 text-white"
+              className="bg-black/30 border-primary text-white"
             />
           </div>
           <div>
-            <label className="text-sm text-indigo-200">Birth Date</label>
+            <label className="text-sm text-primary">Birth Date</label>
             <Input 
               type="date"
               value={dob} 
               onChange={(e) => setDob(e.target.value)}
-              className="bg-black/30 border-indigo-500 text-white"
+              className="bg-black/30 border-primary text-white"
             />
           </div>
         </div>
         
         <div>
-          <label className="text-sm text-indigo-200">Custom t0Hz (optional)</label>
+          <label className="text-sm text-primary">Custom t0Hz (optional)</label>
           <Input 
             value={customT0} 
             onChange={(e) => setCustomT0(e.target.value)}
             placeholder={`Auto: ${t0Hz.toFixed(2)} Hz`}
-            className="bg-black/30 border-indigo-500 text-white"
+            className="bg-black/30 border-primary text-white"
           />
         </div>
         
@@ -80,7 +80,7 @@ export function IdentityBinder({ onIdentityChange }: IdentityBinderProps) {
           <Badge variant="outline" className="text-lg px-3 py-1 border-white text-white">
             {role}
           </Badge>
-          <Button onClick={handleBind} className="bg-white text-purple-900 hover:bg-purple-50">
+          <Button onClick={handleBind} className="bg-white text-primary hover:bg-primary">
             Bind Identity
           </Button>
         </div>

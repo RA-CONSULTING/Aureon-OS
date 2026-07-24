@@ -92,7 +92,7 @@ export const TradingDashboard = () => {
               <p className="text-sm text-muted-foreground">Open Positions</p>
               <p className="text-2xl font-bold">{stats.openPositions}</p>
             </div>
-            <TrendingUp className="h-8 w-8 text-green-500" />
+            <TrendingUp className="h-8 w-8 text-success" />
           </div>
         </Card>
 
@@ -100,11 +100,11 @@ export const TradingDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Total P&L</p>
-              <p className={`text-2xl font-bold ${stats.totalPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              <p className={`text-2xl font-bold ${stats.totalPnL >= 0 ? 'text-success' : 'text-destructive'}`}>
                 ${stats.totalPnL.toFixed(2)}
               </p>
             </div>
-            <DollarSign className="h-8 w-8 text-yellow-500" />
+            <DollarSign className="h-8 w-8 text-warning" />
           </div>
         </Card>
 
@@ -114,7 +114,7 @@ export const TradingDashboard = () => {
               <p className="text-sm text-muted-foreground">Win Rate</p>
               <p className="text-2xl font-bold">{stats.winRate.toFixed(1)}%</p>
             </div>
-            <TrendingUp className="h-8 w-8 text-blue-500" />
+            <TrendingUp className="h-8 w-8 text-primary" />
           </div>
         </Card>
       </div>
@@ -152,7 +152,7 @@ export const TradingDashboard = () => {
                   )}
                 </div>
                 <div className="text-right">
-                  <p className={`font-bold ${parseFloat(pos.unrealized_pnl) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  <p className={`font-bold ${parseFloat(pos.unrealized_pnl) >= 0 ? 'text-success' : 'text-destructive'}`}>
                     ${parseFloat(pos.unrealized_pnl || 0).toFixed(2)}
                   </p>
                   <p className="text-xs text-muted-foreground">Unrealized P&L</p>

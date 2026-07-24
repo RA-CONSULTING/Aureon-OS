@@ -16,8 +16,8 @@ const systemIcons: Record<string, React.ReactNode> = {
 };
 
 const signalColors: Record<string, string> = {
-  BUY: 'bg-green-500/20 text-green-400 border-green-500/50',
-  SELL: 'bg-red-500/20 text-red-400 border-red-500/50',
+  BUY: 'bg-success/20 text-success border-success/50',
+  SELL: 'bg-destructive/20 text-destructive border-destructive/50',
   NEUTRAL: 'bg-muted text-muted-foreground border-border',
 };
 
@@ -116,21 +116,21 @@ function ElephantMemoryCard({ state }: { state: ElephantState }) {
       <div className="grid grid-cols-2 gap-2 text-xs">
         <div>
           <span className="text-muted-foreground">Win Rate</span>
-          <p className="font-mono text-green-400">{(state.overallWinRate * 100).toFixed(1)}%</p>
+          <p className="font-mono text-success">{(state.overallWinRate * 100).toFixed(1)}%</p>
         </div>
         <div>
           <span className="text-muted-foreground">Total P&L</span>
-          <p className={`font-mono ${state.totalProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+          <p className={`font-mono ${state.totalProfit >= 0 ? 'text-success' : 'text-destructive'}`}>
             ${state.totalProfit.toFixed(2)}
           </p>
         </div>
         <div>
           <span className="text-muted-foreground">Blacklisted</span>
-          <p className="font-mono text-red-400">{state.blacklistedSymbols.length}</p>
+          <p className="font-mono text-destructive">{state.blacklistedSymbols.length}</p>
         </div>
         <div>
           <span className="text-muted-foreground">Cooldown</span>
-          <p className="font-mono text-yellow-400">{state.cooldownSymbols.length}</p>
+          <p className="font-mono text-warning">{state.cooldownSymbols.length}</p>
         </div>
       </div>
     </div>
@@ -171,8 +171,8 @@ export function UnifiedBusStatus() {
         <CardTitle className="flex items-center gap-2 text-lg">
           <Activity className="h-5 w-5 text-primary animate-pulse" />
           Unified Bus Status
-          <span className="ml-2 flex items-center gap-1 text-xs text-green-400">
-            <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+          <span className="ml-2 flex items-center gap-1 text-xs text-success">
+            <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
             LIVE
           </span>
           {snapshot && (

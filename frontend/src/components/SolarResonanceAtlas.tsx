@@ -37,14 +37,14 @@ export default function SolarResonanceAtlas() {
           }}
         />
         <CardHeader className="relative z-10 text-center">
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary bg-clip-text text-transparent">
             🌟 Solar Resonance Atlas — Harmonic Nexus Charter
           </CardTitle>
           <p className="text-gray-600 mt-2">Chain link the solar system and play its music through the Lattice Nexus Live</p>
           <div className="flex justify-center gap-4 mt-4">
             <Button 
               onClick={toggleLiveMode}
-              className={`${isLiveMode ? 'bg-green-600' : 'bg-purple-600'} text-white`}
+              className={`${isLiveMode ? 'bg-success' : 'bg-primary'} text-white`}
             >
               {isLiveMode ? '🔴 LIVE' : '▶️ Go Live'}
             </Button>
@@ -81,7 +81,7 @@ export default function SolarResonanceAtlas() {
                   </div>
                 </div>
                 {activeChain.includes(planet.name) && (
-                  <Badge className="bg-purple-100 text-purple-800">
+                  <Badge className="bg-primary text-primary">
                     #{activeChain.indexOf(planet.name) + 1}
                   </Badge>
                 )}
@@ -98,19 +98,19 @@ export default function SolarResonanceAtlas() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3 text-sm">
-            <div className="p-3 bg-yellow-50 rounded border-l-4 border-yellow-400">
+            <div className="p-3 bg-warning rounded border-l-4 border-warning">
               <strong>Article I — Gaia Fields:</strong> Each celestial body resonates with its unique harmonic signature, contributing to the cosmic symphony.
             </div>
-            <div className="p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+            <div className="p-3 bg-primary rounded border-l-4 border-primary">
               <strong>Article II — Forces in the Hum:</strong> Gravitational, electromagnetic, and quantum forces create harmonic interference patterns across space-time.
             </div>
-            <div className="p-3 bg-purple-50 rounded border-l-4 border-purple-400">
+            <div className="p-3 bg-primary rounded border-l-4 border-primary">
               <strong>Article III — Cosmic Chord:</strong> The Solar System functions as a vast musical instrument, with planetary orbits as strings and solar wind as the bow.
             </div>
-            <div className="p-3 bg-green-50 rounded border-l-4 border-green-400">
+            <div className="p-3 bg-success rounded border-l-4 border-success">
               <strong>Article IV — Breath & Fold:</strong> Resonance drift represents the cosmic breath, expanding and contracting through dimensional folds.
             </div>
-            <div className="p-3 bg-red-50 rounded border-l-4 border-red-400">
+            <div className="p-3 bg-destructive rounded border-l-4 border-destructive">
               <strong>Article V — Unity:</strong> Universal harmony emerges from the equation: U = Source × Resonance × Observer, binding all consciousness.
             </div>
           </div>

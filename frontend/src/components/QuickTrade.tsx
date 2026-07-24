@@ -297,7 +297,7 @@ export const QuickTrade = ({ balances, canTrade }: QuickTradeProps) => {
                           <div className="text-xs text-muted-foreground text-right">
                             <div className="font-mono">${sym.price?.toFixed(2) || 'N/A'}</div>
                             {sym.priceChange24h !== undefined && (
-                              <div className={sym.priceChange24h >= 0 ? 'text-green-500' : 'text-red-500'}>
+                              <div className={sym.priceChange24h >= 0 ? 'text-success' : 'text-destructive'}>
                                 {sym.priceChange24h >= 0 ? '+' : ''}{sym.priceChange24h?.toFixed(2)}%
                               </div>
                             )}
@@ -366,7 +366,7 @@ export const QuickTrade = ({ balances, canTrade }: QuickTradeProps) => {
             {selectedSymbol.priceChange24h !== undefined && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">24h Change:</span>
-                <span className={`font-mono ${selectedSymbol.priceChange24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                <span className={`font-mono ${selectedSymbol.priceChange24h >= 0 ? 'text-success' : 'text-destructive'}`}>
                   {selectedSymbol.priceChange24h >= 0 ? '+' : ''}{selectedSymbol.priceChange24h.toFixed(2)}%
                 </span>
               </div>

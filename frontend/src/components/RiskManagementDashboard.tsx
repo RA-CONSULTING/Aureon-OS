@@ -64,8 +64,8 @@ export function RiskManagementDashboard() {
   const getRiskLevel = (value: number, limit: number) => {
     const percentage = (value / limit) * 100;
     if (percentage >= 80) return { label: "High Risk", color: "text-destructive", bg: "bg-destructive/10" };
-    if (percentage >= 50) return { label: "Moderate", color: "text-yellow-500", bg: "bg-yellow-500/10" };
-    return { label: "Safe", color: "text-green-500", bg: "bg-green-500/10" };
+    if (percentage >= 50) return { label: "Moderate", color: "text-warning", bg: "bg-warning/10" };
+    return { label: "Safe", color: "text-success", bg: "bg-success/10" };
   };
 
   const drawdownRisk = getRiskLevel(metrics.currentDrawdown, metrics.maxDrawdownLimit);
@@ -229,8 +229,8 @@ export function RiskManagementDashboard() {
           <h4 className="text-sm font-semibold text-foreground">Active Risk Controls</h4>
           <div className="space-y-2">
             <div className="flex items-start gap-2">
-              <div className="h-5 w-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <div className="h-2 w-2 rounded-full bg-green-500" />
+              <div className="h-5 w-5 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="h-2 w-2 rounded-full bg-success" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-foreground">Dynamic Stop-Loss</p>
@@ -238,8 +238,8 @@ export function RiskManagementDashboard() {
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <div className="h-5 w-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <div className="h-2 w-2 rounded-full bg-green-500" />
+              <div className="h-5 w-5 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="h-2 w-2 rounded-full bg-success" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-foreground">Kelly Criterion</p>
@@ -247,8 +247,8 @@ export function RiskManagementDashboard() {
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <div className="h-5 w-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <div className="h-2 w-2 rounded-full bg-green-500" />
+              <div className="h-5 w-5 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="h-2 w-2 rounded-full bg-success" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-foreground">Coherence Filtering</p>
@@ -256,8 +256,8 @@ export function RiskManagementDashboard() {
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <div className="h-5 w-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <div className="h-2 w-2 rounded-full bg-green-500" />
+              <div className="h-5 w-5 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="h-2 w-2 rounded-full bg-success" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-foreground">Rate Limiting</p>

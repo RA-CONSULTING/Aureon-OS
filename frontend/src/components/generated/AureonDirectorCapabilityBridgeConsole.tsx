@@ -83,17 +83,17 @@ export function AureonDirectorCapabilityBridgeConsole() {
           <ScrollArea className="h-[340px] pr-3">
             <div className="space-y-2">
               {orders.map((order: JsonMap) => (
-                <div key={order.id} className="rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3">
+                <div key={order.id} className="rounded-md border border-warning/30 bg-warning/10 p-3">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="text-sm font-medium">{order.title}</div>
                     <Badge variant="outline">P{order.priority}</Badge>
                   </div>
-                  <div className="mt-2 text-xs text-yellow-50">{order.exact_aureon_prompt}</div>
+                  <div className="mt-2 text-xs text-warning">{order.exact_aureon_prompt}</div>
                   <div className="mt-2 truncate font-mono text-[10px] text-muted-foreground">{order.route}</div>
                 </div>
               ))}
               {!orders.length ? (
-                <div className="rounded-md border border-green-500/30 bg-green-500/10 p-4 text-sm text-green-100">
+                <div className="rounded-md border border-success/30 bg-success/10 p-4 text-sm text-success">
                   No bridge gaps detected.
                 </div>
               ) : null}

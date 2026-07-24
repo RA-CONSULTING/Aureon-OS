@@ -33,10 +33,10 @@ export default function AnomalyAlertsPanel() {
   const hasDanger = criticalCount > 0 || highCount > 0;
 
   const severityColors: Record<string, string> = {
-    CRITICAL: 'bg-red-500/20 text-red-400 border-red-500/50',
-    HIGH: 'bg-orange-500/20 text-orange-400 border-orange-500/50',
-    MEDIUM: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50',
-    LOW: 'bg-blue-500/20 text-blue-400 border-blue-500/50',
+    CRITICAL: 'bg-destructive/20 text-destructive border-destructive/50',
+    HIGH: 'bg-warning/20 text-warning border-warning/50',
+    MEDIUM: 'bg-warning/20 text-warning border-warning/50',
+    LOW: 'bg-primary/20 text-primary border-primary/50',
   };
 
   const typeIcons: Record<string, string> = {
@@ -53,14 +53,14 @@ export default function AnomalyAlertsPanel() {
   };
 
   return (
-    <Card className={`border-border/50 bg-card/50 backdrop-blur ${hasDanger ? 'border-red-500/30' : ''}`}>
+    <Card className={`border-border/50 bg-card/50 backdrop-blur ${hasDanger ? 'border-destructive/30' : ''}`}>
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center justify-between">
           <div className="flex items-center gap-2">
             {hasDanger ? (
-              <ShieldAlert className="w-5 h-5 text-red-500" />
+              <ShieldAlert className="w-5 h-5 text-destructive" />
             ) : (
-              <ShieldCheck className="w-5 h-5 text-green-500" />
+              <ShieldCheck className="w-5 h-5 text-success" />
             )}
             Anomaly Detection
           </div>
@@ -71,12 +71,12 @@ export default function AnomalyAlertsPanel() {
               </Badge>
             )}
             {highCount > 0 && (
-              <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/50 text-xs">
+              <Badge className="bg-warning/20 text-warning border-warning/50 text-xs">
                 {highCount} HIGH
               </Badge>
             )}
             {!hasDanger && (
-              <Badge className="bg-green-500/20 text-green-400 border-green-500/50 text-xs">
+              <Badge className="bg-success/20 text-success border-success/50 text-xs">
                 ALL CLEAR
               </Badge>
             )}
@@ -88,11 +88,11 @@ export default function AnomalyAlertsPanel() {
         <div className="grid grid-cols-3 gap-2 mb-3">
           <div className="text-center p-2 rounded bg-muted/30">
             <div className="text-xs text-muted-foreground">Safe Symbols</div>
-            <div className="text-lg font-bold text-green-400">{state.safeSymbols.length}</div>
+            <div className="text-lg font-bold text-success">{state.safeSymbols.length}</div>
           </div>
           <div className="text-center p-2 rounded bg-muted/30">
             <div className="text-xs text-muted-foreground">Flagged</div>
-            <div className="text-lg font-bold text-yellow-400">{state.flaggedSymbols.length}</div>
+            <div className="text-lg font-bold text-warning">{state.flaggedSymbols.length}</div>
           </div>
           <div className="text-center p-2 rounded bg-muted/30">
             <div className="text-xs text-muted-foreground">Active Alerts</div>
@@ -104,7 +104,7 @@ export default function AnomalyAlertsPanel() {
         <ScrollArea className="h-[200px]">
           {alerts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-              <ShieldCheck className="w-8 h-8 mb-2 text-green-500/50" />
+              <ShieldCheck className="w-8 h-8 mb-2 text-success/50" />
               <p className="text-sm">No anomalies detected</p>
               <p className="text-xs">Markets appear normal</p>
             </div>
@@ -149,7 +149,7 @@ export default function AnomalyAlertsPanel() {
             </div>
             <div className="flex flex-wrap gap-1">
               {state.flaggedSymbols.map((symbol) => (
-                <Badge key={symbol} variant="outline" className="text-xs bg-red-500/10 text-red-400 border-red-500/30">
+                <Badge key={symbol} variant="outline" className="text-xs bg-destructive/10 text-destructive border-destructive/30">
                   {symbol}
                 </Badge>
               ))}

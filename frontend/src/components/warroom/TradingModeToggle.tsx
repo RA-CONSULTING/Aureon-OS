@@ -74,7 +74,7 @@ export function TradingModeToggle({ userId }: TradingModeToggleProps) {
     }
 
     toast({
-      title: toLive ? '🔴 LIVE TRADING ENABLED' : '📝 Paper Trading Mode',
+      title: toLive ? ' LIVE TRADING ENABLED' : ' Paper Trading Mode',
       description: toLive 
         ? 'Real orders will be executed on your exchange account!' 
         : 'Trades will be simulated, no real money at risk.',
@@ -105,7 +105,7 @@ export function TradingModeToggle({ userId }: TradingModeToggleProps) {
           variant={isLiveMode ? 'destructive' : 'secondary'}
           className={isLiveMode ? 'animate-pulse' : ''}
         >
-          {isLiveMode ? '🔴 LIVE' : '📝 PAPER'}
+          {isLiveMode ? ' LIVE' : ' PAPER'}
         </Badge>
       </div>
 
@@ -113,7 +113,7 @@ export function TradingModeToggle({ userId }: TradingModeToggleProps) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-destructive">
-              ⚠️ Enable Live Trading?
+               Enable Live Trading?
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
               <p>

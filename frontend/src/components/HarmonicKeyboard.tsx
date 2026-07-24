@@ -168,12 +168,12 @@ export function HarmonicKeyboard({ onNotePlay, onChordPlay, disabled = false }: 
   }, [autoPlay, playNote]);
 
   const solfeggioKeys = [
-    { freq: HARMONIC_FREQUENCIES.UT, name: 'UT', label: '396 Hz', color: 'bg-red-500/20 border-red-500' },
-    { freq: HARMONIC_FREQUENCIES.RE, name: 'RE', label: '417 Hz', color: 'bg-orange-500/20 border-orange-500' },
-    { freq: HARMONIC_FREQUENCIES.MI, name: 'MI', label: '528 Hz', color: 'bg-green-500/20 border-green-500' },
-    { freq: HARMONIC_FREQUENCIES.FA, name: 'FA', label: '639 Hz', color: 'bg-cyan-500/20 border-cyan-500' },
-    { freq: HARMONIC_FREQUENCIES.SOL, name: 'SOL', label: '741 Hz', color: 'bg-blue-500/20 border-blue-500' },
-    { freq: HARMONIC_FREQUENCIES.LA, name: 'LA', label: '852 Hz', color: 'bg-purple-500/20 border-purple-500' },
+    { freq: HARMONIC_FREQUENCIES.UT, name: 'UT', label: '396 Hz', color: 'bg-destructive/20 border-destructive' },
+    { freq: HARMONIC_FREQUENCIES.RE, name: 'RE', label: '417 Hz', color: 'bg-warning/20 border-warning' },
+    { freq: HARMONIC_FREQUENCIES.MI, name: 'MI', label: '528 Hz', color: 'bg-success/20 border-success' },
+    { freq: HARMONIC_FREQUENCIES.FA, name: 'FA', label: '639 Hz', color: 'bg-primary/20 border-primary' },
+    { freq: HARMONIC_FREQUENCIES.SOL, name: 'SOL', label: '741 Hz', color: 'bg-primary/20 border-primary' },
+    { freq: HARMONIC_FREQUENCIES.LA, name: 'LA', label: '852 Hz', color: 'bg-primary/20 border-primary' },
   ];
 
   const schumannKeys = [
@@ -185,12 +185,12 @@ export function HarmonicKeyboard({ onNotePlay, onChordPlay, disabled = false }: 
   ];
 
   return (
-    <Card className="bg-black/40 border-purple-500/30">
+    <Card className="bg-black/40 border-primary/30">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Music className="w-5 h-5 text-purple-400" />
+              <Music className="w-5 h-5 text-primary" />
               Harmonic Keyboard
             </CardTitle>
             <CardDescription>Quantum frequency input interface</CardDescription>
@@ -215,7 +215,7 @@ export function HarmonicKeyboard({ onNotePlay, onChordPlay, disabled = false }: 
         {/* Solfeggio Scale */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Zap className="w-4 h-4 text-green-400" />
+            <Zap className="w-4 h-4 text-success" />
             <h3 className="text-sm font-semibold">Solfeggio Frequencies</h3>
           </div>
           <div className="grid grid-cols-3 gap-2">
@@ -239,7 +239,7 @@ export function HarmonicKeyboard({ onNotePlay, onChordPlay, disabled = false }: 
         {/* Schumann Harmonics */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Waves className="w-4 h-4 text-cyan-400" />
+            <Waves className="w-4 h-4 text-primary" />
             <h3 className="text-sm font-semibold">Schumann Harmonics</h3>
           </div>
           <div className="grid grid-cols-5 gap-2">
@@ -247,7 +247,7 @@ export function HarmonicKeyboard({ onNotePlay, onChordPlay, disabled = false }: 
               <Button
                 key={key.name}
                 variant="outline"
-                className={`h-16 bg-cyan-500/20 border-cyan-500/50 ${activeNotes.has(key.name) ? 'ring-2 ring-cyan-400' : ''} transition-all`}
+                className={`h-16 bg-primary/20 border-primary/50 ${activeNotes.has(key.name) ? 'ring-2 ring-primary' : ''} transition-all`}
                 onClick={() => playNote(key.freq, key.name)}
                 disabled={disabled}
               >
@@ -266,7 +266,7 @@ export function HarmonicKeyboard({ onNotePlay, onChordPlay, disabled = false }: 
           <div className="grid grid-cols-2 gap-2">
             <Button
               variant="outline"
-              className="bg-gradient-to-r from-green-500/20 to-cyan-500/20"
+              className="bg-gradient-to-r from-success/20 to-primary/20"
               onClick={() => playChord([
                 { freq: HARMONIC_FREQUENCIES.MI, name: 'MI' },
                 { freq: HARMONIC_FREQUENCIES.FUNDAMENTAL, name: 'Fundamental' }
@@ -277,7 +277,7 @@ export function HarmonicKeyboard({ onNotePlay, onChordPlay, disabled = false }: 
             </Button>
             <Button
               variant="outline"
-              className="bg-gradient-to-r from-purple-500/20 to-blue-500/20"
+              className="bg-gradient-to-r from-primary/20 to-primary/20"
               onClick={() => playChord([
                 { freq: HARMONIC_FREQUENCIES.LA, name: 'LA' },
                 { freq: HARMONIC_FREQUENCIES.THIRD, name: 'Third' }
@@ -288,7 +288,7 @@ export function HarmonicKeyboard({ onNotePlay, onChordPlay, disabled = false }: 
             </Button>
             <Button
               variant="outline"
-              className="bg-gradient-to-r from-red-500/20 to-orange-500/20"
+              className="bg-gradient-to-r from-destructive/20 to-warning/20"
               onClick={() => playChord([
                 { freq: HARMONIC_FREQUENCIES.UT, name: 'UT' },
                 { freq: HARMONIC_FREQUENCIES.RE, name: 'RE' }
@@ -299,7 +299,7 @@ export function HarmonicKeyboard({ onNotePlay, onChordPlay, disabled = false }: 
             </Button>
             <Button
               variant="outline"
-              className="bg-gradient-to-r from-cyan-500/20 to-green-500/20"
+              className="bg-gradient-to-r from-primary/20 to-success/20"
               onClick={() => playChord([
                 { freq: HARMONIC_FREQUENCIES.FA, name: 'FA' },
                 { freq: HARMONIC_FREQUENCIES.FOURTH, name: 'Fourth' }

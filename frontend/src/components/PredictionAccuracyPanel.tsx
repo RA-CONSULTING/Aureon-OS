@@ -55,17 +55,17 @@ export default function PredictionAccuracyPanel() {
             <div className="text-xs text-muted-foreground">Prediction Accuracy</div>
           </div>
           <div className="text-center p-3 rounded-lg bg-muted/30 border border-border/30">
-            <TrendingUp className="w-5 h-5 mx-auto mb-1 text-green-400" />
+            <TrendingUp className="w-5 h-5 mx-auto mb-1 text-success" />
             <div className="text-2xl font-bold text-foreground">{(winRate * 100).toFixed(1)}%</div>
             <div className="text-xs text-muted-foreground">Win Rate</div>
           </div>
           <div className="text-center p-3 rounded-lg bg-muted/30 border border-border/30">
-            <BarChart3 className="w-5 h-5 mx-auto mb-1 text-blue-400" />
+            <BarChart3 className="w-5 h-5 mx-auto mb-1 text-primary" />
             <div className="text-2xl font-bold text-foreground">{predictionAccuracy.total}</div>
             <div className="text-xs text-muted-foreground">Total Predictions</div>
           </div>
           <div className="text-center p-3 rounded-lg bg-muted/30 border border-border/30">
-            <Target className="w-5 h-5 mx-auto mb-1 text-yellow-400" />
+            <Target className="w-5 h-5 mx-auto mb-1 text-warning" />
             <div className="text-2xl font-bold text-foreground">{predictionAccuracy.correct}</div>
             <div className="text-xs text-muted-foreground">Correct</div>
           </div>
@@ -104,7 +104,7 @@ export default function PredictionAccuracyPanel() {
               .map(([band, data]) => (
                 <div key={band} className="p-2 rounded bg-muted/20">
                   <div className="text-xs font-bold text-foreground mb-1">{band}</div>
-                  <div className={`text-sm font-mono ${data.winRate >= 0.5 ? 'text-green-400' : 'text-red-400'}`}>
+                  <div className={`text-sm font-mono ${data.winRate >= 0.5 ? 'text-success' : 'text-destructive'}`}>
                     {(data.winRate * 100).toFixed(0)}% win
                   </div>
                   <div className="text-xs text-muted-foreground">{data.trades} trades</div>
@@ -126,7 +126,7 @@ export default function PredictionAccuracyPanel() {
                       Tier {tier}
                     </Badge>
                   </div>
-                  <div className={`text-sm font-mono ${data.winRate >= 0.5 ? 'text-green-400' : 'text-red-400'}`}>
+                  <div className={`text-sm font-mono ${data.winRate >= 0.5 ? 'text-success' : 'text-destructive'}`}>
                     {(data.winRate * 100).toFixed(0)}% win
                   </div>
                   <div className="text-xs text-muted-foreground">
@@ -144,7 +144,7 @@ export default function PredictionAccuracyPanel() {
             <h4 className="text-sm font-medium text-muted-foreground mb-2">Best Trading Hours (UTC)</h4>
             <div className="flex flex-wrap gap-1">
               {bestHours.map((hour) => (
-                <Badge key={hour} variant="outline" className="text-xs bg-green-500/10 text-green-400 border-green-500/30">
+                <Badge key={hour} variant="outline" className="text-xs bg-success/10 text-success border-success/30">
                   {hour.toString().padStart(2, '0')}:00
                 </Badge>
               ))}

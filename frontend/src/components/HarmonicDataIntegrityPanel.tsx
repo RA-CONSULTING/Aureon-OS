@@ -104,33 +104,33 @@ export function HarmonicDataIntegrityPanel() {
   const getDataStatusBadge = () => {
     switch (dataStatus) {
       case 'LIVE':
-        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px]">LIVE ({sourcesWithData}/4)</Badge>;
+        return <Badge className="bg-success/20 text-success border-success/30 text-[10px]">LIVE ({sourcesWithData}/4)</Badge>;
       case 'STALE':
-        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-[10px]">PARTIAL ({sourcesWithData}/4)</Badge>;
+        return <Badge className="bg-warning/20 text-warning border-warning/30 text-[10px]">PARTIAL ({sourcesWithData}/4)</Badge>;
       default:
-        return <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[10px]">NO DATA</Badge>;
+        return <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px]">NO DATA</Badge>;
     }
   };
 
   const getStatusIcon = () => {
     switch (status) {
       case 'valid':
-        return <CheckCircle2 className="h-4 w-4 text-green-400" />;
+        return <CheckCircle2 className="h-4 w-4 text-success" />;
       case 'suspect':
-        return <AlertTriangle className="h-4 w-4 text-yellow-400" />;
+        return <AlertTriangle className="h-4 w-4 text-warning" />;
       default:
-        return <XCircle className="h-4 w-4 text-red-400" />;
+        return <XCircle className="h-4 w-4 text-destructive" />;
     }
   };
 
   const getStatusBadge = () => {
     switch (status) {
       case 'valid':
-        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">🟢 VALID</Badge>;
+        return <Badge className="bg-success/20 text-success border-success/30">🟢 VALID</Badge>;
       case 'suspect':
-        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">🟡 SUSPECT</Badge>;
+        return <Badge className="bg-warning/20 text-warning border-warning/30">🟡 SUSPECT</Badge>;
       default:
-        return <Badge className="bg-red-500/20 text-red-400 border-red-500/30">🔴 INVALID</Badge>;
+        return <Badge className="bg-destructive/20 text-destructive border-destructive/30">🔴 INVALID</Badge>;
     }
   };
 
@@ -146,7 +146,7 @@ export function HarmonicDataIntegrityPanel() {
           {getStatusBadge()}
         </div>
         {dataStatus === 'NO_DATA' && (
-          <div className="flex items-center gap-1 text-[10px] text-yellow-500 mt-1">
+          <div className="flex items-center gap-1 text-[10px] text-warning mt-1">
             <AlertTriangle className="h-3 w-3" />
             <span>No integrity sources available</span>
           </div>
@@ -161,9 +161,9 @@ export function HarmonicDataIntegrityPanel() {
               <span className="text-xs text-muted-foreground">Overall Integrity</span>
               <span className={cn(
                 "text-xl font-mono font-bold",
-                status === 'valid' && "text-green-400",
-                status === 'suspect' && "text-yellow-400",
-                status === 'invalid' && "text-red-400"
+                status === 'valid' && "text-success",
+                status === 'suspect' && "text-warning",
+                status === 'invalid' && "text-destructive"
               )}>
                 {(overallScore * 100).toFixed(0)}%
               </span>
@@ -172,9 +172,9 @@ export function HarmonicDataIntegrityPanel() {
               value={overallScore * 100} 
               className={cn(
                 "h-2",
-                status === 'valid' && "[&>div]:bg-green-500",
-                status === 'suspect' && "[&>div]:bg-yellow-500",
-                status === 'invalid' && "[&>div]:bg-red-500"
+                status === 'valid' && "[&>div]:bg-success",
+                status === 'suspect' && "[&>div]:bg-warning",
+                status === 'invalid' && "[&>div]:bg-destructive"
               )}
             />
           </div>
@@ -192,9 +192,9 @@ export function HarmonicDataIntegrityPanel() {
                 </div>
                 <span className={cn(
                   "text-xs font-mono",
-                  metric.score > 0.7 && "text-green-400",
-                  metric.score <= 0.7 && metric.score > 0.4 && "text-yellow-400",
-                  metric.score <= 0.4 && "text-red-400"
+                  metric.score > 0.7 && "text-success",
+                  metric.score <= 0.7 && metric.score > 0.4 && "text-warning",
+                  metric.score <= 0.4 && "text-destructive"
                 )}>
                   {(metric.score * 100).toFixed(0)}%
                 </span>
@@ -203,9 +203,9 @@ export function HarmonicDataIntegrityPanel() {
                 value={metric.score * 100} 
                 className={cn(
                   "h-1",
-                  metric.score > 0.7 && "[&>div]:bg-green-500/60",
-                  metric.score <= 0.7 && metric.score > 0.4 && "[&>div]:bg-yellow-500/60",
-                  metric.score <= 0.4 && "[&>div]:bg-red-500/60"
+                  metric.score > 0.7 && "[&>div]:bg-success/60",
+                  metric.score <= 0.7 && metric.score > 0.4 && "[&>div]:bg-warning/60",
+                  metric.score <= 0.4 && "[&>div]:bg-destructive/60"
                 )}
               />
             </div>
@@ -221,9 +221,9 @@ export function HarmonicDataIntegrityPanel() {
                 key={i}
                 className={cn(
                   "flex-1 rounded-t transition-all",
-                  value > 0.7 && "bg-green-500/60",
-                  value <= 0.7 && value > 0.4 && "bg-yellow-500/60",
-                  value <= 0.4 && "bg-red-500/60"
+                  value > 0.7 && "bg-success/60",
+                  value <= 0.7 && value > 0.4 && "bg-warning/60",
+                  value <= 0.4 && "bg-destructive/60"
                 )}
                 style={{ height: `${value * 100}%` }}
               />

@@ -36,8 +36,8 @@ export function KellyCriterionCalculator() {
   }, [winRate, avgWin, avgLoss, safetyFactor, capital]);
 
   const getRiskLevel = () => {
-    if (adjustedPercent < 10) return { label: "Conservative", color: "text-green-500" };
-    if (adjustedPercent < 25) return { label: "Moderate", color: "text-yellow-500" };
+    if (adjustedPercent < 10) return { label: "Conservative", color: "text-success" };
+    if (adjustedPercent < 25) return { label: "Moderate", color: "text-warning" };
     return { label: "Aggressive", color: "text-destructive" };
   };
 

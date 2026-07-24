@@ -21,8 +21,8 @@ export function BinanceConnectionStatus({
 }: BinanceConnectionStatusProps) {
   const getStatusColor = () => {
     if (!isConnected) return 'text-destructive';
-    if (!isHealthy) return 'text-yellow-500';
-    return 'text-green-500';
+    if (!isHealthy) return 'text-warning';
+    return 'text-success';
   };
 
   const getStatusText = () => {
@@ -55,7 +55,7 @@ export function BinanceConnectionStatus({
         <div className="grid grid-cols-2 gap-4">
           <div className="p-3 rounded-lg border border-border bg-muted/20">
             <div className="flex items-center gap-2 mb-1">
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
+              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-success' : 'bg-destructive'} animate-pulse`} />
               <span className="text-xs text-muted-foreground">WebSocket</span>
             </div>
             <p className={`text-sm font-semibold ${getStatusColor()}`}>
@@ -65,7 +65,7 @@ export function BinanceConnectionStatus({
 
           <div className="p-3 rounded-lg border border-border bg-muted/20">
             <div className="flex items-center gap-2 mb-1">
-              <div className={`w-2 h-2 rounded-full ${isHealthy ? 'bg-green-500' : 'bg-yellow-500'}`} />
+              <div className={`w-2 h-2 rounded-full ${isHealthy ? 'bg-success' : 'bg-warning'}`} />
               <span className="text-xs text-muted-foreground">Health</span>
             </div>
             <p className={`text-sm font-semibold ${getStatusColor()}`}>

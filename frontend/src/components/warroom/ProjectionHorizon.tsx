@@ -9,7 +9,7 @@ export function ProjectionHorizon() {
     return (
       <Card className="bg-card/50 backdrop-blur border-primary/20">
         <CardHeader>
-          <CardTitle>🔮 6-Month Projection Horizon</CardTitle>
+          <CardTitle> 6-Month Projection Horizon</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-64 flex items-center justify-center">
@@ -23,7 +23,7 @@ export function ProjectionHorizon() {
   return (
     <Card className="bg-card/50 backdrop-blur border-primary/20">
       <CardHeader>
-        <CardTitle>🔮 6-Month Projection Horizon (Monte Carlo)</CardTitle>
+        <CardTitle> 6-Month Projection Horizon (Monte Carlo)</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={250}>

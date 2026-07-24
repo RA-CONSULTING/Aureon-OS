@@ -193,12 +193,12 @@ export const AutoTradingScheduler = () => {
                 <div className="flex items-center gap-2 mt-1">
                   {status.currentState.tradingEnabled ? (
                     <>
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      <CheckCircle2 className="h-5 w-5 text-success" />
                       <span className="font-bold">Active</span>
                     </>
                   ) : (
                     <>
-                      <AlertTriangle className="h-5 w-5 text-amber-500" />
+                      <AlertTriangle className="h-5 w-5 text-warning" />
                       <span className="font-bold">Paused</span>
                     </>
                   )}
@@ -262,7 +262,7 @@ export const AutoTradingScheduler = () => {
 
         {!config.enabled && (
           <div className="text-center py-8">
-            <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-3" />
+            <AlertTriangle className="h-12 w-12 text-warning mx-auto mb-3" />
             <p className="text-muted-foreground">
               Enable the scheduler to automatically manage trading based on field coherence
             </p>
@@ -340,9 +340,9 @@ export const AutoTradingScheduler = () => {
       )}
 
       {/* Safety Information */}
-      <Card className="p-6 bg-amber-500/5 border-amber-500/20">
+      <Card className="p-6 bg-warning/5 border-warning/20">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
+          <AlertTriangle className="h-5 w-5 text-warning mt-0.5" />
           <div className="flex-1">
             <h4 className="font-semibold mb-2">Safety Features</h4>
             <ul className="text-sm text-muted-foreground space-y-1">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -15,9 +15,32 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Info, FileText, Shield } from "lucide-react";
+import { LEGAL_EFFECTIVE_DATE } from "@/shell/companyFacts";
 
 export function SettingsDrawer() {
   const [open, setOpen] = useState(false);
+  // Honest backend status: probe the gateway health endpoint instead of asserting
+  // a hardcoded "connected". undefined = checking, true = reachable, false = offline.
+  const [backendUp, setBackendUp] = useState<boolean | undefined>(undefined);
+
+  useEffect(() => {
+    if (!open) return;
+    let alive = true;
+    setBackendUp(undefined);
+    fetch("/healthz")
+      .then((r) => alive && setBackendUp(r.ok))
+      .catch(() => alive && setBackendUp(false));
+    return () => {
+      alive = false;
+    };
+  }, [open]);
+
+  const feed =
+    backendUp === undefined
+      ? { dot: "bg-muted-foreground/50", cls: "text-muted-foreground", label: "Checking backend…" }
+      : backendUp
+        ? { dot: "bg-success animate-pulse", cls: "text-success", label: "Backend connected" }
+        : { dot: "bg-muted-foreground/50", cls: "text-muted-foreground", label: "Backend not connected" };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -28,23 +51,24 @@ export function SettingsDrawer() {
       </SheetTrigger>
       <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>About AUREON</SheetTitle>
+          <SheetTitle>About Aureon OS</SheetTitle>
           <SheetDescription>
-            Live trading feed from the AUREON Quantum Trading System
+            Aureon OS — Harmonic Nexus Core, by R&A Consulting and Brokerage Services Ltd
+            (trading as Aureon Zorza Technologies)
           </SheetDescription>
         </SheetHeader>
 
         <div className="mt-6 space-y-6">
           {/* System Info */}
           <div className="p-4 rounded-lg bg-muted/50 space-y-2">
-            <h3 className="font-medium text-foreground">Live Feed Status</h3>
+            <h3 className="font-medium text-foreground">Backend status</h3>
             <p className="text-sm text-muted-foreground">
-              This dashboard displays real-time trading data from the AUREON system. 
-              Data is pushed from the Python terminal every 10 seconds.
+              Dashboards stream from the running Aureon backend (gateway / bridge / Supabase feed).
+              With no backend connected, views render with empty or stale data — that is honest, not broken.
             </p>
             <div className="flex items-center gap-2 mt-3">
-              <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-xs text-green-500 font-medium">Connected to Live Feed</span>
+              <span className={`h-2 w-2 rounded-full ${feed.dot}`} />
+              <span className={`text-xs font-medium ${feed.cls}`}>{feed.label}</span>
             </div>
           </div>
 
@@ -59,16 +83,16 @@ export function SettingsDrawer() {
               </AccordionTrigger>
               <AccordionContent>
                 <div className="text-sm text-muted-foreground space-y-4 py-2 max-h-[300px] overflow-y-auto">
-                  <p className="text-xs">Last updated: {new Date().toLocaleDateString()}</p>
+                  <p className="text-xs">Last updated: {LEGAL_EFFECTIVE_DATE}</p>
                   
                   <div>
                     <h4 className="font-medium text-foreground mb-1">1. Acceptance of Terms</h4>
-                    <p>By accessing and using AUREON Quantum Trading System, you agree to be bound by these Terms of Service.</p>
+                    <p>By accessing and using Aureon OS, you agree to be bound by these Terms of Service.</p>
                   </div>
 
                   <div>
                     <h4 className="font-medium text-foreground mb-1">2. Description of Service</h4>
-                    <p>AUREON is an autonomous algorithmic trading system that connects to cryptocurrency exchanges via API to execute trades.</p>
+                    <p>Aureon OS is a grounded AI operating layer for evidence-heavy, high-control workflows. Sensitive actions (live trading, payments, filings) require explicit human approval — the platform never initiates them autonomously.</p>
                   </div>
 
                   <div>
@@ -104,7 +128,7 @@ export function SettingsDrawer() {
               </AccordionTrigger>
               <AccordionContent>
                 <div className="text-sm text-muted-foreground space-y-4 py-2 max-h-[300px] overflow-y-auto">
-                  <p className="text-xs">Last updated: {new Date().toLocaleDateString()}</p>
+                  <p className="text-xs">Last updated: {LEGAL_EFFECTIVE_DATE}</p>
                   
                   <div>
                     <h4 className="font-medium text-foreground mb-1">1. Information We Collect</h4>
@@ -137,10 +161,10 @@ export function SettingsDrawer() {
           {/* Footer */}
           <div className="pt-4 border-t border-border text-center">
             <p className="text-xs text-muted-foreground">
-              AUREON Quantum Trading System v3.0
+              Aureon OS · Harmonic Nexus Core
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              © {new Date().getFullYear()} Gary Leckey
+              © {new Date().getFullYear()} R&A Consulting and Brokerage Services Ltd · MIT License
             </p>
           </div>
         </div>

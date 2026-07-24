@@ -202,9 +202,9 @@ export const TradingSettingsPanel = () => {
 
               {/* Status */}
               {hasCredentials && (
-                <Alert className="bg-green-500/10 border-green-500/20">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  <AlertDescription className="text-green-500">
+                <Alert className="bg-success/10 border-success/20">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <AlertDescription className="text-success">
                     ✓ Credentials configured and ready for live trading
                   </AlertDescription>
                 </Alert>

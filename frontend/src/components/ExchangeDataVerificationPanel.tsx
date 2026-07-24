@@ -62,9 +62,9 @@ export const ExchangeDataVerificationPanel: React.FC = () => {
   const getStatusIcon = (status: ExchangeStatus['status']) => {
     switch (status) {
       case 'LIVE':
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+        return <CheckCircle2 className="h-4 w-4 text-success" />;
       case 'DEMO':
-        return <Radio className="h-4 w-4 text-yellow-500 animate-pulse" />;
+        return <Radio className="h-4 w-4 text-warning animate-pulse" />;
       case 'OFFLINE':
         return <WifiOff className="h-4 w-4 text-destructive" />;
       case 'ERROR':
@@ -75,9 +75,9 @@ export const ExchangeDataVerificationPanel: React.FC = () => {
   const getStatusBadge = (status: ExchangeStatus['status']) => {
     switch (status) {
       case 'LIVE':
-        return <Badge className="bg-green-500/20 text-green-400 border-green-500/50">LIVE</Badge>;
+        return <Badge className="bg-success/20 text-success border-success/50">LIVE</Badge>;
       case 'DEMO':
-        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50 animate-pulse">DEMO</Badge>;
+        return <Badge className="bg-warning/20 text-warning border-warning/50 animate-pulse">DEMO</Badge>;
       case 'OFFLINE':
         return <Badge variant="destructive">OFFLINE</Badge>;
       case 'ERROR':
@@ -91,21 +91,21 @@ export const ExchangeDataVerificationPanel: React.FC = () => {
     switch (verification.overallStatus) {
       case 'ALL_LIVE':
         return (
-          <Badge className="bg-green-500/20 text-green-400 border-green-500/50 text-lg px-4 py-1">
+          <Badge className="bg-success/20 text-success border-success/50 text-lg px-4 py-1">
             <Wifi className="h-4 w-4 mr-2" />
             ALL EXCHANGES LIVE
           </Badge>
         );
       case 'PARTIAL_LIVE':
         return (
-          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50 text-lg px-4 py-1">
+          <Badge className="bg-warning/20 text-warning border-warning/50 text-lg px-4 py-1">
             <AlertTriangle className="h-4 w-4 mr-2" />
             PARTIAL LIVE DATA
           </Badge>
         );
       case 'ALL_DEMO':
         return (
-          <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/50 text-lg px-4 py-1 animate-pulse">
+          <Badge className="bg-warning/20 text-warning border-warning/50 text-lg px-4 py-1 animate-pulse">
             <Radio className="h-4 w-4 mr-2" />
             ⚠️ ALL DEMO MODE
           </Badge>
@@ -154,9 +154,9 @@ export const ExchangeDataVerificationPanel: React.FC = () => {
               key={exchange.exchange}
               className={`p-3 rounded-lg border ${
                 exchange.status === 'LIVE'
-                  ? 'border-green-500/30 bg-green-500/5'
+                  ? 'border-success/30 bg-success/5'
                   : exchange.status === 'DEMO'
-                  ? 'border-yellow-500/30 bg-yellow-500/5'
+                  ? 'border-warning/30 bg-warning/5'
                   : 'border-destructive/30 bg-destructive/5'
               }`}
             >
@@ -193,10 +193,10 @@ export const ExchangeDataVerificationPanel: React.FC = () => {
             {verification.warnings.map((warning, index) => (
               <div
                 key={index}
-                className="flex items-start gap-2 p-2 rounded bg-yellow-500/10 border border-yellow-500/30"
+                className="flex items-start gap-2 p-2 rounded bg-warning/10 border border-warning/30"
               >
-                <AlertTriangle className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
-                <span className="text-sm text-yellow-400">{warning}</span>
+                <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                <span className="text-sm text-warning">{warning}</span>
               </div>
             ))}
           </div>
@@ -207,11 +207,11 @@ export const ExchangeDataVerificationPanel: React.FC = () => {
           <div className={`p-2 rounded border ${
             verification.priceVariance > 5 
               ? 'border-destructive/30 bg-destructive/5' 
-              : 'border-green-500/30 bg-green-500/5'
+              : 'border-success/30 bg-success/5'
           }`}>
             <p className="text-sm">
               <span className="text-muted-foreground">Cross-Exchange Price Variance: </span>
-              <span className={verification.priceVariance > 5 ? 'text-destructive' : 'text-green-400'}>
+              <span className={verification.priceVariance > 5 ? 'text-destructive' : 'text-success'}>
                 {verification.priceVariance.toFixed(3)}%
               </span>
             </p>
@@ -221,26 +221,26 @@ export const ExchangeDataVerificationPanel: React.FC = () => {
         {/* Trading Safety Indicator */}
         <div className={`p-3 rounded-lg border ${
           verification?.overallStatus === 'ALL_LIVE'
-            ? 'border-green-500/50 bg-green-500/10'
+            ? 'border-success/50 bg-success/10'
             : verification?.overallStatus === 'ALL_DEMO'
-            ? 'border-yellow-500/50 bg-yellow-500/10'
+            ? 'border-warning/50 bg-warning/10'
             : 'border-destructive/50 bg-destructive/10'
         }`}>
           <div className="flex items-center gap-2">
             {verification?.overallStatus === 'ALL_LIVE' ? (
               <>
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                <span className="text-green-400 font-semibold">SAFE FOR LIVE TRADING</span>
+                <CheckCircle2 className="h-5 w-5 text-success" />
+                <span className="text-success font-semibold">SAFE FOR LIVE TRADING</span>
               </>
             ) : verification?.overallStatus === 'PARTIAL_LIVE' ? (
               <>
-                <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                <span className="text-yellow-400 font-semibold">PARTIAL DATA - TRADE WITH CAUTION</span>
+                <AlertTriangle className="h-5 w-5 text-warning" />
+                <span className="text-warning font-semibold">PARTIAL DATA - TRADE WITH CAUTION</span>
               </>
             ) : verification?.overallStatus === 'ALL_DEMO' ? (
               <>
-                <Radio className="h-5 w-5 text-yellow-500 animate-pulse" />
-                <span className="text-yellow-400 font-semibold">⚠️ SIMULATED DATA ONLY - NOT REAL</span>
+                <Radio className="h-5 w-5 text-warning animate-pulse" />
+                <span className="text-warning font-semibold">⚠️ SIMULATED DATA ONLY - NOT REAL</span>
               </>
             ) : (
               <>

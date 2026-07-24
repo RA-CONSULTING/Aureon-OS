@@ -70,12 +70,12 @@ export function IntegratedReadingV2({ insights, timeline, aura }: Props) {
             {insights.tensions && insights.tensions.length > 0 && (
               <div>
                 <h4 className="font-medium mb-2 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-500" />
+                  <AlertTriangle className="w-4 h-4 text-warning" />
                   Key Tensions
                 </h4>
                 <ul className="space-y-1">
                   {insights.tensions.map((tension, i) => (
-                    <li key={i} className="text-sm text-gray-700 pl-4 border-l-2 border-amber-200">
+                    <li key={i} className="text-sm text-gray-700 pl-4 border-l-2 border-warning">
                       {tension}
                     </li>
                   ))}
@@ -92,7 +92,7 @@ export function IntegratedReadingV2({ insights, timeline, aura }: Props) {
           {insights.opportunities && insights.opportunities.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-green-700">
+                <CardTitle className="flex items-center gap-2 text-success">
                   <Lightbulb className="w-5 h-5" />
                   Opportunities
                 </CardTitle>
@@ -100,7 +100,7 @@ export function IntegratedReadingV2({ insights, timeline, aura }: Props) {
               <CardContent>
                 <ul className="space-y-2">
                   {insights.opportunities.map((opp, i) => (
-                    <li key={i} className="text-sm text-gray-700 pl-4 border-l-2 border-green-200">
+                    <li key={i} className="text-sm text-gray-700 pl-4 border-l-2 border-success">
                       {opp}
                     </li>
                   ))}
@@ -112,7 +112,7 @@ export function IntegratedReadingV2({ insights, timeline, aura }: Props) {
           {insights.risks && insights.risks.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-red-700">
+                <CardTitle className="flex items-center gap-2 text-destructive">
                   <AlertTriangle className="w-5 h-5" />
                   Risks to Watch
                 </CardTitle>
@@ -120,7 +120,7 @@ export function IntegratedReadingV2({ insights, timeline, aura }: Props) {
               <CardContent>
                 <ul className="space-y-2">
                   {insights.risks.map((risk, i) => (
-                    <li key={i} className="text-sm text-gray-700 pl-4 border-l-2 border-red-200">
+                    <li key={i} className="text-sm text-gray-700 pl-4 border-l-2 border-destructive">
                       {risk}
                     </li>
                   ))}

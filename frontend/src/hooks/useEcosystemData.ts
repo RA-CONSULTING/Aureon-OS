@@ -1,7 +1,10 @@
 /**
  * useEcosystemData Hook
- * Provides real ecosystem data from UnifiedBus and FullEcosystemConnector
- * Replaces Math.random() with actual system states
+ * Reads the in-browser ecosystem model (UnifiedBus + FullEcosystemConnector).
+ * NOTE: some fields (coherence, confidence, probability_field, HNC spectrum) are
+ * SIMULATED in fullEcosystemConnector, not live backend telemetry. Surfaces that
+ * render these should mark them with <SimulatedDataBadge/> until wired to a real
+ * feed. Do not describe this as live data.
  */
 
 import { useState, useEffect, useCallback } from 'react';

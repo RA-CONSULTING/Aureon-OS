@@ -103,18 +103,18 @@ export default function SystemsGrid() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'bg-green-500 text-white';
-      case 'maintenance': return 'bg-yellow-500 text-black';
-      case 'error': return 'bg-red-500 text-white';
+      case 'online': return 'bg-success text-white';
+      case 'maintenance': return 'bg-warning text-black';
+      case 'error': return 'bg-destructive text-white';
       default: return 'bg-gray-500 text-white';
     }
   };
 
   const getStatusDot = (status: string) => {
     switch (status) {
-      case 'online': return 'bg-green-400 animate-pulse';
-      case 'maintenance': return 'bg-yellow-400';
-      case 'error': return 'bg-red-400 animate-pulse';
+      case 'online': return 'bg-success animate-pulse';
+      case 'maintenance': return 'bg-warning';
+      case 'error': return 'bg-destructive animate-pulse';
       default: return 'bg-gray-400';
     }
   };
@@ -126,7 +126,7 @@ export default function SystemsGrid() {
           <Card 
             key={system.id}
             className={`cursor-pointer transition-all hover:scale-105 ${
-              selectedSystem?.id === system.id ? 'ring-2 ring-blue-500' : ''
+              selectedSystem?.id === system.id ? 'ring-2 ring-primary' : ''
             }`}
             onClick={() => setSelectedSystem(system)}
           >
@@ -166,7 +166,7 @@ export default function SystemsGrid() {
       </div>
 
       {selectedSystem && (
-        <Card className="border-blue-500/50 bg-blue-50/50">
+        <Card className="border-primary/50 bg-primary/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <span className="text-3xl">{selectedSystem.glyphSymbol}</span>

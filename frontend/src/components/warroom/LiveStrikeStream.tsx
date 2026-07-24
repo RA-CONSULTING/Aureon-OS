@@ -60,7 +60,7 @@ export function LiveStrikeStream() {
           
           // Show toast notification for trades
           toast({
-            title: `🦆 ${exec.side} Trade Executed`,
+            title: ` ${exec.side} Trade Executed`,
             description: `${exec.symbol} @ $${exec.executed_price?.toFixed(2) || 'MARKET'} | Coherence: ${(exec.coherence * 100).toFixed(1)}%`,
             duration: 3000,
           });
@@ -82,7 +82,7 @@ export function LiveStrikeStream() {
               id: event.id,
               timestamp: event.timestamp,
               type: 'lhe' as const,
-              message: `🔥 LHE DETECTED - Γ=${(event.coherence * 100).toFixed(1)}% L=${event.lighthouse_signal.toFixed(2)}`,
+              message: ` LHE DETECTED - Γ=${(event.coherence * 100).toFixed(1)}% L=${event.lighthouse_signal.toFixed(2)}`,
               severity: 'critical' as const,
             };
             
@@ -90,7 +90,7 @@ export function LiveStrikeStream() {
             
             // Show critical toast for LHE events
             toast({
-              title: '🔥 LIGHTHOUSE HARMONIC EVENT',
+              title: ' LIGHTHOUSE HARMONIC EVENT',
               description: `Coherence: ${(event.coherence * 100).toFixed(1)}% | Signal: ${event.lighthouse_signal.toFixed(2)}`,
               variant: 'destructive',
               duration: 5000,
@@ -142,7 +142,7 @@ export function LiveStrikeStream() {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical': return 'bg-destructive text-destructive-foreground';
-      case 'success': return 'bg-green-500/20 text-green-500 border-green-500/50';
+      case 'success': return 'bg-success/20 text-success border-success/50';
       default: return 'bg-primary/20 text-primary border-primary/50';
     }
   };
@@ -151,7 +151,7 @@ export function LiveStrikeStream() {
     <Card className="bg-card/50 backdrop-blur border-primary/20">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>⚡ Live Strike Stream</span>
+          <span> Live Strike Stream</span>
           <div className="flex items-center gap-2">
             <Badge variant="outline">{events.length} events</Badge>
             <Button

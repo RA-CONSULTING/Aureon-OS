@@ -118,12 +118,12 @@ export function ActivePositionsPanel() {
     <Card className="bg-card/50 backdrop-blur border-primary/20">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between text-base">
-          <span>📊 Active Positions</span>
+          <span> Active Positions</span>
           <div className="flex items-center gap-2">
             <Badge variant="outline">{positions.length} open</Badge>
             <Badge 
               variant={totalPnl >= 0 ? 'default' : 'destructive'}
-              className={totalPnl >= 0 ? 'bg-green-500' : ''}
+              className={totalPnl >= 0 ? 'bg-success' : ''}
             >
               {totalPnl >= 0 ? '+' : ''}{totalPnl.toFixed(2)} USD
             </Badge>
@@ -181,7 +181,7 @@ export function ActivePositionsPanel() {
                       </div>
                       <div>
                         <p className="text-muted-foreground">P&L</p>
-                        <p className={`font-medium flex items-center gap-1 ${isProfit ? 'text-green-500' : 'text-destructive'}`}>
+                        <p className={`font-medium flex items-center gap-1 ${isProfit ? 'text-success' : 'text-destructive'}`}>
                           {isProfit ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                           {pnlPercent.toFixed(2)}%
                         </p>
@@ -199,7 +199,7 @@ export function ActivePositionsPanel() {
                       </div>
                       <div>
                         <p className="text-muted-foreground">TP</p>
-                        <p className="font-medium text-green-500">${position.take_profit_price?.toFixed(2)}</p>
+                        <p className="font-medium text-success">${position.take_profit_price?.toFixed(2)}</p>
                       </div>
                     </div>
                   </div>

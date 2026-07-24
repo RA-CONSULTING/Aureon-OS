@@ -57,11 +57,11 @@ export function PrismRevealVisualizer() {
   const getDataStatusBadge = () => {
     switch (dataStatus) {
       case 'LIVE':
-        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px]">LIVE</Badge>;
+        return <Badge className="bg-success/20 text-success border-success/30 text-[10px]">LIVE</Badge>;
       case 'STALE':
-        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-[10px]">STALE</Badge>;
+        return <Badge className="bg-warning/20 text-warning border-warning/30 text-[10px]">STALE</Badge>;
       default:
-        return <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-[10px]">NO DATA</Badge>;
+        return <Badge className="bg-destructive/20 text-destructive border-destructive/30 text-[10px]">NO DATA</Badge>;
     }
   };
 
@@ -220,7 +220,7 @@ export function PrismRevealVisualizer() {
             </Badge>
             <Badge 
               className={isLoveLocked 
-                ? "bg-green-500/20 text-green-400 border-green-500/30 font-mono text-[10px]" 
+                ? "bg-success/20 text-success border-success/30 font-mono text-[10px]" 
                 : "font-mono text-[10px]"
               }
             >
@@ -229,7 +229,7 @@ export function PrismRevealVisualizer() {
           </div>
         </div>
         {dataStatus === 'NO_DATA' && (
-          <div className="flex items-center gap-1 text-[10px] text-yellow-500 mt-1">
+          <div className="flex items-center gap-1 text-[10px] text-warning mt-1">
             <AlertTriangle className="h-3 w-3" />
             <span>Awaiting Prism data from ecosystem...</span>
           </div>
@@ -247,7 +247,7 @@ export function PrismRevealVisualizer() {
             Level {prismLevel}/5 • {['FORMING', 'FORMING', 'CONVERGING', 'CONVERGING', 'MANIFEST'][prismLevel - 1]}
           </span>
           {isLoveLocked && (
-            <span className="text-green-400 font-medium animate-pulse">LOVE MANIFEST</span>
+            <span className="text-success font-medium animate-pulse">LOVE MANIFEST</span>
           )}
         </div>
       </CardContent>

@@ -160,11 +160,11 @@ export function CredentialStatusPanel({ userId }: CredentialStatusPanelProps) {
               {exchange.loading ? (
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
               ) : exchange.connected === true ? (
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 text-success" />
               ) : exchange.connected === false ? (
                 <XCircle className="h-4 w-4 text-destructive" />
               ) : exchange.configured ? (
-                <div className="h-4 w-4 rounded-full bg-yellow-500/50 border border-yellow-500" />
+                <div className="h-4 w-4 rounded-full bg-warning/50 border border-warning" />
               ) : (
                 <div className="h-4 w-4 rounded-full bg-muted border border-muted-foreground/30" />
               )}
@@ -175,7 +175,7 @@ export function CredentialStatusPanel({ userId }: CredentialStatusPanelProps) {
               {exchange.configured ? (
                 <>
                   <Badge variant="outline" className="text-xs">
-                    {exchange.connected === true ? '🟢 LIVE' : exchange.connected === false ? '🔴 OFFLINE' : '⚪ Untested'}
+                    {exchange.connected === true ? ' LIVE' : exchange.connected === false ? ' OFFLINE' : ' Untested'}
                   </Badge>
                   <Button
                     variant="ghost"

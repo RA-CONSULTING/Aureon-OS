@@ -95,3 +95,21 @@ Nie podano końcowej domeny, dlatego paczka nie zawiera zgadywanych adresów can
 Przed wgraniem porównaj SHA-256 ZIP-a z plikiem `HOMEPL_PACKAGE_MANIFEST.txt` umieszczonym obok archiwum na Pulpicie. Manifest wewnątrz ZIP-a nie może wiarygodnie zawierać sumy kontrolnej archiwum, którego sam jest częścią; ostateczna suma znajduje się w kopii manifestu obok ZIP-a.
 
 W tej instrukcji nie ma i nie powinno być żadnych haseł, tokenów, kluczy FTP ani SSH.
+
+## Automatyczny build i deploy (opcjonalnie) — Automated build & deploy (optional)
+
+Ta ręczna procedura nadal działa bez zmian. Dostępne jest też powtarzalne narzędzie w
+`scripts/website/` (czysta biblioteka standardowa Pythona), które audytuje stronę, buduje paczkę
+home.pl (ZIP + suma SHA-256) i — opcjonalnie — wysyła ją przez FTP(S). Dane logowania FTP są
+czytane **wyłącznie ze zmiennych środowiskowych** i nigdy nie są zapisywane w repozytorium.
+
+The manual steps above still work unchanged. A repeatable helper also lives in
+[`scripts/website/`](../scripts/website/README.md): it audits the site, builds the home.pl package
+(ZIP + SHA-256), and can upload it over FTPS. FTP credentials are read **only from environment
+variables** and are never committed.
+
+```bash
+python -m scripts.website.audit_site
+python -m scripts.website.build_package --out dist
+python -m scripts.website.ftp_deploy --package dist/website_package --dry-run
+```

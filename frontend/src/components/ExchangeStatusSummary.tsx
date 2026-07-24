@@ -59,33 +59,33 @@ export function ExchangeStatusSummary() {
   if (loading) return null;
 
   return (
-    <Card className={`border ${hasAnyConnected ? 'border-green-500/30' : 'border-yellow-500/30 bg-yellow-500/5'}`}>
+    <Card className={`border ${hasAnyConnected ? 'border-success/30' : 'border-warning/30 bg-warning/5'}`}>
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${hasAnyConnected ? 'bg-green-500/10' : 'bg-yellow-500/10'}`}>
-              <Wallet className={`h-5 w-5 ${hasAnyConnected ? 'text-green-500' : 'text-yellow-500'}`} />
+            <div className={`p-2 rounded-lg ${hasAnyConnected ? 'bg-success/10' : 'bg-warning/10'}`}>
+              <Wallet className={`h-5 w-5 ${hasAnyConnected ? 'text-success' : 'text-warning'}`} />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-medium">Exchange Connections</span>
                 {hasAnyConnected ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <CheckCircle2 className="h-4 w-4 text-success" />
                 ) : (
-                  <AlertCircle className="h-4 w-4 text-yellow-500" />
+                  <AlertCircle className="h-4 w-4 text-warning" />
                 )}
               </div>
               <div className="flex gap-1.5 mt-1">
-                <Badge variant={status.binance ? 'default' : 'outline'} className={`text-xs ${status.binance ? 'bg-yellow-500' : ''}`}>
+                <Badge variant={status.binance ? 'default' : 'outline'} className={`text-xs ${status.binance ? 'bg-warning' : ''}`}>
                   Binance
                 </Badge>
-                <Badge variant={status.kraken ? 'default' : 'outline'} className={`text-xs ${status.kraken ? 'bg-purple-500' : ''}`}>
+                <Badge variant={status.kraken ? 'default' : 'outline'} className={`text-xs ${status.kraken ? 'bg-primary' : ''}`}>
                   Kraken
                 </Badge>
-                <Badge variant={status.alpaca ? 'default' : 'outline'} className={`text-xs ${status.alpaca ? 'bg-blue-500' : ''}`}>
+                <Badge variant={status.alpaca ? 'default' : 'outline'} className={`text-xs ${status.alpaca ? 'bg-primary' : ''}`}>
                   Alpaca
                 </Badge>
-                <Badge variant={status.capital ? 'default' : 'outline'} className={`text-xs ${status.capital ? 'bg-cyan-500' : ''}`}>
+                <Badge variant={status.capital ? 'default' : 'outline'} className={`text-xs ${status.capital ? 'bg-primary' : ''}`}>
                   Capital
                 </Badge>
               </div>

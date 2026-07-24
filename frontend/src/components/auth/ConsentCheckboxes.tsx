@@ -33,7 +33,7 @@ export function ConsentCheckboxes({
         />
         <Label htmlFor="terms" className="text-xs text-muted-foreground leading-tight cursor-pointer">
           I agree to the{" "}
-          <Link to="/terms" className="text-primary hover:underline" target="_blank">
+          <Link to="/legal#terms" className="text-primary hover:underline" target="_blank">
             Terms of Service
           </Link>
           {" "}and understand that AUREON is an autonomous trading system.
@@ -50,7 +50,7 @@ export function ConsentCheckboxes({
         />
         <Label htmlFor="privacy" className="text-xs text-muted-foreground leading-tight cursor-pointer">
           I agree to the{" "}
-          <Link to="/privacy" className="text-primary hover:underline" target="_blank">
+          <Link to="/legal#privacy" className="text-primary hover:underline" target="_blank">
             Privacy Policy
           </Link>
           {" "}and consent to encrypted storage of my API credentials.
@@ -67,7 +67,7 @@ export function ConsentCheckboxes({
         />
         <Label htmlFor="risk" className="text-xs text-muted-foreground leading-tight cursor-pointer">
           I understand that{" "}
-          <span className="text-amber-500 font-medium">trading involves significant risk</span>
+          <span className="text-warning font-medium">trading involves significant risk</span>
           {" "}and I may lose some or all of my investment. I am trading with funds I can afford to lose.
         </Label>
       </div>

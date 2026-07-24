@@ -100,7 +100,7 @@ export function QueenHiveControl() {
 
               <div className="bg-muted/50 rounded-lg p-4">
                 <div className="text-xs text-muted-foreground mb-1">ROI</div>
-                <div className={`text-xl font-bold ${roi >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                <div className={`text-xl font-bold ${roi >= 0 ? 'text-success' : 'text-destructive'}`}>
                   {roi >= 0 ? '+' : ''}{roi.toFixed(2)}%
                 </div>
               </div>
@@ -114,8 +114,8 @@ export function QueenHiveControl() {
             {/* Hive & Agent Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex items-center gap-3 p-4 border rounded-lg">
-                <div className="p-2 rounded-lg bg-yellow-500/10">
-                  <Activity className="w-5 h-5 text-yellow-500" />
+                <div className="p-2 rounded-lg bg-warning/10">
+                  <Activity className="w-5 h-5 text-warning" />
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">Active Hives</div>
@@ -124,8 +124,8 @@ export function QueenHiveControl() {
               </div>
 
               <div className="flex items-center gap-3 p-4 border rounded-lg">
-                <div className="p-2 rounded-lg bg-blue-500/10">
-                  <Users className="w-5 h-5 text-blue-500" />
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Users className="w-5 h-5 text-primary" />
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">Trading Agents</div>
@@ -134,8 +134,8 @@ export function QueenHiveControl() {
               </div>
 
               <div className="flex items-center gap-3 p-4 border rounded-lg">
-                <div className="p-2 rounded-lg bg-green-500/10">
-                  <TrendingUp className="w-5 h-5 text-green-500" />
+                <div className="p-2 rounded-lg bg-success/10">
+                  <TrendingUp className="w-5 h-5 text-success" />
                 </div>
                 <div>
                   <div className="text-xs text-muted-foreground">Total Trades</div>
@@ -177,7 +177,7 @@ export function QueenHiveControl() {
                               {formatCurrency(hive.current_balance)}
                             </span>
                           </div>
-                          <span className={`text-sm font-medium ${growthPercent >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          <span className={`text-sm font-medium ${growthPercent >= 0 ? 'text-success' : 'text-destructive'}`}>
                             {growthPercent >= 0 ? '+' : ''}{growthPercent.toFixed(1)}%
                           </span>
                         </div>

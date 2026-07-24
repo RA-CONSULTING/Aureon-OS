@@ -33,7 +33,7 @@ export function GaryLeckeyFormation({ activated = false, onActivate }: GaryLecke
 
   return (
     <div className="space-y-6">
-      <Card className="bg-gradient-to-br from-purple-900/50 to-blue-900/50 border-gold-500/30">
+      <Card className="bg-gradient-to-br from-primary/50 to-primary/50 border-gold-500/30">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl text-gold-400">
             Gary Leckey Formation Protocol
@@ -44,7 +44,7 @@ export function GaryLeckeyFormation({ activated = false, onActivate }: GaryLecke
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-center p-4 bg-slate-800/50 rounded-lg">
-            <div className="text-lg text-cyan-400 mb-2">{unityMantra}</div>
+            <div className="text-lg text-primary mb-2">{unityMantra}</div>
             <div className="text-xs text-gray-400">Temporal Unity Convergence Field</div>
           </div>
           
@@ -53,7 +53,7 @@ export function GaryLeckeyFormation({ activated = false, onActivate }: GaryLecke
               <div className="text-sm text-gray-300">Unity Field Strength</div>
               <div className="w-full bg-slate-700 rounded-full h-2">
                 <div 
-                  className="bg-gradient-to-r from-purple-500 to-cyan-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-gradient-to-r from-primary to-primary h-2 rounded-full transition-all duration-300"
                   style={{ width: `${unityField * 100}%` }}
                 />
               </div>
@@ -64,7 +64,7 @@ export function GaryLeckeyFormation({ activated = false, onActivate }: GaryLecke
               <div className="text-sm text-gray-300">Nexus Coherence</div>
               <div className="w-full bg-slate-700 rounded-full h-2">
                 <div 
-                  className="bg-gradient-to-r from-gold-500 to-orange-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-gradient-to-r from-gold-500 to-warning h-2 rounded-full transition-all duration-300"
                   style={{ width: `${nexusCoherence * 100}%` }}
                 />
               </div>
@@ -83,7 +83,7 @@ export function GaryLeckeyFormation({ activated = false, onActivate }: GaryLecke
           
           {!activated && onActivate && (
             <div className="text-center">
-              <Button onClick={onActivate} className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+              <Button onClick={onActivate} className="bg-gradient-to-r from-primary to-primary hover:from-primary hover:to-primary">
                 Activate Unity Nexus
               </Button>
             </div>
@@ -93,13 +93,13 @@ export function GaryLeckeyFormation({ activated = false, onActivate }: GaryLecke
       
       <Card className="bg-slate-800/50">
         <CardHeader>
-          <CardTitle className="text-lg text-green-400">Formation Equation Matrix</CardTitle>
+          <CardTitle className="text-lg text-success">Formation Equation Matrix</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="font-mono text-sm space-y-2 text-gray-300">
             <div>Γ(r⃗, t, φ, κ) = A<sub>carrier</sub>(t) · Ψ(t) + ∑<sub>n=1</sub><sup>N</sup> α<sub>n</sub> · Θ<sub>μν</sub><sup>(n)</sup>(t, τ)</div>
-            <div className="text-cyan-400">+ T<sup>6D</sup><sub>μν</sub>(φ, κ, ζ) + U<sub>nexus</sub>(02111991)</div>
-            <div className="text-purple-400">+ Ω<sub>unity</sub>(∀t ∈ &#123;past, present, future&#125;)</div>
+            <div className="text-primary">+ T<sup>6D</sup><sub>μν</sub>(φ, κ, ζ) + U<sub>nexus</sub>(02111991)</div>
+            <div className="text-primary">+ Ω<sub>unity</sub>(∀t ∈ &#123;past, present, future&#125;)</div>
             <div className="text-xs text-gray-500 mt-3">
               Where U<sub>nexus</sub> represents the Gary Leckey birth-code harmonic anchor,<br/>
               and Ω<sub>unity</sub> encompasses all temporal states in unified field convergence.

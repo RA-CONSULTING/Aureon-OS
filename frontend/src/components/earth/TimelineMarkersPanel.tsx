@@ -11,12 +11,12 @@ interface Props {
 }
 
 const markerColors: Record<string, string> = {
-  'PRIME_LOCK': 'bg-green-500',
-  'SURGE_START': 'bg-amber-500',
-  'HARMONIC_PEAK': 'bg-pink-500',
-  'UNITY_SYNC': 'bg-violet-500',
-  'ANCHOR_HOLD': 'bg-blue-500',
-  'FLOW_CYCLE': 'bg-cyan-500'
+  'PRIME_LOCK': 'bg-success',
+  'SURGE_START': 'bg-warning',
+  'HARMONIC_PEAK': 'bg-primary',
+  'UNITY_SYNC': 'bg-primary',
+  'ANCHOR_HOLD': 'bg-primary',
+  'FLOW_CYCLE': 'bg-primary'
 };
 
 const markerIcons: Record<string, string> = {

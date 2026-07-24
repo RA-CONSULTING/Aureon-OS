@@ -199,14 +199,14 @@ export const TradingAnalytics = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Total P&L</p>
-              <p className={`text-2xl font-bold ${metrics.totalPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              <p className={`text-2xl font-bold ${metrics.totalPnL >= 0 ? 'text-success' : 'text-destructive'}`}>
                 {metrics.totalPnL >= 0 ? '+' : ''}${metrics.totalPnL.toFixed(2)}
               </p>
             </div>
             {metrics.totalPnL >= 0 ? (
-              <TrendingUp className="h-8 w-8 text-green-500" />
+              <TrendingUp className="h-8 w-8 text-success" />
             ) : (
-              <TrendingDown className="h-8 w-8 text-red-500" />
+              <TrendingDown className="h-8 w-8 text-destructive" />
             )}
           </div>
         </Card>
@@ -228,12 +228,12 @@ export const TradingAnalytics = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Avg P&L</p>
-              <p className={`text-2xl font-bold ${metrics.avgPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              <p className={`text-2xl font-bold ${metrics.avgPnL >= 0 ? 'text-success' : 'text-destructive'}`}>
                 {metrics.avgPnL >= 0 ? '+' : ''}${metrics.avgPnL.toFixed(2)}
               </p>
               <p className="text-xs text-muted-foreground">{metrics.totalTrades} trades</p>
             </div>
-            <Calendar className="h-8 w-8 text-blue-500" />
+            <Calendar className="h-8 w-8 text-primary" />
           </div>
         </Card>
 
@@ -246,7 +246,7 @@ export const TradingAnalytics = () => {
                 Avg Duration: {metrics.avgTradeDuration.toFixed(0)}m
               </p>
             </div>
-            <Award className="h-8 w-8 text-yellow-500" />
+            <Award className="h-8 w-8 text-warning" />
           </div>
         </Card>
       </div>
@@ -345,11 +345,11 @@ export const TradingAnalytics = () => {
                 <div>
                   <div className="flex justify-between mb-2">
                     <span className="text-sm text-muted-foreground">Average Win</span>
-                    <span className="text-sm font-bold text-green-500">+${metrics.avgWin.toFixed(2)}</span>
+                    <span className="text-sm font-bold text-success">+${metrics.avgWin.toFixed(2)}</span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-green-500" 
+                      className="h-full bg-success" 
                       style={{ width: `${(metrics.avgWin / (metrics.avgWin + metrics.avgLoss)) * 100}%` }}
                     />
                   </div>
@@ -357,11 +357,11 @@ export const TradingAnalytics = () => {
                 <div>
                   <div className="flex justify-between mb-2">
                     <span className="text-sm text-muted-foreground">Average Loss</span>
-                    <span className="text-sm font-bold text-red-500">-${metrics.avgLoss.toFixed(2)}</span>
+                    <span className="text-sm font-bold text-destructive">-${metrics.avgLoss.toFixed(2)}</span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-red-500" 
+                      className="h-full bg-destructive" 
                       style={{ width: `${(metrics.avgLoss / (metrics.avgWin + metrics.avgLoss)) * 100}%` }}
                     />
                   </div>
@@ -395,7 +395,7 @@ export const TradingAnalytics = () => {
                       <p className="font-medium">{symbol.winRate.toFixed(1)}%</p>
                     </div>
                     <div className="text-right">
-                      <p className={`text-lg font-bold ${symbol.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      <p className={`text-lg font-bold ${symbol.pnl >= 0 ? 'text-success' : 'text-destructive'}`}>
                         {symbol.pnl >= 0 ? '+' : ''}${symbol.pnl.toFixed(2)}
                       </p>
                     </div>
@@ -414,7 +414,7 @@ export const TradingAnalytics = () => {
             {metrics.bestTrade && (
               <Card className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <Award className="h-5 w-5 text-green-500" />
+                  <Award className="h-5 w-5 text-success" />
                   <h3 className="text-lg font-semibold">Best Trade</h3>
                 </div>
                 <div className="space-y-2">
@@ -438,7 +438,7 @@ export const TradingAnalytics = () => {
                   </div>
                   <div className="flex justify-between pt-2 border-t">
                     <span className="text-sm font-medium">P&L</span>
-                    <span className="text-lg font-bold text-green-500">
+                    <span className="text-lg font-bold text-success">
                       +${parseFloat(metrics.bestTrade.realized_pnl).toFixed(2)}
                     </span>
                   </div>
@@ -453,7 +453,7 @@ export const TradingAnalytics = () => {
             {metrics.worstTrade && (
               <Card className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <AlertTriangle className="h-5 w-5 text-red-500" />
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
                   <h3 className="text-lg font-semibold">Worst Trade</h3>
                 </div>
                 <div className="space-y-2">
@@ -477,7 +477,7 @@ export const TradingAnalytics = () => {
                   </div>
                   <div className="flex justify-between pt-2 border-t">
                     <span className="text-sm font-medium">P&L</span>
-                    <span className="text-lg font-bold text-red-500">
+                    <span className="text-lg font-bold text-destructive">
                       ${parseFloat(metrics.worstTrade.realized_pnl).toFixed(2)}
                     </span>
                   </div>

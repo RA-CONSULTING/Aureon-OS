@@ -43,9 +43,9 @@ const DecisionVerificationPanel: React.FC = () => {
 
   const getActionColor = (action: string) => {
     switch (action) {
-      case 'BUY': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50';
-      case 'SELL': return 'bg-red-500/20 text-red-400 border-red-500/50';
-      default: return 'bg-amber-500/20 text-amber-400 border-amber-500/50';
+      case 'BUY': return 'bg-success/20 text-success border-success/50';
+      case 'SELL': return 'bg-destructive/20 text-destructive border-destructive/50';
+      default: return 'bg-warning/20 text-warning border-warning/50';
     }
   };
 
@@ -85,14 +85,14 @@ const DecisionVerificationPanel: React.FC = () => {
                     key={idx}
                     className={`p-2 rounded text-xs ${
                       factor.passed 
-                        ? 'bg-emerald-500/10 border border-emerald-500/30' 
+                        ? 'bg-success/10 border border-success/30' 
                         : 'bg-muted/30 border border-border/30'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{factor.name}</span>
                       {factor.passed ? (
-                        <CheckCircle className="h-3 w-3 text-emerald-400" />
+                        <CheckCircle className="h-3 w-3 text-success" />
                       ) : (
                         <XCircle className="h-3 w-3 text-muted-foreground" />
                       )}
@@ -168,19 +168,19 @@ const DecisionVerificationPanel: React.FC = () => {
             {/* Action-based accuracy */}
             <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/30">
               <div className="text-center">
-                <div className="text-lg font-bold text-emerald-400">
+                <div className="text-lg font-bold text-success">
                   {(accuracy.buyAccuracy * 100).toFixed(0)}%
                 </div>
                 <div className="text-xs text-muted-foreground">BUY</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-red-400">
+                <div className="text-lg font-bold text-destructive">
                   {(accuracy.sellAccuracy * 100).toFixed(0)}%
                 </div>
                 <div className="text-xs text-muted-foreground">SELL</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-amber-400">
+                <div className="text-lg font-bold text-warning">
                   {(accuracy.holdAccuracy * 100).toFixed(0)}%
                 </div>
                 <div className="text-xs text-muted-foreground">HOLD</div>
@@ -215,9 +215,9 @@ const DecisionVerificationPanel: React.FC = () => {
                     <Badge 
                       variant="outline" 
                       className={`text-xs ${
-                        decision.action === 'BUY' ? 'text-emerald-400 border-emerald-500/50' :
-                        decision.action === 'SELL' ? 'text-red-400 border-red-500/50' :
-                        'text-amber-400 border-amber-500/50'
+                        decision.action === 'BUY' ? 'text-success border-success/50' :
+                        decision.action === 'SELL' ? 'text-destructive border-destructive/50' :
+                        'text-warning border-warning/50'
                       }`}
                     >
                       {decision.action}

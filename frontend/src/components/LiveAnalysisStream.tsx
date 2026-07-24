@@ -20,10 +20,10 @@ const LiveAnalysisStream: React.FC<LiveAnalysisStreamProps> = ({ commentary }) =
         <h3 className="text-xl font-semibold text-gray-200">AUREON Live Commentary</h3>
         <div className="flex items-center space-x-2">
             <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive"></span>
             </span>
-            <span className="text-sm font-medium text-red-400">LIVE</span>
+            <span className="text-sm font-medium text-destructive">LIVE</span>
         </div>
       </div>
       <div 

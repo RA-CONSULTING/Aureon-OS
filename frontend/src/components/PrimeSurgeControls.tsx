@@ -22,9 +22,9 @@ export default function PrimeSurgeControls() {
   };
 
   return (
-    <Card className="bg-black/40 border-purple-500/30">
+    <Card className="bg-black/40 border-primary/30">
       <CardHeader>
-        <CardTitle className="text-purple-300 flex items-center gap-2">
+        <CardTitle className="text-primary flex items-center gap-2">
           <Zap className="w-5 h-5" />
           Prime & Surge Windows
         </CardTitle>
@@ -33,18 +33,18 @@ export default function PrimeSurgeControls() {
         {/* Prime Alignment Status */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <div className="text-sm text-purple-400">Prime Alignment</div>
+            <div className="text-sm text-primary">Prime Alignment</div>
             <div className="flex items-center gap-2">
-              <div className={`text-2xl font-mono ${primeAlignment >= 0.8 ? 'text-green-400' : primeAlignment >= 0.6 ? 'text-yellow-400' : 'text-red-400'}`}>
+              <div className={`text-2xl font-mono ${primeAlignment >= 0.8 ? 'text-success' : primeAlignment >= 0.6 ? 'text-warning' : 'text-destructive'}`}>
                 {primeAlignment.toFixed(3)}
               </div>
-              {primeAlignment >= 0.8 && <CheckCircle className="w-5 h-5 text-green-400" />}
+              {primeAlignment >= 0.8 && <CheckCircle className="w-5 h-5 text-success" />}
             </div>
           </div>
           
           <div className="space-y-2">
-            <div className="text-sm text-purple-400">Phase Ordering</div>
-            <Badge variant={primeAlignment >= 0.75 ? "default" : "destructive"} className="bg-purple-600">
+            <div className="text-sm text-primary">Phase Ordering</div>
+            <Badge variant={primeAlignment >= 0.75 ? "default" : "destructive"} className="bg-primary">
               {primeAlignment >= 0.75 ? "Stable" : "Unstable"}
             </Badge>
           </div>
@@ -53,17 +53,17 @@ export default function PrimeSurgeControls() {
         {/* Surge Controls */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-purple-400">Surge Window</div>
+            <div className="text-sm text-primary">Surge Window</div>
             <div className="flex items-center gap-2">
-              <Shield className={`w-4 h-4 ${guardRails ? 'text-green-400' : 'text-red-400'}`} />
-              <span className="text-xs text-purple-300">
+              <Shield className={`w-4 h-4 ${guardRails ? 'text-success' : 'text-destructive'}`} />
+              <span className="text-xs text-primary">
                 {guardRails ? 'Guards Active' : 'Guards Off'}
               </span>
             </div>
           </div>
           
           <div className="space-y-2">
-            <div className="text-xs text-purple-400">Surge Intensity</div>
+            <div className="text-xs text-primary">Surge Intensity</div>
             <Slider
               value={surgeIntensity}
               onValueChange={setSurgeIntensity}
@@ -73,14 +73,14 @@ export default function PrimeSurgeControls() {
               className="w-full"
               disabled={surgeActive}
             />
-            <div className="text-xs text-purple-300 text-center">
+            <div className="text-xs text-primary text-center">
               {surgeIntensity[0].toFixed(1)}x
             </div>
           </div>
 
           <Button
             onClick={handleSurgeToggle}
-            className={`w-full ${surgeActive ? 'bg-red-600 hover:bg-red-700' : 'bg-purple-600 hover:bg-purple-700'}`}
+            className={`w-full ${surgeActive ? 'bg-destructive hover:bg-destructive' : 'bg-primary hover:bg-primary'}`}
             disabled={primeAlignment < 0.6}
           >
             {surgeActive ? (
@@ -97,14 +97,14 @@ export default function PrimeSurgeControls() {
           </Button>
           
           {primeAlignment < 0.6 && (
-            <div className="text-xs text-yellow-400 text-center">
+            <div className="text-xs text-warning text-center">
               Prime alignment too low for surge activation
             </div>
           )}
         </div>
 
         {/* Safety Info */}
-        <div className="bg-purple-900/30 p-3 rounded-lg text-xs text-purple-300">
+        <div className="bg-primary/30 p-3 rounded-lg text-xs text-primary">
           <div className="font-semibold mb-1">Safety Notes:</div>
           <ul className="space-y-1 list-disc list-inside">
             <li>Surges auto-terminate after 30 seconds</li>

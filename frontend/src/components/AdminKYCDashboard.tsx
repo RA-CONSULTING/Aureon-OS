@@ -172,11 +172,11 @@ export default function AdminKYCDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">Pending</Badge>;
+        return <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">Pending</Badge>;
       case 'verified':
-        return <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">Verified</Badge>;
+        return <Badge variant="outline" className="bg-success/10 text-success border-success/20">Verified</Badge>;
       case 'rejected':
-        return <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20">Rejected</Badge>;
+        return <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">Rejected</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -250,7 +250,7 @@ export default function AdminKYCDashboard() {
                             </div>
 
                             {app.data_consent_given && (
-                              <div className="col-span-2 text-xs text-green-600">
+                              <div className="col-span-2 text-xs text-success">
                                 ✓ Data consent given on {new Date(app.data_consent_date).toLocaleDateString()}
                               </div>
                             )}

@@ -141,7 +141,7 @@ export default function ProvidersPage() {
   }
 
   function statusBadge(p: Provider) {
-    if (p.live) return <Badge className="bg-emerald-600 hover:bg-emerald-600">live</Badge>;
+    if (p.live) return <Badge className="bg-success hover:bg-success">live</Badge>;
     if (p.has_key) return <Badge variant="secondary">key set · idle</Badge>;
     return <Badge variant="outline">needs key</Badge>;
   }
@@ -202,7 +202,7 @@ export default function ProvidersPage() {
                   <CardDescription>
                     {p.has_key ? (
                       <span className="inline-flex items-center gap-1">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                        <CheckCircle2 className="h-3.5 w-3.5 text-success" />
                         key {p.key_masked} ({p.key_source})
                       </span>
                     ) : (

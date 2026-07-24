@@ -241,7 +241,7 @@ export function StargateVisualization() {
         <div className="space-y-6">
           {/* Network Status */}
           <div className="flex items-center gap-2 text-sm">
-            <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`} />
+            <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-success animate-pulse' : 'bg-gray-500'}`} />
             <span className="text-muted-foreground">
               {isActive ? 'Live Network Pinging' : 'Network Offline'}
             </span>

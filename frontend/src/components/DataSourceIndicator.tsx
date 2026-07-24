@@ -37,11 +37,11 @@ export const DataSourceIndicator: React.FC<DataSourceIndicatorProps> = ({
 
   if (isLiveData) {
     return (
-      <Badge className="bg-green-500/20 text-green-400 border-green-500/50">
+      <Badge className="bg-success/20 text-success border-success/50">
         <Wifi className="h-3 w-3 mr-1" />
         {compact ? 'LIVE' : 'LIVE DATA'}
         {showDetails && !compact && (
-          <span className="ml-1 text-green-300">
+          <span className="ml-1 text-success">
             ({liveExchangeCount}/{totalExchangeCount})
           </span>
         )}
@@ -51,11 +51,11 @@ export const DataSourceIndicator: React.FC<DataSourceIndicatorProps> = ({
 
   if (verification?.overallStatus === 'PARTIAL_LIVE') {
     return (
-      <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/50">
+      <Badge className="bg-warning/20 text-warning border-warning/50">
         <AlertTriangle className="h-3 w-3 mr-1" />
         {compact ? 'PARTIAL' : 'PARTIAL LIVE'}
         {showDetails && !compact && (
-          <span className="ml-1 text-orange-300">
+          <span className="ml-1 text-warning">
             ({liveExchangeCount}/{totalExchangeCount})
           </span>
         )}
@@ -83,7 +83,7 @@ export const DemoModeWarningBanner: React.FC = () => {
   if (isLiveData && !hasGhostData) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-red-600/95 text-white px-4 py-2 text-center">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-destructive/95 text-white px-4 py-2 text-center">
       <div className="flex items-center justify-center gap-2">
         <WifiOff className="h-4 w-4" />
         <span className="font-bold">

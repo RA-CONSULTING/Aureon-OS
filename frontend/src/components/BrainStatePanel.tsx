@@ -20,25 +20,25 @@ import { format } from "date-fns";
 
 // Fear & Greed color coding
 function getFearGreedColor(value: number): string {
-  if (value <= 25) return "text-red-500";
-  if (value <= 45) return "text-orange-500";
-  if (value <= 55) return "text-yellow-500";
-  if (value <= 75) return "text-green-400";
-  return "text-green-500";
+  if (value <= 25) return "text-destructive";
+  if (value <= 45) return "text-warning";
+  if (value <= 55) return "text-warning";
+  if (value <= 75) return "text-success";
+  return "text-success";
 }
 
 function getFearGreedBg(value: number): string {
-  if (value <= 25) return "bg-red-500/20";
-  if (value <= 45) return "bg-orange-500/20";
-  if (value <= 55) return "bg-yellow-500/20";
-  if (value <= 75) return "bg-green-400/20";
-  return "bg-green-500/20";
+  if (value <= 25) return "bg-destructive/20";
+  if (value <= 45) return "bg-warning/20";
+  if (value <= 55) return "bg-warning/20";
+  if (value <= 75) return "bg-success/20";
+  return "bg-success/20";
 }
 
 // Direction icon
 function DirectionIcon({ direction }: { direction: string }) {
-  if (direction === "BULLISH") return <TrendingUp className="w-4 h-4 text-green-500" />;
-  if (direction === "BEARISH") return <TrendingDown className="w-4 h-4 text-red-500" />;
+  if (direction === "BULLISH") return <TrendingUp className="w-4 h-4 text-success" />;
+  if (direction === "BEARISH") return <TrendingDown className="w-4 h-4 text-destructive" />;
   return <Minus className="w-4 h-4 text-muted-foreground" />;
 }
 
@@ -71,8 +71,8 @@ function WisdomConsensusDisplay({ wisdom }: { wisdom: WisdomConsensus }) {
       </div>
       {(wisdom.bullish_votes !== undefined || wisdom.bearish_votes !== undefined) && (
         <div className="flex gap-2 text-xs">
-          <span className="text-green-500">📈 {wisdom.bullish_votes || 0}</span>
-          <span className="text-red-500">📉 {wisdom.bearish_votes || 0}</span>
+          <span className="text-success">📈 {wisdom.bullish_votes || 0}</span>
+          <span className="text-destructive">📉 {wisdom.bearish_votes || 0}</span>
           <span className="text-muted-foreground">⚖️ {wisdom.neutral_votes || 0}</span>
         </div>
       )}
@@ -301,7 +301,7 @@ export function BrainStatePanel() {
                 ? "---"
                 : `$${btcPriceSafe.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
             </div>
-            <div className={`text-sm ${btcChangeSafe >= 0 ? "text-green-500" : "text-red-500"}`}>
+            <div className={`text-sm ${btcChangeSafe >= 0 ? "text-success" : "text-destructive"}`}>
               {btcPriceSafe == null ? "---" : `${btcChangeSafe >= 0 ? "+" : ""}${btcChangeSafe.toFixed(2)}%`}
             </div>
           </div>
@@ -311,7 +311,7 @@ export function BrainStatePanel() {
         <div className="p-3 rounded-lg bg-muted/30">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <AlertTriangle className={`w-4 h-4 ${manipulationPct > 50 ? "text-red-500" : "text-green-500"}`} />
+              <AlertTriangle className={`w-4 h-4 ${manipulationPct > 50 ? "text-destructive" : "text-success"}`} />
               <span className="text-sm font-medium">Manipulation Detection</span>
             </div>
             <Badge variant={manipulationPct > 50 ? "destructive" : "secondary"}>{manipulationPct}%</Badge>
@@ -322,7 +322,7 @@ export function BrainStatePanel() {
               {green_flags.length > 0 ? (
                 <div className="space-y-1">
                   {green_flags.slice(0, 2).map((flag, i) => (
-                    <div key={i} className="flex items-center gap-1 text-green-500">
+                    <div key={i} className="flex items-center gap-1 text-success">
                       <CheckCircle2 className="w-3 h-3" />
                       <span className="truncate">{flag}</span>
                     </div>
@@ -336,7 +336,7 @@ export function BrainStatePanel() {
               {red_flags.length > 0 ? (
                 <div className="space-y-1">
                   {red_flags.slice(0, 2).map((flag, i) => (
-                    <div key={i} className="flex items-center gap-1 text-red-500">
+                    <div key={i} className="flex items-center gap-1 text-destructive">
                       <AlertTriangle className="w-3 h-3" />
                       <span className="truncate">{flag}</span>
                     </div>
@@ -364,11 +364,11 @@ export function BrainStatePanel() {
           <div className="flex gap-4 text-xs">
             <div>
               <span className="text-muted-foreground">Truth: </span>
-              <span className="text-green-500 font-medium">{truthPct}%</span>
+              <span className="text-success font-medium">{truthPct}%</span>
             </div>
             <div>
               <span className="text-muted-foreground">Spoof: </span>
-              <span className="text-red-500 font-medium">{spoofPct}%</span>
+              <span className="text-destructive font-medium">{spoofPct}%</span>
             </div>
           </div>
         </div>
@@ -385,9 +385,9 @@ export function BrainStatePanel() {
               <span
                 className={`font-bold ${
                   prediction_direction === "BULLISH"
-                    ? "text-green-500"
+                    ? "text-success"
                     : prediction_direction === "BEARISH"
-                      ? "text-red-500"
+                      ? "text-destructive"
                       : "text-muted-foreground"
                 }`}
               >
@@ -563,13 +563,13 @@ export function BrainStatePanel() {
         {speculations.length > 0 && (
           <div className="p-3 rounded-lg bg-muted/20">
             <div className="flex items-center gap-2 mb-2">
-              <Lightbulb className="w-4 h-4 text-yellow-500" />
+              <Lightbulb className="w-4 h-4 text-warning" />
               <span className="text-sm font-medium">Speculative Insights</span>
             </div>
             <ul className="space-y-1 text-xs text-muted-foreground">
               {speculations.slice(0, 3).map((spec, i) => (
                 <li key={i} className="flex items-start gap-1">
-                  <span className="text-yellow-500">💭</span>
+                  <span className="text-warning">💭</span>
                   <span>{spec}</span>
                 </li>
               ))}

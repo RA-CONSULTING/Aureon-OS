@@ -28,7 +28,7 @@ export default function HarmonicNexusTheory() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="relative w-full h-96 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4">
+        <div className="relative w-full h-96 bg-gradient-to-br from-primary to-primary rounded-lg p-4">
           <svg className="w-full h-full">
             {/* Connections */}
             {connections.map((conn, idx) => {
@@ -72,7 +72,7 @@ export default function HarmonicNexusTheory() {
           {nodes.map((node) => (
             <div
               key={node.id}
-              className="absolute transform -translate-x-1/2 -translate-y-1/2 bg-yellow-100 border-2 border-yellow-400 rounded-lg p-3 text-center text-sm font-medium shadow-md max-w-48"
+              className="absolute transform -translate-x-1/2 -translate-y-1/2 bg-warning border-2 border-warning rounded-lg p-3 text-center text-sm font-medium shadow-md max-w-48"
               style={{
                 left: `${node.x}%`,
                 top: `${node.y}%`,
@@ -88,7 +88,7 @@ export default function HarmonicNexusTheory() {
           ))}
         </div>
         
-        <div className="mt-4 p-4 bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg">
+        <div className="mt-4 p-4 bg-gradient-to-r from-primary to-primary rounded-lg">
           <h3 className="font-bold text-lg mb-2">The Nexus Equation</h3>
           <div className="text-center text-lg font-mono bg-white p-3 rounded border">
             <div className="mb-2">C = Tr(Ωobs ⊗ 🌌(ℵΨ∞))</div>

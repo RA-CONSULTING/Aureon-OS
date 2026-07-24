@@ -108,7 +108,7 @@ export const NoaaSpaceWeatherDashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">🌍 NOAA Space Weather Dashboard</h2>
+          <h2 className="text-2xl font-bold"> NOAA Space Weather Dashboard</h2>
           <p className="text-sm text-muted-foreground">
             Real-time solar wind, magnetometer, and aurora data
           </p>

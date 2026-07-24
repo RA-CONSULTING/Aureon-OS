@@ -89,7 +89,7 @@ export function HarmonicControls({onUpdate}: {onUpdate: (params: any) => void}) 
           // This would be handled by parent component with WebSocket reference
           console.log("Snapshot requested:", payload);
         }}
-        className="mt-3 w-full px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-colors">
+        className="mt-3 w-full px-3 py-2 rounded-xl bg-success hover:bg-success text-white transition-colors">
         Snapshot ⌘S
       </button>
     </div>

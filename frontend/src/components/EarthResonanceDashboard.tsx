@@ -158,25 +158,25 @@ export const EarthResonanceDashboard = () => {
           </div>
           <div className="flex items-center justify-center gap-2">
             {validation.seismicStable ? (
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <CheckCircle2 className="h-5 w-5 text-success" />
             ) : (
-              <XCircle className="h-5 w-5 text-red-500" />
+              <XCircle className="h-5 w-5 text-destructive" />
             )}
             <span className="text-sm">Seismic Stable</span>
           </div>
           <div className="flex items-center justify-center gap-2">
             {validation.schumannStable ? (
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <CheckCircle2 className="h-5 w-5 text-success" />
             ) : (
-              <XCircle className="h-5 w-5 text-red-500" />
+              <XCircle className="h-5 w-5 text-destructive" />
             )}
             <span className="text-sm">Schumann Nominal</span>
           </div>
           <div className="flex items-center justify-center gap-2">
             {validation.coherenceHigh ? (
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <CheckCircle2 className="h-5 w-5 text-success" />
             ) : (
-              <XCircle className="h-5 w-5 text-red-500" />
+              <XCircle className="h-5 w-5 text-destructive" />
             )}
             <span className="text-sm">High Coherence</span>
           </div>
@@ -196,7 +196,7 @@ export const EarthResonanceDashboard = () => {
         <div className="mt-4 p-3 bg-muted rounded-lg">
           <p className="text-sm">
             <strong>Earth Field Coherence:</strong> {(earthFieldCoherence * 100).toFixed(1)}% 
-            {earthFieldCoherence > 0.8 && " 🎯 Optimal conditions for high-coherence trading"}
+            {earthFieldCoherence > 0.8 && "  Optimal conditions for high-coherence trading"}
           </p>
         </div>
       </Card>
@@ -289,7 +289,7 @@ export const EarthResonanceDashboard = () => {
             <div className="mt-4 p-2 bg-primary/10 rounded text-center">
               <div className="text-xs text-muted-foreground mb-1">Optimal Trading Window</div>
               <div className="text-lg font-bold">
-                {validation.combinedScore > 0.7 ? "ACTIVE 🎯" : "WAIT ⏳"}
+                {validation.combinedScore > 0.7 ? "ACTIVE " : "WAIT "}
               </div>
             </div>
           </div>
@@ -344,7 +344,7 @@ export const EarthResonanceDashboard = () => {
 
       {/* Insights */}
       <Card className="p-6">
-        <h3 className="font-semibold mb-4">🔬 Earth Resonance Insights</h3>
+        <h3 className="font-semibold mb-4"> Earth Resonance Insights</h3>
         <div className="space-y-3">
           <div className="border-l-4 border-primary pl-4">
             <p className="text-sm font-medium">Cross-System Validation</p>
@@ -355,8 +355,8 @@ export const EarthResonanceDashboard = () => {
           </div>
           
           {validation.seismicStable && validation.schumannStable && validation.coherenceHigh && (
-            <div className="border-l-4 border-green-500 pl-4">
-              <p className="text-sm font-medium">✨ Perfect Alignment Detected</p>
+            <div className="border-l-4 border-success pl-4">
+              <p className="text-sm font-medium"> Perfect Alignment Detected</p>
               <p className="text-xs text-muted-foreground mt-1">
                 All systems validating each other! This is an optimal window for high-probability trades. 
                 The Earth field coherence of {(earthFieldCoherence * 100).toFixed(0)}% indicates strong resonance.
@@ -366,7 +366,7 @@ export const EarthResonanceDashboard = () => {
           
           {seismicData?.alerts.highActivity && (
             <div className="border-l-4 border-destructive pl-4">
-              <p className="text-sm font-medium">⚠️ Elevated Seismic Activity</p>
+              <p className="text-sm font-medium"> Elevated Seismic Activity</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Increased seismic events detected. This may correlate with market volatility. 
                 Monitor Schumann resonance for stability confirmation.
@@ -374,8 +374,8 @@ export const EarthResonanceDashboard = () => {
             </div>
           )}
 
-          <div className="border-l-4 border-blue-500 pl-4">
-            <p className="text-sm font-medium">🌍 Deep Earth Resonance Theory</p>
+          <div className="border-l-4 border-primary pl-4">
+            <p className="text-sm font-medium"> Deep Earth Resonance Theory</p>
             <p className="text-xs text-muted-foreground mt-1">
               Seismic activity and Schumann resonance both originate from Earth's electromagnetic field. 
               When they harmonize with trading coherence, it suggests a fundamental alignment in natural systems.

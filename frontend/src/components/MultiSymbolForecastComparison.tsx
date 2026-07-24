@@ -130,18 +130,18 @@ export const MultiSymbolForecastComparison = () => {
 
   const getTrendIcon = (trend: string) => {
     switch (trend.toLowerCase()) {
-      case 'improving': return <TrendingUp className="h-4 w-4 text-green-500" />;
-      case 'stable': return <Minus className="h-4 w-4 text-blue-500" />;
-      case 'declining': return <TrendingDown className="h-4 w-4 text-orange-500" />;
+      case 'improving': return <TrendingUp className="h-4 w-4 text-success" />;
+      case 'stable': return <Minus className="h-4 w-4 text-primary" />;
+      case 'declining': return <TrendingDown className="h-4 w-4 text-warning" />;
       default: return null;
     }
   };
 
   const getConfidenceColor = (confidence: string) => {
     switch (confidence.toLowerCase()) {
-      case 'high': return 'text-green-500';
-      case 'medium': return 'text-yellow-500';
-      case 'low': return 'text-orange-500';
+      case 'high': return 'text-success';
+      case 'medium': return 'text-warning';
+      case 'low': return 'text-warning';
       default: return 'text-muted-foreground';
     }
   };
@@ -213,10 +213,10 @@ export const MultiSymbolForecastComparison = () => {
 
         {/* Error State */}
         {error && forecasts.length === 0 && (
-          <Card className="bg-yellow-500/10 border-yellow-500/20">
+          <Card className="bg-warning/10 border-warning/20">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
+                <AlertCircle className="h-5 w-5 text-warning mt-0.5" />
                 <div>
                   <h4 className="font-semibold text-sm mb-1">Insufficient Data</h4>
                   <p className="text-xs text-muted-foreground">{error}</p>
@@ -233,7 +233,7 @@ export const MultiSymbolForecastComparison = () => {
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="p-4">
                 <h3 className="font-semibold mb-2 flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-green-500" />
+                  <TrendingUp className="h-5 w-5 text-success" />
                   Best Opportunities (Ranked by Peak Coherence)
                 </h3>
                 <p className="text-xs text-muted-foreground">
@@ -253,11 +253,11 @@ export const MultiSymbolForecastComparison = () => {
                   key={forecast.symbol}
                   className={`${
                     isTop 
-                      ? 'bg-green-500/10 border-green-500/30 border-2' 
+                      ? 'bg-success/10 border-success/30 border-2' 
                       : isOptimal
-                      ? 'bg-green-500/5 border-green-500/20'
+                      ? 'bg-success/5 border-success/20'
                       : isHigh
-                      ? 'bg-yellow-500/5 border-yellow-500/20'
+                      ? 'bg-warning/5 border-warning/20'
                       : 'bg-background/50'
                   }`}
                 >
@@ -279,7 +279,7 @@ export const MultiSymbolForecastComparison = () => {
                         <div className="text-right">
                           <p className="text-xs text-muted-foreground mb-1">Peak C(t)</p>
                           <p className={`text-2xl font-bold ${
-                            isOptimal ? 'text-green-500' : isHigh ? 'text-yellow-500' : 'text-foreground'
+                            isOptimal ? 'text-success' : isHigh ? 'text-warning' : 'text-foreground'
                           }`}>
                             {forecast.peakCoherence.toFixed(3)}
                           </p>

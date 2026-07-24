@@ -336,9 +336,38 @@ class QueenConscience:
         Returns None when SLS is unknown so the existing routers run.
         """
         sls = self._current_sls(context)
-        if sls is None:
-            return None
         action_lower = action.lower()
+        if sls is None:
+            # Fail SAFE, not open. When the substrate coherence is unreadable — the HNC
+            # canonical field is unavailable (no daemon pulse, no vault, no override) — the
+            # strongest wire used to disengage silently and let a risky move through. Instead,
+            # on a risky action outside DRY_RUN we surface an explicit, audited CAUTION (advisory
+            # CONCERNED, never a hard veto) so a decision is never made *blind* to the field.
+            # DRY_RUN stays silent so dev/replay output is unchanged.
+            try:
+                from aureon.observer.production_mode import is_dry_run
+
+                blind_ok = is_dry_run()
+            except Exception:  # noqa: BLE001
+                blind_ok = True
+            if blind_ok or not self._is_risky_action(action_lower, context):
+                return None
+            return ConscienceWhisper(
+                verdict=ConscienceVerdict.CONCERNED,
+                message=(
+                    f"Substrate coherence is unreadable — the canonical HNC field "
+                    f"(symbolic.life.pulse) is unavailable, so I cannot confirm we are on the "
+                    f"β-stability island. {action!r} is a risky move to make blind to the field."
+                ),
+                why_it_matters=(
+                    "A silent no-veto when the field is down is a fail-open: the safety wire "
+                    "disengages exactly when the producer we depend on has gone quiet. Prefer to "
+                    "wait for the field, lower the size, or bring the HNC daemon back up."
+                ),
+                what_gary_would_say="If you can't feel the field, don't bet the house on it.",
+                teaching="Fail safe, not open — an unreadable substrate is caution, not consent.",
+                confidence=0.7,
+            )
         if not self._is_risky_action(action_lower, context):
             return None
         # A divided field: when the organism's sub-fields disagree strongly (blend
@@ -369,8 +398,8 @@ class QueenConscience:
                     verdict=ConscienceVerdict.VETO,
                     message=(
                         f"The field is divided — divergence {divergence:.3f} — and "
-                        f"symbolic_life_score is {sls:.3f}, off the stability island. "
-                        f"I refuse {action!r} while the organism is of two minds."
+                        f"symbolic_life_score is {sls:.3f}, off the β-stability island and at the "
+                        f"stability cliff. I refuse {action!r} while the organism is of two minds."
                     ),
                     why_it_matters=(
                         "High blend divergence means the sub-fields disagree; acting "

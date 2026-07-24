@@ -563,6 +563,24 @@ class OracleOfHarmony:
                 phase    = "RESONATING"
                 dominant = f"Field resonating — {dom_bot} bots in structured flow ({flow_pred})"
 
+        # ── HNC direction: reconcile onto the ONE canonical field ────────────
+        # The Oracle's own waveform scan is a real local reading, but the signal that reaches
+        # traders must be directed by the shared harmonic core, not a private field. Blend the
+        # canonical symbolic.life.pulse coherence (Γ) into the score at a modest weight so the two
+        # readings agree, and record it for provenance. Guarded/offline-safe — a missing daemon
+        # leaves the scanner-derived score untouched.
+        try:
+            from aureon.core.hnc_field import read_canonical_field
+
+            _field = read_canonical_field()
+            if getattr(_field, "available", False) and _field.coherence_gamma is not None:
+                _canon = max(0.0, min(1.0, float(_field.coherence_gamma)))
+                details["canonical_field_gamma"] = _canon
+                details["canonical_field_source"] = getattr(_field, "source", None) or "canonical"
+                score = max(0.0, min(1.0, score * 0.75 + _canon * 0.25))
+        except Exception as e:  # noqa: BLE001 — canonical field is best-effort enrichment
+            logger.debug(f"Seer Harmony canonical-field reconcile skipped: {e}")
+
         # Confidence: highest when harmonic relays + wave scanner both present
         _has_wave = bool(wave_ctx and wave_ctx.get('available'))
         _has_relays = details.get("relay_count", 0) > 0

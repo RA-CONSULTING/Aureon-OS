@@ -156,7 +156,7 @@ export default function OperatorChatPage() {
                     <div className="space-y-0.5">
                       {turn.reply.grounding.sources.slice(0, 4).map((s, j) => (
                         <p key={j} className="truncate font-mono text-[10px] text-muted-foreground">
-                          ⚓ {s.path || s.title}
+                           {s.path || s.title}
                         </p>
                       ))}
                     </div>

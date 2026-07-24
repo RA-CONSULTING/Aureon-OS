@@ -6,7 +6,7 @@ interface ReportCardProps {
   report: NexusReport | null;
 }
 
-const MetricDisplay: React.FC<{ label: string; value: string | number; unit?: string, tooltip: string, valueColor?: string }> = ({ label, value, unit, tooltip, valueColor = 'text-sky-400' }) => (
+const MetricDisplay: React.FC<{ label: string; value: string | number; unit?: string, tooltip: string, valueColor?: string }> = ({ label, value, unit, tooltip, valueColor = 'text-primary' }) => (
     <div title={tooltip} className="bg-gray-900/50 p-3 rounded-md text-center flex-1">
         <p className={`text-2xl lg:text-3xl font-bold ${valueColor}`}>
           {value}
@@ -28,7 +28,7 @@ const ReportCard: React.FC<ReportCardProps> = ({ report }) => {
     return (
       <div className="bg-gray-800/50 border border-gray-700 rounded-lg shadow-lg p-6 h-full">
         <h3 className="text-xl font-semibold text-gray-200 mb-4">Live Performance Metrics</h3>
-        <div className="text-yellow-400 text-center py-8">
+        <div className="text-warning text-center py-8">
           ⚠️ AWAITING LIVE DATA - No simulation
         </div>
       </div>
@@ -50,7 +50,7 @@ const ReportCard: React.FC<ReportCardProps> = ({ report }) => {
                 label="Coherence (Γ)"
                 value={`${coherence}%`}
                 tooltip="Real-time field coherence from Master Equation."
-                valueColor={parseFloat(coherence) >= 70 ? 'text-green-400' : parseFloat(coherence) >= 45 ? 'text-yellow-400' : 'text-red-400'}
+                valueColor={parseFloat(coherence) >= 70 ? 'text-success' : parseFloat(coherence) >= 45 ? 'text-warning' : 'text-destructive'}
             />
             <MetricDisplay 
                 label="Lambda (Λ)" 

@@ -101,7 +101,7 @@ export const PortfolioRebalancerPanel = () => {
                   </div>
                   <span className={cn(
                     "font-mono",
-                    rec.deviation > 0 ? "text-red-500" : "text-green-500"
+                    rec.deviation > 0 ? "text-destructive" : "text-success"
                   )}>
                     {rec.deviation > 0 ? '+' : ''}{(rec.deviation * 100).toFixed(1)}%
                   </span>

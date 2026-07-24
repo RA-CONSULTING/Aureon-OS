@@ -85,19 +85,19 @@ export const SymbolicCompilerPanel: React.FC<{ tool: string }> = ({ tool }) => {
       />
       
       {isCompiling && (
-        <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-blue-700 text-sm">
+        <div className="flex items-center gap-3 p-3 bg-primary rounded-lg border border-primary">
+          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <span className="text-primary text-sm">
             Processing intent → harmonic frequencies → waveform synthesis...
           </span>
         </div>
       )}
       
       {output && (
-        <div className="space-y-4 p-4 bg-green-50 rounded-lg border border-green-200">
+        <div className="space-y-4 p-4 bg-success rounded-lg border border-success">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-green-700 font-medium">Resonance Broadcast Active</span>
+            <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
+            <span className="text-success font-medium">Resonance Broadcast Active</span>
           </div>
           
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -125,7 +125,7 @@ export const SymbolicCompilerPanel: React.FC<{ tool: string }> = ({ tool }) => {
           <div>
             <div className="text-slate-600 font-medium mb-2">Waveform Preview</div>
             <div className="h-16 bg-white rounded border flex items-center px-2">
-              <svg width="100%" height="60" className="text-green-600">
+              <svg width="100%" height="60" className="text-success">
                 <polyline
                   fill="none"
                   stroke="currentColor"

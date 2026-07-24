@@ -78,9 +78,9 @@ export function SystemsTabContent({ globalState }: SystemsTabContentProps) {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'online': return <CheckCircle className="h-3 w-3 text-green-400" />;
-      case 'stale': return <Clock className="h-3 w-3 text-yellow-400" />;
-      default: return <XCircle className="h-3 w-3 text-red-400" />;
+      case 'online': return <CheckCircle className="h-3 w-3 text-success" />;
+      case 'stale': return <Clock className="h-3 w-3 text-warning" />;
+      default: return <XCircle className="h-3 w-3 text-destructive" />;
     }
   };
 
@@ -105,16 +105,16 @@ export function SystemsTabContent({ globalState }: SystemsTabContentProps) {
           </CardContent>
         </Card>
         
-        <Card className="border-border/50 border-green-500/30">
+        <Card className="border-border/50 border-success/30">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Online</span>
-              <Badge variant="default" className="bg-green-500">{onlineCount}</Badge>
+              <Badge variant="default" className="bg-success">{onlineCount}</Badge>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="border-border/50 border-yellow-500/30">
+        <Card className="border-border/50 border-warning/30">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Stale</span>
@@ -123,7 +123,7 @@ export function SystemsTabContent({ globalState }: SystemsTabContentProps) {
           </CardContent>
         </Card>
         
-        <Card className="border-border/50 border-red-500/30">
+        <Card className="border-border/50 border-destructive/30">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Offline</span>
@@ -154,14 +154,14 @@ export function SystemsTabContent({ globalState }: SystemsTabContentProps) {
                 key={sys.name}
                 className={cn(
                   "flex flex-col items-center p-3 rounded-lg border transition-all",
-                  sys.active ? "border-green-500/50 bg-green-500/5" : "border-border/30"
+                  sys.active ? "border-success/50 bg-success/5" : "border-border/30"
                 )}
               >
-                <sys.icon className={cn("h-6 w-6 mb-1", sys.active ? "text-green-400" : "text-muted-foreground")} />
+                <sys.icon className={cn("h-6 w-6 mb-1", sys.active ? "text-success" : "text-muted-foreground")} />
                 <span className="text-xs text-center">{sys.name}</span>
                 <div className={cn(
                   "h-1.5 w-1.5 rounded-full mt-1",
-                  sys.active ? "bg-green-400 animate-pulse" : "bg-muted-foreground"
+                  sys.active ? "bg-success animate-pulse" : "bg-muted-foreground"
                 )} />
               </div>
             ))}
@@ -188,7 +188,7 @@ export function SystemsTabContent({ globalState }: SystemsTabContentProps) {
                   <div className="flex items-center gap-2">
                     <div className={cn(
                       "h-2 w-2 rounded-full",
-                      state.ready ? "bg-green-400" : "bg-muted-foreground"
+                      state.ready ? "bg-success" : "bg-muted-foreground"
                     )} />
                     <span className="font-mono">{name}</span>
                   </div>

@@ -20,9 +20,9 @@ const RiskManagementPanel: React.FC<{ currentDay: number }> = () => {
           <div key={index} className="bg-gray-900/50 p-4 rounded-md border border-gray-700" title={param.description}>
             <div className="flex justify-between items-center">
               <p className="font-semibold text-gray-300 text-sm">{param.name}</p>
-              <span className={`text-xs font-bold px-2 py-1 rounded-full ${param.status === 'ACTIVE' ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}`}>{param.status}</span>
+              <span className={`text-xs font-bold px-2 py-1 rounded-full ${param.status === 'ACTIVE' ? 'bg-success/20 text-success' : 'bg-warning/20 text-warning'}`}>{param.status}</span>
             </div>
-            <p className="text-2xl font-mono text-cyan-400 mt-2">{param.value}</p>
+            <p className="text-2xl font-mono text-primary mt-2">{param.value}</p>
           </div>
         ))}
       </div>

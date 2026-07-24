@@ -27,13 +27,13 @@ const HourStateDisplay = ({
   }
 
   const stateColors: Record<ProbabilityState, string> = {
-    EXTREME_BULLISH: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-    BULLISH: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-    SLIGHT_BULLISH: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-    EXTREME_BEARISH: 'bg-red-500/20 text-red-400 border-red-500/30',
-    BEARISH: 'bg-red-500/20 text-red-400 border-red-500/30',
-    SLIGHT_BEARISH: 'bg-red-500/20 text-red-400 border-red-500/30',
-    NEUTRAL: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+    EXTREME_BULLISH: 'bg-success/20 text-success border-success/30',
+    BULLISH: 'bg-success/20 text-success border-success/30',
+    SLIGHT_BULLISH: 'bg-success/20 text-success border-success/30',
+    EXTREME_BEARISH: 'bg-destructive/20 text-destructive border-destructive/30',
+    BEARISH: 'bg-destructive/20 text-destructive border-destructive/30',
+    SLIGHT_BEARISH: 'bg-destructive/20 text-destructive border-destructive/30',
+    NEUTRAL: 'bg-warning/20 text-warning border-warning/30',
   };
 
   const stateEmoji: Record<ProbabilityState, string> = {
@@ -98,9 +98,9 @@ export function HNCProbabilityMatrixPanel({ matrix, signal }: HNCProbabilityMatr
   }
 
   const actionColors: Record<string, string> = {
-    BUY: 'bg-emerald-500',
-    SELL: 'bg-red-500',
-    HOLD: 'bg-yellow-500',
+    BUY: 'bg-success',
+    SELL: 'bg-destructive',
+    HOLD: 'bg-warning',
   };
 
   const actionEmoji: Record<string, string> = {

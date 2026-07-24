@@ -1,0 +1,57 @@
+{
+  "all_directed": false,
+  "boundary": "Source-level wiring audit: it proves each adaptive consumer REFERENCES the one canonical HNC field (aureon.core.hnc_field / the symbolic.life.pulse topic) rather than a private coherence number - a necessary condition for 'directed by the HNC and Auris nodes'. It does NOT execute the consumer, does NOT measure how strongly the field sways a decision (that is the b40 live trace), and is NOT a claim about any person.",
+  "consumers": [
+    {
+      "directed": false,
+      "module": "aureon/utils/adaptive_prime_profit_gate.py",
+      "name": "kelly_gate",
+      "note": "position-sizing safety buffer",
+      "present": true,
+      "via": ""
+    },
+    {
+      "directed": false,
+      "module": "aureon/utils/aureon_miner_brain.py",
+      "name": "miner_brain",
+      "note": "adaptive learning / quantum-context cycle",
+      "present": true,
+      "via": ""
+    },
+    {
+      "directed": false,
+      "module": "aureon/intelligence/aureon_seer.py",
+      "name": "seer_oracle",
+      "note": "Auris trading oracle consensus",
+      "present": true,
+      "via": ""
+    },
+    {
+      "directed": false,
+      "module": "aureon/queen/queen_layer.py",
+      "name": "queen_layer",
+      "note": "base Queen first-pass decision/routing",
+      "present": true,
+      "via": ""
+    },
+    {
+      "directed": true,
+      "module": "aureon/queen/queen_conscience.py",
+      "name": "queen_conscience",
+      "note": "Queen 4th-pass substrate-coherence veto",
+      "present": true,
+      "via": "read_canonical_field"
+    }
+  ],
+  "directed_fraction": 0.2,
+  "n_directed": 1,
+  "n_siloed": 4,
+  "n_total": 5,
+  "out_path": null,
+  "siloed_names": [
+    "kelly_gate",
+    "miner_brain",
+    "seer_oracle",
+    "queen_layer"
+  ]
+}

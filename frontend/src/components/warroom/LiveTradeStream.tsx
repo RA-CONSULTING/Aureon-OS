@@ -90,11 +90,11 @@ export function LiveTradeStream() {
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between text-lg">
           <span className="flex items-center gap-2">
-            <Zap className="h-5 w-5 text-amber-500" />
+            <Zap className="h-5 w-5 text-warning" />
             Live Trade Stream
           </span>
-          <Badge variant={isConnected ? 'default' : 'secondary'} className={isConnected ? 'bg-green-500' : ''}>
-            {isConnected ? '🟢 LIVE' : '⚪ OFFLINE'}
+          <Badge variant={isConnected ? 'default' : 'secondary'} className={isConnected ? 'bg-success' : ''}>
+            {isConnected ? ' LIVE' : ' OFFLINE'}
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -113,16 +113,16 @@ export function LiveTradeStream() {
                   key={trade.id}
                   className={`p-3 rounded-lg border ${
                     trade.side === 'BUY' 
-                      ? 'bg-green-500/10 border-green-500/30' 
-                      : 'bg-red-500/10 border-red-500/30'
+                      ? 'bg-success/10 border-success/30' 
+                      : 'bg-destructive/10 border-destructive/30'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {trade.side === 'BUY' ? (
-                        <ArrowUpCircle className="h-5 w-5 text-green-500" />
+                        <ArrowUpCircle className="h-5 w-5 text-success" />
                       ) : (
-                        <ArrowDownCircle className="h-5 w-5 text-red-500" />
+                        <ArrowDownCircle className="h-5 w-5 text-destructive" />
                       )}
                       <span className="font-bold">{trade.symbol}</span>
                       <Badge variant="outline" className="text-xs">
@@ -140,12 +140,12 @@ export function LiveTradeStream() {
                     <div className="flex items-center gap-2">
                       <Badge
                         variant={trade.status === 'filled' ? 'default' : 'secondary'}
-                        className={trade.status === 'filled' ? 'bg-green-600' : ''}
+                        className={trade.status === 'filled' ? 'bg-success' : ''}
                       >
                         {trade.status}
                       </Badge>
                       {trade.pnl !== undefined && trade.pnl !== null && (
-                        <span className={trade.pnl >= 0 ? 'text-green-500' : 'text-red-500'}>
+                        <span className={trade.pnl >= 0 ? 'text-success' : 'text-destructive'}>
                           {trade.pnl >= 0 ? '+' : ''}{trade.pnl.toFixed(2)}
                         </span>
                       )}
