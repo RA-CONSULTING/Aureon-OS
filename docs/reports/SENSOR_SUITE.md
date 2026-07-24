@@ -62,7 +62,7 @@ The **sacred lattice** (`sacred_lattice_scan.py`) is how the repo maps the sky *
 
 The **harmonic core** (`harmonic_core_scan.py`) goes one level deeper still — to the frequency substrate the framework itself is built on: the HNC **Master Formula Λ(t)** modes, the **Celtic Ogham** φ-scaled tree-tones, and the **Ghost Dance** ancestral Solfeggio ladder, each scanned through the same engine. See [HARMONIC_CORE.md](HARMONIC_CORE.md).
 
-† b9 is the phenolic→cognition bridge; b10–b27 are the bio lanes; b28 is the signal-adapter conformance roll-up, b29 the family-wide false-positive-rate audit, b30 the detection-power sensitivity sweep, b31 the per-test null-calibration curve, b32 the multiplicity / family-wise-error audit, and b33 the false-discovery-rate / Benjamini–Hochberg audit (b29+b30 = the ROC picture; b31 the calibration foundation under both; b32+b33 = the two multiple-comparisons regimes, FWER and FDR, that close the statistical-validity dossier). b34–b39 are a different kind of check — not sensor lanes but the **cognitive immune layer**: sensor (b34 integrity guard) → effector (b35 swarm defense) → membrane (b36 MCP boundary) → counterfeit detector (b37 authenticity discriminator) → memory (b38 immune memory) → regulation (b39 immune regulation), see below. Tier-A total: **39**.
+† b9 is the phenolic→cognition bridge; b10–b27 are the bio lanes; b28 is the signal-adapter conformance roll-up, b29 the family-wide false-positive-rate audit, b30 the detection-power sensitivity sweep, b31 the per-test null-calibration curve, b32 the multiplicity / family-wise-error audit, and b33 the false-discovery-rate / Benjamini–Hochberg audit (b29+b30 = the ROC picture; b31 the calibration foundation under both; b32+b33 = the two multiple-comparisons regimes, FWER and FDR, that close the statistical-validity dossier). b34–b39 are a different kind of check — not sensor lanes but the **cognitive immune layer**: sensor (b34 integrity guard) → effector (b35 swarm defense) → membrane (b36 MCP boundary) → counterfeit detector (b37 authenticity discriminator) → memory (b38 immune memory) → regulation (b39 immune regulation), see below. b40–b41 are the **HNC-direction dossier** — not sensor lanes but proof that the adaptive logic is directed by the one canonical field: b40 traces a live signal from `symbolic.life.pulse` to a decision on one trace_id; b41 audits that every adaptive consumer references the canonical-field wire (see below). Tier-A total: **40** (b41 registers once the un-siloing lands).
 
 ## Integrity / immune layer (not a sensor lane)
 
@@ -119,6 +119,22 @@ a flood), while genuine novel threats always pass and inflammation resolves to *
 like the rest (heartbeat, `trace_pump` route, `install_immune_regulation` closing the swarm→cooldown loop
 at boot, an `immune_regulation_homeostasis` audit edge); emits `bio.immune_regulation.run`. Memory (b38)
 and regulation (b39) are the accelerator/brake balance.
+
+## HNC-direction dossier (is the adaptive logic on the one field?)
+
+The **logic-flow trace** (`aureon/cognition/logic_flow.py`, benchmark **b40**) is the live proof of
+direction: on an isolated bus it publishes one canonical `symbolic.life.pulse`, reads it back through the
+single canonical layer `aureon.core.hnc_field.read_canonical_field`, carries the value into a downstream
+decision, and asserts the topic sequence and a **single unbroken trace_id** from harmonic core to
+decision. Deterministic; emits `cognition.logic_flow.run`.
+
+The **HNC direction audit** (`aureon/bio/hnc_direction_audit.py`, benchmark **b41**) is the static
+companion: it reads each adaptive consumer's own source (the Kelly gate, miner brain, Seer/Auris oracle,
+base Queen, conscience veto) and asks whether it references the canonical-field wire (`read_canonical_field`
+/ `blend_field` / the `symbolic.life.pulse` topic) rather than a private coherence number. The headline
+`directed_fraction` (→ 1.0) and `all_directed` are the falsifiable before/after of the un-siloing work; the
+RED baseline is recorded in [`HNC_AURIS_DIRECTION_AUDIT`](../research/audits/). b40 proves the signal
+*flows*; b41 proves the wire is *present at every consumer*. Emits `bio.hnc_direction_audit.run`.
 
 **Surfaced in the console.** The whole bio family — the sensor lanes, the statistical-validity dossier
 (b28–b33), and the cognitive immune layer (b34–b39) — is now exposed to the SaaS at **`GET /api/defense`**

@@ -2888,6 +2888,148 @@ def b39_immune_regulation(tmp_root: Path) -> Dict[str, Any]:
     }
 
 
+def b40_logic_flow(tmp_root: Path) -> Dict[str, Any]:
+    """The logic flows on one unbroken thread, φ logic unchanged: the harmonic core publishes a single
+    canonical ``symbolic.life.pulse`` on the shared bus, a consumer reads it through the ONE canonical
+    layer (``read_canonical_field``) — not a private engine — and the value is carried into a downstream
+    decision on the SAME trace_id. This is the live trace that pairs with the b41 direction audit's static
+    wire: b41 proves every consumer references the field; b40 proves the signal actually crosses from
+    core to decision, with the topic sequence observed and a single trace_id from end to end. Deterministic
+    (fixed seed pulse); a durable md + JSON artifact round-trips and is byte-identical on re-run; the
+    cognition bridge fires; and no person-reading surface exists.
+    """
+    import json
+
+    from aureon.cognition import logic_flow as lf
+
+    report = lf.compute_logic_flow(seed_score=0.639, trace_id="benchflow0")
+    out_md = tmp_root / "logic_flow.md"
+    out_json = tmp_root / "logic_flow.json"
+    rendered = lf.write_logic_flow_report(report, out_md, out_json)
+
+    md = out_md.read_text(encoding="utf-8") if out_md.exists() else ""
+    loaded = json.loads(out_json.read_text(encoding="utf-8")) if out_json.exists() else {}
+    row_lines = [ln for ln in md.splitlines() if ln.startswith("| ") and "---" not in ln]
+
+    out_md2 = tmp_root / "logic_flow2.md"
+    out_json2 = tmp_root / "logic_flow2.json"
+    lf.write_logic_flow_report(report, out_md2, out_json2)
+
+    determinism = lf.compute_logic_flow(seed_score=0.639, trace_id="benchflow0").to_dict() == report.to_dict()
+
+    # The cognition bridge fires: emit publishes on the run topic + writes the bus_trace mirror.
+    emitted = lf.emit_logic_flow(report)
+
+    surface = [n.lower() for n in dir(lf)]
+    banned = ("face", "speaker", "voice", "pose", "emotion", "identity", "biometric")
+
+    invariants = {
+        "pulse_published": report.pulse_published,
+        "field_read_canonical": report.field_read,
+        "decision_carries_field": report.decision_carries_field,
+        "trace_id_propagated": report.trace_id_propagated,
+        "single_trace_id": report.single_trace_id,
+        "flow_intact": report.flow_intact,
+        "topic_sequence_ordered": report.topic_sequence[:2] == [lf.PULSE_TOPIC, lf.DECISION_TOPIC],
+        "deterministic": determinism,
+        "trace_signal_written": bool(emitted.get("trace_signal_written")),
+        "both_files_nonempty": out_md.exists() and out_md.stat().st_size > 0
+        and out_json.exists() and out_json.stat().st_size > 0,
+        "json_round_trips": loaded.get("flow_intact") == report.flow_intact
+        and loaded.get("boundary") == lf.LOGIC_FLOW_BOUNDARY,
+        "has_metric_rows": len(row_lines) >= 5,
+        "byte_identical_on_rewrite": out_md2.read_bytes() == out_md.read_bytes()
+        and out_json2.read_bytes() == out_json.read_bytes(),
+        "out_path_set": rendered.out_path == str(out_md),
+        "no_person_surface": not any(b in n for b in banned for n in surface),
+    }
+    passed = all(invariants.values())
+
+    return {
+        "name": "Logic-flow trace (HNC pulse → decision, one trace_id)",
+        "module": "aureon/cognition/logic_flow.py",
+        "passed": passed,
+        "metrics": {
+            "field_score": report.field_score,
+            "topics": len(report.topic_sequence),
+        },
+        "evidence": (
+            f"canonical pulse published; read via read_canonical_field (score {report.field_score}); "
+            f"decision carries the field on one trace_id ({report.trace_id}); topic sequence "
+            f"{' -> '.join(report.topic_sequence)}; flow intact {report.flow_intact}; cognition bridge "
+            f"fired; durable md+JSON byte-identical; no person surface"
+        ),
+        "invariants": invariants,
+    }
+
+
+def b41_hnc_direction_audit(tmp_root: Path) -> Dict[str, Any]:
+    """Adaptive logic is directed by the ONE canonical field, φ logic unchanged: every adaptive consumer
+    (Kelly gate, miner brain, Seer/Auris oracle, base Queen, conscience veto) references the canonical-field
+    wire (``read_canonical_field`` / ``blend_field`` / the ``symbolic.life.pulse`` topic) rather than a
+    private coherence number. The audit reads each consumer's real source and rolls up ``directed_fraction``
+    (→ 1.0) and ``all_directed``. Deterministic and offline (source-level); a durable md + JSON artifact
+    round-trips and is byte-identical on re-run; and no person-reading surface exists.
+    """
+    import json
+
+    from aureon.bio import hnc_direction_audit as hda
+
+    report = hda.compute_hnc_direction()
+    out_md = tmp_root / "hnc_direction.md"
+    out_json = tmp_root / "hnc_direction.json"
+    rendered = hda.write_hnc_direction_report(report, out_md, out_json)
+
+    md = out_md.read_text(encoding="utf-8") if out_md.exists() else ""
+    loaded = json.loads(out_json.read_text(encoding="utf-8")) if out_json.exists() else {}
+    row_lines = [ln for ln in md.splitlines() if ln.startswith("| ") and "---" not in ln]
+
+    out_md2 = tmp_root / "hnc_direction2.md"
+    out_json2 = tmp_root / "hnc_direction2.json"
+    hda.write_hnc_direction_report(report, out_md2, out_json2)
+
+    determinism = hda.compute_hnc_direction().to_dict() == report.to_dict()
+
+    surface = [n.lower() for n in dir(hda)]
+    banned = ("face", "speaker", "pose", "emotion", "biometric")
+
+    invariants = {
+        "all_consumers_probed": report.n_total == len(hda.direction_specs()) and report.n_total >= 5,
+        "every_consumer_present": all(c["present"] for c in report.consumers),
+        "all_adaptive_consumers_directed": report.all_directed,
+        "no_silos": report.n_siloed == 0,
+        "deterministic": determinism,
+        "both_files_nonempty": out_md.exists() and out_md.stat().st_size > 0
+        and out_json.exists() and out_json.stat().st_size > 0,
+        "json_round_trips": loaded.get("all_directed") == report.all_directed
+        and loaded.get("boundary") == hda.HNC_DIRECTION_BOUNDARY,
+        "has_metric_rows": len(row_lines) >= 5,
+        "byte_identical_on_rewrite": out_md2.read_bytes() == out_md.read_bytes()
+        and out_json2.read_bytes() == out_json.read_bytes(),
+        "out_path_set": rendered.out_path == str(out_md),
+        "no_person_surface": not any(b in n for b in banned for n in surface),
+    }
+    passed = all(invariants.values())
+
+    return {
+        "name": "HNC direction audit (adaptive logic on the one field)",
+        "module": "aureon/bio/hnc_direction_audit.py",
+        "passed": passed,
+        "metrics": {
+            "directed_fraction": report.directed_fraction,
+            "n_directed": report.n_directed,
+            "n_total": report.n_total,
+        },
+        "evidence": (
+            f"{report.n_directed}/{report.n_total} adaptive consumers directed by the canonical field "
+            f"(fraction {report.directed_fraction:.3f}); all directed {report.all_directed}"
+            + (f"; siloed: {', '.join(report.siloed_names)}" if report.siloed_names else "")
+            + "; durable md+JSON byte-identical; no person surface"
+        ),
+        "invariants": invariants,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tier A registry — order matters for the report.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2933,6 +3075,9 @@ TIER_A: List[Tuple[str, Callable[[Path], Dict[str, Any]]]] = [
     ("Authenticity discriminator",      b37_authenticity),
     ("Immune memory (recall)",          b38_immune_memory),
     ("Immune regulation (homeostasis)", b39_immune_regulation),
+    ("Logic-flow trace (HNC→decision)",  b40_logic_flow),
+    # b41_hnc_direction_audit is registered once the un-siloing (W2) makes it GREEN; until then it
+    # reads a partial directed_fraction (the honest RED baseline captured in the audit dossier).
 ]
 
 
