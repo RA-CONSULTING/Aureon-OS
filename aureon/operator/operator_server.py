@@ -673,6 +673,16 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
     except Exception as exc:  # noqa: BLE001 — billing is optional; the operator must serve
         logger.warning("billing routes not registered: %s", exc)
 
+    # ── MCP transport (GET /mcp/tools, POST /mcp/call) ───────────────────────────
+    # Attaches Aureon as a live MCP-style server: every tool call is routed through the
+    # membrane (ingress screened as data, egress sealed, guarded dispatch). Optional.
+    try:
+        from aureon.bio.mcp_transport import register_mcp_routes
+
+        register_mcp_routes(app)
+    except Exception as exc:  # noqa: BLE001 — the transport is optional; the operator must serve
+        logger.warning("MCP transport routes not registered: %s", exc)
+
     return app
 
 
