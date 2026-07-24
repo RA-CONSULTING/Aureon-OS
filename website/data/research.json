@@ -673,6 +673,30 @@
       "platform": "Zenodo",
       "doi": "https://doi.org/10.5281/zenodo.21529345",
       "url": "https://zenodo.org/records/21529345"
+    },
+    {
+      "author": "gary",
+      "title": "LSSP Pre-Registration: Detecting φ-Spaced Phase-Coherence Peaks in Open Neural Recordings — The Leckey Substrate Scaling Protocol (v1.0)",
+      "type": "Research preprint",
+      "platform": "Zenodo",
+      "doi": "https://doi.org/10.5281/zenodo.21530644",
+      "url": "https://zenodo.org/records/21530644"
+    },
+    {
+      "author": "gary",
+      "title": "The Position of Echo-Feedback Cognitive φ-Substrate (PEFCφS): A Four-Layer Architecture for the Harmonic Nexus Core Framework",
+      "type": "Research preprint",
+      "platform": "Zenodo",
+      "doi": "https://doi.org/10.5281/zenodo.21530780",
+      "url": "https://zenodo.org/records/21530780"
+    },
+    {
+      "author": "gary",
+      "title": "HNC BioMolecule Adjacent Frequency Packet: White Paper (v1)",
+      "type": "Research preprint",
+      "platform": "Zenodo",
+      "doi": "https://doi.org/10.5281/zenodo.21530783",
+      "url": "https://zenodo.org/records/21530783"
     }
   ]
 }
