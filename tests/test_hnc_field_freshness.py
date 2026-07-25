@@ -20,7 +20,6 @@ When nothing fresh is flowing the honest answer is ``available=False``.
 
 from __future__ import annotations
 
-import importlib
 import json
 import time
 
@@ -31,9 +30,16 @@ import pytest
 def field(tmp_path, monkeypatch):
     """hnc_field + bus_trace bound to an isolated trace dir (never the repo's own state/).
 
-    The in-process thought bus is a module-level singleton that outlives a test, so it is reloaded
-    too — otherwise one test's ``publish_subfield`` stays in bus memory (correctly stamped and
-    fresh) and contributes to the next test's blend.
+    The in-process thought bus is a module-level singleton that outlives a test, so the
+    singleton slot is monkeypatched to None per test (a fresh bus is constructed on the
+    next ``get_thought_bus()``) — otherwise one test's ``publish_subfield`` stays in bus
+    memory (correctly stamped and fresh) and contributes to the next test's blend.
+
+    Deliberately NOT ``importlib.reload``: a reload rebinds ``Thought``/``ThoughtBus``
+    to new class objects while every other test module keeps references to the old ones,
+    which poisons isinstance checks suite-wide (found by the B5 sentinel run). Both
+    bus_trace and hnc_field resolve their env vars per call, so the setenv isolation
+    alone is sufficient for them.
     """
     monkeypatch.setenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "1")
     monkeypatch.setenv("AUREON_LLM_OFFLINE", "1")
@@ -41,18 +47,17 @@ def field(tmp_path, monkeypatch):
     monkeypatch.setenv("AUREON_BUS_TRACE_DIR", str(tmp_path / "traces"))
     monkeypatch.setenv("AUREON_HNC_TRACE_PATH", str(tmp_path / "hnc_live_trace.jsonl"))
 
+    import sys
+
     import aureon.core.aureon_thought_bus as tb
-
-    importlib.reload(tb)
     import aureon.core.bus_trace as bt
-
-    importlib.reload(bt)
     import aureon.core.hnc_field as hf
 
-    importlib.reload(hf)
+    monkeypatch.setattr(tb, "_thought_bus_instance", None, raising=False)
+    bare = sys.modules.get("aureon_thought_bus")
+    if bare is not None and bare is not tb:
+        monkeypatch.setattr(bare, "_thought_bus_instance", None, raising=False)
     yield hf, bt, tmp_path
-    # Leave no live singleton behind for whatever test module runs next.
-    importlib.reload(tb)
 
 
 # ── sub-fields ──────────────────────────────────────────────────────────────────

@@ -1,3 +1,7 @@
+import os
+
+import pytest
+
 from aureon.core.aureon_env import (
     KRAKEN_REQUIRED_ENV,
     MASTER_KEY_ENV,
@@ -8,6 +12,19 @@ from aureon.core.aureon_env import (
     missing_env,
 )
 from aureon.harmonic.hnc_quantum_packet_crypto import encode_env_packet
+
+
+@pytest.fixture(autouse=True)
+def _restore_environ():
+    """load_aureon_environment WRITES os.environ — that is its job — and
+    monkeypatch.delenv on an absent var registers no undo, so the credentials this
+    module loads from its tmp .env files were leaking into every later test
+    (test_system_health then saw phantom partial credentials — found by the B5
+    sentinel run). Snapshot and restore the whole environment around each test."""
+    saved = dict(os.environ)
+    yield
+    os.environ.clear()
+    os.environ.update(saved)
 
 
 def test_load_aureon_environment_from_explicit_file(tmp_path, monkeypatch):
