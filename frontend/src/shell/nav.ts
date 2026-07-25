@@ -27,6 +27,7 @@ import {
   ListChecks,
   Map,
   MessageSquare,
+  Plug,
   Radar,
   Radio,
   Satellite,
@@ -215,6 +216,14 @@ export const NAV_SECTIONS: NavSection[] = [
         description: "Ask the grounded Aureon cognition anything",
         icon: MessageSquare,
         Component: lazy(() => import("./pages/OperatorChatPage")),
+        live: true,
+      },
+      {
+        path: "/cognition/mount",
+        label: "Aureon Mount",
+        description: "OpenAI-compatible front door — mount any model client on Aureon",
+        icon: Plug,
+        Component: lazy(() => import("./pages/MountPage")),
         live: true,
       },
       {

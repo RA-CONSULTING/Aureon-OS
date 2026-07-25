@@ -19,6 +19,7 @@ The creator (Gary Leckey, Aureon Institute · R&A Consulting) synthesizes **myth
 3. **[`docs/research/READING_PATHS.md`](docs/research/READING_PATHS.md)** — curated canon (13 papers out of 54) across 3 paths: **A · The Pattern** · **B · The Framework** · **C · The Application**.
 
 After those three, pick the next file by task:
+- User asks to **run or integrate** the system (or another AI/agent needs to *mount* it) → [`AGENTS.md`](AGENTS.md) (run & integrate in 60s) → [`docs/architecture/AUREON_MOUNT.md`](docs/architecture/AUREON_MOUNT.md) (the OpenAI-compatible front door)
 - User asks about code / architecture → [`docs/NAVIGATION_GUIDE.md`](docs/NAVIGATION_GUIDE.md) → Developer Path
 - User asks about the HNC math → [`docs/HNC_UNIFIED_WHITE_PAPER.md`](docs/HNC_UNIFIED_WHITE_PAPER.md) (Master Formula Λ(t), Tree of Light, Auris Conjecture)
 - User asks about the ancient/φ² thread → [`docs/research/THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_Now.md`](docs/research/THE_PHI_SQUARED_CHAIN_Sumer_to_Rome_to_Now.md)

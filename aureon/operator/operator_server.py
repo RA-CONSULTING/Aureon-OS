@@ -12,11 +12,14 @@ Routes:
   GET  /watch/<asset>          watch app static assets (css/js/manifest/sw/icons)
   GET  /api/operator/stream    Server-Sent Events: phases, then the answer token-by-token
   POST /api/operator/respond   one-shot JSON (OperatorResponse.to_dict())
+  POST /v1/chat/completions    the Mount — OpenAI-compatible front door (any flagship model → Aureon)
+  GET  /v1/models              the Mount's model catalogue (aureon-cognition, aureon-switchboard)
+  GET  /v1/integration         self-describing integration manifest (also /.well-known/aureon-mount.json)
   GET  /api/pulse              composed read-only vitals (line-up + status + organism)
   GET  /healthz                liveness + active provider line-up
 
 Run:
-  python -m aureon.operator.operator_server          # binds 0.0.0.0:8080
+  python -m aureon.operator.operator_server          # binds 0.0.0.0:8790
   AUREON_OPERATOR_PORT=8899 python -m aureon.operator.operator_server
 
 Reaching it from a phone: this repo usually runs in a remote container, so open
@@ -29,6 +32,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
 from typing import Any, Dict
 
 logger = logging.getLogger("aureon.operator.server")
@@ -275,7 +279,11 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
     @app.before_request
     def _gate():
         path = request.path
-        if path in _OPEN_PATHS or not path.startswith("/api/"):
+        # Guard the Aureon API and the OpenAI-compatible mount alike: both honour
+        # the same bearer/rate-limit posture (open only when no key is set).
+        if path in _OPEN_PATHS or not (
+            path.startswith("/api/") or path.startswith("/v1/") or path.startswith("/mcp")
+        ):
             return None
         if _sec.auth_enabled and not check_bearer(request.headers.get("Authorization"), _sec.api_key):
             return _err(401, "missing or invalid bearer token")
@@ -458,6 +466,98 @@ def create_app(operator: AureonOperator | None = None, cognition: Any = None) ->
         if not prompt:
             return jsonify({"error": "missing prompt"}), 400
         return jsonify(_get_cognition().reason(prompt, session_id=body.get("session_id")).to_dict())
+
+    # ── The Mount — OpenAI-compatible front door (any flagship model → Aureon) ──
+    # "Many models above, one grounded mind below." A flagship model mounts by
+    # pointing its base_url here and speaking the protocol it already knows. The
+    # request runs *through* Aureon as the host mind (grounded + vetted); the
+    # `model` field picks the engine. Text + a verdict only — nothing executes.
+    @app.get("/v1/models")
+    def v1_models():
+        from aureon.operator.mount import MOUNT_MODELS
+
+        return jsonify({"object": "list", "data": MOUNT_MODELS})
+
+    # The self-describing integration map — an AGI system GETs this to auto-discover
+    # how to mount (contract, engines, provenance keys, boundary, auth). Served at a
+    # /v1 path (same auth posture) and a /.well-known discovery alias (open metadata).
+    @app.get("/v1/integration")
+    @app.get("/.well-known/aureon-mount.json")
+    def v1_integration():
+        from aureon.operator.mount import integration_manifest
+
+        return jsonify(integration_manifest())
+
+    @app.post("/v1/chat/completions")
+    def v1_chat_completions():
+        from aureon.operator import mount
+
+        body = request.get_json(silent=True)
+        try:
+            parsed = mount.parse_chat_request(body if isinstance(body, dict) else {})
+        except mount.MountError as exc:
+            return jsonify(mount.openai_error(str(exc))), 400
+
+        created = int(time.time())
+        engine = parsed["engine"]
+        engine_prompt = mount.build_engine_prompt(parsed)
+        try:
+            if engine == "switchboard":
+                result = _operator.respond(engine_prompt, session_id=parsed["session_id"]).to_dict()
+            else:
+                result = _get_cognition().reason(engine_prompt, session_id=parsed["session_id"]).to_dict()
+        except Exception as exc:  # noqa: BLE001 — degrade honestly, never 500 the mount
+            logger.exception("mount engine error")
+            return jsonify(mount.openai_error(f"engine error: {exc}", code="api_error", type_="api_error")), 502
+
+        if parsed["stream"]:
+            def gen():
+                for chunk in mount.iter_chat_chunks(
+                    result, model=parsed["model"], engine=engine, created=created
+                ):
+                    yield f"data: {json.dumps(chunk, default=str)}\n\n"
+                yield "data: [DONE]\n\n"
+
+            return Response(
+                gen(),
+                mimetype="text/event-stream",
+                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+            )
+        return jsonify(
+            mount.to_chat_completion(result, model=parsed["model"], engine=engine, created=created)
+        )
+
+    # ── MCP — mount Aureon as a connector/tool (Model Context Protocol) ─────────
+    # A flagship agent adds Aureon in its own UI and calls these tools — no clone,
+    # no base_url swap. Each tool runs through the same veto-guarded engines and
+    # returns grounded text + a verdict only; nothing executes.
+    @app.post("/mcp")
+    def mcp_endpoint():
+        from aureon.operator import mcp as _mcp
+
+        def _tool_runner(name: str, arguments: Dict[str, Any]):
+            if name == "aureon_integration":
+                from aureon.operator.mount import integration_manifest
+
+                m = integration_manifest()
+                return (json.dumps(m, indent=2), m, False)
+            prompt = str(arguments.get("prompt", "")).strip()
+            if not prompt:
+                return ("prompt is required", None, True)
+            session_id = arguments.get("session_id")
+            if name == "aureon_switchboard":
+                res = _operator.respond(prompt, session_id=session_id).to_dict()
+            elif name == "aureon_reason":
+                res = _get_cognition().reason(prompt, session_id=session_id).to_dict()
+            else:
+                raise _mcp.UnknownTool(name)
+            # A conscience veto is an honest refusal, not a tool error (isError stays False).
+            return (str(res.get("text", "")), res, False)
+
+        response = _mcp.dispatch(request.get_json(silent=True), _tool_runner)
+        if response is None:
+            return ("", 202)  # notification — accepted, no body
+        return jsonify(response)
 
     # ── Provider API-key management (instance-owned, encrypted keystore) ────────
     # BYO keys for every model. Keys are stored encrypted (keystore.py), masked on
@@ -734,7 +834,7 @@ def build_boot_app():
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
     _load_env_file()  # deploy-time .env (Ollama base URL / model / key, etc.)
-    port = int(os.environ.get("AUREON_OPERATOR_PORT", "8080"))
+    port = int(os.environ.get("AUREON_OPERATOR_PORT", "8790"))
     host = os.environ.get("AUREON_OPERATOR_HOST", "0.0.0.0")
     logger.info("Aureon Operator server on %s:%s — lines: %s", host, port,
                 describe_provider_set(build_provider_set()))

@@ -67,6 +67,19 @@ def test_status_route():
     assert s["status"] in {"healthy", "degraded", "critical"}
 
 
+def test_mount_route_is_saas_active():
+    c = _app(AUREON_LLM_OFFLINE="1")
+    r = c.get("/api/mount")
+    assert r.status_code == 200
+    b = r.get_json()
+    assert b["service"] == "aureon-mount"
+    assert {e["id"] for e in b["engines"]} == {"aureon-cognition", "aureon-switchboard"}
+    assert {m["id"] for m in b["models"]} == {"aureon-cognition", "aureon-switchboard"}
+    assert "provenance_keys" in b and b["endpoint"] == "POST /v1/chat/completions"
+    # carries the SaaS provenance stamp like every other /api read
+    assert b["truth_status"] == "real_derived" and "provenance" in b
+
+
 def test_manifests_refresh_route(tmp_path, monkeypatch):
     c = _app(AUREON_LLM_OFFLINE="1")
     r = c.post("/api/manifests/refresh").get_json()
