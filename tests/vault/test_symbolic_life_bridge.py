@@ -34,6 +34,30 @@ if REPO_ROOT not in sys.path:
 from aureon.vault.voice.symbolic_life_bridge import SymbolicLifeBridge  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def _isolated_lambda_history(tmp_path, monkeypatch):
+    """Every engine in this module starts from an EMPTY fold history.
+
+    LambdaEngine persists to state/lambda_history.json with no env override, so
+    without this the quiet-vs-active comparison inherits whatever ψ baseline
+    earlier test modules (or live runs) left behind — the active/quiet
+    differential washes out against a 150-step foreign history, and pulses here
+    would keep mutating the repo's real state file. Same isolation move
+    AffectMonitor makes for its own fold history."""
+    from aureon.core import aureon_lambda_engine as le
+
+    orig_init = le.LambdaEngine.__init__
+
+    def _init(self):
+        orig_init(self)
+        self._state_path = tmp_path / "lambda_history.json"
+        self._history.clear()
+        self._psi_history.clear()
+        self._step_count = 0
+
+    monkeypatch.setattr(le.LambdaEngine, "__init__", _init)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Stubs
 # ─────────────────────────────────────────────────────────────────────────────

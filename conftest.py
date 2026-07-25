@@ -41,6 +41,15 @@ _LEAKY_SINGLETONS = (
     ("aureon_thought_bus", "_thought_bus_instance"),
     ("aureon.core.aureon_thought_bus", "_thought_bus_instance"),
     ("aureon.observer", "_observer_singleton"),
+    # The mycelium mesh: one test calling get_mycelium() cold-boots the network
+    # for the whole process, and every later status read (mycelium_surface →
+    # affect monitor → soul) then perceives a live mesh — a "blind" soul
+    # downstream suddenly has self-perception it never built. Proven poisoner:
+    # tests/test_organism_unification.py → tests/test_soul.py.
+    ("aureon_mycelium", "_mycelium_instance"),
+    ("aureon.core.aureon_mycelium", "_mycelium_instance"),
+    # Inner-work ascent history accumulates across modules the same way.
+    ("aureon.core.inner_work", "_monitor"),
 )
 
 

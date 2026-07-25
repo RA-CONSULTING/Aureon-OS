@@ -193,7 +193,17 @@ def test_power_station_request_governor_reads_repo_metadata():
     assert governor["credential_boundary"] == "metadata_only_no_secret_values_read_or_revealed"
 
 
-def test_harmonic_api_piano_context_reads_real_artifacts(tmp_path: Path):
+def test_harmonic_api_piano_context_reads_real_artifacts(tmp_path: Path, monkeypatch):
+    # The builder reconciles hnc_score against the CANONICAL HNC field
+    # (reconcile_gamma — the shared Γ can only tighten it, b46). This test
+    # isolates its artifacts under root=tmp_path, so the canonical field must
+    # be isolated the same way: point the cross-process trace at an empty tmp
+    # file and drop any live bus singleton, otherwise fresh pulse rows left by
+    # earlier test modules tighten 0.61 to whatever Γ the process last saw.
+    monkeypatch.setenv("AUREON_HNC_TRACE_PATH", str(tmp_path / "hnc_trace.jsonl"))
+    import aureon.core.aureon_thought_bus as _tb
+
+    monkeypatch.setattr(_tb, "_thought_bus_instance", None, raising=False)
     (tmp_path / "state").mkdir(parents=True)
     (tmp_path / "frontend/public").mkdir(parents=True)
     (tmp_path / "state/aureon_hnc_cognitive_proof.json").write_text(
