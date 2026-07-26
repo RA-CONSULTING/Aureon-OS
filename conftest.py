@@ -53,6 +53,21 @@ _LEAKY_SINGLETONS = (
 )
 
 
+def pytest_collection_finish(session):
+    """Collection imports EVERY test module up front, and a few legacy
+    script-style tests run their whole scenario at import (test_orca_quick
+    builds an OrcaKillCycle → mycelium mesh; test_bot_intelligence_wiring
+    builds the thought bus). Those organisms exist BEFORE the first module
+    fixture snapshot, so the per-module restore below would faithfully
+    preserve them for the entire run — a "blind" soul three hundred modules
+    later then perceives a live mesh it never built. Clear them here so the
+    session starts as clean as any single module run does."""
+    for mod_name, attr in _LEAKY_SINGLETONS:
+        mod = sys.modules.get(mod_name)
+        if mod is not None and getattr(mod, attr, None) is not None:
+            setattr(mod, attr, None)
+
+
 @pytest.fixture(autouse=True, scope="module")
 def _restore_process_singletons():
     saved = []
