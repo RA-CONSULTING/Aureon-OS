@@ -1,6 +1,6 @@
 {
   "civilization": "Strategic Warfare",
-  "last_updated": "2026-07-26T00:01:25.565547",
+  "last_updated": "2026-07-26T00:39:30.610451",
   "version": "1.0.0",
   "sources": [
     "hardcoded",
@@ -481,6 +481,22 @@
     },
     {
       "timestamp": "2026-07-26T00:01:25.565510",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2026-07-26T00:27:26.071318",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2026-07-26T00:39:30.610432",
       "insights_found": 0,
       "sources_used": [
         "Wikipedia",

@@ -1,6 +1,6 @@
 {
   "civilization": "Norse",
-  "last_updated": "2026-07-26T00:04:10.719191",
+  "last_updated": "2026-07-26T00:42:16.953776",
   "version": "1.0.0",
   "sources": [
     "hardcoded",
@@ -646,6 +646,22 @@
     },
     {
       "timestamp": "2026-07-26T00:04:10.719167",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2026-07-26T00:30:06.382668",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2026-07-26T00:42:16.953755",
       "insights_found": 0,
       "sources_used": [
         "Wikipedia",
