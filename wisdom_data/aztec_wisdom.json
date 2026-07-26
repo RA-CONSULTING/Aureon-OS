@@ -1,6 +1,6 @@
 {
   "civilization": "Aztec",
-  "last_updated": "2026-07-25T23:29:32.673565",
+  "last_updated": "2026-07-25T23:57:54.272893",
   "version": "1.0.0",
   "sources": [
     "hardcoded",
@@ -920,6 +920,22 @@
     },
     {
       "timestamp": "2026-07-25T23:29:32.673541",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2026-07-25T23:46:21.638624",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2026-07-25T23:57:54.272871",
       "insights_found": 0,
       "sources_used": [
         "Wikipedia",
