@@ -1330,8 +1330,15 @@ class AureonLyra:
             self._wave_ctx = dict(wave_data) if wave_data else {}
 
     def start_autonomous(self):
-        """Start Lyra's autonomous resonance scanning."""
+        """Start Lyra's autonomous resonance scanning.
+
+        Honors AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS: under the flag (audits,
+        tests) Lyra stays fully usable synchronously but no background thread
+        is started. Live runs don't set the flag — unchanged behavior."""
         if self._running:
+            return
+        if os.getenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "").lower() in {"1", "true", "yes", "on"}:
+            logger.debug("Lyra autonomous thread suppressed (AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS)")
             return
         self._running = True
         self._monitor_thread = threading.Thread(

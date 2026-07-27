@@ -14,8 +14,33 @@ import asyncio
 import inspect
 import os
 import sys
+import threading
 
 import pytest
+
+# These eight are standalone diagnostic SCRIPTS, not pytest modules: each defines
+# ZERO test functions and runs its whole scenario at module level, so the only
+# thing pytest collection gets from importing them is the side effects —
+# test_orca_quick boots an OrcaKillCycle (exchange clients, TheKing, stream
+# loops), test_bot_intelligence_wiring boots the Queen/bus stack
+# (ETAOmnipresent), the queen/cost-basis/windows files start _stream_loop /
+# _bg_refresh / _monitor_loop workers, test_scout_deployment starts
+# SourceLawTimer + a wisdom scan. Measured on this tree (B5 sentinel run 4): 31
+# live threads before the FIRST test executed, publishing into every later
+# test's isolated trace dir for the whole ~28-minute run — the mechanism behind
+# the last order-dependent failures. Ignoring them here loses zero tests and
+# keeps the scripts byte-identical for their real use:
+#   python tests/test_orca_quick.py
+collect_ignore = [
+    "tests/test_bot_intelligence_wiring.py",
+    "tests/test_cost_basis_target.py",
+    "tests/test_orca_quick.py",
+    "tests/test_queen_deep_intelligence_live.py",
+    "tests/test_queen_metrics.py",
+    "tests/test_queens_heart.py",
+    "tests/test_scout_deployment.py",
+    "tests/test_windows_startup.py",
+]
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 AUREON = os.path.join(ROOT, "aureon")
@@ -28,6 +53,19 @@ for dirpath, dirnames, _filenames in os.walk(AUREON):
 
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
+
+# Bind the two singleton-bearing legacy names to their PACKAGE modules eagerly.
+# The path entries above make bare names importable, but a bare import creates
+# a SECOND module instance from the same file — two bus/mycelium modules, two
+# singleton slots, and (via the repo-root star-import shims) sometimes a module
+# with NO slot at all, depending on which test touched sys.path first
+# (measured: tests/test_whale_sonar.py AttributeError whenever an earlier
+# module pushed the repo root to sys.path[0]). One module object per organ.
+import aureon.core.aureon_mycelium as _canonical_mycelium  # noqa: E402
+import aureon.core.aureon_thought_bus as _canonical_bus  # noqa: E402
+
+sys.modules.setdefault("aureon_thought_bus", _canonical_bus)
+sys.modules.setdefault("aureon_mycelium", _canonical_mycelium)
 
 
 # (module_name, attribute) pairs of process-wide singletons that leak between
@@ -66,6 +104,17 @@ def pytest_collection_finish(session):
         mod = sys.modules.get(mod_name)
         if mod is not None and getattr(mod, attr, None) is not None:
             setattr(mod, attr, None)
+    # Threads can't be cleared the way singleton slots can — a background
+    # publisher surviving collection poisons every later test's isolated trace
+    # dir (bus_trace resolves its dir per call). Name any survivor loudly so a
+    # future script-style module is caught here, not three hundred modules
+    # downstream.
+    stray = sorted({t.name for t in threading.enumerate()
+                    if t is not threading.main_thread() and t.is_alive()})
+    if stray:
+        sys.stderr.write(
+            "\n[conftest] WARNING: background threads survived collection "
+            f"(likely an import side effect in a test module): {', '.join(stray)}\n")
 
 
 @pytest.fixture(autouse=True, scope="module")

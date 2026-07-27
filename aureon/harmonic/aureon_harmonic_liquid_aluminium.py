@@ -830,10 +830,20 @@ class HarmonicLiquidAluminiumField:
                 time.sleep(1)
     
     def start_streaming(self):
-        """Start the live streaming loop."""
+        """Start the live streaming loop.
+
+        Honors AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS: several organisms wire a
+        harmonic field and start streaming inside their constructors, so under
+        the suppression flag (audits, tests) the field stays fully usable via
+        capture_snapshot() but no background publisher thread is started.
+        Live runs don't set the flag — streaming starts exactly as before.
+        """
         if self.running:
             return
-        
+        if os.getenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "").lower() in {"1", "true", "yes", "on"}:
+            logger.debug("streaming thread suppressed (AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS)")
+            return
+
         self.running = True
         self.start_time = time.time()
         

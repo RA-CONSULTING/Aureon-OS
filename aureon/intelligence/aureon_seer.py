@@ -3058,8 +3058,15 @@ class AureonTheSeer:
     # ─────────────────────────────────────────────────────────
 
     def start_autonomous(self):
-        """Start the Seer's autonomous scanning loop + prediction validator."""
+        """Start the Seer's autonomous scanning loop + prediction validator.
+
+        Honors AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS: under the flag (audits,
+        tests) the Seer stays fully usable synchronously but no background
+        threads are started. Live runs don't set the flag — unchanged behavior."""
         if self._running:
+            return
+        if os.getenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "").lower() in {"1", "true", "yes", "on"}:
+            logger.debug("Seer autonomous threads suppressed (AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS)")
             return
         self._running = True
         self._monitor_thread = threading.Thread(

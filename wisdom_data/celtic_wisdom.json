@@ -1,6 +1,6 @@
 {
   "civilization": "Celtic",
-  "last_updated": "2026-07-26T00:35:10.774563",
+  "last_updated": "2026-07-27T20:56:27.731494",
   "version": "1.0.0",
   "sources": [
     "hardcoded",
@@ -1656,6 +1656,62 @@
     },
     {
       "timestamp": "2026-07-26T00:35:10.774536",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2026-07-26T00:51:36.346122",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2026-07-27T20:23:24.700193",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2026-07-27T20:26:26.118839",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2026-07-27T20:43:00.397975",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2026-07-27T20:45:19.371269",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2026-07-27T20:54:31.890714",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2026-07-27T20:56:27.731461",
       "insights_found": 0,
       "sources_used": [
         "Wikipedia",

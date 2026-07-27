@@ -903,11 +903,18 @@ class ETAVerificationEngine:
 ETA_VERIFIER: Optional[ETAVerificationEngine] = None
 
 def get_eta_verifier() -> ETAVerificationEngine:
-    """Get or create the global ETA verification engine (auto-starts omnipresent loop)."""
+    """Get or create the global ETA verification engine (auto-starts omnipresent loop).
+
+    Under AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS the engine is still built (pure,
+    in-process) but the omnipresent daemon thread is NOT started — an audit or
+    status import must never leave a background publisher running. Live runs
+    don't set the flag, so the daemon starts exactly as before.
+    """
     global ETA_VERIFIER
     if ETA_VERIFIER is None:
         ETA_VERIFIER = ETAVerificationEngine()
-        ETA_VERIFIER.start_omnipresent()
+        if os.getenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "").lower() not in {"1", "true", "yes", "on"}:
+            ETA_VERIFIER.start_omnipresent()
     return ETA_VERIFIER
 
 

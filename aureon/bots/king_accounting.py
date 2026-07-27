@@ -1382,8 +1382,15 @@ class TheKing:
     # ─────────────────────────────────────────────────────────
 
     def start_autonomous(self):
-        """Start the King's autonomous monitoring loop."""
+        """Start the King's autonomous monitoring loop.
+
+        Honors AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS: under the flag (audits,
+        tests) the King stays fully usable synchronously but no background
+        thread is started. Live runs don't set the flag — unchanged behavior."""
         if self._running:
+            return
+        if os.getenv("AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS", "").lower() in {"1", "true", "yes", "on"}:
+            logger.debug("King autonomous thread suppressed (AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS)")
             return
         self._running = True
         self._monitor_thread = threading.Thread(

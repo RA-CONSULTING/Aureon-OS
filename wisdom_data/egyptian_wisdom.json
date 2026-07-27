@@ -1,6 +1,6 @@
 {
   "civilization": "Egyptian",
-  "last_updated": "2026-07-26T00:36:38.100064",
+  "last_updated": "2026-07-26T00:52:56.696638",
   "version": "1.0.0",
   "sources": [
     "hardcoded",
@@ -1096,6 +1096,14 @@
     },
     {
       "timestamp": "2026-07-26T00:36:38.100033",
+      "insights_found": 0,
+      "sources_used": [
+        "Wikipedia",
+        "Sacred-Texts"
+      ]
+    },
+    {
+      "timestamp": "2026-07-26T00:52:56.696608",
       "insights_found": 0,
       "sources_used": [
         "Wikipedia",
