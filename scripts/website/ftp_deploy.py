@@ -3,39 +3,57 @@
 
 **Credentials come only from environment variables — never from the command line, never from a
 committed file, and they are never printed.** The script refuses to run if any required variable
-is unset. FTPS (explicit TLS) is the default; plain FTP is opt-out.
+is unset. The exact FTPS mode and port are mandatory; neither is guessed.
 
 Required env:
-    AUREON_FTP_HOST      hostname of the FTP server
-    AUREON_FTP_USER      username
-    AUREON_FTP_PASS      password
-    AUREON_FTP_DIR       remote document root to mirror into (e.g. "/" or "/domains/…/public_html")
-Optional env:
-    AUREON_FTP_PORT      default 21
-    AUREON_FTP_TLS       "1" (default, explicit FTPS via ftplib.FTP_TLS) or "0" (plain FTP)
+    HOMEPL_FTPS_HOST          hostname of the FTP server
+    HOMEPL_FTPS_USER          username
+    HOMEPL_FTPS_PASSWORD      password
+    HOMEPL_FTPS_REMOTE_ROOT   exact authenticated document root (never assume "/" or "/public_html")
+    HOMEPL_FTPS_PORT          exact authenticated port (commonly 21 explicit or 990 implicit)
+    HOMEPL_FTPS_MODE          "explicit" or "implicit"; no default
 
 Usage:
     # 1) build first
-    python -m scripts.website.build_package --out dist
+    python -m scripts.website.build_package --out dist --source-commit <full-HEAD>
     # 2) preview (no network) — always safe
     python -m scripts.website.ftp_deploy --package dist/website_package --dry-run
     # 3) upload (needs the env vars set in your shell)
     python -m scripts.website.ftp_deploy --package dist/website_package
 
-The uploader only creates/overwrites remote files by default; it never deletes remote files
-unless you pass ``--prune`` explicitly. **Back up the current live site before your first run.**
+The uploader only creates/overwrites remote files and never prunes. A live run requires a fresh,
+validated backup receipt and an internally consistent commit-bound package. Upload completion is
+not publication proof: exact read-back remains mandatory.
 Pure standard library (`ftplib`).
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
+import hashlib
+import io
+import json
 import os
 import sys
+from collections.abc import Mapping
 from dataclasses import dataclass
-from pathlib import Path
+from datetime import UTC, datetime, timedelta
+from ftplib import FTP, FTP_TLS
+from pathlib import Path, PurePosixPath
+from typing import Any
 
-_REQUIRED_ENV = ("AUREON_FTP_HOST", "AUREON_FTP_USER", "AUREON_FTP_PASS", "AUREON_FTP_DIR")
+from scripts.website.readback import ReadbackInputError, compare_readback_directory
+
+_REQUIRED_ENV = (
+    "HOMEPL_FTPS_HOST",
+    "HOMEPL_FTPS_USER",
+    "HOMEPL_FTPS_PASSWORD",
+    "HOMEPL_FTPS_REMOTE_ROOT",
+    "HOMEPL_FTPS_PORT",
+    "HOMEPL_FTPS_MODE",
+)
+_BACKUP_SCHEMA = "aureon.homepl-backup-transfer.v1"
 
 
 def _repo_root() -> Path:
@@ -49,28 +67,225 @@ class FtpConfig:
     password: str
     remote_dir: str
     port: int
-    tls: bool
+    mode: str
 
     @property
     def safe_summary(self) -> str:
         """A credential-free one-liner safe to print/log."""
-        scheme = "FTPS" if self.tls else "FTP"
-        return f"{scheme} {self.host}:{self.port} → {self.remote_dir} (user set: {'yes' if self.user else 'no'})"
+        return (
+            f"FTPS-{self.mode} {self.host}:{self.port} -> {self.remote_dir} "
+            f"(user set: {'yes' if self.user else 'no'})"
+        )
 
 
-def load_config(env: dict | None = None) -> FtpConfig:
+@dataclass(frozen=True)
+class BackupReceipt:
+    """Validated, credential-free proof that a fresh served-root backup exists."""
+
+    path: Path
+    completed_at: datetime
+    remote_root: str
+    file_count: int
+    total_bytes: int
+    manifest_sha256: str
+
+
+def _normalise_remote_root(value: str) -> str:
+    raw = value.strip().replace("\\", "/")
+    if not raw.startswith("/") or ".." in raw.split("/") or "\n" in raw or "\r" in raw:
+        raise ValueError("HOMEPL_FTPS_REMOTE_ROOT must be one exact absolute remote path")
+    return raw.rstrip("/") or "/"
+
+
+def load_config(env: Mapping[str, str] | None = None) -> FtpConfig:
     """Build an :class:`FtpConfig` from the environment. Raises ``KeyError`` listing what's missing."""
-    env = env if env is not None else os.environ
-    missing = [k for k in _REQUIRED_ENV if not env.get(k)]
+    source_env: Mapping[str, str] = os.environ if env is None else env
+    missing = [k for k in _REQUIRED_ENV if not source_env.get(k)]
     if missing:
         raise KeyError("missing required env var(s): " + ", ".join(missing))
+    mode = source_env["HOMEPL_FTPS_MODE"].strip().casefold()
+    if mode not in {"explicit", "implicit"}:
+        raise ValueError("HOMEPL_FTPS_MODE must be exactly 'explicit' or 'implicit'")
+    port = int(source_env["HOMEPL_FTPS_PORT"])
+    if not 1 <= port <= 65535:
+        raise ValueError("HOMEPL_FTPS_PORT must be between 1 and 65535")
     return FtpConfig(
-        host=env["AUREON_FTP_HOST"],
-        user=env["AUREON_FTP_USER"],
-        password=env["AUREON_FTP_PASS"],
-        remote_dir=env["AUREON_FTP_DIR"].rstrip("/") or "/",
-        port=int(env.get("AUREON_FTP_PORT", "21")),
-        tls=env.get("AUREON_FTP_TLS", "1").strip() not in ("0", "false", "no", ""),
+        host=source_env["HOMEPL_FTPS_HOST"],
+        user=source_env["HOMEPL_FTPS_USER"],
+        password=source_env["HOMEPL_FTPS_PASSWORD"],
+        remote_dir=_normalise_remote_root(source_env["HOMEPL_FTPS_REMOTE_ROOT"]),
+        port=port,
+        mode=mode,
+    )
+
+
+def _receipt_object(value: object) -> dict[str, Any]:
+    if not isinstance(value, dict) or not all(isinstance(key, str) for key in value):
+        raise ValueError("backup receipt must be a JSON object")
+    return value
+
+
+def _safe_backup_path(value: object) -> str:
+    if not isinstance(value, str) or not value or "\\" in value or "\n" in value or "\r" in value:
+        raise ValueError("backup manifest path is unsafe")
+    path = PurePosixPath(value)
+    if path.is_absolute() or path.as_posix() == "." or ".." in path.parts or "." in path.parts:
+        raise ValueError("backup manifest path is unsafe")
+    return path.as_posix()
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(131_072), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _verify_bound_file(data: Mapping[str, Any], path_field: str, hash_field: str) -> Path:
+    raw_path = data.get(path_field)
+    raw_hash = data.get(hash_field)
+    if not isinstance(raw_path, str) or not isinstance(raw_hash, str):
+        raise ValueError(f"backup receipt must bind {path_field}")
+    unresolved = Path(raw_path)
+    if unresolved.is_symlink():
+        raise ValueError(f"backup receipt {path_field} is not an ordinary file")
+    path = unresolved.resolve(strict=True)
+    if not path.is_file():
+        raise ValueError(f"backup receipt {path_field} is not an ordinary file")
+    actual = _sha256_file(path)
+    if len(raw_hash) != 64 or actual.casefold() != raw_hash.casefold():
+        raise ValueError(f"backup receipt {path_field} hash does not match")
+    return path
+
+
+def _validate_backup_manifest(
+    manifest: Path,
+    backup_directory: Path,
+    expected_count: int,
+    expected_bytes: int,
+) -> None:
+    try:
+        reader = csv.DictReader(io.StringIO(manifest.read_text(encoding="utf-8-sig")))
+    except UnicodeDecodeError as exc:
+        raise ValueError("backup manifest must be UTF-8 CSV") from exc
+    if reader.fieldnames != ["Path", "Bytes", "Sha256"]:
+        raise ValueError("backup manifest must use the Path,Bytes,Sha256 schema")
+    rows = list(reader)
+    paths: list[str] = []
+    total_bytes = 0
+    for index, row in enumerate(rows):
+        relative = _safe_backup_path(row.get("Path"))
+        try:
+            size = int(str(row.get("Bytes", "")))
+        except ValueError as exc:
+            raise ValueError(f"backup manifest row {index} has an invalid byte count") from exc
+        digest = str(row.get("Sha256", ""))
+        if size < 0 or len(digest) != 64 or any(char not in "0123456789abcdefABCDEF" for char in digest):
+            raise ValueError(f"backup manifest row {index} is malformed")
+        unresolved = backup_directory / Path(*PurePosixPath(relative).parts)
+        if unresolved.is_symlink():
+            raise ValueError(f"backup manifest row {index} is not an ordinary backed-up file")
+        local = unresolved.resolve(strict=True)
+        try:
+            local.relative_to(backup_directory)
+        except ValueError as exc:
+            raise ValueError(f"backup manifest row {index} escapes the backup directory") from exc
+        if not local.is_file():
+            raise ValueError(f"backup manifest row {index} is not an ordinary backed-up file")
+        if local.stat().st_size != size or _sha256_file(local).casefold() != digest.casefold():
+            raise ValueError(f"backup manifest row {index} does not match the backed-up file")
+        paths.append(relative)
+        total_bytes += size
+    if paths != sorted(paths, key=lambda item: (item.casefold(), item)) or len(paths) != len(set(paths)):
+        raise ValueError("backup manifest paths must be unique and sorted")
+    entries = list(backup_directory.rglob("*"))
+    if any(path.is_symlink() for path in entries):
+        raise ValueError("backup directory contains a link or reparse entry")
+    actual_paths = {path.relative_to(backup_directory).as_posix() for path in entries if path.is_file()}
+    if actual_paths != set(paths):
+        raise ValueError("backup directory and manifest file sets differ")
+    if len(rows) != expected_count or total_bytes != expected_bytes:
+        raise ValueError("backup receipt counters do not match its deterministic manifest")
+
+
+def load_backup_receipt(
+    path: Path,
+    expected_remote_root: str,
+    *,
+    now: datetime | None = None,
+    maximum_age: timedelta = timedelta(hours=24),
+) -> BackupReceipt:
+    """Validate the audited backup tool's non-secret transfer receipt."""
+
+    resolved = path.resolve(strict=True)
+    if not resolved.is_file() or resolved.stat().st_size > 1_000_000:
+        raise ValueError("backup receipt must be a bounded regular file")
+    try:
+        data = _receipt_object(json.loads(resolved.read_text(encoding="utf-8")))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("backup receipt must be valid UTF-8 JSON") from exc
+    remote_root = _normalise_remote_root(str(data.get("remote_root", "")))
+    expected_root = _normalise_remote_root(expected_remote_root)
+    if (
+        data.get("schema") != _BACKUP_SCHEMA
+        or data.get("state") != "backup-complete"
+        or data.get("method") != "homepl-ftps"
+        or data.get("source_tool") != "repo-read-only-ftps-script"
+        or data.get("source_assertion") != "Authenticated Home.pl document-root download"
+        or remote_root != expected_root
+        or data.get("remote_write_methods_used") is not False
+        or data.get("credentials_recorded") is not False
+    ):
+        raise ValueError("backup receipt does not bind a completed read-only backup of this remote root")
+
+    file_count = data.get("file_count")
+    total_bytes = data.get("total_bytes")
+    if (
+        not isinstance(file_count, int)
+        or isinstance(file_count, bool)
+        or file_count < 1
+        or not isinstance(total_bytes, int)
+        or isinstance(total_bytes, bool)
+        or total_bytes < 1
+    ):
+        raise ValueError("backup receipt must record a non-empty transfer")
+    completed_raw = data.get("completed_at")
+    if not isinstance(completed_raw, str):
+        raise ValueError("backup receipt has no completion timestamp")
+    try:
+        completed_at = datetime.fromisoformat(completed_raw.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError("backup receipt completion timestamp is invalid") from exc
+    if completed_at.tzinfo is None:
+        raise ValueError("backup receipt completion timestamp must include a timezone")
+    check_now = (now or datetime.now(UTC)).astimezone(UTC)
+    completed_utc = completed_at.astimezone(UTC)
+    if completed_utc > check_now + timedelta(minutes=5) or completed_utc < check_now - maximum_age:
+        raise ValueError("backup receipt is future-dated or stale")
+
+    manifest = _verify_bound_file(data, "manifest", "manifest_sha256")
+    backup_value = data.get("backup_directory")
+    if not isinstance(backup_value, str):
+        raise ValueError("backup receipt must bind its downloaded directory")
+    unresolved_backup = Path(backup_value)
+    if unresolved_backup.is_symlink():
+        raise ValueError("backup directory is not an ordinary directory")
+    backup_directory = unresolved_backup.resolve(strict=True)
+    if not backup_directory.is_dir():
+        raise ValueError("backup directory is not an ordinary directory")
+    backup_script = _verify_bound_file(data, "backup_script", "backup_script_sha256")
+    if backup_script.name != "backup-homepl-ftps.ps1":
+        raise ValueError("backup receipt names an unsupported producer")
+    _validate_backup_manifest(manifest, backup_directory, file_count, total_bytes)
+    actual_digest = _sha256_file(manifest)
+    return BackupReceipt(
+        path=resolved,
+        completed_at=completed_utc,
+        remote_root=remote_root,
+        file_count=file_count,
+        total_bytes=total_bytes,
+        manifest_sha256=actual_digest,
     )
 
 
@@ -97,22 +312,20 @@ def _remote_dirs(plan: list[tuple[Path, str]], remote_root: str) -> list[str]:
     return sorted(dirs, key=lambda d: d.count("/"))
 
 
-def _connect(cfg: FtpConfig):  # pragma: no cover - network path, exercised manually
-    from ftplib import FTP, FTP_TLS
-
-    if cfg.tls:
-        ftp = FTP_TLS()
-        ftp.connect(cfg.host, cfg.port, timeout=30)
-        ftp.login(cfg.user, cfg.password)
-        ftp.prot_p()
-    else:
-        ftp = FTP()
-        ftp.connect(cfg.host, cfg.port, timeout=30)
-        ftp.login(cfg.user, cfg.password)
+def _connect(cfg: FtpConfig) -> FTP:  # pragma: no cover - network path, exercised manually
+    if cfg.mode != "explicit":
+        raise RuntimeError(
+            "implicit FTPS is an unresolved predeploy protocol gate; use the authenticated "
+            "Home.pl provider route or add and verify an audited implicit connector"
+        )
+    ftp = FTP_TLS()
+    ftp.connect(cfg.host, cfg.port, timeout=30)
+    ftp.login(cfg.user, cfg.password)
+    ftp.prot_p()
     return ftp
 
 
-def _upload(cfg: FtpConfig, package_dir: Path, prune: bool) -> int:  # pragma: no cover - network
+def _upload(cfg: FtpConfig, package_dir: Path) -> int:  # pragma: no cover - network
     plan = plan_uploads(package_dir, cfg.remote_dir)
     ftp = _connect(cfg)
     try:
@@ -125,9 +338,6 @@ def _upload(cfg: FtpConfig, package_dir: Path, prune: bool) -> int:  # pragma: n
             with local.open("rb") as fh:
                 ftp.storbinary(f"STOR {remote}", fh)
             print(f"  ↑ {remote}  ({local.stat().st_size} B)")
-        if prune:
-            print("  (--prune requested; remote deletion is intentionally conservative — "
-                  "only files under the mirror root that are absent locally would be removed)")
     finally:
         ftp.quit()
     return len(plan)
@@ -137,31 +347,51 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Upload the built static site to the server over FTP(S). Credentials come only from env vars."
     )
-    parser.add_argument("--package", default=None,
-                        help="built package dir (default: <repo>/dist/website_package)")
+    parser.add_argument(
+        "--package", default=None, help="built package dir (default: <repo>/dist/website_package)"
+    )
     parser.add_argument("--dry-run", action="store_true", help="print the upload plan and touch no network")
-    parser.add_argument("--prune", action="store_true",
-                        help="allow remote deletion of files absent locally (off by default; protects the live site)")
+    parser.add_argument(
+        "--backup-receipt",
+        default=None,
+        help="fresh aureon.homepl-backup-transfer.v1 receipt (required for a live upload)",
+    )
+    parser.add_argument(
+        "--prune",
+        action="store_true",
+        help="unsupported safety flag; any use is refused because this deployer never deletes",
+    )
     args = parser.parse_args(argv)
 
     package_dir = Path(args.package) if args.package else _repo_root() / "dist" / "website_package"
     if not package_dir.is_dir():
-        print(f"package dir not found: {package_dir}\n"
-              f"run: python -m scripts.website.build_package --out {package_dir.parent}", file=sys.stderr)
+        print(
+            f"package dir not found: {package_dir}\n"
+            f"run: python -m scripts.website.build_package --out {package_dir.parent}",
+            file=sys.stderr,
+        )
         return 2
 
     try:
         cfg = load_config()
-    except KeyError as exc:
+    except (KeyError, ValueError) as exc:
         print(f"FTP deploy refused — {exc}", file=sys.stderr)
-        print("Set the credentials in your shell environment (never commit them). See "
-              "scripts/website/README.md.", file=sys.stderr)
+        print(
+            "Set the credentials in your shell environment (never commit them). See "
+            "scripts/website/README.md.",
+            file=sys.stderr,
+        )
         return 1
 
     plan = plan_uploads(package_dir, cfg.remote_dir)
     print(f"Target: {cfg.safe_summary}")
     print(f"Package: {package_dir}  ({len(plan)} files)")
 
+    if args.prune:
+        print(
+            "FTP deploy refused — pruning is disabled; this tool never deletes remote files", file=sys.stderr
+        )
+        return 1
     if args.dry_run:
         print("DRY RUN — no network. Planned uploads:")
         for _local, remote in plan:
@@ -169,9 +399,30 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  {len(plan)} file(s) would be uploaded.")
         return 0
 
-    print("Uploading (back up the current live site first if you have not) …")
-    n = _upload(cfg, package_dir, prune=args.prune)
-    print(f"Done — {n} file(s) uploaded to {cfg.host}:{cfg.remote_dir}")
+    if cfg.mode != "explicit":
+        print(
+            "FTP deploy refused - implicit FTPS is an unresolved predeploy protocol gate; "
+            "use the authenticated Home.pl provider route or verify an audited connector",
+            file=sys.stderr,
+        )
+        return 1
+
+    if not args.backup_receipt:
+        print("FTP deploy refused — a fresh --backup-receipt is required", file=sys.stderr)
+        return 1
+    try:
+        package_check = compare_readback_directory(package_dir, package_dir)
+        if not package_check.passed:
+            raise ValueError("local package does not match its per-file SHA-256 manifest")
+        backup = load_backup_receipt(Path(args.backup_receipt), cfg.remote_dir)
+    except (OSError, ReadbackInputError, ValueError) as exc:
+        print(f"FTP deploy refused — {exc}", file=sys.stderr)
+        return 1
+
+    print(f"Uploading after validated backup ({backup.file_count} files, {backup.total_bytes} bytes) …")
+    n = _upload(cfg, package_dir)
+    print(f"Upload completed — {n} file(s) sent to {cfg.host}:{cfg.remote_dir}")
+    print("Publication is not proven until exact public/remote read-back passes.")
     return 0
 
 

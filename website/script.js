@@ -485,7 +485,7 @@
 
     const textValues = {
       github_summary: `${formatNumber(values.main_branch_commits)} commits · ${formatNumber(values.github_stars)} stars · ${formatNumber(values.github_forks)} forks`,
-      github_secondary: `${formatNumber(values.github_stars)} stars · ${formatNumber(values.github_forks)} forks · 20 Aug 2026`
+      github_secondary: `${formatNumber(values.github_stars)} stars · ${formatNumber(values.github_forks)} forks · 21 Aug 2026`
     };
     document.querySelectorAll("[data-footprint-text]").forEach((element) => {
       const value = textValues[element.dataset.footprintText];

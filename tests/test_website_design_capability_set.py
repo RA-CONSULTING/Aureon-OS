@@ -44,6 +44,7 @@ def test_canonical_registry_passes_and_is_non_authoritative() -> None:
     assert verification["deployment_authority"] == "none"
     assert registry["authority"] == AUTHORITY_BOUNDARY
     assert registry["registry_owner_agent"] == REGISTRY_OWNER_AGENT == "skill_writer"
+    assert registry["state"] == "implemented-default-deny"
 
 
 def test_every_required_skill_has_one_owner_contract_version_and_evidence_path() -> None:
@@ -60,6 +61,11 @@ def test_every_required_skill_has_one_owner_contract_version_and_evidence_path()
     assert all(row["version"] == "1.0.0" for row in skills)
     assert all(row["contract"]["obligation"].strip() for row in skills)
     assert all(row["contract"]["evidence_required"] is True for row in skills)
+    assert all(row["implementation"]["side_effects_allowed"] is False for row in skills)
+    assert all(row["implementation"]["deployment_authority"] == "none" for row in skills)
+    assert all(
+        row["implementation"]["result_schema"] == "aureon.website-capability-result.v1" for row in skills
+    )
 
 
 def test_hnc_loop_is_exact_closed_and_fully_covered() -> None:
@@ -120,6 +126,24 @@ def test_deploy_is_one_capability_and_never_authority() -> None:
             lambda registry: registry["authority"].__setitem__("registry_grants_deployment_authority", True),
             "authority-boundary",
         ),
+        (
+            lambda registry: registry["skills"][0]["implementation"].__setitem__(
+                "module", "aureon.operator.website_design_capabilities.missing_skill"
+            ),
+            "implementations-importable",
+        ),
+        (
+            lambda registry: registry["skills"][0].__setitem__(
+                "implementation", deepcopy(registry["skills"][1]["implementation"])
+            ),
+            "implementation-contracts",
+        ),
+        (
+            lambda registry: registry["skills"][0]["implementation"].__setitem__(
+                "entrypoint", "missing_entrypoint"
+            ),
+            "implementations-importable",
+        ),
     ],
 )
 def test_registry_rejects_contract_drift(mutation, expected_check: str) -> None:
@@ -135,3 +159,17 @@ def test_require_valid_rejects_invalid_registry() -> None:
 
     with pytest.raises(WebsiteDesignCapabilitySetError, match="versioned-contracts"):
         require_valid_website_design_capability_set(registry)
+
+
+def test_registry_binds_every_skill_to_a_unique_importable_callable() -> None:
+    registry = discover_website_design_capability_set()
+    bindings = []
+    for row in registry["skills"]:
+        implementation = row["implementation"]
+        module = __import__(implementation["module"], fromlist=[implementation["entrypoint"]])
+        entrypoint = getattr(module, implementation["entrypoint"])
+        assert callable(entrypoint)
+        assert entrypoint.__module__ == implementation["module"]
+        assert row["skill_id"] == module.SKILL_ID
+        bindings.append((implementation["module"], implementation["entrypoint"]))
+    assert len(bindings) == len(set(bindings)) == len(REQUIRED_SKILL_IDS)

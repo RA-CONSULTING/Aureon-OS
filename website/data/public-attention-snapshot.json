@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "record_type": "public_footprint_snapshot",
-  "as_of": "2026-08-20",
+  "as_of": "2026-08-21",
   "signals": [
     {
       "platform": "ORCID",
@@ -17,7 +17,7 @@
       "metric": "main_branch_commits",
       "value": 3213,
       "secondary_metrics": {"stars": 32, "forks": 11},
-      "measurement_window": "public repository snapshot on 2026-08-20",
+      "measurement_window": "public repository snapshot on 2026-08-21",
       "source_url": "https://github.com/RA-CONSULTING/Aureon-OS"
     },
     {

@@ -1,0 +1,361 @@
+{
+  "schema": "aureon.performance-core-web-vitals-input.v1",
+  "run_id": "v45-final-local-browser-20260821T011720Z",
+  "scope": "local-preview-only-not-homepl-live",
+  "asset_paths": [
+    "website/styles.css",
+    "website/tokens.css",
+    "website/script.js",
+    "website/assets/fonts/ibm-plex-mono-latin-400.woff2",
+    "website/assets/fonts/ibm-plex-mono-latin-600.woff2",
+    "website/assets/fonts/manrope-latin-variable.woff2",
+    "website/assets/fonts/source-serif-4-latin-variable.woff2",
+    "website/assets/images/research/substack/falsifiability-1200.webp",
+    "website/assets/images/brand/aureon-evidence-os-social-v4-1600.webp",
+    "website/data/public-attention-snapshot.json",
+    "website/data/research-catalogue.json",
+    "website/data/research.json",
+    "website/site.webmanifest"
+  ],
+  "budgets": {
+    "total_bytes": 2500000,
+    "css_bytes": 600000,
+    "javascript_bytes": 150000,
+    "image_bytes": 1500000
+  },
+  "browser_lab_cases": [
+    {
+      "id": "home-desktop",
+      "route": "/",
+      "viewport": {
+        "device_pixel_ratio": 1,
+        "height": 900,
+        "width": 1440
+      },
+      "lcp_ms": 412,
+      "cls": 0.015640679285934135,
+      "synthetic_interaction_latency_ms": 3.399999976158142,
+      "synthetic_label": "keyboard Tab keydown to skip-link focus; local synthetic lab timing; not field INP",
+      "samples": [
+        {
+          "run": 1,
+          "lcp_ms": 412,
+          "cls": 0.015640679285934135,
+          "navigation_duration_ms": 705.5999999642372,
+          "synthetic_interaction_latency_ms": null
+        },
+        {
+          "run": 2,
+          "lcp_ms": 604,
+          "cls": 0.015640679285934135,
+          "navigation_duration_ms": 810.6999999880791,
+          "synthetic_interaction_latency_ms": 0
+        },
+        {
+          "run": 3,
+          "lcp_ms": 348,
+          "cls": 0,
+          "navigation_duration_ms": 537.8999999761581,
+          "synthetic_interaction_latency_ms": 6.700000047683716
+        }
+      ],
+      "synthetic_samples": [
+        3.599999964237213,
+        3.399999976158142,
+        2.099999964237213
+      ]
+    },
+    {
+      "id": "investor-desktop",
+      "route": "/funding/investor-deck/",
+      "viewport": {
+        "device_pixel_ratio": 1,
+        "height": 900,
+        "width": 1440
+      },
+      "lcp_ms": 364,
+      "cls": 0,
+      "synthetic_interaction_latency_ms": 4.100000023841858,
+      "synthetic_label": "keyboard Tab keydown to skip-link focus; local synthetic lab timing; not field INP",
+      "samples": [
+        {
+          "run": 1,
+          "lcp_ms": 844,
+          "cls": 0,
+          "navigation_duration_ms": 748.3999999761581,
+          "synthetic_interaction_latency_ms": null
+        },
+        {
+          "run": 2,
+          "lcp_ms": 364,
+          "cls": 0,
+          "navigation_duration_ms": 303.19999998807907,
+          "synthetic_interaction_latency_ms": 5.300000011920929
+        },
+        {
+          "run": 3,
+          "lcp_ms": 288,
+          "cls": 0,
+          "navigation_duration_ms": 509.10000002384186,
+          "synthetic_interaction_latency_ms": 44.60000002384186
+        }
+      ],
+      "synthetic_samples": [
+        4.5,
+        3.099999964237213,
+        4.100000023841858
+      ]
+    },
+    {
+      "id": "projects-desktop",
+      "route": "/projects/",
+      "viewport": {
+        "device_pixel_ratio": 1,
+        "height": 900,
+        "width": 1440
+      },
+      "lcp_ms": 416,
+      "cls": 0,
+      "synthetic_interaction_latency_ms": 3.800000011920929,
+      "synthetic_label": "keyboard Tab keydown to skip-link focus; local synthetic lab timing; not field INP",
+      "samples": [
+        {
+          "run": 1,
+          "lcp_ms": 9216,
+          "cls": 0,
+          "navigation_duration_ms": 9639.30000001192,
+          "synthetic_interaction_latency_ms": null
+        },
+        {
+          "run": 2,
+          "lcp_ms": 344,
+          "cls": 0,
+          "navigation_duration_ms": 313.60000002384186,
+          "synthetic_interaction_latency_ms": 4.599999964237213
+        },
+        {
+          "run": 3,
+          "lcp_ms": 416,
+          "cls": 0,
+          "navigation_duration_ms": 1023.6999999880792,
+          "synthetic_interaction_latency_ms": 12.699999988079073
+        }
+      ],
+      "synthetic_samples": [
+        4.800000011920929,
+        3.800000011920929,
+        2.5
+      ]
+    },
+    {
+      "id": "research-desktop",
+      "route": "/research/",
+      "viewport": {
+        "device_pixel_ratio": 1,
+        "height": 900,
+        "width": 1440
+      },
+      "lcp_ms": 564,
+      "cls": 0,
+      "synthetic_interaction_latency_ms": 3.100000023841858,
+      "synthetic_label": "keyboard Tab keydown to skip-link focus; local synthetic lab timing; not field INP",
+      "samples": [
+        {
+          "run": 1,
+          "lcp_ms": 796,
+          "cls": 0,
+          "navigation_duration_ms": 1170.300000011921,
+          "synthetic_interaction_latency_ms": null
+        },
+        {
+          "run": 2,
+          "lcp_ms": 292,
+          "cls": 0,
+          "navigation_duration_ms": 460.60000002384186,
+          "synthetic_interaction_latency_ms": 0
+        },
+        {
+          "run": 3,
+          "lcp_ms": 564,
+          "cls": 0,
+          "navigation_duration_ms": 1091.5999999642372,
+          "synthetic_interaction_latency_ms": 0
+        }
+      ],
+      "synthetic_samples": [
+        3.100000023841858,
+        4.100000023841858,
+        2.699999988079071
+      ]
+    },
+    {
+      "id": "home-mobile",
+      "route": "/",
+      "viewport": {
+        "device_pixel_ratio": 1,
+        "height": 844,
+        "width": 390
+      },
+      "lcp_ms": 320,
+      "cls": 0,
+      "synthetic_interaction_latency_ms": 2.800000011920929,
+      "synthetic_label": "keyboard Tab keydown to skip-link focus; local synthetic lab timing; not field INP",
+      "samples": [
+        {
+          "run": 1,
+          "lcp_ms": 320,
+          "cls": 0,
+          "navigation_duration_ms": 428.10000002384186,
+          "synthetic_interaction_latency_ms": null
+        },
+        {
+          "run": 2,
+          "lcp_ms": 364,
+          "cls": 0,
+          "navigation_duration_ms": 475.199999988079,
+          "synthetic_interaction_latency_ms": 7.300000011920929
+        },
+        {
+          "run": 3,
+          "lcp_ms": 296,
+          "cls": 0,
+          "navigation_duration_ms": 553.6000000238419,
+          "synthetic_interaction_latency_ms": 15.399999976158142
+        }
+      ],
+      "synthetic_samples": [
+        2.800000011920929,
+        2.699999988079071,
+        5.100000023841858
+      ]
+    },
+    {
+      "id": "investor-mobile",
+      "route": "/funding/investor-deck/",
+      "viewport": {
+        "device_pixel_ratio": 1,
+        "height": 844,
+        "width": 390
+      },
+      "lcp_ms": 328,
+      "cls": 0,
+      "synthetic_interaction_latency_ms": 2.600000023841858,
+      "synthetic_label": "keyboard Tab keydown to skip-link focus; local synthetic lab timing; not field INP",
+      "samples": [
+        {
+          "run": 1,
+          "lcp_ms": 344,
+          "cls": 0,
+          "navigation_duration_ms": 472,
+          "synthetic_interaction_latency_ms": null
+        },
+        {
+          "run": 2,
+          "lcp_ms": 292,
+          "cls": 0,
+          "navigation_duration_ms": 518.5,
+          "synthetic_interaction_latency_ms": 12
+        },
+        {
+          "run": 3,
+          "lcp_ms": 328,
+          "cls": 0,
+          "navigation_duration_ms": 589.1999999880791,
+          "synthetic_interaction_latency_ms": 7.100000023841858
+        }
+      ],
+      "synthetic_samples": [
+        5.399999976158142,
+        2,
+        2.600000023841858
+      ]
+    },
+    {
+      "id": "projects-mobile",
+      "route": "/projects/",
+      "viewport": {
+        "device_pixel_ratio": 1,
+        "height": 844,
+        "width": 390
+      },
+      "lcp_ms": 304,
+      "cls": 0,
+      "synthetic_interaction_latency_ms": 2.699999988079071,
+      "synthetic_label": "keyboard Tab keydown to skip-link focus; local synthetic lab timing; not field INP",
+      "samples": [
+        {
+          "run": 1,
+          "lcp_ms": 304,
+          "cls": 0,
+          "navigation_duration_ms": 388.300000011921,
+          "synthetic_interaction_latency_ms": null
+        },
+        {
+          "run": 2,
+          "lcp_ms": 308,
+          "cls": 0,
+          "navigation_duration_ms": 446.10000002384186,
+          "synthetic_interaction_latency_ms": 8
+        },
+        {
+          "run": 3,
+          "lcp_ms": 236,
+          "cls": 0,
+          "navigation_duration_ms": 472.2999999523163,
+          "synthetic_interaction_latency_ms": 12.600000023841858
+        }
+      ],
+      "synthetic_samples": [
+        2.699999988079071,
+        2,
+        2.699999988079071
+      ]
+    },
+    {
+      "id": "research-mobile",
+      "route": "/research/",
+      "viewport": {
+        "device_pixel_ratio": 1,
+        "height": 844,
+        "width": 390
+      },
+      "lcp_ms": 252,
+      "cls": 0,
+      "synthetic_interaction_latency_ms": 4.600000023841858,
+      "synthetic_label": "keyboard Tab keydown to skip-link focus; local synthetic lab timing; not field INP",
+      "samples": [
+        {
+          "run": 1,
+          "lcp_ms": 248,
+          "cls": 0,
+          "navigation_duration_ms": 422.300000011921,
+          "synthetic_interaction_latency_ms": null
+        },
+        {
+          "run": 2,
+          "lcp_ms": 296,
+          "cls": 0,
+          "navigation_duration_ms": 582.8000000119209,
+          "synthetic_interaction_latency_ms": 138.80000001192093
+        },
+        {
+          "run": 3,
+          "lcp_ms": 252,
+          "cls": 0,
+          "navigation_duration_ms": 611,
+          "synthetic_interaction_latency_ms": 0
+        }
+      ],
+      "synthetic_samples": [
+        5.199999988079071,
+        4.600000023841858,
+        2.899999976158142
+      ]
+    }
+  ],
+  "live_vitals": null,
+  "contract_residual": {
+    "status": "expected-blocker",
+    "reason": "performance_core_web_vitals requires a complete lcp_ms/inp_ms/cls live_vitals row. Genuine field INP is unavailable from this short local preview, so synthetic timing is not passed as inp_ms."
+  }
+}

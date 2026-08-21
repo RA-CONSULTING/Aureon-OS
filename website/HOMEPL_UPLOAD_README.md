@@ -1,40 +1,136 @@
-# Publish the Aureon website to home.pl
+# Publish Aureon to Home.pl
 
-This static website belongs to **R&A Consulting and Brokerage Services Ltd** (company no. **NI696693**), trading as **Aureon Zorza Technologies**. Companies House lists Gary Anthony Leckey as the company's one current director and one active person with significant control, with 75% or more ownership of shares and voting rights. This public record does not establish a more precise ownership percentage. Public correspondence uses the company contact route; do not publish a personal mailbox in the website package.
+This static website belongs to **R&A Consulting and Brokerage Services Ltd**
+(company no. **NI696693**), trading as **Aureon Zorza Technologies**. Gary
+Anthony Leckey retains the final owner/CEO veto. Never publish a personal
+mailbox, credentials, private correspondence, internal financial records, or
+unreviewed claims.
 
-## Build the package
+The canonical automated release sequence is:
 
-From the repository root, run the governed builder:
+`audit -> commit-bound build -> fresh served-root backup -> non-pruning FTPS upload -> exact read-back`
+
+An upload, provider success message, local preview, or GitHub push does not by
+itself prove publication.
+
+## Canonical release commands
+
+From the repository root:
 
 ```powershell
-python -m scripts.website.build_package --out artifacts/website-releases
+python -m scripts.website.audit_site --root website
+$sourceCommit = (git rev-parse HEAD).Trim()
+python -m scripts.website.build_package `
+  --root website `
+  --out artifacts/website-releases `
+  --source-commit $sourceCommit
 ```
 
-The builder audits the public surface, fails closed on errors or secret-bearing file types, excludes working archives and unreferenced source artwork, and creates a deterministic ZIP with website files at its top level. The legacy `website/build-homepl-package.ps1` is retired and must not be used.
+The build refuses a malformed commit, a commit different from checked-out
+`HEAD`, or tracked/untracked `website/` changes not represented by that commit.
+It creates a deterministic ZIP, an external companion checksum, and
+`website_package/HOMEPL_FILE_HASHES.json`. The hash manifest records the size
+and SHA-256 of every other package file and excludes only itself to avoid
+recursive self-hashing; its own hash is in the companion checksum file.
 
-## Safe publishing sequence
+## Fresh backup gate
 
-1. Reconfirm the document root for `serwer2636460`. Authenticated WebFTP inspection and verified public read-back most recently reconfirmed `/public_html` as the served root on 26 July 2026; do not upload to `/` or create a nested `public_html` directory by assumption.
-2. Create and retain a fresh recursive backup of the current remote root, with a manifest and non-zero file count, before changing anything.
-3. Either upload the ZIP to the verified root and use **Unzip** with the target set to exactly that root, or use the internal `publish-homepl-ftps.ps1` tool with an approved temporary FTPS account. The FTPS tool verifies every local file against the release manifest before it can upload anything.
-4. The FTPS tool is dry-run by default. It requires `-Deploy`, `HOMEPL_FTPS_HOST`, `HOMEPL_FTPS_USER`, and a process-only `HOMEPL_FTPS_PASSWORD`; it never writes credentials into the website, package, or repository.
-5. Wait for the provider to report every nested path copied successfully. A ZIP built on Windows must use forward slashes in its internal paths; the included script enforces this.
-6. Remove the temporary ZIP from the verified remote root after public checks succeed.
-7. Check `https://aureonzorzatechnologies.pl/`, `/publications/`, `/updates/`, `/live/`, `/funding/`, `/contact/`, `/research/`, and `/projects/` in a private browser window.
-8. Delete any temporary FTPS account created specifically for the release and refresh the FTP-account list to verify its removal. Do not change pre-existing FTP accounts by assumption.
+Before any remote write:
 
-Do not change DNS, SSL, or domain assignment as part of a normal website-file update.
+1. Map the authenticated account to the current public Home.pl served root.
+2. Do not assume `/` or `/public_html`; use the exact current provider mapping.
+3. Create a fresh recursive backup with a non-zero manifest.
+4. Retain the `aureon.homepl-backup-transfer.v1` completion receipt.
 
-## Live publication state before V45
+[`backup-homepl-ftps.ps1`](backup-homepl-ftps.ps1) is the audited read-only
+backup tool. It has strict preflight and served-root bindings. If those bindings
+do not match the current provider state, stop and treat Home.pl's provider
+backup control as a named human host gate. Do not weaken the check, guess a
+credential/root, or fabricate a receipt.
 
-- A V27 package was published on 26 July 2026, followed by an incomplete V28 attempt.
-- The latest V28 read-back recorded only 63 of 88 manifest entries exact, 24 manifest failures and 13 site-contract failures; `publication_complete` was false.
-- The current public surface must therefore be treated as a mixed V27/V28-era site, not as a fully verified release.
-- Before V45 changes any remote file, create a fresh recursive backup of the served root and verify its manifest and non-zero file count.
-- V45 is not published until every release file is read back from the public domain and the critical rendered routes pass visual and content checks.
+## One FTPS environment contract
 
-## Safety rules
+The canonical Python deployer and Home.pl PowerShell tools use these names:
 
-- Do not place passwords, API keys, FTP credentials, client information, financial records, or other private material in the website source or GitHub.
-- Keep public statements evidence-based. Research, concepts, archives, and implemented work have different statuses and must not be represented as equivalent.
-- GitHub stores the source history. home.pl serves the live files; a GitHub push does not currently publish this website automatically.
+| Variable | Required | Meaning |
+|---|---:|---|
+| `HOMEPL_FTPS_HOST` | yes | FTPS hostname only |
+| `HOMEPL_FTPS_USER` | yes | approved FTPS account |
+| `HOMEPL_FTPS_PASSWORD` | yes | process-only password; never logged or committed |
+| `HOMEPL_FTPS_REMOTE_ROOT` | yes | exact authenticated served root |
+| `HOMEPL_FTPS_PORT` | yes | exact authenticated port; never inferred |
+| `HOMEPL_FTPS_MODE` | yes | exactly `explicit` or `implicit` |
+| `HOMEPL_FTPS_CERT_THUMBPRINT` | PowerShell only | optional certificate pin |
+
+Retained Home.pl configuration evidence points to implicit FTPS on port 990.
+The Python uploader currently implements explicit FTPS only and fails closed on
+an implicit live run before opening a socket. Until an implicit connector is
+implemented and authenticated, use the Home.pl provider route as the named host
+gate. Do not guess port 21 or silently change protocol.
+
+Preview the exact plan with no network operation:
+
+```powershell
+python -m scripts.website.ftp_deploy `
+  --package artifacts/website-releases/website_package `
+  --dry-run
+```
+
+After a verified fresh backup, the live command additionally names its exact
+transfer receipt:
+
+```powershell
+python -m scripts.website.ftp_deploy `
+  --package artifacts/website-releases/website_package `
+  --backup-receipt C:\absolute\path\to\backup-transfer.json
+```
+
+The deployer verifies the local package first. It also checks that the backup
+receipt names the audited `backup-homepl-ftps.ps1` producer, binds that script's
+hash, and carries a sorted `Path,Bytes,Sha256` manifest matching the exact
+downloaded backup directory, counts, byte total, root and freshness. A
+hand-authored receipt cannot stand in for rollback evidence. The deployer then
+creates/overwrites only listed release files. It never deletes remote files;
+`--prune` is always refused.
+
+## Mandatory read-back
+
+Capture all served package paths from the authenticated root or public domain
+into an isolated directory, then run the offline comparison:
+
+```powershell
+python -m scripts.website.readback `
+  --package artifacts/website-releases/website_package `
+  --readback-dir C:\absolute\path\to\captured-served-root
+```
+
+The exact directory comparison checks the remote hash manifest itself, every
+manifest record by byte length and SHA-256, and rejects any unexpected file in
+the captured served-root mirror. That prevents a mixed July-era/V45 file set
+from passing after a non-pruning upload.
+
+The programmatic HTTP comparison checks every expected V45 path already
+captured, but cannot discover an unknown stale URL that was not requested. It is
+expected-path evidence, not exact served-root inventory proof. Neither helper
+opens a network connection or records a body, URL, header, cookie, account, or
+credential. TLS/cache checks, critical route rendering, claim lint,
+accessibility, visual regression, and Core Web Vitals remain separate required
+evidence before publication can be called complete.
+
+## Manual Home.pl alternative
+
+WebFTP ZIP upload/unzip is a host-gate alternative, not a second build or
+verification stack. It must use the exact audited ZIP, exact served root, fresh
+backup, and the same `HOMEPL_FILE_HASHES.json` read-back. The legacy
+[`publish-homepl-ftps.ps1`](publish-homepl-ftps.ps1) CSV flow and retired
+[`build-homepl-package.ps1`](build-homepl-package.ps1) are not the canonical V45
+automated path and must not be mixed with the new manifest.
+
+Do not change DNS, SSL assignment, domain ownership, pre-existing FTP accounts,
+or unrelated provider settings as part of a normal website-file release.
+
+## Current publication boundary
+
+The last recorded V28 attempt was incomplete. V45 remains a local candidate
+until a fresh served-root backup, exact upload, full per-file public read-back,
+and the remaining browser/claim/vitals gates all pass.

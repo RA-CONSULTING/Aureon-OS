@@ -24,13 +24,13 @@
     "next_validation": "Select one consequential proposition for independent reproduction against an agreed method."
   },
   {
-    "id": "github-public-engineering-20260820",
-    "date": "2026-08-20",
+    "id": "github-public-engineering-20260821",
+    "date": "2026-08-21",
     "title": "Aureon OS has a substantial inspectable engineering history",
-    "summary": "The public main branch shows 3,213 commits, 32 stars and 11 forks as of 20 August 2026.",
+    "summary": "The public main branch shows 3,213 commits, 32 stars and 11 forks as of 21 August 2026.",
     "category": "Platform",
     "investor_relevance": "A public engineering-activity and attention signal for the codebase; commits, stars and forks are not verified users, customers, production use or independent adoption.",
-    "source_name": "GitHub public repository and main-branch history · checked 20 Aug 2026",
+    "source_name": "GitHub public repository and main-branch history · checked 21 Aug 2026",
     "source_label": "Inspect Aureon OS on GitHub",
     "source_url": "https://github.com/RA-CONSULTING/Aureon-OS",
     "next_validation": "Turn technical curiosity into structured evaluations with explicit decision problems and success criteria."

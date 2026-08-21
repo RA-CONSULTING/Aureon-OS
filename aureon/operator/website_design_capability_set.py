@@ -15,6 +15,7 @@ the CEO/owner/user veto is final at every stage.
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import re
 from collections.abc import Mapping, Sequence
@@ -24,7 +25,7 @@ from typing import Any
 
 REGISTRY_SCHEMA = "aureon.website-design-capability-set.v1"
 VERIFICATION_SCHEMA = "aureon.website-design-capability-set-verification.v1"
-REGISTRY_VERSION = "1.0.0"
+REGISTRY_VERSION = "2.0.0"
 REGISTRY_OWNER_AGENT = "skill_writer"
 EVIDENCE_ROOT = PurePosixPath("artifacts/website-operator/capability-evidence")
 
@@ -56,6 +57,25 @@ REQUIRED_SKILL_IDS = (
     "design_qa_visual_regression",
     "content_inventory_connectors",
 )
+
+IMPLEMENTATION_ENTRYPOINTS = {
+    "visual_identity_tokens": "audit_tokens",
+    "layout_typography_grid": "audit_layout",
+    "motion_interaction": "audit_motion",
+    "information_architecture_routing": "audit_routing",
+    "evidence_bound_copywriting": "audit_copy_provenance",
+    "research_object_rendering": "audit_research_objects",
+    "diagram_connectome_graphics": "audit_diagram_fallbacks",
+    "image_svg_generative_pipeline": "audit_image_inventory",
+    "accessibility_reduced_motion": "prepare_accessibility_audit",
+    "performance_core_web_vitals": "audit_performance",
+    "homepl_deploy_cache_ssl_readback": "verify_homepl_readback",
+    "claim_state_linter": "lint_claim_states",
+    "competitor_position_audit": "audit_competitor_sources",
+    "design_qa_visual_regression": "evaluate_visual_regression",
+    "content_inventory_connectors": "reconcile_content_inventory",
+}
+IMPLEMENTATION_PACKAGE = "aureon.operator.website_design_capabilities"
 
 
 @dataclass(frozen=True)
@@ -166,6 +186,14 @@ class WebsiteDesignSkill:
     version: str = "1.0.0"
 
     @property
+    def implementation_module(self) -> str:
+        return f"{IMPLEMENTATION_PACKAGE}.{self.skill_id}"
+
+    @property
+    def implementation_entrypoint(self) -> str:
+        return IMPLEMENTATION_ENTRYPOINTS[self.skill_id]
+
+    @property
     def contract_id(self) -> str:
         return f"aureon.website-capability.{self.skill_id}.v1"
 
@@ -186,6 +214,14 @@ class WebsiteDesignSkill:
             },
             "evidence_path": self.evidence_path,
             "hnc_stages": list(self.hnc_stages),
+            "implementation": {
+                "module": self.implementation_module,
+                "entrypoint": self.implementation_entrypoint,
+                "mode": "deterministic-read-only-audit-or-prepare",
+                "result_schema": "aureon.website-capability-result.v1",
+                "side_effects_allowed": False,
+                "deployment_authority": "none",
+            },
         }
 
 
@@ -311,7 +347,7 @@ def discover_website_design_capability_set() -> dict[str, object]:
         "schema": REGISTRY_SCHEMA,
         "registry_version": REGISTRY_VERSION,
         "registry_owner_agent": REGISTRY_OWNER_AGENT,
-        "state": "contract-only-default-deny",
+        "state": "implemented-default-deny",
         "authority": dict(AUTHORITY_BOUNDARY),
         "owner_agents": list(OWNER_AGENTS),
         "hnc_loop": [step.to_dict(ordinal) for ordinal, step in enumerate(HNC_LOOP, start=1)],
@@ -328,6 +364,22 @@ def _valid_evidence_path(value: object, skill_id: str) -> bool:
         return False
     path = PurePosixPath(value)
     return not path.is_absolute() and ".." not in path.parts and path == EVIDENCE_ROOT / skill_id
+
+
+def _implementation_is_importable(module_name: str, entrypoint: str) -> bool:
+    """Resolve one canonical implementation and reject aliases or rebound callables."""
+
+    try:
+        module = importlib.import_module(module_name)
+        implementation = getattr(module, entrypoint)
+    except (AttributeError, ImportError, ModuleNotFoundError):
+        return False
+    return (
+        callable(implementation)
+        and getattr(implementation, "__module__", None) == module_name
+        and getattr(implementation, "__name__", None) == entrypoint
+        and getattr(module, "SKILL_ID", None) == module_name.rsplit(".", maxsplit=1)[-1]
+    )
 
 
 def validate_website_design_capability_set(
@@ -361,7 +413,7 @@ def validate_website_design_capability_set(
         _check(
             "authority-boundary",
             candidate.get("authority") == AUTHORITY_BOUNDARY
-            and candidate.get("state") == "contract-only-default-deny",
+            and candidate.get("state") == "implemented-default-deny",
             "The registry must remain default-deny with final CEO/owner/user control.",
         )
     )
@@ -413,15 +465,22 @@ def validate_website_design_capability_set(
     versions_ok = rows_ok
     evidence_ok = rows_ok
     stages_ok = rows_ok
+    implementation_contracts_ok = rows_ok
+    implementations_importable = rows_ok
+    seen_implementations: list[str] = []
 
     if isinstance(skill_rows, list):
         for row in skill_rows:
             if not isinstance(row, Mapping):
-                rows_ok = single_owner_ok = contracts_ok = versions_ok = evidence_ok = stages_ok = False
+                rows_ok = single_owner_ok = contracts_ok = versions_ok = evidence_ok = stages_ok = (
+                    implementation_contracts_ok
+                ) = implementations_importable = False
                 continue
             skill_id = row.get("skill_id")
             if not isinstance(skill_id, str):
-                rows_ok = single_owner_ok = contracts_ok = versions_ok = evidence_ok = stages_ok = False
+                rows_ok = single_owner_ok = contracts_ok = versions_ok = evidence_ok = stages_ok = (
+                    implementation_contracts_ok
+                ) = implementations_importable = False
                 continue
             seen_ids.append(skill_id)
             expected_skill = SKILL_BY_ID.get(skill_id)
@@ -482,6 +541,36 @@ def validate_website_design_capability_set(
             else:
                 stages_ok = False
 
+            implementation = row.get("implementation")
+            if isinstance(implementation, Mapping) and expected_skill is not None:
+                module_name = implementation.get("module")
+                entrypoint = implementation.get("entrypoint")
+                expected_module = expected_skill.implementation_module
+                expected_entrypoint = expected_skill.implementation_entrypoint
+                contract_ok = (
+                    module_name == expected_module
+                    and entrypoint == expected_entrypoint
+                    and implementation.get("mode") == "deterministic-read-only-audit-or-prepare"
+                    and implementation.get("result_schema") == "aureon.website-capability-result.v1"
+                    and implementation.get("side_effects_allowed") is False
+                    and implementation.get("deployment_authority") == "none"
+                )
+                implementation_contracts_ok = implementation_contracts_ok and contract_ok
+                if isinstance(module_name, str) and isinstance(entrypoint, str):
+                    binding = f"{module_name}:{entrypoint}"
+                    seen_implementations.append(binding)
+                    implementations_importable = (
+                        implementations_importable
+                        and module_name == expected_module
+                        and entrypoint == expected_entrypoint
+                        and _implementation_is_importable(expected_module, expected_entrypoint)
+                    )
+                else:
+                    implementations_importable = False
+            else:
+                implementation_contracts_ok = False
+                implementations_importable = False
+
     expected_ids = set(REQUIRED_SKILL_IDS)
     checks.extend(
         [
@@ -519,6 +608,17 @@ def validate_website_design_capability_set(
                 "deploy-capability-separation",
                 deploy_stage_skills == {"homepl_deploy_cache_ssl_readback"},
                 "Only the Home.pl deployment skill may implement Deploy; authority still comes only from AuthorityGate.",
+            ),
+            _check(
+                "implementation-contracts",
+                implementation_contracts_ok
+                and len(seen_implementations) == len(set(seen_implementations)) == len(REQUIRED_SKILL_IDS),
+                "Every skill must bind exactly once to its canonical read-only implementation contract.",
+            ),
+            _check(
+                "implementations-importable",
+                implementations_importable,
+                "Every canonical implementation module and entrypoint must import and resolve without rebinding.",
             ),
         ]
     )

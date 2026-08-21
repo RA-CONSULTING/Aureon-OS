@@ -1,0 +1,540 @@
+{
+  "schema_version": "aureon.website-content-source-coverage.v1",
+  "inventory_id": "v45-content-source-coverage-20260821",
+  "inventory_date": "2026-08-21",
+  "candidate_commit": "72ccc28de9b3ccc2a20a5007d9d9992221589ac8",
+  "candidate_state": "local-v45-candidate-not-live-read-back",
+  "owner": "Content Inventory / Work-Coverage owner",
+  "privacy_policy": {
+    "package_eligible": false,
+    "contains_email_addresses": false,
+    "contains_private_correspondence_identifiers": false,
+    "contains_private_drive_urls": false,
+    "contains_secrets": false,
+    "contains_financial_records": false,
+    "contains_unverified_metrics": false,
+    "private_source_locator_policy": "Private source locators stay in redacted, non-package receipts. This matrix records only a receipt hash and a privacy-safe local receipt class where needed."
+  },
+  "status_definitions": {
+    "approved+public": "Approved information or media with a public source and a current V45 route, renderer or direct source link.",
+    "approved+summarized": "Approved public-safe wording whose controlling evidence is private or provider-reported and retained outside the package.",
+    "private/internal excluded": "Internal material deliberately excluded from the public site and release package.",
+    "pending rights": "Asset is not covered by an exact article, variant and public placement binding.",
+    "stale/unverified": "Local material is superseded, not in the release package, or needs a fresh authoritative read-back before reuse.",
+    "approved-but-hidden": "Public approved work exists but is not individually enumerated or rendered by the V45 candidate."
+  },
+  "deterministic_inputs": [
+    {
+      "path": "website/data/public-attention-snapshot.json",
+      "sha256": "D29929C79CE93FA25DF17166BCD357CB3B087E2FB2855923C21D865D1A055684"
+    },
+    {
+      "path": "website/data/research-catalogue.json",
+      "sha256": "6048D03C061C87D92EBA9B4A0BCFA41393F2F0CE8CAF5A25AE7A4503071DB867"
+    },
+    {
+      "path": "website/data/research.json",
+      "sha256": "D1EDB37D3250C1E1046081B91C171A8E5642BA14C9C9ABE397A67065ECA5C66B"
+    },
+    {
+      "path": "website/data/publications.json",
+      "sha256": "0EDC1623E28DA83FA5841611C88CFFB7811333CED35B9448EF782DECEA107C3F"
+    },
+    {
+      "path": "website/data/substack-research-index.json",
+      "sha256": "3E125F2AB964C1797F0922DFA2C22534E9A02C8F872C9F07F80946000E7326E5"
+    },
+    {
+      "path": "website/data/blades.json",
+      "sha256": "F114A72A182FCDAD61953F92B0C9C5812362B6FAC4B8A27F7DB6EBED7A4946C2"
+    },
+    {
+      "path": "website/data/innovation-map.json",
+      "sha256": "5C8C622A86A092CDED65FA68135AE2395E7288A6FFFA5E621B5F63C92D79E04A"
+    },
+    {
+      "path": "website/data/funding-status.json",
+      "sha256": "75F2AAAAFEB55160198F198661255E7F62EDCA1049DB25FFC9A9595397FBBBC8"
+    },
+    {
+      "path": "website/data/community-evidence.json",
+      "sha256": "E8A1C2A317ABC65536EEF8A2C5206135DDBFA0E055C4F9EB7091009D0B106CDB"
+    },
+    {
+      "path": "website/data/company-platform.json",
+      "sha256": "53B4296E7FD12A3289D04876D3F1B52DA22D1CDED101133DE91E41A3630D62BC"
+    },
+    {
+      "path": "website/data/projects.json",
+      "sha256": "DAB37A1DDB4F3099AFB0F93D0419F3252ABE979F8F8474FA365D8D9571AA3F4F"
+    },
+    {
+      "path": "website/index.html",
+      "sha256": "40A00D5C8315273D0A8BC9060B3F12FA1C956E27487B18C217C1B32AD1045FFE"
+    },
+    {
+      "path": "website/research/index.html",
+      "sha256": "1D60C9D690AE99E8C567DE69E1E11CA2EF101D50087C9FB5A0C675399BDC4B4D"
+    },
+    {
+      "path": "website/research/journal/index.html",
+      "sha256": "02D3332A1975EE6157ED3EDA46EDD380D7034347FE7474BFC0163B4716DB77C8"
+    },
+    {
+      "path": "website/projects/index.html",
+      "sha256": "6D4E7F0E8C5783023C3C933FFE4956419E8141C76F5EBC1BCB239DAE08820F13"
+    },
+    {
+      "path": "website/funding/investor-deck/index.html",
+      "sha256": "12703AB79676865B1B444BC81475F73BE7C733975E6F82EB4BE1CB924D9A54D2"
+    },
+    {
+      "path": "website/script.js",
+      "sha256": "52B60A49579C1ECD34610A754B7DC1A486B09C27E00A9793A98AECFE2B3D8291"
+    },
+    {
+      "source_class": "redacted-editorial-provenance",
+      "sha256": "9E248BC9969EBC58C22E53C5ED00636E787A571E58AE70EA195E8DA65241B65A",
+      "package_eligible": false
+    },
+    {
+      "source_class": "redacted-academia-provider-receipt",
+      "sha256": "753FA43473B1F5F0CA70EC184523750FAFA4951BE6F11F7F0F94F3BA76C8583E",
+      "package_eligible": false
+    },
+    {
+      "source_class": "redacted-external-route-signal-receipt",
+      "sha256": "80F39BF346C3975764B176933549B9F42394221B70C0927648787B5D2964D840",
+      "package_eligible": false
+    }
+  ],
+  "corpus_coverage": [
+    {
+      "corpus_id": "legal-and-trading-identity",
+      "status": "approved+public",
+      "item_count": 1,
+      "public_surface": ["/", "/about/", "/diligence/"],
+      "binding": "Companies House public record for R&A Consulting and Brokerage Services Ltd, NI696693; V45 consistently identifies Aureon Zorza Technologies as the technology and R&D programme/trading identity.",
+      "gap": null
+    },
+    {
+      "corpus_id": "aureon-os-public-source-and-architecture",
+      "status": "approved+public",
+      "item_count": 1,
+      "public_surface": ["/", "/projects/", "/projects/aureon-os/", "/live/", "/publications/"],
+      "binding": "Public RA-CONSULTING/Aureon-OS repository plus website/data/operator-evidence.json and the static V45 architecture record.",
+      "gap": "website/data/company-platform.json retains the legacy aureon-trading-system slug and is excluded from the package; the current static canonical page is /projects/aureon-os/. Keep the alias only as a redirect/compatibility identifier."
+    },
+    {
+      "corpus_id": "orcid-public-work-groups",
+      "status": "approved+public",
+      "item_count": 74,
+      "public_surface": ["/", "/research/", "/projects/", "/funding/investor-deck/"],
+      "binding": "ORCID 0009-0004-2792-4649 public API snapshot dated 2026-08-20.",
+      "coverage": {
+        "aggregate_count_rendered": 74,
+        "authoritative_external_catalogue_linked": true,
+        "named_current_orientation_records": 6,
+        "curated_formal_records": 13,
+        "approved_items_without_a_reachable_public_catalogue_route": 0,
+        "selection_policy": "Investor-site representation uses the exact aggregate count, a direct route to the complete authoritative ORCID catalogue and a bounded in-site selection. It does not duplicate the complete external catalogue as a 74-row page."
+      },
+      "gap": null
+    },
+    {
+      "corpus_id": "orcid-zenodo-recent-orientation-records",
+      "status": "approved+public",
+      "item_count": 6,
+      "public_surface": ["/research/#current-catalogue"],
+      "binding": "website/data/research-catalogue.json renders all six named records with record date and DOI/source route.",
+      "gap": null
+    },
+    {
+      "corpus_id": "curated-formal-research-records",
+      "status": "approved+public",
+      "item_count": 13,
+      "public_surface": ["/research/", "/publications/"],
+      "binding": "website/data/research.json and website/data/publications.json preserve source type, public URL and evidence boundary for all 13 formal records.",
+      "gap": null
+    },
+    {
+      "corpus_id": "public-evidence-register",
+      "status": "approved+public",
+      "item_count": 18,
+      "public_surface": ["/publications/", "/research/journal/"],
+      "binding": "website/data/publications.json is loaded by website/script.js and renders all 18 company-source, catalogue, research-record and commentary entries with boundaries.",
+      "gap": null
+    },
+    {
+      "corpus_id": "substack-public-note-catalogue",
+      "status": "approved+public",
+      "item_count": 34,
+      "public_surface": ["/research/journal/"],
+      "binding": "website/data/substack-research-index.json is loaded by website/script.js; all 34 author-published notes are searchable by seven themes and retain their direct source URLs.",
+      "gap": null
+    },
+    {
+      "corpus_id": "substack-mapped-artwork-families",
+      "status": "approved+public",
+      "item_count": 6,
+      "public_surface": ["/", "/research/", "/research/journal/"],
+      "binding": "Six exact provider-delivered families are bound below to the user's explicit permission to use Substack images, the shareable-assets-message-observed evidence class, exact article URLs, exact responsive variants and current representation boundaries.",
+      "gap": "The exact use is rights-ready. The proposed provider-delivered credit string is retained in this matrix but is not rendered beside the images; this is a provenance-quality improvement, not an extension of permission."
+    },
+    {
+      "corpus_id": "github-public-repository-facts",
+      "status": "approved+public",
+      "item_count": 3,
+      "public_surface": ["/", "/funding/investor-deck/"],
+      "binding": "Official GitHub public repository and repository metadata read-back on 2026-08-21: 3,213 main-branch commits, 32 stars and 11 forks.",
+      "coverage": {
+        "candidate_values_match_fresh_readback": true,
+        "candidate_snapshot_date": "2026-08-21",
+        "fresh_repository_push_timestamp": "2026-08-21T00:19:32Z"
+      },
+      "gap": null
+    },
+    {
+      "corpus_id": "academia-provider-attention",
+      "status": "approved+summarized",
+      "item_count": 1,
+      "public_surface": ["/", "/funding/investor-deck/", "/updates/"],
+      "binding": "Redacted non-package provider receipt plus the public Academia.edu profile route. The V45 interpretation boundary states that attention is not customers, revenue, production use, scientific validation, market adoption or endorsement.",
+      "gap": null
+    },
+    {
+      "corpus_id": "validated-external-route-signals",
+      "status": "approved+summarized",
+      "item_count": 4,
+      "public_surface": ["/funding/investor-deck/#validated-route-signals"],
+      "binding": "Redacted non-package provider receipt covering EPCC, University of Edinburgh, InterTradeIreland and Invest NI at their exact verified route stages.",
+      "gap": null,
+      "boundary": "These are route-progress signals, not grants, partnerships, customers, funding awards or investment."
+    },
+    {
+      "corpus_id": "mission-blades",
+      "status": "approved+public",
+      "item_count": 11,
+      "public_surface": ["/projects/#blades", "/data/blades.json"],
+      "binding": "All 11 registry blades are represented across nine V45 portfolio cards; seven sector blades are intentionally grouped into three buyer-oriented cards while preserving evidence-state boundaries. The additional materials/signal card now links the public QGITA method record and Aureon OS source. The HNC-FIPAM card now links the public photonics note and null-criteria protocol, while remaining explicitly unmeasured.",
+      "gap": null
+    },
+    {
+      "corpus_id": "funding-and-partnership-route-themes",
+      "status": "approved+public",
+      "item_count": 5,
+      "public_surface": ["/funding/"],
+      "binding": "website/data/funding-status.json is rendered by website/funding/funding-status.js with explicit strategic-theme boundaries.",
+      "gap": null
+    },
+    {
+      "corpus_id": "community-public-records",
+      "status": "approved+public",
+      "item_count": 2,
+      "public_surface": ["/community/", "/updates/"],
+      "binding": "Two static community evidence cards link directly to the partner acknowledgement and public council record; website/data/community-evidence.json retains the same two evidence classes.",
+      "gap": "community-evidence.json has no runtime renderer, but the two claims and source links are present in static HTML."
+    },
+    {
+      "corpus_id": "legacy-project-registry",
+      "status": "stale/unverified",
+      "item_count": 12,
+      "public_surface": [],
+      "binding": "website/data/projects.json is intentionally excluded by scripts/website/build_package.py and has no runtime reference.",
+      "gap": "Do not treat the 12 legacy records as current portfolio proof. Re-admit an item only after source, ownership, evidence state and canonical route are revalidated."
+    },
+    {
+      "corpus_id": "repo-root-research-benchmark-datasets",
+      "status": "private/internal excluded",
+      "item_count": 11,
+      "public_surface": [],
+      "binding": "Eleven root-level data/research benchmark, prompt, recording, result and goal-ladder files exist in the candidate commit.",
+      "gap": "They are not public outcome evidence and are correctly excluded from the website package."
+    },
+    {
+      "corpus_id": "private-gmail-drive-grant-commercial-and-financial-material",
+      "status": "private/internal excluded",
+      "item_count": null,
+      "public_surface": [],
+      "binding": "Private correspondence, Drive materials, grant ledgers, pitch materials, commercial records, credentials and financial records remain outside the package. Only the separately approved public-safe summaries above may cross the boundary.",
+      "gap": null
+    },
+    {
+      "corpus_id": "unmapped-substack-bounded-systems-image",
+      "status": "pending rights",
+      "item_count": 1,
+      "public_surface": [],
+      "binding": "No direct public post, responsive variant or placement binding exists.",
+      "gap": "The user's general Substack-image permission is not extended to this unmapped source image. It remains not authorised and must not enter a release package."
+    }
+  ],
+  "substack_artwork": {
+    "authority_binding": {
+      "human_permission": "Explicit user permission to use Substack images, recorded in the controlling conversation before this inventory.",
+      "provider_evidence_class": "shareable-assets-message-observed",
+      "scope_rule": "Permission is narrowed to six exact article-mapped families, the hashes below and the current V45 placements only. It does not clear other provider emails, other images or unmapped-bounded-systems.",
+      "credit_scope": "Provider-delivered editorial asset for the linked author-published Substack note.",
+      "release_blocker_for_listed_placements": false,
+      "release_blocker_for_unmapped_assets": true
+    },
+    "family_count": 6,
+    "responsive_variant_count": 12,
+    "current_visual_placement_count": 13,
+    "current_social_metadata_placement_count": 2,
+    "families": [
+      {
+        "family_id": "substack-ai-evidence",
+        "article_url": "https://garyleckey.substack.com/p/when-does-an-ai-look-aliveand-what",
+        "representation_class": "concept-system-not-data",
+        "representation_boundary": "Conceptual system, not measured data, validated evidence or a product result.",
+        "variants": [
+          {"path": "website/assets/images/research/substack/ai-evidence-720.webp", "sha256": "5C8D739D96298BC498AE563F2CA2F09F730C1B2BC3DCE5AA392E8F0AE9483156"},
+          {"path": "website/assets/images/research/substack/ai-evidence-1200.webp", "sha256": "0A3AD9DDDC015FCB4297C3A3F916A5AFEA1B8F2DDF4983D3B3BC661B1C7A89A1"}
+        ],
+        "placements": [
+          {
+            "route": "/",
+            "surface_id": "home-ai-evidence-question",
+            "source_binding": "website/index.html",
+            "current_alt": "Editorial illustration of data, decision trees, models and a balance surrounding an AI system",
+            "current_caption": "Editorial illustration · AI & data",
+            "credit_scope": "Provider-delivered editorial asset for the linked author-published Substack note.",
+            "credit_rendered": false,
+            "ready_for_exact_current_use": true
+          },
+          {
+            "route": "/research/journal/",
+            "surface_id": "journal-ai-evidence-card",
+            "source_binding": "website/data/substack-research-index.json rendered by website/script.js",
+            "current_alt": "Editorial illustration of data, decision trees, models and a balance surrounding an AI system",
+            "current_caption": "Editorial illustration — not validated AI evidence",
+            "credit_scope": "Provider-delivered editorial asset for the linked author-published Substack note.",
+            "credit_rendered": false,
+            "ready_for_exact_current_use": true
+          }
+        ]
+      },
+      {
+        "family_id": "substack-antarctic-working-model",
+        "article_url": "https://garyleckey.substack.com/p/the-antarctic-anomaly-that-became",
+        "representation_class": "concept-system-not-data",
+        "representation_boundary": "Conceptual system, not measured satellite or subsurface data or validated evidence.",
+        "variants": [
+          {"path": "website/assets/images/research/substack/antarctic-working-model-720.webp", "sha256": "789208EDE25BE4EE8961D1789BC0AC38FD5018C8D37989FB24C8F631D3AFBA6F"},
+          {"path": "website/assets/images/research/substack/antarctic-working-model-1200.webp", "sha256": "6B21BD9FF9ABC5DE03BF1BEBAB2F61CE64B4636614D4CC3F2C3299C201392CE1"}
+        ],
+        "placements": [
+          {
+            "route": "/",
+            "surface_id": "home-antarctic-model-question",
+            "source_binding": "website/index.html",
+            "current_alt": "Editorial cross-section of Antarctic ice, geology and remote-sensing paths",
+            "current_caption": "Editorial illustration · Earth & history",
+            "credit_scope": "Provider-delivered editorial asset for the linked author-published Substack note.",
+            "credit_rendered": false,
+            "ready_for_exact_current_use": true
+          },
+          {
+            "route": "/research/journal/",
+            "surface_id": "journal-antarctic-model-card",
+            "source_binding": "website/data/substack-research-index.json rendered by website/script.js",
+            "current_alt": "Editorial cross-section of Antarctic ice, geology and remote-sensing paths",
+            "current_caption": "Editorial illustration — not measured satellite or subsurface data",
+            "credit_scope": "Provider-delivered editorial asset for the linked author-published Substack note.",
+            "credit_rendered": false,
+            "ready_for_exact_current_use": true
+          }
+        ]
+      },
+      {
+        "family_id": "substack-falsifiability",
+        "article_url": "https://garyleckey.substack.com/p/how-do-you-make-an-unconventional",
+        "representation_class": "concept-system-not-data",
+        "representation_boundary": "Conceptual system, not experimental data or validated evidence.",
+        "variants": [
+          {"path": "website/assets/images/research/substack/falsifiability-720.webp", "sha256": "16BF8884BF8C61F2943CC9E24CD5E1D32592D0B8E8A84924467F041B41583345"},
+          {"path": "website/assets/images/research/substack/falsifiability-1200.webp", "sha256": "2ECF951EEE07489D40E261CE4BE38E7F92DB9B36259247D1B8126988CCAD3432"}
+        ],
+        "placements": [
+          {
+            "route": "/",
+            "surface_id": "home-falsifiability-method",
+            "source_binding": "website/index.html",
+            "current_alt": "Editorial illustration of measurement panels separating accepted and rejected test results",
+            "current_caption": "Editorial illustration for the public falsifiability note · not experimental evidence",
+            "credit_scope": "Provider-delivered editorial asset for the linked author-published Substack note.",
+            "credit_rendered": false,
+            "ready_for_exact_current_use": true
+          },
+          {
+            "route": "/research/",
+            "surface_id": "research-falsifiability-hero",
+            "source_binding": "website/research/index.html",
+            "current_alt": "Editorial illustration of measurement panels separating accepted and rejected test results",
+            "current_caption": "Method spotlight · falsifiability, null criteria and visible correction · editorial illustration, not experimental evidence",
+            "credit_scope": "Provider-delivered editorial asset for the linked author-published Substack note.",
+            "credit_rendered": false,
+            "ready_for_exact_current_use": true
+          },
+          {
+            "route": "/research/journal/",
+            "surface_id": "journal-falsifiability-card",
+            "source_binding": "website/data/substack-research-index.json rendered by website/script.js",
+            "current_alt": "Editorial illustration of measurement panels separating accepted and rejected test results",
+            "current_caption": "Editorial illustration — not experimental data",
+            "credit_scope": "Provider-delivered editorial asset for the linked author-published Substack note.",
+            "credit_rendered": false,
+            "ready_for_exact_current_use": true
+          }
+        ]
+      },
+      {
+        "family_id": "substack-feedback-loop",
+        "article_url": "https://garyleckey.substack.com/p/can-you-replace-a-laser-mirror-with",
+        "representation_class": "concept-lab-not-facility",
+        "representation_boundary": "Conceptual lab, not Aureon facilities, measured data or tested hardware.",
+        "variants": [
+          {"path": "website/assets/images/research/substack/feedback-loop-720.webp", "sha256": "2129BD70C26D183ED835F8702CE6E2CD122F7A69768FE8F3D156823618873A31"},
+          {"path": "website/assets/images/research/substack/feedback-loop-1200.webp", "sha256": "4E9FBB977DFC36A32A0E1131B11367C3AB4884C6F7B497ECF0AC8B8047E87272"}
+        ],
+        "placements": [
+          {
+            "route": "/",
+            "surface_id": "home-feedback-loop-question",
+            "source_binding": "website/index.html",
+            "current_alt": "Editorial concept illustration of a closed-loop optical test bench; not company facilities or validated hardware",
+            "current_caption": "Editorial concept · not company facilities",
+            "credit_scope": "Provider-delivered editorial asset for the linked author-published Substack note.",
+            "credit_rendered": false,
+            "ready_for_exact_current_use": true
+          },
+          {
+            "route": "/research/journal/",
+            "surface_id": "journal-feedback-loop-card",
+            "source_binding": "website/data/substack-research-index.json rendered by website/script.js",
+            "current_alt": "Editorial concept illustration of a closed-loop optical test bench; not company facilities or validated hardware",
+            "current_caption": "Concept illustration — not Aureon facilities or tested hardware",
+            "credit_scope": "Provider-delivered editorial asset for the linked author-published Substack note.",
+            "credit_rendered": false,
+            "ready_for_exact_current_use": true
+          }
+        ]
+      },
+      {
+        "family_id": "substack-orbital-null-model",
+        "article_url": "https://garyleckey.substack.com/p/how-do-you-search-109000-orbits-without",
+        "representation_class": "concept-system-not-data",
+        "representation_boundary": "Conceptual system, not measured orbital data or validated evidence.",
+        "variants": [
+          {"path": "website/assets/images/research/substack/orbital-null-model-720.webp", "sha256": "73B0A2EFEF7BF00F7481D5C4AB35056A75F56E15465964BE52827A6C553CA7BE"},
+          {"path": "website/assets/images/research/substack/orbital-null-model-1200.webp", "sha256": "18798F651512012BE51D7691F9BCD438B4E034F8EB25575D178BCB79CB992844"}
+        ],
+        "placements": [
+          {
+            "route": "/",
+            "surface_id": "home-orbital-null-model-question",
+            "source_binding": "website/index.html",
+            "current_alt": "Editorial orbital map showing many candidate paths around a central reference point",
+            "current_caption": "Editorial illustration · Space & sensing",
+            "credit_scope": "Provider-delivered editorial asset for the linked author-published Substack note.",
+            "credit_rendered": false,
+            "ready_for_exact_current_use": true
+          },
+          {
+            "route": "/research/journal/",
+            "surface_id": "journal-orbital-null-model-card",
+            "source_binding": "website/data/substack-research-index.json rendered by website/script.js",
+            "current_alt": "Editorial orbital map showing many candidate paths around a central reference point",
+            "current_caption": "Editorial illustration — not orbital measurement data",
+            "credit_scope": "Provider-delivered editorial asset for the linked author-published Substack note.",
+            "credit_rendered": false,
+            "ready_for_exact_current_use": true
+          }
+        ]
+      },
+      {
+        "family_id": "substack-research-index",
+        "article_url": "https://garyleckey.substack.com/p/the-harmonic-nexus-research-index",
+        "representation_class": "concept-lab-not-facility",
+        "representation_boundary": "Conceptual research index, not Aureon facilities, measured data, tested hardware or research evidence.",
+        "variants": [
+          {"path": "website/assets/images/research/substack/research-index-720.webp", "sha256": "EC6C9C5D46839AA80B4D9569285BD98F993F22B05D7C0CDB210F67DD1F658706"},
+          {"path": "website/assets/images/research/substack/research-index-1200.webp", "sha256": "2FC729ACBC5A23400A6985C11DB4AF9BAFB1FD23D293CA48EE30237F542342D7"}
+        ],
+        "placements": [
+          {
+            "route": "/research/journal/",
+            "surface_id": "journal-research-index-hero",
+            "source_binding": "website/research/journal/index.html",
+            "current_alt": "Editorial illustration of a structured research index connected by source and evidence paths",
+            "current_caption": "Editorial illustration for The Harmonic Nexus Research Index · not research evidence",
+            "credit_scope": "Provider-delivered editorial asset for the linked author-published Substack note.",
+            "credit_rendered": false,
+            "ready_for_exact_current_use": true
+          },
+          {
+            "route": "/research/journal/",
+            "surface_id": "journal-research-index-card",
+            "source_binding": "website/data/substack-research-index.json rendered by website/script.js",
+            "current_alt": "Editorial illustration of a structured research index connected by source and evidence paths",
+            "current_caption": "Editorial illustration — author-published note",
+            "credit_scope": "Provider-delivered editorial asset for the linked author-published Substack note.",
+            "credit_rendered": false,
+            "ready_for_exact_current_use": true
+          },
+          {
+            "route": "/research/journal/",
+            "surface_id": "journal-research-index-open-graph-image",
+            "source_binding": "website/research/journal/index.html meta property=og:image",
+            "current_alt": null,
+            "current_caption": null,
+            "credit_scope": "Provider-delivered editorial asset for the linked author-published Substack note.",
+            "credit_rendered": false,
+            "ready_for_exact_current_use": true
+          },
+          {
+            "route": "/research/journal/",
+            "surface_id": "journal-research-index-twitter-image",
+            "source_binding": "website/research/journal/index.html meta name=twitter:image",
+            "current_alt": null,
+            "current_caption": null,
+            "credit_scope": "Provider-delivered editorial asset for the linked author-published Substack note.",
+            "credit_rendered": false,
+            "ready_for_exact_current_use": true
+          }
+        ]
+      }
+    ],
+    "excluded": [
+      {
+        "asset_id": "unmapped-bounded-systems",
+        "status": "pending rights",
+        "mapping_state": "unmapped",
+        "public_post_binding": null,
+        "responsive_variant_binding": null,
+        "current_public_placements": 0,
+        "release_blocker_if_referenced": true
+      }
+    ]
+  },
+  "claim_binding_gaps": [],
+  "approved_but_hidden": [],
+  "release_findings": {
+    "exact_substack_families_ready": 6,
+    "exact_substack_current_visual_placements_ready": 13,
+    "exact_substack_current_social_metadata_placements_ready": 2,
+    "unmapped_substack_assets_blocked": 1,
+    "public_notes_rendered": 34,
+    "registered_blades_represented": 11,
+    "external_route_summaries_rendered": 4,
+    "claims_without_specific_public_source_binding": 0,
+    "orcid_work_groups_without_a_reachable_public_catalogue_route": 0,
+    "stale_public_fact_bindings": 0,
+    "private_internal_source_classes_excluded": 2,
+    "content_release_gate": "pass",
+    "content_release_gate_reasons": [],
+    "remaining_non_content_gates": [
+      "Live Home.pl read-back has not yet proved that this V45 content is deployed."
+    ]
+  }
+}

@@ -6514,6 +6514,34 @@ body[data-page="projects"] .portfolio-band .portfolio-boundary { color: #718b98 
 .investor-plan-grid strong { display: block; margin: 7px 0; color: #10394a; font-size: 1.12rem; }
 .investor-plan-grid p { margin: 18px 0 0; color: #60757d; font-size: 0.69rem; line-height: 1.65; }
 
+.validated-route-signals {
+  border-top: 1px solid rgba(234, 195, 109, 0.18);
+  border-bottom: 1px solid rgba(101, 204, 232, 0.14);
+  background:
+    radial-gradient(circle at 12% 18%, rgba(234, 195, 109, 0.09), transparent 29%),
+    radial-gradient(circle at 88% 82%, rgba(101, 204, 232, 0.1), transparent 31%),
+    linear-gradient(145deg, #06111d, #091c2b 58%, #07131f);
+}
+.validated-route-signals .section-head h2 { color: #f3f8fb; }
+.validated-route-signals .section-head > p { color: #aebfca; }
+.route-signal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 30px; }
+.route-signal-grid .route-signal-card {
+  min-height: 0;
+  padding: clamp(24px, 3vw, 34px);
+  border-color: rgba(199, 222, 240, 0.16);
+  background: linear-gradient(150deg, rgba(9, 30, 47, 0.94), rgba(5, 18, 30, 0.96));
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.16);
+}
+.route-signal-grid .route-signal-card span { margin-bottom: 14px; color: #eac36d; }
+.route-signal-grid .route-signal-card strong { margin: 0; color: #edf5f8; font-size: clamp(0.92rem, 1.35vw, 1.08rem); line-height: 1.55; }
+.route-signal-boundary {
+  margin-top: 18px;
+  border: 1px solid rgba(234, 195, 109, 0.2);
+  color: #9fb2bf;
+  background: rgba(5, 17, 28, 0.76);
+}
+.route-signal-boundary strong { color: #eac36d; }
+
 @media (max-width: 1120px) {
   .blade-lane-grid,
   .portfolio-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
