@@ -26,8 +26,81 @@ from scripts.website.audit_site import audit
 
 MANIFEST_NAME = "HOMEPL_PACKAGE_MANIFEST.txt"
 PACKAGE_STEM = "aureon-zorza-website"
-_EXCLUDE_NAMES = {".git", ".gitignore", ".DS_Store", "Thumbs.db", "__pycache__", ".idea", ".vscode"}
-_EXCLUDE_SUFFIXES = {".pyc", ".pyo"}
+_EXCLUDE_NAMES = {
+    ".git",
+    ".gitignore",
+    ".DS_Store",
+    "Thumbs.db",
+    "__pycache__",
+    ".idea",
+    ".vscode",
+    "archive",
+    "aureon-zorza-backgrounds.css",
+    "company-platform.json",
+    "project-graph.json",
+    "projects.json",
+    "styleguide.html",
+}
+_EXCLUDE_SUFFIXES = {".pyc", ".pyo", ".md", ".ps1"}
+_SECRET_DIRECTORY_NAMES = {".aws", ".azure", ".gcloud", ".gnupg", ".kube", ".ssh"}
+_SECRET_NAMES = {
+    ".dockercfg",
+    ".dockerconfigjson",
+    ".env",
+    ".envrc",
+    ".git-credentials",
+    ".htpasswd",
+    ".netrc",
+    ".npmrc",
+    ".pgpass",
+    ".pypirc",
+    "application_default_credentials.json",
+    "auth.json",
+    "credentials",
+    "credentials.json",
+    "google-services.json",
+    "googleservice-info.plist",
+    "id_dsa",
+    "id_ecdsa",
+    "id_ed25519",
+    "id_rsa",
+    "secrets.json",
+    "secrets.toml",
+    "secrets.yaml",
+    "secrets.yml",
+}
+_SECRET_NAME_PREFIXES = (
+    "client_secret",
+    "firebase-adminsdk-",
+    "service-account",
+    "service_account",
+)
+_SECRET_NAME_SUFFIXES = (
+    "-credentials.json",
+    "_credentials.json",
+    ".credentials.json",
+    "-service-account.json",
+    "_service_account.json",
+    ".service-account.json",
+    "-secrets.json",
+    "_secrets.json",
+    ".secrets.json",
+)
+_SECRET_SUFFIXES = {
+    ".jks",
+    ".kdbx",
+    ".key",
+    ".keystore",
+    ".mobileprovision",
+    ".ovpn",
+    ".p12",
+    ".pem",
+    ".pfx",
+    ".pkcs8",
+    ".ppk",
+}
+_ASSET_REFERENCE_SUFFIXES = {".html", ".css", ".js", ".json", ".xml", ".webmanifest", ".svg"}
+_ALWAYS_KEEP_ASSETS = {Path("assets/fonts/LICENSES.txt")}
 _ZIP_EPOCH = (1980, 1, 1, 0, 0, 0)  # fixed → deterministic archive
 
 
@@ -36,20 +109,70 @@ def _repo_root() -> Path:
 
 
 def _is_excluded(rel: Path) -> bool:
-    if any(part in _EXCLUDE_NAMES for part in rel.parts):
+    folded_parts = tuple(part.casefold() for part in rel.parts)
+    excluded_names = {item.casefold() for item in _EXCLUDE_NAMES}
+    if any(part in excluded_names or part in _SECRET_DIRECTORY_NAMES for part in folded_parts):
         return True
-    return rel.suffix.lower() in _EXCLUDE_SUFFIXES
+    name = rel.name.casefold()
+    if name == ".env" or name.startswith(".env."):
+        return True
+    if (
+        name in _SECRET_NAMES
+        or name.startswith(_SECRET_NAME_PREFIXES)
+        or name.endswith(_SECRET_NAME_SUFFIXES)
+    ):
+        return True
+    suffix = rel.suffix.lower()
+    return suffix in _EXCLUDE_SUFFIXES or suffix in _SECRET_SUFFIXES
+
+
+def _referenced_assets(site_root: Path) -> set[Path]:
+    """Return runtime assets named by the public source surface.
+
+    The working tree deliberately retains source PNGs, superseded responsive
+    variants and design references.  Shipping them all increases the Home.pl
+    rollback and transfer surface without improving a public route.  Runtime
+    references are source-bound through HTML/CSS/JS/JSON/XML and SVG text.
+    """
+    corpus_parts: list[str] = []
+    for source in sorted(site_root.rglob("*")):
+        if not source.is_file():
+            continue
+        rel = source.relative_to(site_root)
+        if _is_excluded(rel) or source.suffix.lower() not in _ASSET_REFERENCE_SUFFIXES:
+            continue
+        try:
+            corpus_parts.append(source.read_text(encoding="utf-8"))
+        except UnicodeDecodeError:
+            continue
+    corpus = "\n".join(corpus_parts)
+
+    referenced = set(_ALWAYS_KEEP_ASSETS)
+    asset_root = site_root / "assets"
+    if not asset_root.is_dir():
+        return referenced
+    for asset in sorted(asset_root.rglob("*")):
+        if not asset.is_file():
+            continue
+        rel = asset.relative_to(site_root)
+        rel_text = rel.as_posix()
+        if rel_text in corpus or asset.name in corpus:
+            referenced.add(rel)
+    return referenced
 
 
 def _copy_tree(site_root: Path, pkg_dir: Path) -> None:
     if pkg_dir.exists():
         shutil.rmtree(pkg_dir)
     pkg_dir.mkdir(parents=True)
+    referenced_assets = _referenced_assets(site_root)
     for src in sorted(site_root.rglob("*")):
         if not src.is_file():
             continue
         rel = src.relative_to(site_root)
         if _is_excluded(rel):
+            continue
+        if rel.parts and rel.parts[0] == "assets" and rel not in referenced_assets:
             continue
         dst = pkg_dir / rel
         dst.parent.mkdir(parents=True, exist_ok=True)
@@ -71,7 +194,7 @@ def _write_manifest(pkg_dir: Path, created_at: str) -> None:
         "COUNTS_EXCLUDE: this manifest file",
         "INDEX_HTML_AT_PACKAGE_ROOT: " + ("YES" if (pkg_dir / "index.html").is_file() else "NO"),
         "ZIP_ROOT_WRAPPER_DIRECTORY: NO",
-        "HTACCESS_REQUIRED: NO",
+        "HTACCESS_SECURITY_CONFIGURATION_INCLUDED: " + ("YES" if (pkg_dir / ".htaccess").is_file() else "NO"),
         "ZIP_SIZE_BYTES: SEE_COMPANION_MANIFEST",
         "ZIP_SHA256: SEE_COMPANION_MANIFEST",
         "",
@@ -144,12 +267,17 @@ def build(site_root: Path, out_dir: Path, created_at: str) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Build the deterministic home.pl deploy package for website/.")
+    parser = argparse.ArgumentParser(
+        description="Build the deterministic home.pl deploy package for website/."
+    )
     parser.add_argument("--root", default=None, help="site root (default: <repo>/website)")
     parser.add_argument("--out", default=None, help="output dir (default: <repo>/dist)")
-    parser.add_argument("--created-at", default=None,
-                        help="ISO-8601 timestamp stamped into the manifest (default: now UTC; "
-                             "pass a fixed value for byte-identical rebuilds)")
+    parser.add_argument(
+        "--created-at",
+        default=None,
+        help="ISO-8601 timestamp stamped into the manifest (default: now UTC; "
+        "pass a fixed value for byte-identical rebuilds)",
+    )
     args = parser.parse_args(argv)
 
     site_root = Path(args.root) if args.root else _repo_root() / "website"

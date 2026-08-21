@@ -31,11 +31,11 @@ body[data-page="home"] .home-hero {
   background-color: #04101a;
   background-image:
     var(--zorza-overlay-hero),
-    url("../images/backgrounds/aureon-zorza-header-guardian-ant.webp"),
+    url("../images/brand/ra-consulting-logo.jpg"),
     url("../images/backgrounds/ant-fish-migration-deep-ocean.webp");
-  background-position: center, center, center;
+  background-position: center, center top, center;
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: cover, min(70vw, 760px) auto, cover;
 }
 
 body[data-page="home"] .home-hero .wrap {
@@ -224,18 +224,6 @@ body[data-page="contact"] .page-hero {
 /* Project-specific hero and first content atmosphere. The existing renderer,
    status badges, source links, and project data remain authoritative. */
 
-body[data-project-slug="aioa-core"] {
-  --zorza-project-bg: url("../images/backgrounds/ant-network-command-centre.webp");
-}
-
-body[data-project-slug="lsc-research"] {
-  --zorza-project-bg: url("../images/projects/particle-collision-ocean-system.webp");
-}
-
-body[data-project-slug="mhlm-mdlh"] {
-  --zorza-project-bg: url("../images/backgrounds/ant-energy-core-network.webp");
-}
-
 body[data-project-slug="aureon-trading-system"] {
   --zorza-project-bg: url("../images/bees/aureon-trading-crypto-hive-wide.webp");
   --zorza-project-section-bg: url("../images/bees/aureon-trading-cyber-bee-carrying-value.webp");
@@ -363,14 +351,14 @@ body[data-project-slug="epas-shield"] :is(.project-system-map, .project-visual, 
     align-items: flex-end;
     background-image:
       linear-gradient(180deg, rgba(3, 8, 14, 0.04) 0%, rgba(3, 8, 14, 0.14) 28%, rgba(3, 8, 14, 0.94) 52%, rgba(3, 8, 14, 0.99) 100%),
-      url("../images/backgrounds/aureon-zorza-header-guardian-ant.webp"),
+      url("../images/brand/ra-consulting-logo.jpg"),
       url("../images/backgrounds/ant-fish-migration-deep-ocean.webp");
-    background-position: center, center top, center;
-    background-size: cover, 100% auto, cover;
+    background-position: center, center 24px, center;
+    background-size: cover, 72% auto, cover;
   }
 
   body[data-page="home"] .home-hero .wrap {
-    padding-top: clamp(210px, 43vw, 300px);
+    padding-top: clamp(360px, 58vw, 450px);
     padding-bottom: 46px;
   }
 

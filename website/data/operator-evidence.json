@@ -1,0 +1,50 @@
+{
+  "schema_version": "aureon-public-architecture-v2",
+  "evidence_type": "public_architecture_record",
+  "title": "Aureon OS evidence architecture",
+  "status": "Published architecture record",
+  "summary": "A shared evidence core designed to move attributable source material through provenance, accountable human authority and bounded decision outputs across multiple sector applications.",
+  "architecture": {
+    "flow": "Source to provenance to human authority to accountable output",
+    "layers": [
+      {
+        "id": "source",
+        "label": "Attributable sources",
+        "public_description": "Public repositories, formal research records and clearly identified company material."
+      },
+      {
+        "id": "provenance",
+        "label": "Provenance and claim state",
+        "public_description": "Origin, evidence state and interpretation boundaries remain attached to material claims."
+      },
+      {
+        "id": "authority",
+        "label": "Accountable human authority",
+        "public_description": "Material decisions retain a named human gate and a defined scope of authority."
+      },
+      {
+        "id": "output",
+        "label": "Bounded outputs",
+        "public_description": "Reviewable outputs preserve their source, state, decision boundary and next proof."
+      }
+    ]
+  },
+  "source_routes": [
+    {
+      "id": "repository",
+      "label": "Public repository",
+      "url": "https://github.com/RA-CONSULTING/Aureon-OS"
+    },
+    {
+      "id": "orcid",
+      "label": "ORCID research identity",
+      "url": "https://orcid.org/0009-0004-2792-4649"
+    },
+    {
+      "id": "zenodo",
+      "label": "Zenodo research records",
+      "url": "https://zenodo.org/search?q=metadata.creators.person_or_org.name%3A%22Leckey%2C%20Gary%22"
+    }
+  ],
+  "disclosure_boundary": "This public view presents attributable source routes, research identity and high-level evidence architecture. Supporting diligence is shared only in a qualified, scoped review."
+}

@@ -40,7 +40,7 @@ def _repo_root() -> Path:
 @dataclass(frozen=True)
 class Finding:
     level: str  # "ERROR" | "WARN"
-    page: str   # site-relative path, e.g. "projects/aioa-core/index.html"
+    page: str  # site-relative path, e.g. "projects/aioa-core/index.html"
     check: str
     message: str
 
@@ -64,11 +64,11 @@ class _PageParser(HTMLParser):
         self.h1_count = 0
         self.has_main_content = False
         self.is_js_detail = False  # JS-rendered detail page (heading injected at runtime)
-        self.imgs: list[dict] = []            # {src, alt(has/empty), loading, decoding}
-        self.anchors: list[dict] = []         # {href, target, rel}
-        self.asset_refs: list[str] = []       # link/script/source src|href (+ img src, srcset firsts)
+        self.imgs: list[dict] = []  # {src, alt(has/empty), loading, decoding}
+        self.anchors: list[dict] = []  # {href, target, rel}
+        self.asset_refs: list[str] = []  # link/script/source src|href (+ img src, srcset firsts)
         self.jsonld: list[str] = []
-        self._capture: str | None = None      # "title" | "h1" | "jsonld"
+        self._capture: str | None = None  # "title" | "h1" | "jsonld"
         self._buf: list[str] = []
 
     # -- helpers ------------------------------------------------------------
@@ -119,13 +119,15 @@ class _PageParser(HTMLParser):
                 self._capture, self._buf = "jsonld", []
         elif tag == "img":
             src = self._attr(attrs, "src") or ""
-            self.imgs.append({
-                "src": src,
-                "has_alt": self._has_attr(attrs, "alt"),
-                "alt": self._attr(attrs, "alt") or "",
-                "loading": self._attr(attrs, "loading"),
-                "decoding": self._attr(attrs, "decoding"),
-            })
+            self.imgs.append(
+                {
+                    "src": src,
+                    "has_alt": self._has_attr(attrs, "alt"),
+                    "alt": self._attr(attrs, "alt") or "",
+                    "loading": self._attr(attrs, "loading"),
+                    "decoding": self._attr(attrs, "decoding"),
+                }
+            )
             if src:
                 self.asset_refs.append(src)
             srcset = self._attr(attrs, "srcset")
@@ -140,11 +142,13 @@ class _PageParser(HTMLParser):
                 if val:
                     self.asset_refs.append(val.split(",")[0].strip().split(" ")[0].strip())
         elif tag == "a":
-            self.anchors.append({
-                "href": self._attr(attrs, "href") or "",
-                "target": (self._attr(attrs, "target") or "").lower(),
-                "rel": (self._attr(attrs, "rel") or "").lower(),
-            })
+            self.anchors.append(
+                {
+                    "href": self._attr(attrs, "href") or "",
+                    "target": (self._attr(attrs, "target") or "").lower(),
+                    "rel": (self._attr(attrs, "rel") or "").lower(),
+                }
+            )
         if (self._attr(attrs, "id") or "") == "main-content":
             self.has_main_content = True
         # JS-rendered detail pages inject their <h1> at runtime from data/*.json
@@ -271,16 +275,21 @@ def audit(root: Path) -> list[Finding]:
             add("WARN", page, "a11y-h1", f"expected exactly one <h1>, found {parser.h1_count}")
         has_skip_to_main = any(a["href"].strip() == "#main-content" for a in parser.anchors)
         if has_skip_to_main and not parser.has_main_content:
-            add("ERROR", page, "a11y-skip-target",
-                'skip link targets #main-content but no element has id="main-content"')
+            add(
+                "ERROR",
+                page,
+                "a11y-skip-target",
+                'skip link targets #main-content but no element has id="main-content"',
+            )
 
         # --- links / assets ------------------------------------------------
         for a in parser.anchors:
             href = a["href"]
             if not href or _is_external(href):
                 if a["target"] == "_blank" and "noopener" not in a["rel"]:
-                    add("ERROR", page, "a11y-noopener",
-                        f'target="_blank" link without rel="noopener": {href}')
+                    add(
+                        "ERROR", page, "a11y-noopener", f'target="_blank" link without rel="noopener": {href}'
+                    )
                 continue
             if href.startswith("#"):
                 continue
@@ -297,7 +306,12 @@ def audit(root: Path) -> list[Finding]:
 
         # --- perf ----------------------------------------------------------
         if parser.preload_images > 1:
-            add("WARN", page, "perf-preload", f"{parser.preload_images} image preloads (keep to the hero only)")
+            add(
+                "WARN",
+                page,
+                "perf-preload",
+                f"{parser.preload_images} image preloads (keep to the hero only)",
+            )
         for img in parser.imgs:
             src = _strip_target(img["src"])
             if not src or _is_external(src):
@@ -307,8 +321,12 @@ def audit(root: Path) -> list[Finding]:
             if not img["loading"] and posixpath.splitext(src)[1].lower() in _RASTER_SUFFIXES | {".webp"}:
                 add("WARN", page, "perf-loading", f"raster <img> without loading attribute: {src}")
             resolved = _resolve(root, page, src)
-            if (resolved and resolved.suffix.lower() in _RASTER_SUFFIXES and resolved.is_file()
-                    and resolved.stat().st_size > _BIG_RASTER_BYTES):
+            if (
+                resolved
+                and resolved.suffix.lower() in _RASTER_SUFFIXES
+                and resolved.is_file()
+                and resolved.stat().st_size > _BIG_RASTER_BYTES
+            ):
                 kb = resolved.stat().st_size // 1024
                 add("WARN", page, "perf-image", f"non-WebP raster {src} is {kb} KB (consider WebP)")
 
@@ -331,11 +349,19 @@ def audit(root: Path) -> list[Finding]:
         if not parser.canonical:
             add("ERROR", page, "seo-canonical", "missing <link rel=canonical>")
         elif CANONICAL_HOST not in parser.canonical:
-            add("ERROR", page, "seo-canonical-host",
-                f"canonical host is not {CANONICAL_HOST}: {parser.canonical}")
+            add(
+                "ERROR",
+                page,
+                "seo-canonical-host",
+                f"canonical host is not {CANONICAL_HOST}: {parser.canonical}",
+            )
         if parser.og_url and parser.canonical and parser.og_url != parser.canonical:
-            add("ERROR", page, "seo-og-url",
-                f"og:url ({parser.og_url}) does not match canonical ({parser.canonical})")
+            add(
+                "ERROR",
+                page,
+                "seo-og-url",
+                f"og:url ({parser.og_url}) does not match canonical ({parser.canonical})",
+            )
 
     # --- sitemap / robots cross-check --------------------------------------
     sitemap = root / "sitemap.xml"
@@ -351,12 +377,18 @@ def audit(root: Path) -> list[Finding]:
             if not url.startswith("https://"):
                 add("ERROR", "sitemap.xml", "sitemap-abs", f"sitemap URL is not absolute HTTPS: {url}")
             if CANONICAL_HOST not in url:
-                add("ERROR", "sitemap.xml", "sitemap-host", f"sitemap URL host is not {CANONICAL_HOST}: {url}")
+                add(
+                    "ERROR", "sitemap.xml", "sitemap-host", f"sitemap URL host is not {CANONICAL_HOST}: {url}"
+                )
         for missing in sorted(indexable_urls - locs):
             add("ERROR", "sitemap.xml", "sitemap-missing", f"indexable page not in sitemap: {missing}")
         for extra in sorted(locs - indexable_urls):
-            add("ERROR", "sitemap.xml", "sitemap-extra",
-                f"sitemap lists a URL with no matching indexable page: {extra}")
+            add(
+                "ERROR",
+                "sitemap.xml",
+                "sitemap-extra",
+                f"sitemap lists a URL with no matching indexable page: {extra}",
+            )
 
     robots = root / "robots.txt"
     if robots.is_file():
@@ -366,8 +398,7 @@ def audit(root: Path) -> list[Finding]:
         if not sitemap_lines:
             add("ERROR", "robots.txt", "robots-sitemap", "robots.txt has no Sitemap: line")
         elif not any(ln.split(":", 1)[1].strip() == want for ln in sitemap_lines):
-            add("ERROR", "robots.txt", "robots-sitemap",
-                f"robots.txt Sitemap: line does not point to {want}")
+            add("ERROR", "robots.txt", "robots-sitemap", f"robots.txt Sitemap: line does not point to {want}")
 
     return sorted(findings, key=lambda f: (f.level != "ERROR", f.page, f.check, f.message))
 
@@ -378,19 +409,21 @@ def _print_report(findings: list[Finding]) -> None:
     by_page: dict[str, list[Finding]] = {}
     for f in findings:
         by_page.setdefault(f.page, []).append(f)
-    print("Static-site audit — website/  (correctness · SEO · a11y · perf)")
+    print("Static-site audit - website/  (correctness | SEO | a11y | perf)")
     for page in sorted(by_page):
         print(f"\n  {page}")
         for f in by_page[page]:
-            mark = "✗" if f.level == "ERROR" else "•"
+            mark = "x" if f.level == "ERROR" else "-"
             print(f"    {mark} [{f.level}] {f.check}: {f.message}")
-    print(f"\n  {len(errors)} error(s) · {len(warns)} warning(s)")
+    print(f"\n  {len(errors)} error(s) | {len(warns)} warning(s)")
     if not findings:
-        print("  ✅ clean")
+        print("  clean")
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Audit the static website/ site (correctness · SEO · a11y · perf).")
+    parser = argparse.ArgumentParser(
+        description="Audit the static website/ site (correctness | SEO | a11y | perf)."
+    )
     parser.add_argument("--root", default=None, help="site root (default: <repo>/website)")
     parser.add_argument("--json", action="store_true", help="emit findings as JSON")
     args = parser.parse_args(argv)

@@ -1,0 +1,184 @@
+{
+  "schema": "aureon-research-to-application-map-v1",
+  "positioning": {
+    "company": "Aureon Zorza Technologies",
+    "research_framework": "Harmonic Nexus Core — proposed common systems grammar",
+    "delivery_system": "Aureon OS — company-built local-first software organism",
+    "evidence_control_plane": "Evidence OS — cross-cutting provenance, authority and review control plane within Aureon OS",
+    "application_model": "Evidence-labelled mission blades",
+    "thesis": "Research generates possibilities. HNC proposes a common systems grammar. Aureon OS provides the local-first software organism. Evidence OS carries provenance, authority and review controls across it. Mission blades test where that architecture could create value.",
+    "boundary": "The links below show Aureon's source-backed route from research to implementation. HNC remains a proposed grammar; public Aureon OS and Evidence OS architecture remains company-built work. Authored research, software source, commentary and prototypes do not establish independent validation, customer adoption or commercial outcomes."
+  },
+  "artifact_roles": {
+    "formal_record": "ORCID, Zenodo and DOI sources establish attribution, record identity and public availability.",
+    "public_explanation": "The Harmonic Nexus Substack explains questions, methods and boundaries for a wider reader; it is not peer review.",
+    "company_implementation": "Aureon OS source and tests show a company-built local-first software organism. Evidence OS is the provenance, authority and review control plane within it. Inspection does not establish production readiness or independent assurance.",
+    "application_route": "A mission blade states a buyer problem, current evidence boundary and next validation gate."
+  },
+  "paths": [
+    {
+      "id": "evidence-discipline",
+      "title": "Evidence discipline becomes a cross-cutting control plane",
+      "research_question": "How can ambitious, cross-domain claims remain attributable, falsifiable and correctable?",
+      "hnc_method": [
+        "Source lineage",
+        "Explicit claim state",
+        "Null models and stopping conditions",
+        "Human review authority",
+        "Feedback from retained outcomes"
+      ],
+      "formal_records": [
+        {
+          "id": "research-hnc-17546501",
+          "label": "The Harmonic Nexus Core framework preprint",
+          "url": "https://doi.org/10.5281/zenodo.17546501",
+          "artifact_role": "formal_record",
+          "evidence_state": "Source-linked"
+        },
+        {
+          "id": "zenodo-21539997",
+          "label": "The HNC Matrix Framework v2: formal consistency review",
+          "url": "https://doi.org/10.5281/zenodo.21539997",
+          "artifact_role": "formal_record",
+          "evidence_state": "Source-linked"
+        }
+      ],
+      "public_explanations": [
+        {
+          "label": "The Harmonic Nexus research index",
+          "url": "https://garyleckey.substack.com/p/the-harmonic-nexus-research-index",
+          "artifact_role": "public_explanation",
+          "evidence_state": "Author-published commentary"
+        },
+        {
+          "label": "How do you make an unconventional framework falsifiable?",
+          "url": "https://garyleckey.substack.com/p/how-do-you-make-an-unconventional",
+          "artifact_role": "public_explanation",
+          "evidence_state": "Author-published commentary"
+        }
+      ],
+      "aureon_os_capability": {
+        "label": "Aureon OS workflows with Evidence OS controls",
+        "mechanism": "Within the Aureon OS software organism, Evidence OS carries source lineage → claim state → mission logic → human authority → bounded action → retained receipt",
+        "organism": "Aureon OS",
+        "control_plane": "Evidence OS",
+        "url": "projects/#core",
+        "artifact_role": "company_implementation",
+        "evidence_state": "Implemented core"
+      },
+      "application_blades": [
+        "evidence-operations",
+        "research-assurance"
+      ],
+      "next_validation": "Run a bounded external review workflow and publish the agreed method, retained evidence state and measured review outcome.",
+      "public_boundary": "Authored research and inspectable code establish the method and implementation route; they do not establish scientific consensus, production autonomy or customer results."
+    },
+    {
+      "id": "cross-domain-systems-method",
+      "title": "One systems method supports multiple specialist blades",
+      "research_question": "Can a common evidence-and-control method be adapted across domains without pretending that every domain shares one validated physics?",
+      "hnc_method": [
+        "Shared systems language",
+        "Domain-specific assumptions",
+        "Separate validation gates",
+        "Contradiction control",
+        "Qualified human authority"
+      ],
+      "formal_records": [
+        {
+          "id": "research-hnc-17546501",
+          "label": "The Harmonic Nexus Core framework preprint",
+          "url": "https://doi.org/10.5281/zenodo.17546501",
+          "artifact_role": "formal_record",
+          "evidence_state": "Source-linked"
+        }
+      ],
+      "public_explanations": [
+        {
+          "label": "Can one framework link AI, propulsion and protection without claiming one physics?",
+          "url": "https://garyleckey.substack.com/p/can-one-framework-link-ai-propulsion",
+          "artifact_role": "public_explanation",
+          "evidence_state": "Author-published commentary"
+        }
+      ],
+      "aureon_os_capability": {
+        "label": "Reusable Aureon OS roles with Evidence OS contracts",
+        "mechanism": "Evidence OS controls are reused within Aureon OS while buyer, domain evidence, authority and stopping conditions remain blade-specific.",
+        "organism": "Aureon OS",
+        "control_plane": "Evidence OS",
+        "url": "projects/#blades",
+        "artifact_role": "company_implementation",
+        "evidence_state": "Implemented core"
+      },
+      "application_blades": [
+        "ai-governance-compute",
+        "advanced-connectivity",
+        "createch",
+        "energy-flexibility",
+        "sen-evidence",
+        "maritime",
+        "fintech-regtech"
+      ],
+      "next_validation": "Select one qualified design partner, define one bounded domain workflow and publish the proof gate before execution.",
+      "public_boundary": "A reusable architecture is a company thesis. Sector programmes are not customers, partnerships, deployments or validated outcomes."
+    },
+    {
+      "id": "space-and-physical-validation",
+      "title": "Deep-tech research advances through physical proof gates",
+      "research_question": "Which HNC-inspired engineering propositions survive calibrated laboratory, simulation and hardware-in-the-loop tests?",
+      "hnc_method": [
+        "Pre-registered test criteria",
+        "Reference controls",
+        "Explicit non-detection",
+        "Independent technical authority",
+        "Hardware evidence before performance claims"
+      ],
+      "formal_records": [
+        {
+          "id": "research-epas-17548802",
+          "label": "EPAS engineering preprint",
+          "url": "https://doi.org/10.5281/zenodo.17548802",
+          "artifact_role": "formal_record",
+          "evidence_state": "Source-linked research proposition"
+        },
+        {
+          "id": "zenodo-21540051",
+          "label": "EPAS Unified Architecture v2",
+          "url": "https://doi.org/10.5281/zenodo.21540051",
+          "artifact_role": "formal_record",
+          "evidence_state": "Source-linked preprint"
+        },
+        {
+          "id": "zenodo-21540072",
+          "label": "Experimental Protocol v2",
+          "url": "https://doi.org/10.5281/zenodo.21540072",
+          "artifact_role": "formal_record",
+          "evidence_state": "Source-linked technical note"
+        }
+      ],
+      "public_explanations": [
+        {
+          "label": "Can an active field make space debris safer before impact?",
+          "url": "https://garyleckey.substack.com/p/can-an-active-field-make-space-debris",
+          "artifact_role": "public_explanation",
+          "evidence_state": "Author-published commentary"
+        }
+      ],
+      "aureon_os_capability": {
+        "label": "Aureon OS research workflows with Evidence OS proof gates",
+        "mechanism": "Within Aureon OS, Evidence OS keeps the proposition, test method, evidence state, technical authority and retained result separate.",
+        "organism": "Aureon OS",
+        "control_plane": "Evidence OS",
+        "url": "research/",
+        "artifact_role": "company_implementation",
+        "evidence_state": "Research workflow and gated deep-tech propositions"
+      },
+      "application_blades": [
+        "pulse-cal",
+        "epas"
+      ],
+      "next_validation": "Produce calibrated bench or hardware-in-the-loop evidence against the published control and stopping conditions.",
+      "public_boundary": "These are gated research and engineering options, not flight hardware, defence capability, mission endorsement or independently validated performance."
+    }
+  ]
+}

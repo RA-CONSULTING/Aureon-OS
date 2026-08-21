@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "record_type": "public_footprint_snapshot",
+  "as_of": "2026-08-20",
+  "signals": [
+    {
+      "platform": "ORCID",
+      "category": "public_research_output",
+      "metric": "public_work_groups",
+      "value": 74,
+      "measurement_window": "public API snapshot on 2026-08-20",
+      "source_url": "https://orcid.org/0009-0004-2792-4649"
+    },
+    {
+      "platform": "GitHub",
+      "category": "company_engineering_output",
+      "metric": "main_branch_commits",
+      "value": 3213,
+      "secondary_metrics": {"stars": 32, "forks": 11},
+      "measurement_window": "public repository snapshot on 2026-08-20",
+      "source_url": "https://github.com/RA-CONSULTING/Aureon-OS"
+    },
+    {
+      "platform": "Academia.edu",
+      "category": "external_attention",
+      "metric": "research_reads",
+      "value": 1479,
+      "secondary_metrics": {"top_paper_readers": 548, "profile_visits": 124, "author_reach_position": "top 1% of authors by reach"},
+      "measurement_window": "12 months to July 2026",
+      "source_url": "https://gleckey.academia.edu",
+      "source_type": "provider-reported account email"
+    }
+  ],
+  "interpretation_boundary": "These are platform-attributed attention and engineering-activity signals. They are not customers, revenue, production use, scientific validation, market adoption or endorsement."
+}

@@ -1,0 +1,57 @@
+{
+  "schema_version": "aureon-community-evidence-v3",
+  "last_reviewed": "2026-07-26",
+  "publisher": "R&A Consulting and Brokerage Services Ltd, trading as Aureon Zorza Technologies",
+  "publication_standard": "A public community record requires an original source, partner acknowledgement, public programme record or permission-cleared media. A company contribution is not presented as ownership of a partner's work or outcomes.",
+  "public_boundary": "This register contains attributable public records only. Unpublished activity, internal review notes and prospective publication material are excluded.",
+  "entries": [
+    {
+      "id": "street-soccer-ni-homeless-world-cup-2025",
+      "title": "Street Soccer NI and the Homeless World Cup",
+      "category": "community_support",
+      "status": "verified_external_acknowledgement",
+      "date": "2025-08-20",
+      "summary": "Choice Housing named R&A Consulting among the funders supporting Street Soccer NI's Homeless World Cup teams.",
+      "source": {
+        "publisher": "Choice Housing",
+        "title": "NI Homeless Teams off to Norway for Homeless World Cup",
+        "url": "https://www.choice-housing.org/news/2025/august/ni-homeless-teams-off-to-norway-for-homeless-world-cup"
+      },
+      "media": {
+        "file": "assets/images/community/street-soccer-ni-homeless-world-cup-2025.jpg",
+        "alt": "Street Soccer NI Homeless World Cup Norway 2025 supporters graphic showing R&A Consulting among the named supporters",
+        "credit": "Street Soccer NI / Homeless World Cup Norway 2025 supporter graphic, held in the company evidence archive",
+        "third_party_marks": "Third-party logos remain the property of their respective owners"
+      },
+      "claim_boundary": "The acknowledgement records support; Street Soccer NI and its partners retain ownership of their programme, expertise and outcomes."
+    },
+    {
+      "id": "street-soccer-ni-csr-learning-2025",
+      "title": "Street Soccer NI construction and CSR-card learning",
+      "category": "skills_and_employability",
+      "status": "verified_public_programme_record",
+      "date": "2025-10-06",
+      "summary": "Belfast City Council records a Street Soccer NI cohort taking part in vocational construction talks, an onsite tour and CSR-card completion at R&A Consulting.",
+      "source": {
+        "publisher": "Belfast City Council Shared City Partnership",
+        "title": "Appendix 1 SCP 06.10.25",
+        "url": "https://minutes.belfastcity.gov.uk/%28S%28xhe05jzjdwiv1tvargp0uh45%29%29/documents/s123889/Appendix%201%20scp%2006.10.25.pdf"
+      },
+      "claim_boundary": "The record establishes a company contribution to the activity; it does not attribute the wider programme or its outcomes to the company."
+    }
+  ],
+  "channels": [
+    {
+      "name": "R&A Consulting and Brokerage Services",
+      "platform": "Facebook",
+      "url": "https://www.facebook.com/people/RA-Consulting-and-Brokerage-services/61569097042019/",
+      "status": "verified_public_company_channel",
+      "verification_note": "The public company profile links to the Aureon Zorza Technologies website and the R&A Consulting GitHub organisation.",
+      "linked_channels": [
+        "https://github.com/RA-CONSULTING",
+        "https://aureonzorzatechnologies.pl/"
+      ],
+      "claim_boundary": "Social content remains time-sensitive and is not used as evidence for a specific contribution unless the underlying public record is directly attributable."
+    }
+  ]
+}

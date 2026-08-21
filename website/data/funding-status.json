@@ -1,0 +1,105 @@
+{
+  "schema_version": 4,
+  "record_type": "public_capital_and_partnership_route_map",
+  "company": "R&A Consulting and Brokerage Services Ltd trading as Aureon Zorza Technologies",
+  "coverage": {
+    "scope": "Strategic capital and partnership themes for testing whether and where Aureon's shared evidence core could create value.",
+    "status_policy": "Each theme presents strategic relevance, a public evidence basis, the next validation and a concise claim boundary.",
+    "refresh_policy": "Supporting diligence is shared only in a qualified, scoped review."
+  },
+  "public_signals": {
+    "route_areas": "Cross-sector",
+    "external_routes": "Strategic",
+    "diligence_detail": "Qualified access",
+    "disclosure_boundary": "Public scope"
+  },
+  "route_types": [
+    {
+      "label": "Grant",
+      "description": "Public-sector R&D routes for bounded technical and commercial proof."
+    },
+    {
+      "label": "Compute access",
+      "description": "Infrastructure routes for governed evaluation and reproducible technical work."
+    },
+    {
+      "label": "Procurement",
+      "description": "Challenge-led routes that connect Aureon OS evidence controls to accountable public-service problems."
+    },
+    {
+      "label": "Defence innovation",
+      "description": "Specialist space and defence routes with explicit concept and validation boundaries."
+    },
+    {
+      "label": "Investor",
+      "description": "Mission-aligned capital conversations grounded in evidence and milestone fit."
+    }
+  ],
+  "routes": [
+    {
+      "route_type": "Grant",
+      "state_group": "strategic-theme",
+      "programme": "Public-sector R&D",
+      "title": "Accountable AI and Aureon OS programmes",
+      "status_label": "Strategic R&D theme",
+      "status_detail": "Public-sector R&D provides a disciplined route for testing Aureon's evidence-control core across accountable AI, connectivity, creative workflows and energy-system assurance.",
+      "innovation_type": "Evidence-led AI systems for source-heavy and review-sensitive work",
+      "summary": "The strategic signal is repeatability: one control core can support several domain programmes without presenting every proposal as a separate company.",
+      "public_signal": "The public architecture, research method and sector theses support a credible R&D proposition.",
+      "next_gate": "Independent assessment, a bounded implementation and a measured outcome",
+      "public_boundary": "Strategic relevance is not an award, customer contract, product validation or programme endorsement."
+    },
+    {
+      "route_type": "Compute access",
+      "state_group": "strategic-theme",
+      "programme": "Governed compute and evaluation",
+      "title": "Trustworthy-AI evaluation at greater scale",
+      "status_label": "Strategic infrastructure theme",
+      "status_detail": "Governed compute environments could support reproducible evaluation, retained provenance and explicit human review.",
+      "innovation_type": "Controlled evaluation of AI evidence workflows",
+      "summary": "The route connects the public code and evidence architecture to the next technical proof: a reproducible run in an appropriately governed environment.",
+      "public_signal": "The public code and evidence architecture establish the basis for a compute-scale evaluation proposition.",
+      "next_gate": "A bounded allocation, reproducible evaluation and retained review record",
+      "public_boundary": "Strategic fit is not compute allocation, cash funding, performance validation or commercial deployment."
+    },
+    {
+      "route_type": "Procurement",
+      "state_group": "strategic-theme",
+      "programme": "Challenge-led public-service innovation",
+      "title": "Evidence support for consequential workflows",
+      "status_label": "Strategic public-service theme",
+      "status_detail": "Non-diagnostic and human-gated evidence concepts are relevant to public-service workflows where traceability and accountable review matter.",
+      "innovation_type": "Reviewable evidence operations for public-sector decisions",
+      "summary": "These routes show how the shared core can be adapted through a domain control pack while keeping authority with qualified people.",
+      "public_signal": "The shared control core and explicit human-authority boundary support a challenge-led public-service proposition.",
+      "next_gate": "A qualified delivery partner, bounded user need and independently reviewed pilot",
+      "public_boundary": "A public-service proposition is not a procurement award, customer deployment, clinical claim or validated outcome."
+    },
+    {
+      "route_type": "Defence innovation",
+      "state_group": "strategic-theme",
+      "programme": "Specialist space and defence innovation",
+      "title": "Gated deep-tech option value",
+      "status_label": "Strategic deep-tech theme",
+      "status_detail": "Concept-level space and defence research is presented with explicit laboratory, authority and validation gates.",
+      "innovation_type": "Evidence-controlled mission assurance and early-stage physical-system research",
+      "summary": "This is the long-horizon blade: differentiated research remains separated from present-day platform capability and commercial proof.",
+      "public_signal": "Public research establishes attributable concepts and clear proof boundaries.",
+      "next_gate": "Independent technical challenge, laboratory evidence and route-specific authority",
+      "public_boundary": "A specialist research proposition is not flight qualification, defence adoption, contract award, endorsement or validated performance."
+    },
+    {
+      "route_type": "Investor",
+      "state_group": "strategic-theme",
+      "programme": "Mission-aligned capital",
+      "title": "Evidence-led investor route",
+      "status_label": "Strategic capital theme",
+      "status_detail": "The investor proposition connects the shared core, the staged commercial wedge and the option value of gated sector blades.",
+      "innovation_type": "A reusable evidence-and-control platform with disciplined sector expansion",
+      "summary": "The public site establishes the thesis and evidence boundary. Qualified diligence can then assess the supporting case and proof plan.",
+      "public_signal": "The public investor brief supports initial assessment of the platform thesis, portfolio leverage and next validation.",
+      "next_gate": "Route fit, controlled diligence and agreement on the next proof milestone",
+      "public_boundary": "Public investor material supports initial assessment of fit; qualified diligence and a shared proof milestone remain the next step."
+    }
+  ]
+}
