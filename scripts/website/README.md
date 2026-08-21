@@ -83,10 +83,15 @@ contract:
 | `HOMEPL_FTPS_CERT_THUMBPRINT` | PowerShell only | optional pinned certificate thumbprint |
 
 Retained Home.pl configuration evidence points to implicit FTPS on port 990.
-The Python uploader currently implements only explicit FTPS and therefore
-refuses an implicit live run before opening a socket. Until an implicit
-connector is implemented and authenticated, use the Home.pl provider route as
-the named host gate. Do not silently substitute explicit port 21.
+The Python uploader supports that transport and explicit FTPS as two separate,
+fail-closed modes. Both use the operating system trust store with certificate
+and hostname verification and require `PROT P`; implicit mode wraps the control
+socket before reading the server welcome and never sends `AUTH TLS`, while
+explicit mode negotiates TLS after the welcome. Mode and port remain mandatory
+and are never inferred from one another. The exact provider hostname, served
+root, and approved credentials are still unresolved operator gates, and no live
+Home.pl connection or publication is claimed here. Do not silently substitute
+explicit port 21.
 
 Dry-run still requires the target binding and process-only credentials because
 it prints the exact authenticated-account plan, but it performs no network

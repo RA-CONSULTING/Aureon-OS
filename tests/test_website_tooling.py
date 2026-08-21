@@ -12,6 +12,8 @@ import html
 import json
 import re
 import shutil
+import socket
+import ssl
 import subprocess
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -579,7 +581,7 @@ def test_load_config_requires_explicit_mode_and_port_without_exposing_password()
     assert "SECRETpw123" not in cfg.safe_summary  # password never in the printable summary
 
 
-def test_implicit_ftps_is_named_but_remains_a_fail_closed_predeploy_gate():
+def test_config_accepts_named_implicit_mode_and_rejects_invalid_mode_or_port():
     env = {
         "HOMEPL_FTPS_HOST": "serwer.example.invalid",
         "HOMEPL_FTPS_USER": "u",
@@ -591,10 +593,244 @@ def test_implicit_ftps_is_named_but_remains_a_fail_closed_predeploy_gate():
     cfg = ftp_deploy.load_config(env=env)
     assert cfg.mode == "implicit" and cfg.port == 990
     assert "FTPS-implicit" in cfg.safe_summary and "SECRETpw123" not in cfg.safe_summary
-    with pytest.raises(RuntimeError, match="unresolved predeploy protocol gate"):
-        ftp_deploy._connect(cfg)
     with pytest.raises(ValueError, match="explicit.*implicit"):
         ftp_deploy.load_config(env={**env, "HOMEPL_FTPS_MODE": "guess"})
+    for invalid_port in ("0", "65536", "not-a-port"):
+        with pytest.raises(ValueError):
+            ftp_deploy.load_config(env={**env, "HOMEPL_FTPS_PORT": invalid_port})
+    for invalid_host in (" server.example.invalid", "server example.invalid", "server\r\ninvalid"):
+        with pytest.raises(ValueError, match="HOST"):
+            ftp_deploy.load_config(env={**env, "HOMEPL_FTPS_HOST": invalid_host})
+
+
+def test_implicit_control_socket_is_wrapped_before_welcome_and_login_skips_auth(monkeypatch):
+    events: list[object] = []
+
+    class FakeFile:
+        def close(self):
+            events.append("file-close")
+
+    class FakeWrappedSocket:
+        def makefile(self, mode, *, encoding):
+            events.append(("makefile", mode, encoding))
+            return FakeFile()
+
+        def close(self):
+            events.append("wrapped-close")
+
+    class FakeRawSocket:
+        family = socket.AF_INET
+
+        def close(self):
+            events.append("raw-close")
+
+    raw_socket = FakeRawSocket()
+    wrapped_socket = FakeWrappedSocket()
+
+    class FakeContext:
+        verify_mode = ssl.CERT_REQUIRED
+        check_hostname = True
+
+        def wrap_socket(self, sock, *, server_hostname):
+            assert sock is raw_socket
+            events.append(("wrap", server_hostname))
+            return wrapped_socket
+
+    class ObservedImplicit(ftp_deploy.ImplicitFTP_TLS):
+        def getresp(self):
+            events.append("welcome")
+            return "220 ready"
+
+    def fake_create_connection(address, *, timeout, source_address):
+        events.append(("create", address, timeout, source_address))
+        return raw_socket
+
+    monkeypatch.setattr(ftp_deploy.socket, "create_connection", fake_create_connection)
+    client = ObservedImplicit(context=FakeContext())
+    welcome = client.connect_implicit(
+        "serwer.example.invalid",
+        990,
+        timeout=12.5,
+        source_address=("127.0.0.1", 0),
+    )
+
+    assert welcome == "220 ready"
+    assert events[:4] == [
+        ("create", ("serwer.example.invalid", 990), 12.5, ("127.0.0.1", 0)),
+        ("wrap", "serwer.example.invalid"),
+        ("makefile", "r", "utf-8"),
+        "welcome",
+    ]
+
+    def fake_base_login(self, user="", passwd="", acct=""):
+        assert self is client and user == "u" and passwd == "SECRETpw123" and acct == ""
+        events.append("base-ftp-login")
+        return "230 logged in"
+
+    monkeypatch.setattr(ftp_deploy.FTP, "login", fake_base_login)
+    assert client.login("u", "SECRETpw123") == "230 logged in"
+    assert "base-ftp-login" in events
+    with pytest.raises(RuntimeError, match="AUTH TLS"):
+        client.auth()
+    client.close()
+
+
+def test_implicit_transport_closes_resources_on_wrap_or_welcome_failure(monkeypatch):
+    events: list[str] = []
+
+    class FakeFile:
+        def close(self):
+            events.append("file-close")
+
+    class FakeWrappedSocket:
+        def makefile(self, mode, *, encoding):
+            assert mode == "r" and encoding == "utf-8"
+            events.append("makefile")
+            return FakeFile()
+
+        def close(self):
+            events.append("wrapped-close")
+
+    class FakeRawSocket:
+        family = socket.AF_INET
+
+        def close(self):
+            events.append("raw-close")
+
+    raw_socket = FakeRawSocket()
+    monkeypatch.setattr(
+        ftp_deploy.socket,
+        "create_connection",
+        lambda *_args, **_kwargs: raw_socket,
+    )
+
+    class WrapFailureContext:
+        def wrap_socket(self, sock, *, server_hostname):
+            assert sock is raw_socket and server_hostname == "server.example.invalid"
+            raise RuntimeError("wrap failed")
+
+    with pytest.raises(RuntimeError, match="wrap failed"):
+        ftp_deploy.ImplicitFTP_TLS(context=WrapFailureContext()).connect_implicit(
+            "server.example.invalid", 990, timeout=30.0, source_address=None
+        )
+    assert events == ["raw-close"]
+
+    events.clear()
+
+    class WelcomeFailureContext:
+        def wrap_socket(self, sock, *, server_hostname):
+            assert sock is raw_socket and server_hostname == "server.example.invalid"
+            return FakeWrappedSocket()
+
+    class WelcomeFailureClient(ftp_deploy.ImplicitFTP_TLS):
+        def getresp(self):
+            raise RuntimeError("welcome failed")
+
+    with pytest.raises(RuntimeError, match="welcome failed"):
+        WelcomeFailureClient(context=WelcomeFailureContext()).connect_implicit(
+            "server.example.invalid", 990, timeout=30.0, source_address=None
+        )
+    assert events == ["makefile", "file-close", "wrapped-close"]
+
+
+def test_explicit_connect_negotiates_then_requires_private_data_channel(monkeypatch):
+    events: list[object] = []
+    context = object()
+
+    class FakeExplicit:
+        def __init__(self, *, context):
+            events.append(("init", context))
+
+        def connect(self, host, port, *, timeout, source_address):
+            events.append(("connect", host, port, timeout, source_address))
+
+        def login(self, user, password):
+            assert user == "u" and password == "SECRETpw123"
+            events.append("login-auth-tls")
+
+        def prot_p(self):
+            events.append("prot-p")
+
+        def close(self):
+            events.append("close")
+
+    monkeypatch.setattr(ftp_deploy, "_new_tls_context", lambda: context)
+    monkeypatch.setattr(ftp_deploy, "FTP_TLS", FakeExplicit)
+    cfg = ftp_deploy.FtpConfig("ftp.example.pl", "u", "SECRETpw123", "/public_html", 21, "explicit")
+    result = ftp_deploy._connect(cfg, timeout=9.0, source_address=("127.0.0.1", 0))
+    assert isinstance(result, FakeExplicit)
+    assert events == [
+        ("init", context),
+        ("connect", "ftp.example.pl", 21, 9.0, ("127.0.0.1", 0)),
+        "login-auth-tls",
+        "prot-p",
+    ]
+
+
+def test_implicit_connect_uses_separate_transport_then_requires_private_data_channel(monkeypatch):
+    events: list[object] = []
+    context = object()
+
+    class FakeImplicit:
+        def __init__(self, *, context):
+            events.append(("init", context))
+
+        def connect_implicit(self, host, port, *, timeout, source_address):
+            events.append(("implicit-connect", host, port, timeout, source_address))
+
+        def login(self, user, password):
+            assert user == "u" and password == "SECRETpw123"
+            events.append("login-inside-tls")
+
+        def prot_p(self):
+            events.append("prot-p")
+
+        def close(self):
+            events.append("close")
+
+    monkeypatch.setattr(ftp_deploy, "_new_tls_context", lambda: context)
+    monkeypatch.setattr(ftp_deploy, "ImplicitFTP_TLS", FakeImplicit)
+    cfg = ftp_deploy.FtpConfig("ftp.example.pl", "u", "SECRETpw123", "/public_html", 990, "implicit")
+    result = ftp_deploy._connect(cfg)
+    assert isinstance(result, FakeImplicit)
+    assert events == [
+        ("init", context),
+        ("implicit-connect", "ftp.example.pl", 990, 30.0, None),
+        "login-inside-tls",
+        "prot-p",
+    ]
+
+
+def test_tls_context_and_socket_options_fail_closed_before_connection(monkeypatch):
+    cfg = ftp_deploy.FtpConfig("ftp.example.pl", "u", "p", "/", 990, "implicit")
+    socket_called = False
+
+    def forbidden_socket(*_args, **_kwargs):
+        nonlocal socket_called
+        socket_called = True
+        raise AssertionError("socket must not be opened")
+
+    monkeypatch.setattr(ftp_deploy.socket, "create_connection", forbidden_socket)
+    with pytest.raises(ValueError, match="mode"):
+        ftp_deploy._connect(ftp_deploy.FtpConfig("h", "u", "p", "/", 990, "guess"))
+    with pytest.raises(ValueError, match="port"):
+        ftp_deploy._connect(ftp_deploy.FtpConfig("h", "u", "p", "/", 0, "implicit"))
+    with pytest.raises(ValueError, match="timeout"):
+        ftp_deploy._connect(cfg, timeout=0)
+    with pytest.raises(ValueError, match="source address"):
+        ftp_deploy._connect(cfg, source_address=("127.0.0.1", 65536))
+    with pytest.raises(ValueError, match="source address"):
+        ftp_deploy._connect(cfg, source_address=("127.0.0.1",))  # type: ignore[arg-type]
+    assert socket_called is False
+
+    class InsecureContext:
+        verify_mode = ssl.CERT_NONE
+        check_hostname = False
+
+    monkeypatch.setattr(ftp_deploy.ssl, "create_default_context", InsecureContext)
+    with pytest.raises(RuntimeError, match="certificate and hostname"):
+        ftp_deploy._connect(cfg)
+    assert socket_called is False
 
 
 def test_plan_uploads_maps_remote_paths(tmp_path):
@@ -616,8 +852,8 @@ def test_dry_run_exits_zero_and_hides_password(tmp_path, capsys, monkeypatch):
         "HOMEPL_FTPS_USER": "u",
         "HOMEPL_FTPS_PASSWORD": "SECRETXYZ",
         "HOMEPL_FTPS_REMOTE_ROOT": "/public_html",
-        "HOMEPL_FTPS_PORT": "21",
-        "HOMEPL_FTPS_MODE": "explicit",
+        "HOMEPL_FTPS_PORT": "990",
+        "HOMEPL_FTPS_MODE": "implicit",
     }.items():
         monkeypatch.setenv(k, v)
     rc = ftp_deploy.main(["--package", str(pkg), "--dry-run"])
@@ -625,6 +861,7 @@ def test_dry_run_exits_zero_and_hides_password(tmp_path, capsys, monkeypatch):
     assert rc == 0
     assert "/public_html/index.html" in out
     assert "SECRETXYZ" not in out
+    assert out.isascii(), "deploy diagnostics must remain safe on default Windows consoles"
 
 
 def test_deploy_refuses_without_env(tmp_path, monkeypatch, capsys):
@@ -702,8 +939,8 @@ def test_deployer_never_allows_prune_or_live_upload_without_backup(tmp_path, cap
         "HOMEPL_FTPS_USER": "u",
         "HOMEPL_FTPS_PASSWORD": "SECRETXYZ",
         "HOMEPL_FTPS_REMOTE_ROOT": "/public_html",
-        "HOMEPL_FTPS_PORT": "21",
-        "HOMEPL_FTPS_MODE": "explicit",
+        "HOMEPL_FTPS_PORT": "990",
+        "HOMEPL_FTPS_MODE": "implicit",
     }.items():
         monkeypatch.setenv(key, value)
     called = False
@@ -714,6 +951,7 @@ def test_deployer_never_allows_prune_or_live_upload_without_backup(tmp_path, cap
         raise AssertionError("network upload must not be reached")
 
     monkeypatch.setattr(ftp_deploy, "_upload", forbidden_upload)
+    monkeypatch.setattr(ftp_deploy.socket, "create_connection", forbidden_upload)
     assert ftp_deploy.main(["--package", str(pkg), "--prune"]) == 1
     assert "pruning is disabled" in capsys.readouterr().err
     assert ftp_deploy.main(["--package", str(pkg)]) == 1

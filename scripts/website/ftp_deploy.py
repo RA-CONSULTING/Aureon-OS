@@ -34,7 +34,10 @@ import csv
 import hashlib
 import io
 import json
+import math
 import os
+import socket
+import ssl
 import sys
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -54,6 +57,7 @@ _REQUIRED_ENV = (
     "HOMEPL_FTPS_MODE",
 )
 _BACKUP_SCHEMA = "aureon.homepl-backup-transfer.v1"
+_CONNECT_TIMEOUT_SECONDS = 30.0
 
 
 def _repo_root() -> Path:
@@ -97,6 +101,16 @@ def _normalise_remote_root(value: str) -> str:
     return raw.rstrip("/") or "/"
 
 
+def _normalise_host(value: str) -> str:
+    if (
+        not value
+        or value != value.strip()
+        or any(char.isspace() or ord(char) < 32 or ord(char) == 127 for char in value)
+    ):
+        raise ValueError("HOMEPL_FTPS_HOST must be one hostname without whitespace or control characters")
+    return value
+
+
 def load_config(env: Mapping[str, str] | None = None) -> FtpConfig:
     """Build an :class:`FtpConfig` from the environment. Raises ``KeyError`` listing what's missing."""
     source_env: Mapping[str, str] = os.environ if env is None else env
@@ -110,7 +124,7 @@ def load_config(env: Mapping[str, str] | None = None) -> FtpConfig:
     if not 1 <= port <= 65535:
         raise ValueError("HOMEPL_FTPS_PORT must be between 1 and 65535")
     return FtpConfig(
-        host=source_env["HOMEPL_FTPS_HOST"],
+        host=_normalise_host(source_env["HOMEPL_FTPS_HOST"]),
         user=source_env["HOMEPL_FTPS_USER"],
         password=source_env["HOMEPL_FTPS_PASSWORD"],
         remote_dir=_normalise_remote_root(source_env["HOMEPL_FTPS_REMOTE_ROOT"]),
@@ -312,17 +326,142 @@ def _remote_dirs(plan: list[tuple[Path, str]], remote_root: str) -> list[str]:
     return sorted(dirs, key=lambda d: d.count("/"))
 
 
-def _connect(cfg: FtpConfig) -> FTP:  # pragma: no cover - network path, exercised manually
-    if cfg.mode != "explicit":
-        raise RuntimeError(
-            "implicit FTPS is an unresolved predeploy protocol gate; use the authenticated "
-            "Home.pl provider route or add and verify an audited implicit connector"
+def _new_tls_context() -> ssl.SSLContext:
+    """Return the certificate- and hostname-validating context used by both FTPS modes."""
+
+    context = ssl.create_default_context()
+    if context.verify_mode != ssl.CERT_REQUIRED or not context.check_hostname:
+        raise RuntimeError("FTPS requires certificate and hostname validation")
+    return context
+
+
+def _network_options(
+    timeout: float,
+    source_address: tuple[str, int] | None,
+) -> tuple[float, tuple[str, int] | None]:
+    """Validate bounded socket options before any connection can be attempted."""
+
+    if isinstance(timeout, bool) or not math.isfinite(timeout) or timeout <= 0:
+        raise ValueError("FTPS connect timeout must be a positive finite number")
+    if source_address is None:
+        return float(timeout), None
+    if not isinstance(source_address, tuple) or len(source_address) != 2:
+        raise ValueError("FTPS source address must be a (host, port) tuple")
+    host, port = source_address
+    if not isinstance(host, str) or any(
+        char.isspace() or ord(char) < 32 or ord(char) == 127 for char in host
+    ):
+        raise ValueError("FTPS source address host is invalid")
+    if isinstance(port, bool) or not isinstance(port, int) or not 0 <= port <= 65535:
+        raise ValueError("FTPS source address port must be between 0 and 65535")
+    return float(timeout), (host, port)
+
+
+class ImplicitFTP_TLS(FTP_TLS):
+    """``FTP_TLS`` transport whose control socket is TLS-wrapped before the welcome reply."""
+
+    def connect_implicit(
+        self,
+        host: str,
+        port: int,
+        *,
+        timeout: float,
+        source_address: tuple[str, int] | None,
+    ) -> str:
+        if self.sock is not None:
+            raise RuntimeError("FTPS control socket is already connected")
+        self.host = host
+        self.port = port
+        self.timeout = timeout
+        self.source_address = source_address
+        raw_socket = socket.create_connection(
+            (host, port),
+            timeout=timeout,
+            source_address=source_address,
         )
-    ftp = FTP_TLS()
-    ftp.connect(cfg.host, cfg.port, timeout=30)
-    ftp.login(cfg.user, cfg.password)
-    ftp.prot_p()
-    return ftp
+        try:
+            self.af = raw_socket.family
+            wrapped_socket = self.context.wrap_socket(raw_socket, server_hostname=host)
+        except Exception:
+            raw_socket.close()
+            raise
+        self.sock = wrapped_socket
+        try:
+            self.file = wrapped_socket.makefile("r", encoding=self.encoding)
+            self.welcome = self.getresp()
+            return self.welcome
+        except Exception:
+            self.close()
+            raise
+
+    def auth(self) -> str:
+        """Fail closed if code tries to negotiate explicit TLS on an implicit control socket."""
+
+        raise RuntimeError("AUTH TLS is invalid on an already TLS-wrapped implicit connection")
+
+    def login(
+        self,
+        user: str = "",
+        passwd: str = "",
+        acct: str = "",
+        secure: bool = True,
+    ) -> str:
+        """Authenticate inside the existing TLS tunnel without ``FTP_TLS.login`` calling AUTH."""
+
+        if not secure:
+            raise RuntimeError("implicit FTPS login cannot disable its existing TLS tunnel")
+        return FTP.login(self, user, passwd, acct)
+
+
+def _connect(
+    cfg: FtpConfig,
+    *,
+    timeout: float = _CONNECT_TIMEOUT_SECONDS,
+    source_address: tuple[str, int] | None = None,
+) -> FTP:  # pragma: no cover - real sockets are replaced by fakes in unit tests
+    if cfg.mode not in {"explicit", "implicit"}:
+        raise ValueError("FTPS mode must be exactly 'explicit' or 'implicit'")
+    if isinstance(cfg.port, bool) or not isinstance(cfg.port, int) or not 1 <= cfg.port <= 65535:
+        raise ValueError("FTPS port must be between 1 and 65535")
+    try:
+        _normalise_host(cfg.host)
+    except ValueError as exc:
+        raise ValueError("FTPS host is invalid") from exc
+    if not cfg.user or not cfg.password:
+        raise ValueError("FTPS credentials are missing")
+    checked_timeout, checked_source = _network_options(timeout, source_address)
+    context = _new_tls_context()
+
+    if cfg.mode == "explicit":
+        explicit = FTP_TLS(context=context)
+        try:
+            explicit.connect(
+                cfg.host,
+                cfg.port,
+                timeout=checked_timeout,
+                source_address=checked_source,
+            )
+            explicit.login(cfg.user, cfg.password)
+            explicit.prot_p()
+        except Exception:
+            explicit.close()
+            raise
+        return explicit
+
+    implicit = ImplicitFTP_TLS(context=context)
+    try:
+        implicit.connect_implicit(
+            cfg.host,
+            cfg.port,
+            timeout=checked_timeout,
+            source_address=checked_source,
+        )
+        implicit.login(cfg.user, cfg.password)
+        implicit.prot_p()
+    except Exception:
+        implicit.close()
+        raise
+    return implicit
 
 
 def _upload(cfg: FtpConfig, package_dir: Path) -> int:  # pragma: no cover - network
@@ -337,7 +476,7 @@ def _upload(cfg: FtpConfig, package_dir: Path) -> int:  # pragma: no cover - net
         for local, remote in plan:
             with local.open("rb") as fh:
                 ftp.storbinary(f"STOR {remote}", fh)
-            print(f"  ↑ {remote}  ({local.stat().st_size} B)")
+            print(f"  UPLOAD {remote}  ({local.stat().st_size} B)")
     finally:
         ftp.quit()
     return len(plan)
@@ -375,7 +514,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         cfg = load_config()
     except (KeyError, ValueError) as exc:
-        print(f"FTP deploy refused — {exc}", file=sys.stderr)
+        print(f"FTP deploy refused - {exc}", file=sys.stderr)
         print(
             "Set the credentials in your shell environment (never commit them). See "
             "scripts/website/README.md.",
@@ -389,26 +528,18 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.prune:
         print(
-            "FTP deploy refused — pruning is disabled; this tool never deletes remote files", file=sys.stderr
+            "FTP deploy refused - pruning is disabled; this tool never deletes remote files", file=sys.stderr
         )
         return 1
     if args.dry_run:
-        print("DRY RUN — no network. Planned uploads:")
+        print("DRY RUN - no network. Planned uploads:")
         for _local, remote in plan:
-            print(f"  ↑ {remote}")
+            print(f"  UPLOAD {remote}")
         print(f"  {len(plan)} file(s) would be uploaded.")
         return 0
 
-    if cfg.mode != "explicit":
-        print(
-            "FTP deploy refused - implicit FTPS is an unresolved predeploy protocol gate; "
-            "use the authenticated Home.pl provider route or verify an audited connector",
-            file=sys.stderr,
-        )
-        return 1
-
     if not args.backup_receipt:
-        print("FTP deploy refused — a fresh --backup-receipt is required", file=sys.stderr)
+        print("FTP deploy refused - a fresh --backup-receipt is required", file=sys.stderr)
         return 1
     try:
         package_check = compare_readback_directory(package_dir, package_dir)
@@ -416,12 +547,12 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError("local package does not match its per-file SHA-256 manifest")
         backup = load_backup_receipt(Path(args.backup_receipt), cfg.remote_dir)
     except (OSError, ReadbackInputError, ValueError) as exc:
-        print(f"FTP deploy refused — {exc}", file=sys.stderr)
+        print(f"FTP deploy refused - {exc}", file=sys.stderr)
         return 1
 
-    print(f"Uploading after validated backup ({backup.file_count} files, {backup.total_bytes} bytes) …")
+    print(f"Uploading after validated backup ({backup.file_count} files, {backup.total_bytes} bytes) ...")
     n = _upload(cfg, package_dir)
-    print(f"Upload completed — {n} file(s) sent to {cfg.host}:{cfg.remote_dir}")
+    print(f"Upload completed - {n} file(s) sent to {cfg.host}:{cfg.remote_dir}")
     print("Publication is not proven until exact public/remote read-back passes.")
     return 0
 
