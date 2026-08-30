@@ -499,6 +499,7 @@ def test_production_compilation_is_blocked_without_reviewed_measurement_provenan
 
 def test_reviewed_contract_source_binding_is_compatible() -> None:
     contract, retained = _reviewed_contract_fixture()
+    assert contract["payloadSha256"] == runtime_opt.REVIEWED_ACCEPTANCE_CONTRACT_PAYLOAD_SHA256
     runtime_opt._require_acceptance_contract(contract, retained=retained)
 
     weakened = deepcopy(contract)
