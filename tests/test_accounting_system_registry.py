@@ -32,6 +32,8 @@ def test_accounting_system_registry_discovers_full_accounting_surface() -> None:
     assert "Kings_Accounting_Suite.core.king_ledger" in modules
     assert "Kings_Accounting_Suite.core.king_accounting" in modules
     assert "Kings_Accounting_Suite.tools.combined_bank_data" in modules
+    assert "Kings_Accounting_Suite.tools.aureon_accounting_control_plane" in modules
+    assert "Kings_Accounting_Suite.tools.quickbooks_accounting_integration" in modules
     assert "Kings_Accounting_Suite.show_tools.show_portfolio" in modules
     assert "Kings_Accounting_Suite.show_tools.check_system_flow" in modules
     assert "Kings_Accounting_Suite.tools.generate_full_company_accounts" in modules
@@ -40,6 +42,7 @@ def test_accounting_system_registry_discovers_full_accounting_surface() -> None:
     assert "aureon.analytics.lighthouse_financial_analyzer" in modules
     assert "aureon.trading.compound_king" in modules
     assert domains["accounting_status_tools"] >= 6
+    assert domains["external_accounting_platform"] >= 1
     assert domains["financial_analysis"] >= 3
     assert domains["compound_projection"] >= 1
     assert domains["gateway_orchestration"] >= 1
@@ -67,6 +70,16 @@ def test_accounting_system_registry_discovers_full_accounting_surface() -> None:
         assert registry.combined_bank_data["csv_source_count"] == 0
         assert registry.combined_bank_data["transaction_source_count"] == 0
     assert registry.safe_boundaries["official_hmrc_submission"] == "manual_only"
+    assert (
+        registry.safe_boundaries["quickbooks_mutation"]
+        == "signed_expiring_payload_bound_approval_required"
+    )
+    canonical_control = next(
+        entry for entry in registry.entries if entry.module.endswith("aureon_accounting_control_plane")
+    )
+    assert canonical_control.domain == "ledger_double_entry"
+    assert canonical_control.role == "ledger_core"
+    assert canonical_control.external_mutation_risk == "none_detected"
 
 
 def test_accounting_system_registry_writes_machine_and_human_reports(tmp_path: Path) -> None:

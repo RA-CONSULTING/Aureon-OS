@@ -20,10 +20,9 @@ import os
 import subprocess
 import sys
 import threading
-import time
 from datetime import date
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 logger = logging.getLogger("aureon.queen.accounting_context_bridge")
 
@@ -36,6 +35,13 @@ ACCOUNTING_TOPICS = (
     "accounting.context.ready",
     "accounting.status",
     "accounting.system_registry.ready",
+    "accounting.canonical_journal.status",
+    "accounting.reconciliation.status",
+    "accounting.quickbooks.status",
+    "accounting.quickbooks.projection.queued",
+    "accounting.quickbooks.projection.readback",
+    "accounting.quickbooks.webhook.verified",
+    "accounting.quickbooks.refresh.requested",
     "accounting.data.combined",
     "accounting.accounts.generated",
     "accounting.accounts.blocked",
@@ -81,7 +87,7 @@ class AccountingContextBridge:
 
     def __init__(
         self,
-        repo_root: Optional[str | Path] = None,
+        repo_root: str | Path | None = None,
         *,
         company_number: str = DEFAULT_COMPANY_NUMBER,
         period_start: str = DEFAULT_PERIOD_START,
@@ -93,7 +99,7 @@ class AccountingContextBridge:
         self.period_end = period_end
         self._lock = threading.RLock()
         self._cached_context: Dict[str, Any] = {}
-        self._cached_signature: Tuple[Tuple[str, float, int], ...] = tuple()
+        self._cached_signature: Tuple[Tuple[str, float, int], ...] = ()
         self._last_vault_signature: str = ""
 
     def _paths(self) -> Dict[str, Path]:
@@ -155,6 +161,13 @@ class AccountingContextBridge:
             "combined_bank_transactions": period_dir / f"combined_bank_transactions_{self.period_start}_to_{self.period_end}.csv",
             "accounting_system_registry_json": self.repo_root / "docs" / "audits" / "accounting_system_registry.json",
             "accounting_system_registry_markdown": self.repo_root / "docs" / "audits" / "accounting_system_registry.md",
+            "quickbooks_status": self.repo_root / "Kings_Accounting_Suite" / "output" / "quickbooks" / "status.json",
+            "quickbooks_audit_dir": self.repo_root / "Kings_Accounting_Suite" / "output" / "quickbooks" / "audit",
+            "quickbooks_control_plane": self.repo_root / "Kings_Accounting_Suite" / "tools" / "quickbooks_accounting_integration.py",
+            "aureon_accounting_control_status": self.repo_root / "Kings_Accounting_Suite" / "output" / "accounting_control" / "status.json",
+            "aureon_accounting_control_plane": self.repo_root / "Kings_Accounting_Suite" / "tools" / "aureon_accounting_control_plane.py",
+            "aureon_accounting_reconciliation_status": self.repo_root / "Kings_Accounting_Suite" / "output" / "accounting_control" / "reconciliation_status.json",
+            "aureon_accounting_reconciliation": self.repo_root / "Kings_Accounting_Suite" / "tools" / "aureon_accounting_reconciliation.py",
             "accounting_vault_index": self.repo_root / "accounting" / "full_accounts_index.md",
             "accounting_vault_workflows_dir": self.repo_root / "accounting" / "workflows",
             "accounts_pack_pdf": period_dir / f"ra_consulting_and_brokerage_accounts_pack_{self.period_start}_to_{self.period_end}.pdf",
@@ -655,6 +668,52 @@ class AccountingContextBridge:
                 f"domains={domain_text or 'none'}; "
                 f"nonstandard={surface_text}"
             )
+        accounting_control = context.get("aureon_accounting_control") or {}
+        if accounting_control:
+            journal = accounting_control.get("journal") or {}
+            projection = accounting_control.get("quickbooks_projection") or {}
+            lines.append(
+                "Aureon canonical journal: "
+                f"integrity={journal.get('integrity_verified', False)}; "
+                f"entries={journal.get('entry_count', 0)}; "
+                f"approved={journal.get('approved_entry_count', 0)}; "
+                f"QBO queued={projection.get('queued_count', 0)}; "
+                f"readback={projection.get('readback_verified_count', 0)}; "
+                f"outstanding={projection.get('outstanding_readback_count', 0)}."
+            )
+        reconciliation = context.get("accounting_reconciliation") or {}
+        if reconciliation:
+            summary = reconciliation.get("summary") or {}
+            workstreams = reconciliation.get("workstreams") or []
+            critical = [
+                item.get("id")
+                for item in workstreams
+                if isinstance(item, dict) and item.get("priority") == "critical"
+            ]
+            lines.append(
+                "Aureon accounting reconciliation: "
+                f"workstreams={summary.get('workstream_count', 0)}; "
+                f"critical={','.join(str(item) for item in critical) or 'none'}; "
+                f"postings_authorised={summary.get('posting_authorised_count', 0)}; "
+                f"external_actions_authorised={summary.get('external_compliance_action_authorised_count', 0)}."
+            )
+        quickbooks = context.get("quickbooks") or {}
+        if quickbooks:
+            api = quickbooks.get("api") or {}
+            bank_feed = quickbooks.get("bank_feed") or {}
+            chart = quickbooks.get("chart_of_accounts") or {}
+            lines.append(
+                "QuickBooks control plane: "
+                "authority=Aureon OS canonical; QuickBooks=projection/read-back; "
+                f"state={quickbooks.get('connection_state', 'unknown')}; "
+                f"api={api.get('company_info_readback', 'not_verified')}; "
+                f"bank_feed={bank_feed.get('connected', False)} "
+                f"pending={bank_feed.get('pending_transaction_count', 0)} "
+                f"ownership={bank_feed.get('ownership_status', 'unknown')}; "
+                f"chart_accounts={chart.get('account_count', 0)}; "
+                f"aureon_posted={bank_feed.get('aureon_posted_transaction_count', 0)}; "
+                "writes remain gated."
+            )
         statutory = context.get("statutory_filing_pack") or {}
         if statutory:
             statutory_outputs = statutory.get("outputs") or {}
@@ -780,6 +839,9 @@ class AccountingContextBridge:
                 or self._fallback_accounting_evidence_authoring(paths)
             )
             accounting_vault_memory = self._accounting_vault_memory_status(paths)
+            quickbooks_status = self._read_json(paths["quickbooks_status"])
+            accounting_control_status = self._read_json(paths["aureon_accounting_control_status"])
+            accounting_reconciliation = self._read_json(paths["aureon_accounting_reconciliation_status"])
 
             years_out: Dict[str, Dict[str, Any]] = {}
             for year in ("2024/25", "2025/26"):
@@ -815,6 +877,9 @@ class AccountingContextBridge:
                 "combined_bank_data": combined_bank_data,
                 "accounting_system_registry": accounting_registry,
                 "accounting_vault_memory": accounting_vault_memory,
+                "aureon_accounting_control": accounting_control_status,
+                "accounting_reconciliation": accounting_reconciliation,
+                "quickbooks": quickbooks_status,
             }
 
             company = dict(compliance.get("public_company_profile") or {})
@@ -875,6 +940,9 @@ class AccountingContextBridge:
                 "accounting_evidence_authoring": accounting_evidence_authoring,
                 "uk_accounting_requirements_brain": uk_accounting_brain,
                 "accounting_vault_memory": accounting_vault_memory,
+                "aureon_accounting_control": accounting_control_status,
+                "accounting_reconciliation": accounting_reconciliation,
+                "quickbooks": quickbooks_status,
                 "safety": self._manual_safety(full_run, compliance),
                 "combined_bank_data": combined_bank_data,
                 "accounting_system_registry": accounting_registry,
@@ -896,7 +964,7 @@ class AccountingContextBridge:
 
     def validate_accounting_readiness(
         self,
-        context: Optional[Dict[str, Any]] = None,
+        context: Dict[str, Any] | None = None,
         *,
         force: bool = False,
     ) -> Dict[str, Any]:
@@ -916,6 +984,7 @@ class AccountingContextBridge:
         accounting_evidence_authoring = context.get("accounting_evidence_authoring") or handoff_pack.get("accounting_evidence_authoring") or {}
         uk_accounting_brain = context.get("uk_accounting_requirements_brain") or handoff_pack.get("uk_accounting_requirements_brain") or {}
         accounting_vault_memory = context.get("accounting_vault_memory") or {}
+        quickbooks = context.get("quickbooks") or {}
         source_providers = combined.get("source_provider_summary") or {}
         flow_providers = combined.get("flow_provider_summary") or {}
         source_files = context.get("source_files") or {}
@@ -1066,6 +1135,53 @@ class AccountingContextBridge:
             ),
             required=False,
         )
+        accounting_control = context.get("aureon_accounting_control") or {}
+        canonical_journal = accounting_control.get("journal") or {}
+        projection_queue = accounting_control.get("quickbooks_projection") or {}
+        add(
+            "aureon_canonical_accounting_journal",
+            bool(accounting_control and canonical_journal.get("integrity_verified")),
+            (
+                f"integrity={canonical_journal.get('integrity_verified', False)}, "
+                f"entries={canonical_journal.get('entry_count', 0)}, "
+                f"approved={canonical_journal.get('approved_entry_count', 0)}, "
+                f"qbo_queued={projection_queue.get('queued_count', 0)}, "
+                f"qbo_readback={projection_queue.get('readback_verified_count', 0)}, "
+                f"outstanding={projection_queue.get('outstanding_readback_count', 0)}"
+            ),
+            required=False,
+        )
+        reconciliation = context.get("accounting_reconciliation") or {}
+        reconciliation_summary = reconciliation.get("summary") or {}
+        add(
+            "aureon_accounting_reconciliation",
+            bool(
+                reconciliation.get("schema_version") == "aureon-accounting-reconciliation-v1"
+                and reconciliation_summary.get("posting_authorised_count", 0) == 0
+                and reconciliation_summary.get("external_compliance_action_authorised_count", 0) == 0
+            ),
+            (
+                f"workstreams={reconciliation_summary.get('workstream_count', 0)}, "
+                f"critical={reconciliation_summary.get('critical_workstream_count', 0)}, "
+                f"postings_authorised={reconciliation_summary.get('posting_authorised_count', 0)}, "
+                "role=derived_work_queue_not_ledger_or_filing_instruction"
+            ),
+            required=False,
+        )
+        quickbooks_api = quickbooks.get("api") or {}
+        quickbooks_bank = quickbooks.get("bank_feed") or {}
+        add(
+            "quickbooks_control_plane",
+            bool(quickbooks and quickbooks.get("connection_state")),
+            (
+                f"state={quickbooks.get('connection_state', 'not_configured')}, "
+                f"api_readback={quickbooks_api.get('company_info_readback', 'not_verified')}, "
+                f"bank_feed={quickbooks_bank.get('connected', False)}, "
+                f"ownership={quickbooks_bank.get('ownership_status', 'unknown')}, "
+                f"pending={quickbooks_bank.get('pending_transaction_count', 0)}"
+            ),
+            required=False,
+        )
         for output_key in (
             "accounts_pack_pdf",
             "management_accounts",
@@ -1190,7 +1306,7 @@ class AccountingContextBridge:
             "bank_sources": transaction_sources,
             "unique_bank_rows": combined.get("unique_rows_in_period", 0),
             "raw_file_count": raw_summary.get("file_count", 0),
-            "statutory_outputs": len((statutory.get("outputs") or {})),
+            "statutory_outputs": len(statutory.get("outputs") or {}),
             "manual_filing_required": bool(safety.get("manual_filing_required", True)),
         }
 
@@ -1237,6 +1353,9 @@ class AccountingContextBridge:
             "cognitive_review": autonomous_workflow.get("cognitive_review") or {},
             "vault_memory": autonomous_workflow.get("vault_memory") or {},
             "accounting_vault_memory": context.get("accounting_vault_memory") or {},
+            "aureon_accounting_control": context.get("aureon_accounting_control") or {},
+            "accounting_reconciliation": context.get("accounting_reconciliation") or {},
+            "quickbooks": context.get("quickbooks") or {},
             "human_filing_handoff_pack": handoff_pack,
             "accounting_evidence_authoring": accounting_evidence_authoring,
             "uk_accounting_requirements_brain": uk_accounting_brain,
@@ -1246,7 +1365,7 @@ class AccountingContextBridge:
             "topics": list(ACCOUNTING_TOPICS),
         }
 
-    def render_for_prompt(self, context: Optional[Dict[str, Any]] = None, max_chars: int = 700) -> str:  # type: ignore[override]
+    def render_for_prompt(self, context: Dict[str, Any] | None = None, max_chars: int = 700) -> str:  # type: ignore[override]
         # Backward-compatible class call support:
         # AccountingContextBridge.render_for_prompt(context, max_chars=...)
         if isinstance(self, dict):  # type: ignore[unreachable]
@@ -1286,6 +1405,9 @@ class AccountingContextBridge:
             "autonomous_workflow": context.get("autonomous_workflow"),
             "end_user_accounting_automation": context.get("end_user_accounting_automation"),
             "accounting_vault_memory": context.get("accounting_vault_memory"),
+            "aureon_accounting_control": context.get("aureon_accounting_control"),
+            "accounting_reconciliation": context.get("accounting_reconciliation"),
+            "quickbooks": context.get("quickbooks"),
             "human_filing_handoff_pack": context.get("human_filing_handoff_pack"),
             "accounting_evidence_authoring": context.get("accounting_evidence_authoring"),
             "uk_accounting_requirements_brain": context.get("uk_accounting_requirements_brain"),
@@ -1318,6 +1440,9 @@ class AccountingContextBridge:
                     "autonomous_workflow": context.get("autonomous_workflow"),
                     "end_user_accounting_automation": context.get("end_user_accounting_automation"),
                     "accounting_vault_memory": context.get("accounting_vault_memory"),
+                    "aureon_accounting_control": context.get("aureon_accounting_control"),
+                    "accounting_reconciliation": context.get("accounting_reconciliation"),
+                    "quickbooks": context.get("quickbooks"),
                     "human_filing_handoff_pack": context.get("human_filing_handoff_pack"),
                     "accounting_evidence_authoring": context.get("accounting_evidence_authoring"),
                     "uk_accounting_requirements_brain": context.get("uk_accounting_requirements_brain"),
@@ -1340,6 +1465,30 @@ class AccountingContextBridge:
                     topic="accounting.vault.memory.ready",
                     category="accounting_vault_memory",
                     payload=accounting_vault_memory,
+                )
+                ingested += 1
+            accounting_control = context.get("aureon_accounting_control") or {}
+            if accounting_control:
+                vault.ingest(
+                    topic="accounting.canonical_journal.status",
+                    category="accounting_canonical_journal",
+                    payload=accounting_control,
+                )
+                ingested += 1
+            reconciliation = context.get("accounting_reconciliation") or {}
+            if reconciliation:
+                vault.ingest(
+                    topic="accounting.reconciliation.status",
+                    category="accounting_reconciliation",
+                    payload=reconciliation,
+                )
+                ingested += 1
+            quickbooks = context.get("quickbooks") or {}
+            if quickbooks:
+                vault.ingest(
+                    topic="accounting.quickbooks.status",
+                    category="accounting_quickbooks",
+                    payload=quickbooks,
                 )
                 ingested += 1
             swarm_scan = context.get("swarm_raw_data_wave_scan") or {}
@@ -1430,7 +1579,7 @@ class AccountingContextBridge:
                 pass
         return status
 
-    def run_full_accounts(self, as_of: Optional[str] = None, no_fetch: bool = True) -> Dict[str, Any]:
+    def run_full_accounts(self, as_of: str | None = None, no_fetch: bool = True) -> Dict[str, Any]:
         paths = self._paths()
         script = paths["accounts_generator"]
         if not script.exists():
@@ -1577,9 +1726,9 @@ class AccountingContextBridge:
     def run_autonomous_full_accounts(
         self,
         *,
-        as_of: Optional[str] = None,
+        as_of: str | None = None,
         no_fetch: bool = True,
-        raw_data_roots: Optional[List[str]] = None,
+        raw_data_roots: List[str] | None = None,
         include_default_roots: bool = True,
     ) -> Dict[str, Any]:
         """Run the safe raw-data-to-final-ready-accounts organism workflow."""
@@ -1671,9 +1820,9 @@ class AccountingContextBridge:
     def run_end_user_accounting_automation(
         self,
         *,
-        as_of: Optional[str] = None,
+        as_of: str | None = None,
         no_fetch: bool = True,
-        raw_data_roots: Optional[List[str]] = None,
+        raw_data_roots: List[str] | None = None,
         include_default_roots: bool = True,
         enable_cognitive_review: bool = True,
     ) -> Dict[str, Any]:
@@ -1787,7 +1936,7 @@ class AccountingContextBridge:
             return {"reachable": False, "error": str(exc)}
 
 
-_bridge_singleton: Optional[AccountingContextBridge] = None
+_bridge_singleton: AccountingContextBridge | None = None
 _bridge_lock = threading.Lock()
 
 

@@ -150,6 +150,55 @@ class FakeAccountingBridge:
                 "runnable_tool_count": 12,
                 "domain_counts": {"gateway_orchestration": 2, "ledger_double_entry": 2},
             },
+            "quickbooks": {
+                "connection_state": "qbo_ui_connected_api_pending",
+                "api": {"oauth": "not_verified", "company_info_readback": "not_verified"},
+                "bank_feed": {
+                    "connected": True,
+                    "provider": "Zempler Bank (UK)",
+                    "pending_transaction_count": 911,
+                    "ownership_status": "mixed_use_owner_accountant_review_required",
+                    "aureon_posted_transaction_count": 0,
+                    "bulk_posting_allowed": False,
+                },
+                "chart_of_accounts": {"account_count": 58, "staged_changes_applied": False},
+                "controls": {"quickbooks_mutations": "disabled"},
+            },
+            "aureon_accounting_control": {
+                "authority": {
+                    "canonical_system": "aureon_os",
+                    "quickbooks_role": "downstream_projection_and_readback",
+                    "quickbooks_may_create_or_mutate_canonical_entries": False,
+                },
+                "journal": {
+                    "integrity_verified": True,
+                    "entry_count": 4,
+                    "approved_entry_count": 3,
+                },
+                "quickbooks_projection": {
+                    "queued_count": 2,
+                    "readback_verified_count": 1,
+                    "outstanding_readback_count": 1,
+                    "observation_task_count": 911,
+                },
+            },
+            "accounting_reconciliation": {
+                "summary": {
+                    "workstream_count": 13,
+                    "critical_workstream_count": 3,
+                    "posting_authorised_count": 0,
+                    "quickbooks_projection_authorised_count": 0,
+                    "external_compliance_action_authorised_count": 0,
+                },
+                "workstreams": [
+                    {
+                        "id": "corporation_tax",
+                        "state": "urgent_resolution_required",
+                        "priority": "critical",
+                        "next_action": "Obtain live HMRC periods with the accountant.",
+                    }
+                ],
+            },
         }
 
     def load_context(self):
@@ -299,6 +348,75 @@ def test_accounting_context_bridge_loads_generated_artifacts_and_publishes_statu
     assert bus.events[-1]["topic"] == "accounting.status"
 
 
+def test_accounting_context_bridge_reads_aureon_canonical_journal_status(tmp_path: Path):
+    status_path = (
+        tmp_path
+        / "Kings_Accounting_Suite"
+        / "output"
+        / "accounting_control"
+        / "status.json"
+    )
+    status_path.parent.mkdir(parents=True)
+    status_path.write_text(
+        """{
+  "schema_version": "aureon-accounting-control-status-v1",
+  "authority": {
+    "canonical_system": "aureon_os",
+    "quickbooks_role": "downstream_projection_and_readback",
+    "quickbooks_may_create_or_mutate_canonical_entries": false
+  },
+  "journal": {
+    "integrity_verified": true,
+    "entry_count": 7,
+    "approved_entry_count": 5
+  },
+  "quickbooks_projection": {
+    "queued_count": 3,
+    "readback_verified_count": 2,
+    "outstanding_readback_count": 1,
+    "observation_task_count": 4
+  }
+}
+""",
+        encoding="utf-8",
+    )
+    (status_path.parent / "reconciliation_status.json").write_text(
+        """{
+  "schema_version": "aureon-accounting-reconciliation-v1",
+  "summary": {
+    "workstream_count": 13,
+    "critical_workstream_count": 3,
+    "posting_authorised_count": 0,
+    "external_compliance_action_authorised_count": 0
+  },
+  "workstreams": [
+    {"id": "corporation_tax", "priority": "critical", "state": "resolution_required"}
+  ]
+}
+""",
+        encoding="utf-8",
+    )
+    bridge = AccountingContextBridge(repo_root=tmp_path, company_number="00000000")
+
+    context = bridge.load_context(force=True)
+    control = context["aureon_accounting_control"]
+    assert control["authority"]["canonical_system"] == "aureon_os"
+    assert control["journal"]["entry_count"] == 7
+    assert control["quickbooks_projection"]["outstanding_readback_count"] == 1
+    assert context["accounting_reconciliation"]["summary"]["workstream_count"] == 13
+    readiness = bridge.validate_accounting_readiness(context)
+    canonical_check = next(
+        check for check in readiness["checks"] if check["name"] == "aureon_canonical_accounting_journal"
+    )
+    assert canonical_check["ok"] is True
+    reconciliation_check = next(
+        check for check in readiness["checks"] if check["name"] == "aureon_accounting_reconciliation"
+    )
+    assert reconciliation_check["ok"] is True
+    assert "Aureon canonical journal:" in bridge.render_for_prompt(context, max_chars=10000)
+    assert "Aureon accounting reconciliation:" in bridge.render_for_prompt(context, max_chars=10000)
+
+
 def test_meaning_resolver_injects_accounting_context_for_tax_questions():
     fake = FakeAccountingBridge()
     resolver = MeaningResolver(accounting_bridge=fake)
@@ -328,6 +446,21 @@ def test_integrated_cognitive_system_accounts_commands_use_safe_bridge():
     assert "Evidence authoring:" in status
     assert "UK accounting requirements brain:" in status
     assert "Accounting mind:" in status
+    assert "QuickBooks:" in status
+    assert "Aureon journal:" in status
+    assert "Reconciliation:" in status
+
+    reconciliation = ics.process_user_input("/accounts reconciliation")
+    assert "AUREON ACCOUNTING RECONCILIATION" in reconciliation
+    assert "corporation_tax: urgent_resolution_required" in reconciliation
+    assert "postings_authorised=0" in reconciliation
+
+    quickbooks = ics.process_user_input("/accounts quickbooks")
+    assert "QUICKBOOKS CONTROL PLANE" in quickbooks
+    assert "pending=911" in quickbooks
+    assert "bulk_allowed=False" in quickbooks
+    assert "Aureon journal: integrity=True entries=4 approved=3" in quickbooks
+    assert "Projection queue: queued=2 readback=1 outstanding=1 observations=911" in quickbooks
 
     tools = ics.process_user_input("/accounts tools")
     assert "ACCOUNTING TOOL REGISTRY" in tools
