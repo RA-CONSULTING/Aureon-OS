@@ -2,7 +2,7 @@
 
 ## Status
 
-- Candidate checkout: `C:\Users\user\Aureon-OS-master-consolidation-20260830_210920`
+- Candidate checkout: `C:\Users\user\Aureon-OS-master-system-20260830_231506`
 - Candidate branch: `consolidate/master-system-20260830`
 - Publication state: **LOCAL CANDIDATE — GitHub publication and provider read-back pending**
 - Runtime mode used for validation: offline, dry-run, audit, and import-side-effect suppression
@@ -14,10 +14,12 @@ overwritten.
 
 ## Inventory boundary
 
-Twenty-five valid pre-existing Aureon Git worktrees were found directly under
-`C:\Users\user`; this dated candidate is the twenty-sixth. `aureon-trading` has an invalid,
-empty `.git` directory and was not treated as a source worktree. Other Aureon-named folders
-without `.git` were retained as non-Git evidence, release, appliance, backup, or tool folders.
+The initial inventory found twenty-five valid pre-existing Aureon Git worktrees directly under
+`C:\Users\user`. `aureon-trading` has an invalid, empty `.git` directory and was not treated as
+a source worktree. Other Aureon-named folders without `.git` were retained as non-Git evidence,
+release, appliance, backup, or tool folders. The final dated master checkout was created later
+through Git's pack protocol with its own object database; intermediate consolidation worktrees are
+build provenance, not additional source versions.
 
 | Checkout or group | Observed HEAD | Reconciliation |
 | --- | --- | --- |
@@ -73,13 +75,27 @@ patches were superseded, experimental, or unsafe to merge wholesale. A historica
 | accounting control plane, 2026-07-28 | `d56b938b` | 22 | Accounting source/tests; later vault predicates retained in conflicts |
 | website/operator, 2026-07-19 | `af9aace9` | 204 | Governed operator/research source; V28, unlicensed images, temp/runtime output excluded |
 | latest operator, 2026-08-10 | `c9cba9ff` | 117 | Tracked operator deltas and selected source/tests; logs and scratch examples excluded |
-| original dirty checkout | pending final reviewed import | pending | Governed dormant grant/approval source and tests under independent review |
+| original dirty checkout | `123bd689`, hardened by `c6f72d58` | 64 | 63-file dormant grant/approval bundle plus pure outbound-completion dependency |
 
 The V45/operator reconciliation keeps 41 executable core brain roles. Nine public-design roles
 are registry-only and explicitly unprovisioned; they are not silently added to the executable
 brain fabric. The latest `LocalActionBridge` merge retains blocked-result propagation so a
 JSON result with `blocked=true` remains a HOLD. `RouteDecision` uses Python 3.11 `StrEnum`;
 repository search found no external consumer and its JSON/value behavior is unchanged.
+
+The original checkout had 462 tracked modifications and 66,627 Git-visible untracked paths.
+The audit classified 66,509 untracked paths as generated/state/artifacts and narrowed the
+durable-looking set to 97. Two independent reviews approved the 63 package-and-test paths above;
+they were committed raw for provenance, then made clean-clone portable without importing the
+untracked operational reconciliation document. The later candidate's signed `ActionAuthority`,
+approval-email ingress checks, governed desktop routing, and blocked/dry-run propagation were
+retained instead of the weaker root versions.
+
+Commit `9b42d532` forward-ports four additional bounded improvements: Docker credential
+exclusions while retaining `imports/` and `archive/`; recursive non-finite JSON sanitation on
+browser-facing SaaS cognition/manifests; exact `1.0` autonomous handover quality; and a regression
+test proving blocked tool JSON remains a failed HOLD. Eight consolidated packages were also
+mapped into the SaaS coverage taxonomy instead of becoming silent coverage gaps.
 
 ## Explicit holds and exclusions
 
@@ -132,12 +148,34 @@ The following completed under explicit offline/dry-run/audit/import-suppressed c
 - isolated `Kings_Accounting_Suite`: 12 passed
 - appliance packaging/workflow: 31 passed
 - canonical bootstrap and unified organism builder: 7 passed
+- dormant grant/approval/connectors/gates/identity/portal bundle: 879 passed
+- forward-ported JSON, handover, local-action, SaaS coverage, approval, and tenant-security
+  tests: passed
 - `git fsck --no-dangling --no-reflogs`: passed
 
 A high-confidence credential-pattern scan of the merged diff found only deliberately synthetic
 negative-test fixtures in six test files; their values are test-only and no production credential
 material was accepted from those signals.
 
-Full-repository validation, final root-checkout import verification, final secret scan, GitHub
-publication, and remote branch read-back are intentionally left pending here until their receipts
-exist. A local test pass or commit is not a GitHub outcome.
+The final read-only secret audit compared the upstream base with the integration tip across 668
+changed tracked paths plus this receipt. Its six high-confidence signatures were confined to five
+synthetic-test path/category groups; 17 of 19 generic matches were also synthetic tests, and the
+remaining two were non-credential validator labels. It found no literal bearer token or production
+provider credential. `.env` and `.env1` remain local-only and ignored. The strengthened
+`.dockerignore` in `9b42d532` excludes `.env`, `.env.*`, `.env1`, `secrets/`, private-key files,
+and `id_rsa*`, while explicitly retaining the tracked `.env.example` template.
+
+The monolithic repository gate is **not recorded as green**. One broad quiet run lasted about
+24 minutes, reached 20%, and had accumulated nine failures before it was interrupted; quiet output
+did not preserve enough failure identity for a responsible classification. A deterministic
+`pytest -x -vv -p no:cacheprovider` retry spent 316 seconds collecting all 742 test modules and had
+not begun execution when stopped. No single blocking import was found (the largest measured
+self-import was about 104 ms), which points to cumulative suite-collection cost. Directory shards
+behaved normally: `tests/approval` passed 277/277 in 22.78 seconds; `tests/bio` collected 468 tests
+and showed no failure through the sampled 9% before the bounded triage stop. The appropriate next
+step is deterministic directory/root-file sharding, not an unsubstantiated product-code change.
+Because the broad repository gate is not green, this candidate is eligible only for publication to
+its named consolidation branch; it is not eligible for an automatic merge into GitHub `main`.
+
+GitHub publication and remote branch read-back remain pending at this point in the receipt. A local
+test pass or commit is not a GitHub outcome.
