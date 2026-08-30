@@ -15,3 +15,8 @@ aureon/operator/design_candidate_motion_policy_compiler.py text eol=lf
 aureon/operator/secure_immutable_artifact.py text eol=lf
 skills/aureon-harmonic-design-suite/references/design-doctrine.md text eol=lf
 aureon/operator/website_operator.defaults.json text eol=lf
+
+# Local GUI fixture integrity hashes exact bytes. Keep the fixed-hash manifest
+# and every recursively sealed CourseOps suite asset identical to their blobs.
+tests/fixtures/local_course_benchmark/benchmark_manifest.json text eol=lf
+tests/fixtures/courseops_21/** text eol=lf
