@@ -163,6 +163,7 @@ def register_saas_routes(app: Any) -> Any:
     """Mount the SaaS catalog/status routes onto an existing Flask app."""
     from flask import g, jsonify, request
 
+    from aureon.core.jsonsafe import json_safe
     from aureon.saas.catalog import build_catalog, render_manifests, write_frontend_manifests
     from aureon.saas.cognitive import provenance_block
     from aureon.saas.domains import (
@@ -547,32 +548,32 @@ def register_saas_routes(app: Any) -> Any:
     @_guarded
     def saas_cognition():
         # The whole substrate + provenance + truth-status roll-up.
-        return jsonify(build_cognitive_payload())
+        return jsonify(json_safe(build_cognitive_payload()))
 
     @app.get("/api/cognition/field")
     @_guarded
     def saas_cognition_field():
-        return jsonify({"surface": "field", "data": field_surface()})
+        return jsonify(json_safe({"surface": "field", "data": field_surface()}))
 
     @app.get("/api/cognition/bus")
     @_guarded
     def saas_cognition_bus():
-        return jsonify({"surface": "bus", "data": bus_surface()})
+        return jsonify(json_safe({"surface": "bus", "data": bus_surface()}))
 
     @app.get("/api/cognition/mycelium")
     @_guarded
     def saas_cognition_mycelium():
-        return jsonify({"surface": "mycelium", "data": mycelium_surface()})
+        return jsonify(json_safe({"surface": "mycelium", "data": mycelium_surface()}))
 
     @app.get("/api/cognition/connectome")
     @_guarded
     def saas_cognition_connectome():
-        return jsonify({"surface": "connectome", "data": connectome_surface()})
+        return jsonify(json_safe({"surface": "connectome", "data": connectome_surface()}))
 
     @app.get("/api/cognition/brain")
     @_guarded
     def saas_cognition_brain():
-        return jsonify({"surface": "brain", "data": brain_surface()})
+        return jsonify(json_safe({"surface": "brain", "data": brain_surface()}))
 
     @app.get("/api/manifests/<name>")
     @_guarded
@@ -583,7 +584,7 @@ def register_saas_routes(app: Any) -> Any:
         if name not in manifests:
             return jsonify({"error": {"code": 404, "message": f"unknown manifest: {name}",
                                       "available": sorted(manifests)}}), 404
-        return jsonify(manifests[name])
+        return jsonify(json_safe(manifests[name]))
 
     @app.post("/api/manifests/refresh")
     @_guarded

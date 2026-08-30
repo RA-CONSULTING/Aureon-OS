@@ -21,7 +21,7 @@ def _runner(status: str = "ok", ok: bool = True):
     return run
 
 
-def _forge_runner(ok: bool = True, handover_ready: bool = True):
+def _forge_runner(ok: bool = True, handover_ready: bool = True, score: float | None = None):
     def run(root: Path, prompt: str) -> dict:
         return {
             "status": "capability_forge_handover_ready" if handover_ready else "capability_forge_needs_repair",
@@ -35,18 +35,24 @@ def _forge_runner(ok: bool = True, handover_ready: bool = True):
             "artifact_quality_report": {
                 "status": "artifact_quality_passed" if handover_ready else "artifact_quality_failed",
                 "handover_ready": handover_ready,
-                "score": 1.0 if handover_ready else 0.2,
+                "score": score if score is not None else (1.0 if handover_ready else 0.2),
             },
         }
 
     return run
 
 
-def _runner_overrides(*, forge_ok: bool = True, handover_ready: bool = True) -> dict:
+def _runner_overrides(
+    *, forge_ok: bool = True, handover_ready: bool = True, score: float | None = None
+) -> dict:
     return {
         "coding_capability_unblocker": _runner("coding_gates_ready"),
         "creative_process_guardian": _runner("creative_guard_ready"),
-        "capability_forge": _forge_runner(ok=forge_ok, handover_ready=handover_ready),
+        "capability_forge": _forge_runner(
+            ok=forge_ok,
+            handover_ready=handover_ready,
+            score=score,
+        ),
         "autonomous_self_fix_director": _runner("self_fix_ready"),
     }
 
@@ -95,6 +101,30 @@ def test_failed_job_repairs_until_attempt_budget_then_blocks_handover(tmp_path: 
     assert job["handover_ready"] is False
     assert job["repair_attempts"][0]["failed_checks"] == ["quality_handover_ready"]
     assert report["ok"] is False
+
+
+def test_declared_ready_but_sub_full_quality_cannot_reach_handover(tmp_path: Path) -> None:
+    queued = enqueue_autonomous_job(
+        "build a nearly finished report",
+        root=tmp_path,
+        attempt_budget=1,
+    )
+    job_id = queued["jobs"][0]["job_id"]
+
+    report = tick_autonomous_jobs(
+        root=tmp_path,
+        job_id=job_id,
+        runner_overrides=_runner_overrides(handover_ready=True, score=0.999999),
+    )
+    job = report["jobs"][0]
+
+    assert job["state"] == "failed_after_budget"
+    assert job["handover_ready"] is False
+    quality = next(
+        check for check in job["proof_checklist"] if check["id"] == "quality_handover_ready"
+    )
+    assert quality["ok"] is False
+    assert "exact_full_quality=0.999999" in quality["evidence"]
 
 
 def test_manual_only_prompt_becomes_held_manual_boundary(tmp_path: Path) -> None:

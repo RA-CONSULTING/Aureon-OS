@@ -4,9 +4,10 @@ import argparse
 import hashlib
 import json
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence
+from typing import Any, Callable, Dict, List, Sequence
 
 from aureon.autonomous.aureon_agent_creative_process_guardian import (
     build_and_write_agent_creative_process_guardian,
@@ -18,7 +19,6 @@ from aureon.autonomous.aureon_capability_forge import REPO_ROOT, build_and_write
 from aureon.autonomous.aureon_coding_capability_unblocker import (
     build_and_write_coding_capability_unblocker,
 )
-
 
 SCHEMA_VERSION = "aureon-autonomous-job-executor-v1"
 DEFAULT_STATE_PATH = Path("state/aureon_autonomous_job_executor.json")
@@ -59,7 +59,7 @@ def _default_root() -> Path:
 
 
 def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _rooted(root: Path, rel: Path) -> Path:
@@ -106,7 +106,7 @@ def _detect_hard_holds(prompt: str) -> List[Dict[str, Any]]:
 
 
 def _new_job_id(prompt: str) -> str:
-    digest = hashlib.sha256(f"{prompt}|{time.time_ns()}".encode("utf-8")).hexdigest()[:12]
+    digest = hashlib.sha256(f"{prompt}|{time.time_ns()}".encode()).hexdigest()[:12]
     return f"job_{digest}"
 
 
@@ -147,7 +147,7 @@ def _priority_value(job: Dict[str, Any]) -> int:
         return 50
 
 
-def _select_job(jobs: Sequence[Dict[str, Any]], job_id: str = "") -> Optional[Dict[str, Any]]:
+def _select_job(jobs: Sequence[Dict[str, Any]], job_id: str = "") -> Dict[str, Any] | None:
     if job_id:
         for job in jobs:
             if job.get("job_id") == job_id:
@@ -177,6 +177,17 @@ def _summarize_jobs(state: Dict[str, Any]) -> Dict[str, Any]:
 
 def _proof_check(id_: str, ok: bool, evidence: str) -> Dict[str, Any]:
     return {"id": id_, "ok": bool(ok), "evidence": evidence}
+
+
+def _is_full_quality_score(value: Any) -> bool:
+    """Require an exact full-quality score before autonomous handover."""
+
+    if isinstance(value, bool) or value is None:
+        return False
+    try:
+        return Decimal(str(value)) == Decimal("1")
+    except (InvalidOperation, ValueError):
+        return False
 
 
 def _default_runners() -> Dict[str, Runner]:
@@ -233,7 +244,7 @@ def _advance_job(
     job: Dict[str, Any],
     *,
     root: Path,
-    runner_overrides: Optional[Dict[str, Runner]] = None,
+    runner_overrides: Dict[str, Runner] | None = None,
 ) -> Dict[str, Any]:
     now = _utc_now()
     job["updated_at"] = now
@@ -271,11 +282,21 @@ def _advance_job(
     job["state"] = "testing"
     job["phase"] = "testing"
     self_fix = _run_runner("autonomous_self_fix_director", runners["autonomous_self_fix_director"], root, prompt)
+    quality_score = quality_report.get("score")
+    quality_declared_ready = bool(
+        quality_report.get("handover_ready") or forge_payload.get("handover_ready")
+    )
+    quality_fully_complete = quality_declared_ready and _is_full_quality_score(quality_score)
     proof = [
         _proof_check("scope_ready", scope["ok"], str(scope["status"])),
         _proof_check("creative_guard_ready", creative["ok"], str(creative["status"])),
         _proof_check("build_route_ok", forge["ok"], str(forge["status"])),
-        _proof_check("quality_handover_ready", bool(quality_report.get("handover_ready") or forge_payload.get("handover_ready")), str(quality_report.get("status") or forge_payload.get("status"))),
+        _proof_check(
+            "quality_handover_ready",
+            quality_fully_complete,
+            f"{quality_report.get('status') or forge_payload.get('status')}; "
+            f"exact_full_quality={quality_score!r}",
+        ),
         _proof_check("self_fix_ok", self_fix["ok"], str(self_fix["status"])),
     ]
     job["proof_checklist"] = proof
@@ -295,7 +316,8 @@ def _advance_job(
         job["handover"] = {
             "state": "visible",
             "public_url": artifact_manifest.get("public_url") or artifact_manifest.get("preview_url") or "",
-            "quality_score": quality_report.get("score"),
+            "quality_score": quality_score,
+            "completion_policy": "exact_full_quality_1.000",
         }
         _append_stage(job, "handover_ready", True, job["handover"])
         return job
@@ -395,11 +417,11 @@ def _persist(root: Path, state: Dict[str, Any]) -> Dict[str, Any]:
 def enqueue_autonomous_job(
     prompt: str,
     *,
-    root: Optional[Path] = None,
+    root: Path | None = None,
     source: str = "operator",
     priority: str = "P50",
     attempt_budget: int = 2,
-    metadata: Optional[Dict[str, Any]] = None,
+    metadata: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     root = Path(root or _default_root()).resolve()
     state = _load_state(root)
@@ -429,9 +451,9 @@ def enqueue_autonomous_job(
 
 def tick_autonomous_jobs(
     *,
-    root: Optional[Path] = None,
+    root: Path | None = None,
     job_id: str = "",
-    runner_overrides: Optional[Dict[str, Runner]] = None,
+    runner_overrides: Dict[str, Runner] | None = None,
 ) -> Dict[str, Any]:
     root = Path(root or _default_root()).resolve()
     state = _load_state(root)
@@ -443,7 +465,7 @@ def tick_autonomous_jobs(
     return _persist(root, state)
 
 
-def get_autonomous_job_status(*, root: Optional[Path] = None, job_id: str = "") -> Dict[str, Any]:
+def get_autonomous_job_status(*, root: Path | None = None, job_id: str = "") -> Dict[str, Any]:
     root = Path(root or _default_root()).resolve()
     state = _load_state(root)
     state["summary"] = _summarize_jobs(state)
@@ -459,12 +481,12 @@ def get_autonomous_job_status(*, root: Optional[Path] = None, job_id: str = "") 
 def enqueue_and_tick_autonomous_job(
     prompt: str,
     *,
-    root: Optional[Path] = None,
+    root: Path | None = None,
     source: str = "operator",
     priority: str = "P50",
     attempt_budget: int = 2,
-    metadata: Optional[Dict[str, Any]] = None,
-    runner_overrides: Optional[Dict[str, Runner]] = None,
+    metadata: Dict[str, Any] | None = None,
+    runner_overrides: Dict[str, Runner] | None = None,
 ) -> Dict[str, Any]:
     state = enqueue_autonomous_job(
         prompt,
@@ -480,7 +502,7 @@ def enqueue_and_tick_autonomous_job(
     return state
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run Aureon's durable autonomous job executor.")
     parser.add_argument("--root", default="", help="Repository root. Defaults to current Aureon repo.")
     parser.add_argument("--prompt", default="", help="Prompt to enqueue.")

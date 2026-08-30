@@ -51,6 +51,16 @@ _FS_TO_PRODUCT: Dict[str, str] = {
     "integrations": "security",
     "code_architect": "self-improvement", "vault": "self-improvement",
     "generated": "self-improvement",
+    # Consolidated governed operations: each package remains separately visible
+    # in the coverage audit while sharing the closest public product domain.
+    "appliance": "self-improvement",
+    "approval": "security",
+    "briefing": "research",
+    "connectors": "security",
+    "gates": "security",
+    "grants": "research",
+    "identity": "security",
+    "portals": "security",
 }
 
 # Canonical entry point per filesystem domain: (module, attribute, kind).

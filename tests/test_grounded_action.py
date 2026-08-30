@@ -151,6 +151,31 @@ def test_bridge_never_labels_executor_failure_as_executed():
     assert r["error"] == "no_session"
 
 
+def test_bridge_maps_blocked_tool_json_to_failed_hold(monkeypatch):
+    class _BlockedRegistry:
+        @staticmethod
+        def execute(action, params):  # noqa: ANN001, ARG004
+            return '{"blocked": true, "reason": "test_hold"}'
+
+    monkeypatch.setattr(
+        "aureon.operator.tools.build_operator_tools",
+        lambda **_kwargs: _BlockedRegistry(),
+    )
+    bridge = LocalActionBridge(
+        gate=GroundedActionGate(enable_llm=False),
+        join=False,
+        armed=True,
+    )
+
+    result = bridge.perform("read_repo_file", {"path": "README.md"})
+
+    assert result["ok"] is False
+    assert result["execution_attempted"] is True
+    assert result["executed"] is False
+    assert result["result"]["blocked"] is True
+    assert result["error"] == "test_hold"
+
+
 # ── Λ(t) feedback source ─────────────────────────────────────────────────────
 
 def test_lambda_source_maps_action_activity():

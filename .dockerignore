@@ -18,8 +18,16 @@ build
 .coverage
 .pytest_cache
 .DS_Store
-.env.local
-.env.*.local
+# Runtime credentials are injected by the deployment environment and must
+# never become image-layer content. Keep the documented example available.
+.env
+.env.*
+.env1
+!.env.example
+secrets/
+*.pem
+*.key
+id_rsa*
 node_modules
 npm-debug.log*
 yarn-debug.log*
