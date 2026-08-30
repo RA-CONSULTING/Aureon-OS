@@ -67,6 +67,7 @@ _SUBSYSTEM_ROLES = {
     "council": "four-seat peer deliberation",
     "crown": "independent Queen conscience key",
     "brain_switchboard": "Ollama Cloud model routing for 41 agents and processes",
+    "queen_mind": "receipt-bound four-faculty cognitive identity",
 }
 
 if set(_SUBSYSTEM_ROLES) != set(REQUIRED_SUBSYSTEMS):
