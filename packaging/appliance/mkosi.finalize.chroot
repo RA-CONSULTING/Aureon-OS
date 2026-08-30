@@ -1,0 +1,53 @@
+#!/bin/sh
+set -eu
+
+if [ "${WITH_NETWORK:-1}" != "0" ]; then
+    echo "Aureon appliance finalization requires WITH_NETWORK=0" >&2
+    exit 70
+fi
+
+test ! -e /etc/aureon/firstboot.complete
+systemctl disable aureon-appliance.target aureon-operator.service \
+    aureon-organism.service aureon-hnc.service
+systemctl mask getty@tty1.service
+systemctl enable aureon-boot-attestation.service aureon-firstboot-console.service
+
+unit_roots='/etc/systemd/system /etc/systemd/system.control /etc/systemd/system.attached
+/run/systemd/system /run/systemd/system.control /run/systemd/transient /run/systemd/system.attached
+/run/systemd/generator.early /run/systemd/generator /run/systemd/generator.late
+/usr/local/lib/systemd/system'
+
+for root in $unit_roots /usr/lib/systemd/system; do
+    for generic in service.d target.d; do
+        test ! -e "$root/$generic"
+        test ! -L "$root/$generic"
+    done
+    if [ -d "$root" ] && find "$root" -mindepth 1 -maxdepth 1 \
+        \( -name 'aureon-*.service.d' -o -name 'aureon-*.target.d' \) \
+        -print -quit | grep -q .; then
+        echo "Aureon unit prefix drop-in found under $root" >&2
+        exit 71
+    fi
+done
+
+for unit in aureon-appliance.target aureon-operator.service aureon-organism.service \
+    aureon-hnc.service aureon-boot-attestation.service aureon-firstboot-console.service; do
+    test -f "/usr/lib/systemd/system/$unit"
+    test ! -L "/usr/lib/systemd/system/$unit"
+    for override_root in $unit_roots; do
+        test ! -e "$override_root/$unit"
+        test ! -L "$override_root/$unit"
+        test ! -e "$override_root/$unit.d"
+        test ! -L "$override_root/$unit.d"
+    done
+    test ! -e "/usr/lib/systemd/system/$unit.d"
+    test ! -L "/usr/lib/systemd/system/$unit.d"
+done
+
+test "$(systemctl is-enabled aureon-boot-attestation.service)" = enabled
+test "$(systemctl is-enabled aureon-firstboot-console.service)" = enabled
+test "$(systemctl is-enabled getty@tty1.service)" = masked
+test "$(systemctl is-enabled aureon-appliance.target 2>/dev/null || true)" = disabled
+test "$(systemctl is-enabled aureon-operator.service 2>/dev/null || true)" = disabled
+test "$(systemctl is-enabled aureon-organism.service 2>/dev/null || true)" = disabled
+test "$(systemctl is-enabled aureon-hnc.service 2>/dev/null || true)" = disabled

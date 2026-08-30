@@ -1,0 +1,8 @@
+[Unit]
+Description=Aureon local organism core
+ConditionPathExists=/etc/aureon/firstboot.complete
+Requires=aureon-operator.service aureon-organism.service aureon-hnc.service
+After=local-fs.target
+
+[Install]
+WantedBy=multi-user.target

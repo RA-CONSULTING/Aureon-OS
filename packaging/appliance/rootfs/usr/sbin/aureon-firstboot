@@ -1,0 +1,96 @@
+#!/bin/sh
+set -eu
+
+marker=/etc/aureon/firstboot.complete
+receipt=/var/lib/aureon-attestation/firstboot-receipt.json
+receipt_tmp=/run/aureon/firstboot-receipt.json.tmp
+mode=manual
+managed_units='aureon-appliance.target aureon-operator.service aureon-organism.service aureon-hnc.service aureon-boot-attestation.service aureon-firstboot-console.service'
+
+verify_effective_units() {
+    for unit in $managed_units; do
+        test "$(systemctl show --property=FragmentPath --value "$unit")" = "/usr/lib/systemd/system/$unit"
+        test -z "$(systemctl show --property=DropInPaths --value "$unit")"
+    done
+}
+
+verify_preapproval_enablement() {
+    test "$(systemctl is-enabled aureon-boot-attestation.service 2>/dev/null || true)" = enabled
+    test "$(systemctl is-enabled aureon-firstboot-console.service 2>/dev/null || true)" = enabled
+    test "$(systemctl is-enabled getty@tty1.service 2>/dev/null || true)" = masked
+    for unit in aureon-appliance.target aureon-operator.service aureon-organism.service aureon-hnc.service; do
+        test "$(systemctl is-enabled "$unit" 2>/dev/null || true)" = disabled
+    done
+}
+
+if [ "${1:-}" = "--status" ] && [ "$#" -eq 1 ]; then
+    if [ -f "$marker" ]; then
+        printf '%s\n' 'Aureon first boot is complete.'
+        exit 0
+    fi
+    printf '%s\n' 'Aureon first boot is pending.'
+    exit 1
+fi
+if [ "${1:-}" = "--console-gate" ] && [ "$#" -eq 1 ]; then
+    mode=console_gate
+elif [ "$#" -ne 0 ]; then
+    printf '%s\n' 'usage: aureon-firstboot [--status|--console-gate]' >&2
+    exit 64
+fi
+if [ "$(id -u)" -ne 0 ]; then
+    printf '%s\n' 'aureon-firstboot must be run as root on the local VM console' >&2
+    exit 77
+fi
+case "$(tty 2>/dev/null || true)" in
+    /dev/tty*|/dev/console) ;;
+    *) printf '%s\n' 'aureon-firstboot requires a local or hypervisor console TTY' >&2; exit 77 ;;
+esac
+if [ -e "$marker" ]; then
+    printf '%s\n' 'Aureon first boot was already completed; no change made.'
+    exit 0
+fi
+verify_effective_units
+verify_preapproval_enablement
+for unit in aureon-appliance.target aureon-operator.service aureon-organism.service aureon-hnc.service; do
+    if systemctl is-active --quiet "$unit"; then
+        printf '%s\n' "Aureon unit was active before owner approval: $unit" >&2
+        exit 78
+    fi
+done
+if [ "$mode" = console_gate ]; then
+    printf '%s\n' 'Aureon is offline and unprovisioned.'
+    printf '%s' 'Type ENABLE AUREON OFFLINE CORE to enable the three local core services: '
+    IFS= read -r response || exit 77
+    if [ "$response" != 'ENABLE AUREON OFFLINE CORE' ]; then
+        printf '%s\n' 'Exact owner-console approval phrase was not received.' >&2
+        exit 77
+    fi
+fi
+
+install -d -m 0750 -o aureon -g aureon /var/lib/aureon /var/log/aureon
+install -d -m 0700 -o root -g root /var/lib/aureon-attestation
+install -d -m 0755 -o root -g root /etc/aureon
+install -d -m 0700 -o root -g root /run/aureon
+umask 077
+
+rollback() {
+    systemctl stop aureon-appliance.target >/dev/null 2>&1 || true
+    systemctl disable aureon-appliance.target >/dev/null 2>&1 || true
+    rm -f "$marker" "$receipt_tmp" "$receipt" "$receipt.sha256"
+}
+trap rollback EXIT HUP INT TERM
+
+printf '%s\n' '{"schema":"aureon.appliance.firstboot.v1","status":"owner_enabled","channel":"local_console","trading_enabled":false,"local_actions_armed":false}' > "$receipt_tmp"
+systemctl enable aureon-appliance.target
+install -m 0444 -o root -g root /dev/null "$marker"
+systemctl start aureon-appliance.target
+for unit in aureon-appliance.target aureon-operator.service aureon-organism.service aureon-hnc.service; do
+    systemctl is-active --quiet "$unit"
+done
+install -m 0400 -o root -g root "$receipt_tmp" "$receipt"
+sha256sum "$receipt" > "$receipt.sha256"
+chmod 0400 "$receipt.sha256"
+chown root:root "$receipt.sha256"
+rm -f "$receipt_tmp"
+trap - EXIT HUP INT TERM
+printf '%s\n' 'Aureon organism core enabled in audit/offline mode on 127.0.0.1:8790.'
