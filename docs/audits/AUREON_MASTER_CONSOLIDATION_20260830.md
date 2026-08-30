@@ -4,7 +4,7 @@
 
 - Candidate checkout: `C:\Users\user\Aureon-OS-master-system-20260830_231506`
 - Candidate branch: `consolidate/master-system-20260830`
-- Publication state: **LOCAL CANDIDATE — GitHub publication and provider read-back pending**
+- Publication state: **PUBLISHED CONSOLIDATION BRANCH — GitHub provider read-back verified**
 - Runtime mode used for validation: offline, dry-run, audit, and import-side-effect suppression
 
 This receipt records source reconciliation. It does not authorize or claim a live trade,
@@ -177,5 +177,10 @@ step is deterministic directory/root-file sharding, not an unsubstantiated produ
 Because the broad repository gate is not green, this candidate is eligible only for publication to
 its named consolidation branch; it is not eligible for an automatic merge into GitHub `main`.
 
-GitHub publication and remote branch read-back remain pending at this point in the receipt. A local
-test pass or commit is not a GitHub outcome.
+GitHub accepted `consolidate/master-system-20260830` and returned the source-bearing tip
+`f8499b6317b0f53f5be60a34fc0b6d1b5df76745` through an independent `git ls-remote` read-back.
+At that checkpoint GitHub `main` remained unchanged at
+`f5fb1916c07ac26eb7fc38c34ff2dc9bd029e21d`. This receipt-only update is the sole subsequent
+change; its final provider read-back is reported in the operator handoff because a Git commit
+cannot embed its own SHA. The local push URL was restored to `disabled://owner-approval-required`
+after publication. No merge into `main`, live activation, submission, or deployment occurred.
