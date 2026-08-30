@@ -24,6 +24,7 @@ from aureon.autonomous.aureon_internal_coding_workforce import (
 SCHEMA_VERSION = "aureon-agent-company-brain-fabric-v1"
 CANONICAL_AGENT_COMPANY_ROLE_COUNT = 41
 VALID_BRAIN_LANES = frozenset({"coding", "architecture", "self_evolution", "fast", "general"})
+REGISTRY_ONLY_AGENT_COMPANY_DEPARTMENTS = frozenset({"public_design"})
 
 _CODING_TERMS = frozenset(
     {"code", "implementation", "file_edit", "react", "typescript", "testing", "build", "safe_patch"}
@@ -79,10 +80,20 @@ def brain_lane_for_role(role: AgentCompanyRole) -> str:
     return "general"
 
 
+def _canonical_brain_roles() -> list[AgentCompanyRole]:
+    """Keep registry-only planning roles outside the executable 41-seat fabric."""
+
+    return [
+        role
+        for role in _role_specs()
+        if role.department not in REGISTRY_ONLY_AGENT_COMPANY_DEPARTMENTS
+    ]
+
+
 def canonical_agent_company_brain_topology() -> tuple[Dict[str, str], Dict[str, tuple[str, str]]]:
     """Return the exact 41-role/41-process topology from the company registry."""
 
-    roles = _role_specs()
+    roles = _canonical_brain_roles()
     if len(roles) != CANONICAL_AGENT_COMPANY_ROLE_COUNT:
         raise WorkforceHold("canonical_agent_company_role_count_mismatch")
     if len({role.role_id for role in roles}) != len(roles) or len({role.title for role in roles}) != len(
@@ -100,7 +111,7 @@ def canonical_agent_company_brain_topology() -> tuple[Dict[str, str], Dict[str, 
 def validate_agent_company_brain_topology(
     role_lanes: Mapping[str, str], process_bindings: Mapping[str, tuple[str, str]]
 ) -> None:
-    roles = _role_specs()
+    roles = _canonical_brain_roles()
     expected_titles = {role.title for role in roles}
     expected_processes = {f"agent_company_role_cycle:{role.role_id}" for role in roles}
     if set(role_lanes) != expected_titles or set(process_bindings) != expected_processes:
@@ -181,6 +192,7 @@ def company_brain_fabric_report(workforce: InternalCodingWorkforce) -> Dict[str,
 
 __all__ = [
     "CANONICAL_AGENT_COMPANY_ROLE_COUNT",
+    "REGISTRY_ONLY_AGENT_COMPANY_DEPARTMENTS",
     "SCHEMA_VERSION",
     "VALID_BRAIN_LANES",
     "brain_lane_for_role",

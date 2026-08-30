@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.pl/schemas/aureon-visual-release-gate-manifest-v28.1.json",
+  "title": "Aureon V28 composite visual release gate manifest",
+  "description": "Hash-binds the canonical strict V28.3 axe receipt, manual pixel-review receipt and current website source. Policy and scope are fixed rather than caller-tunable.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "gateId",
+    "intent",
+    "releaseId",
+    "generatedAt",
+    "websiteTreeSha256",
+    "scope",
+    "policy",
+    "evidence"
+  ],
+  "properties": {
+    "schema": {
+      "const": "aureon-visual-release-gate-manifest-v28.1"
+    },
+    "gateId": {
+      "const": "aureon-v28-composite-visual-release"
+    },
+    "intent": {
+      "enum": [
+        "final-release",
+        "remediation-evidence"
+      ]
+    },
+    "releaseId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "generatedAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+    },
+    "websiteTreeSha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engines",
+        "routes",
+        "viewports"
+      ],
+      "properties": {
+        "engines": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "chromium",
+              "firefox",
+              "webkit"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "routes": {
+          "const": [
+            "home",
+            "about",
+            "community",
+            "contact",
+            "diligence",
+            "funding",
+            "investor",
+            "live",
+            "projects",
+            "publications",
+            "research",
+            "journal",
+            "updates",
+            "vision"
+          ]
+        },
+        "viewports": {
+          "const": [
+            "reflow",
+            "compact",
+            "mobile",
+            "tablet",
+            "laptop",
+            "desktop",
+            "wide"
+          ]
+        }
+      }
+    },
+    "policy": {
+      "const": {
+        "visualReceiptSchema": "aureon-website-visual-qa-v28.3",
+        "maxEvidenceAgeSeconds": 86400,
+        "requiredFinalReleaseEngines": [
+          "chromium",
+          "firefox",
+          "webkit"
+        ],
+        "permittedRemediationEngines": [
+          "chromium"
+        ],
+        "manualReviewableAxeIncompleteRuleIds": [
+          "color-contrast"
+        ],
+        "requireCurrentWebsiteTree": true,
+        "requireSelfHostedSource": true,
+        "requireAxeInstalled": true,
+        "requireUncappedAxeNodeEvidence": true,
+        "requireZeroAxeViolations": true,
+        "requireManualReviewOfEveryAxeIncompleteNode": true,
+        "requireZeroManualFailuresOrUnreviewed": true,
+        "preserveAutomatedIncompleteStatus": true
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "visualReceipt",
+        "manualPixelReviewReceipt"
+      ],
+      "properties": {
+        "visualReceipt": {
+          "$ref": "#/$defs/evidenceReference"
+        },
+        "manualPixelReviewReceipt": {
+          "$ref": "#/$defs/evidenceReference"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "intent": {
+            "const": "final-release"
+          }
+        },
+        "required": [
+          "intent"
+        ]
+      },
+      "then": {
+        "properties": {
+          "scope": {
+            "properties": {
+              "engines": {
+                "const": [
+                  "chromium",
+                  "firefox",
+                  "webkit"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "scope": {
+            "properties": {
+              "engines": {
+                "const": [
+                  "chromium"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "evidenceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^docs/audits/[A-Za-z0-9._-]+\\.json$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    }
+  }
+}

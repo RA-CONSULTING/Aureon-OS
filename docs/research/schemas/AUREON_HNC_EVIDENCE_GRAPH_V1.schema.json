@@ -1,0 +1,318 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureon.example/schemas/AUREON_HNC_EVIDENCE_GRAPH_V1.schema.json",
+  "title": "Aureon HNC evidence-control graph contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "component_id",
+    "issued_at",
+    "authority",
+    "route",
+    "placement",
+    "claim_register",
+    "claim_ids",
+    "process_steps",
+    "motion",
+    "budgets"
+  ],
+  "properties": {
+    "schema": {
+      "const": "aureon.hnc-evidence-graph-contract.v1"
+    },
+    "component_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{2,127}$"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "canonical_website_mutation",
+        "candidate_mutation",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "credential_access",
+        "network_access",
+        "human_visual_acceptance"
+      ],
+      "properties": {
+        "scope": {
+          "const": "source-neutral local HNC evidence-control component only"
+        },
+        "canonical_website_mutation": {
+          "const": "never"
+        },
+        "candidate_mutation": {
+          "const": "never"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "network_access": {
+          "const": "none"
+        },
+        "human_visual_acceptance": {
+          "const": "required before candidate transplant"
+        }
+      }
+    },
+    "route": {
+      "const": "/"
+    },
+    "placement": {
+      "const": "after-homepage-proof-rail"
+    },
+    "claim_register": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "const": "data/website_operator/public_claim_evidence_register.v1.json"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[A-F0-9]{64}$"
+        }
+      }
+    },
+    "claim_ids": {
+      "const": [
+        "hnc-research-framework",
+        "aureon-os-evidence-system"
+      ]
+    },
+    "process_steps": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/researchStep"
+        },
+        {
+          "$ref": "#/$defs/sourceStep"
+        },
+        {
+          "$ref": "#/$defs/osStep"
+        },
+        {
+          "$ref": "#/$defs/gateStep"
+        },
+        {
+          "$ref": "#/$defs/decisionStep"
+        }
+      ],
+      "items": false
+    },
+    "motion": {
+      "const": {
+        "trigger_ratio": 0.35,
+        "phase_interval_ms": 180,
+        "settled_by_ms": 900,
+        "maximum_displacement_px": 6,
+        "minimum_content_opacity": 0.72,
+        "repeats": false,
+        "reduced_motion": "static-complete"
+      }
+    },
+    "budgets": {
+      "const": {
+        "html_bytes": 2500,
+        "css_bytes": 5500,
+        "javascript_bytes": 1800,
+        "additional_requests": 0,
+        "binary_bytes": 0
+      }
+    }
+  },
+  "$defs": {
+    "stepBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "step_id",
+        "index",
+        "label",
+        "state_label",
+        "body",
+        "claim_id"
+      ],
+      "properties": {
+        "step_id": {
+          "type": "string"
+        },
+        "index": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "state_label": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        },
+        "claim_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "researchStep": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/stepBase"
+        },
+        {
+          "properties": {
+            "step_id": {
+              "const": "research-record"
+            },
+            "index": {
+              "const": "01"
+            },
+            "label": {
+              "const": "Research record"
+            },
+            "state_label": {
+              "const": "Research proposition"
+            },
+            "claim_id": {
+              "const": "hnc-research-framework"
+            }
+          }
+        }
+      ]
+    },
+    "sourceStep": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/stepBase"
+        },
+        {
+          "properties": {
+            "step_id": {
+              "const": "source-claim-state"
+            },
+            "index": {
+              "const": "02"
+            },
+            "label": {
+              "const": "Source + claim state"
+            },
+            "state_label": {
+              "const": "Control state"
+            },
+            "claim_id": {
+              "const": null
+            }
+          }
+        }
+      ]
+    },
+    "osStep": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/stepBase"
+        },
+        {
+          "properties": {
+            "step_id": {
+              "const": "aureon-os-control"
+            },
+            "index": {
+              "const": "03"
+            },
+            "label": {
+              "const": "Aureon OS control"
+            },
+            "state_label": {
+              "const": "Company-built"
+            },
+            "claim_id": {
+              "const": "aureon-os-evidence-system"
+            }
+          }
+        }
+      ]
+    },
+    "gateStep": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/stepBase"
+        },
+        {
+          "properties": {
+            "step_id": {
+              "const": "human-gate"
+            },
+            "index": {
+              "const": "04"
+            },
+            "label": {
+              "const": "Human gate"
+            },
+            "state_label": {
+              "const": "Authority gate"
+            },
+            "claim_id": {
+              "const": null
+            }
+          }
+        }
+      ]
+    },
+    "decisionStep": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/stepBase"
+        },
+        {
+          "properties": {
+            "step_id": {
+              "const": "bounded-decision"
+            },
+            "index": {
+              "const": "05"
+            },
+            "label": {
+              "const": "Bounded decision"
+            },
+            "state_label": {
+              "const": "Retained decision"
+            },
+            "claim_id": {
+              "const": null
+            }
+          }
+        }
+      ]
+    }
+  }
+}

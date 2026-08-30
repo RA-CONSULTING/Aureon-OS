@@ -17,15 +17,108 @@ Every step goes through:
 
 from __future__ import annotations
 
+import json
 import logging
 import os
+import re
 import threading
-import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Mapping, cast
 
 logger = logging.getLogger("aureon.core.goal_engine")
+
+
+# ---------------------------------------------------------------------------
+# Explicit, staged-only public website candidate delivery contract
+# ---------------------------------------------------------------------------
+#
+# Natural-language website goals intentionally continue to route through the
+# evidence/benchmark *analysis* cycle below.  A candidate lifecycle can only
+# be entered through ``submit_structured_goal`` with this exact intent and
+# request schema.  The delivery runner itself remains unable to promote,
+# package, back up, access credentials, or deploy a website.
+PUBLIC_WEBSITE_DESIGN_DELIVERY_INTENT = "public_website_design_delivery"
+PUBLIC_WEBSITE_DESIGN_DELIVERY_REQUEST_SCHEMA = "aureon.public-website-design-delivery-request.v1"
+PUBLIC_WEBSITE_DESIGN_DELIVERY_RESULT_SCHEMA = "aureon.public-website-design-delivery-engine-result.v1"
+_PUBLIC_WEBSITE_DESIGN_DELIVERY_ACTIONS = frozenset(
+    {
+        "create",
+        "stage",
+        "context",
+        "validate",
+        "initial-gate",
+        "visual-review",
+        "status",
+        "worker-lease",
+        "worker-submit",
+    }
+)
+_PUBLIC_WEBSITE_DESIGN_DELIVERY_FORBIDDEN_ACTIONS = frozenset(
+    {"deploy", "build_release", "gate_deployment", "promote_candidate", "apply_candidate"}
+)
+
+
+def _broker_receipt_matches_result(
+    *,
+    action: str,
+    request: Mapping[str, Any],
+    broker_result: Mapping[str, Any],
+    receipt: Path | None,
+    broker: Any,
+) -> bool:
+    """Require a returned broker result to match one immutable on-disk receipt.
+
+    The goal engine never trusts a convenient in-memory broker-shaped object
+    by itself.  This is a narrow read-back of the receipt returned by the
+    broker; the broker remains the authority for lease integrity and candidate
+    validation.
+    """
+
+    if receipt is None or not receipt.is_file() or receipt.is_symlink():
+        return False
+    try:
+        stored = json.loads(receipt.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    if not isinstance(stored, Mapping) or dict(stored) != dict(broker_result):
+        return False
+
+    expected_adapter = str(request.get("adapter_id") or broker.DEFAULT_TRUSTED_ADAPTER_ID)
+    common = (
+        broker_result.get("run_id") == request.get("run_id")
+        and broker_result.get("adapter_id") == expected_adapter
+        and broker_result.get("authority") == dict(broker.AUTHORITY)
+        and broker_result.get("release_eligible") is False
+        and broker_result.get("package_authority") == "none"
+        and broker_result.get("deployment_authority") == "none"
+        and broker_result.get("credential_access") == "none"
+    )
+    if not common:
+        return False
+    if action == "worker-lease":
+        lease_id = broker_result.get("lease_id")
+        return (
+            broker_result.get("schema") == broker.LEASE_SCHEMA
+            and broker_result.get("state") == "lease-issued"
+            and isinstance(lease_id, str)
+            and lease_id.startswith("lease-")
+        )
+    if action == "worker-submit":
+        outcome = broker_result.get("candidate_outcome")
+        validation = outcome.get("candidate_validation") if isinstance(outcome, Mapping) else None
+        return (
+            broker_result.get("schema") == broker.OUTCOME_SCHEMA
+            and broker_result.get("lease_id") == request.get("lease_id")
+            and broker_result.get("state") == "candidate-validated"
+            and isinstance(outcome, Mapping)
+            and outcome.get("state") == "candidate-validated"
+            and isinstance(validation, Mapping)
+            and validation.get("passed") is True
+        )
+    return False
+
 
 # ---------------------------------------------------------------------------
 # Graceful imports (same pattern as queen_sentient_loop.py)
@@ -34,67 +127,69 @@ try:
     from aureon.autonomous.aureon_agent_core import AureonAgentCore
     _HAS_AGENT_CORE = True
 except Exception:
-    AureonAgentCore = None  # type: ignore[assignment,misc]
+    AureonAgentCore = None
     _HAS_AGENT_CORE = False
 
 try:
-    from aureon.core.aureon_thought_bus import get_thought_bus, Thought
+    from aureon.core.aureon_thought_bus import Thought, get_thought_bus
+
     _HAS_THOUGHT_BUS = True
 except Exception:
-    get_thought_bus = None  # type: ignore[assignment]
-    Thought = None  # type: ignore[assignment,misc]
+    get_thought_bus = None
+    Thought = None
     _HAS_THOUGHT_BUS = False
 
 try:
     from aureon.core.aureon_lambda_engine import LambdaEngine, SubsystemReading
     _HAS_LAMBDA = True
 except Exception:
-    LambdaEngine = None  # type: ignore[assignment,misc]
-    SubsystemReading = None  # type: ignore[assignment,misc]
+    LambdaEngine = None
+    SubsystemReading = None
     _HAS_LAMBDA = False
 
 try:
     from aureon.autonomous.aureon_elephant_memory import ElephantMemory
     _HAS_ELEPHANT = True
 except Exception:
-    ElephantMemory = None  # type: ignore[assignment,misc]
+    ElephantMemory = None
     _HAS_ELEPHANT = False
 
 try:
     from aureon.vault.voice.self_dialogue import SelfDialogueEngine
     _HAS_SELF_DIALOGUE = True
 except Exception:
-    SelfDialogueEngine = None  # type: ignore[assignment,misc]
+    SelfDialogueEngine = None
     _HAS_SELF_DIALOGUE = False
 
 try:
     from aureon.vault.auris_metacognition import AurisMetacognition
     _HAS_AURIS = True
 except Exception:
-    AurisMetacognition = None  # type: ignore[assignment,misc]
+    AurisMetacognition = None
     _HAS_AURIS = False
 
 try:
-    from aureon.inhouse_ai.orchestrator import OpenMultiAgent
     from aureon.inhouse_ai.agent import AgentConfig
+    from aureon.inhouse_ai.orchestrator import OpenMultiAgent
+
     _HAS_SWARM = True
 except Exception:
-    OpenMultiAgent = None  # type: ignore[assignment,misc]
-    AgentConfig = None  # type: ignore[assignment,misc]
+    OpenMultiAgent = None
+    AgentConfig = None
     _HAS_SWARM = False
 
 try:
     from aureon.queen.temporal_ground import get_temporal_ground_station
     _HAS_TEMPORAL = True
 except Exception:
-    get_temporal_ground_station = None  # type: ignore[assignment]
+    get_temporal_ground_station = None
     _HAS_TEMPORAL = False
 
 try:
     from aureon.inhouse_ai.llm_adapter import LLMAdapter
     _HAS_LLM_ADAPTER = True
 except Exception:
-    LLMAdapter = None  # type: ignore[assignment,misc]
+    LLMAdapter = None
     _HAS_LLM_ADAPTER = False
 
 
@@ -110,9 +205,9 @@ class GoalStep:
     intent: str = ""           # maps to AureonAgentCore intent
     params: Dict[str, Any] = field(default_factory=dict)
     expected_outcome: str = ""
-    status: str = "pending"    # pending | active | completed | failed | skipped
-    result: Optional[Dict[str, Any]] = None
-    validation_result: Optional[Dict[str, Any]] = None
+    status: str = "pending"  # pending | active | completed | failed | skipped
+    result: Dict[str, Any] | None = None
+    validation_result: Dict[str, Any] | None = None
     coherence_at_execution: float = 0.0
     monologue: str = ""
 
@@ -240,7 +335,7 @@ class GoalExecutionEngine:
         self._ollama: Any = None   # injected after boot via set_ollama_adapter()
         self._agent_tools = self._build_agent_tools()
 
-        self._current_plan: Optional[GoalPlan] = None
+        self._current_plan: GoalPlan | None = None
         self._lock = threading.Lock()
         self._paused = threading.Event()
         self._paused.set()  # not paused initially
@@ -588,10 +683,12 @@ class GoalExecutionEngine:
         import json as _json
 
         for tool_name, spec in TOOLS.items():
-            intent = spec["intent"]
+            intent = cast(str, spec["intent"])
 
-            def _make_handler(intent_name):
-                def handler(args):
+            def _make_handler(
+                intent_name: str,
+            ) -> Callable[[Dict[str, Any]], str]:
+                def handler(args: Dict[str, Any]) -> str:
                     result = ac.execute(intent_name, args)
                     return _json.dumps(result, default=str)
                 return handler
@@ -756,6 +853,397 @@ class GoalExecutionEngine:
 
         return plan
 
+    def submit_structured_goal(
+        self,
+        *,
+        intent: str,
+        params: Mapping[str, Any],
+    ) -> GoalPlan:
+        """Execute one explicitly structured, staged-only delivery request.
+
+        This is deliberately separate from :meth:`submit_goal`.  Plain text
+        remains a planning and analysis interface; it cannot infer a candidate
+        creation or staging action.  At present the only accepted structured
+        intent is ``public_website_design_delivery`` and it must carry the
+        exact request schema plus explicit non-authority fields.
+
+        Structured delivery requests bypass the stash-pocket path because the
+        runner's immutable, hash-bound receipts are the record of work.  This
+        also avoids copying candidate paths or review evidence into unrelated
+        long-lived goal memory.
+        """
+        if intent != PUBLIC_WEBSITE_DESIGN_DELIVERY_INTENT:
+            raise ValueError("Only the staged public website delivery intent is accepted here.")
+
+        request = self._normalise_public_website_design_delivery_request(params)
+        action = str(request["action"])
+        objective = str(
+            request.get("goal") or f"Run the explicit staged public website delivery action: {action}."
+        )
+        plan = GoalPlan(
+            original_text=(f"[structured:{PUBLIC_WEBSITE_DESIGN_DELIVERY_INTENT}:{action}]"),
+            objective=objective,
+            steps=[
+                GoalStep(
+                    title=f"Aureon run staged public website delivery action: {action}",
+                    intent=PUBLIC_WEBSITE_DESIGN_DELIVERY_INTENT,
+                    params=request,
+                    expected_outcome=(
+                        "Immutable local staged-candidate evidence only; no canonical mutation, "
+                        "package, credential, backup, promotion, or deployment authority"
+                    ),
+                )
+            ],
+            success_criteria=(
+                "The explicit staged delivery action records only the requested bounded "
+                "pre-owner state and retains zero release or deployment authority"
+            ),
+        )
+
+        with self._lock:
+            self._cancelled = False
+            self._paused.set()
+
+        self._stats["goals_submitted"] += 1
+        self._current_plan = plan
+        self._publish(
+            "goal.submitted",
+            {
+                "intent": intent,
+                "structured": True,
+                "action": action,
+                "delivery_mode": "staged-only",
+                "deployment_authority": "none",
+            },
+        )
+        self._publish(
+            "goal.decomposed",
+            {
+                "goal_id": plan.goal_id,
+                "objective": plan.objective,
+                "structured": True,
+                "steps": [
+                    {
+                        "step_id": plan.steps[0].step_id,
+                        "title": plan.steps[0].title,
+                        "intent": plan.steps[0].intent,
+                    }
+                ],
+            },
+        )
+
+        # Never swarm, infer, or expand an explicit lifecycle transition.
+        # Exactly one requested state transition is evaluated sequentially.
+        plan.status = "active"
+        self._execute_plan_sequential(plan)
+        self._validate_goal(plan)
+
+        if plan.status == "completed":
+            self._stats["goals_completed"] += 1
+            self._publish(
+                "goal.completed",
+                {
+                    "goal_id": plan.goal_id,
+                    "objective": plan.objective,
+                    "steps_total": 1,
+                    "steps_ok": 1,
+                    "structured": True,
+                },
+            )
+        else:
+            self._stats["goals_failed"] += 1
+            self._publish(
+                "goal.failed",
+                {
+                    "goal_id": plan.goal_id,
+                    "objective": plan.objective,
+                    "status": plan.status,
+                    "structured": True,
+                },
+            )
+        return plan
+
+    @staticmethod
+    def _normalise_public_website_design_delivery_request(
+        params: Mapping[str, Any],
+    ) -> Dict[str, Any]:
+        """Validate the narrow structured contract before the runner imports.
+
+        All evidence inputs are repository-relative paths.  The delivery
+        runner independently validates their allowed artifact roots; rejecting
+        absolute and parent-traversal paths here keeps the engine from becoming
+        a generic filesystem dispatcher.
+        """
+        if not isinstance(params, Mapping):
+            raise ValueError("Structured website delivery params must be an object.")
+        request = dict(params)
+        if request.get("request_schema") != PUBLIC_WEBSITE_DESIGN_DELIVERY_REQUEST_SCHEMA:
+            raise ValueError("Structured website delivery requires its exact request_schema.")
+        if request.get("delivery_mode") != "staged-only":
+            raise ValueError("Structured website delivery must declare delivery_mode='staged-only'.")
+        if request.get("release_eligible") is not False:
+            raise ValueError("Structured website delivery must declare release_eligible=false.")
+        if request.get("package_authority") != "none":
+            raise ValueError("Structured website delivery must declare package_authority='none'.")
+        if request.get("deployment_authority") != "none":
+            raise ValueError("Structured website delivery must declare deployment_authority='none'.")
+
+        action = request.get("action")
+        if not isinstance(action, str):
+            raise ValueError("Structured website delivery field 'action' must be a string.")
+        if action in _PUBLIC_WEBSITE_DESIGN_DELIVERY_FORBIDDEN_ACTIONS:
+            raise ValueError("Promotion, release, and deployment actions are not available to this engine.")
+        if action not in _PUBLIC_WEBSITE_DESIGN_DELIVERY_ACTIONS:
+            raise ValueError("Structured website delivery action is not recognised.")
+
+        common_fields = {
+            "request_schema",
+            "action",
+            "delivery_mode",
+            "release_eligible",
+            "package_authority",
+            "deployment_authority",
+        }
+        action_fields = {
+            "create": {
+                "goal",
+                "route_id",
+                "reconciliation_receipt",
+                "owner_source_decision",
+                "backup_receipt",
+                "design_cycle_receipt",
+                "design_copy_task_id",
+                "run_id",
+            },
+            "stage": {"run_id"},
+            "context": {"run_id"},
+            "validate": {"run_id", "claim_impacts", "claim_surface_manifest"},
+            "initial-gate": {"run_id", "visual_receipt", "route_name", "engine_name"},
+            "visual-review": {"run_id", "capture_receipt", "manual_review", "human_acceptance"},
+            "status": {"run_id"},
+            # A broker lease is deliberately an explicit, one-action request.
+            # ``ttl_seconds`` maps directly to the broker's bounded API and
+            # does not expose a repository root, clock, credentials, or any
+            # release capability to the goal engine.
+            "worker-lease": {"run_id", "adapter_id", "ttl_seconds"},
+            # Keep the sealed worker submission flat and exact.  The broker
+            # independently verifies each manifest and allows no authority
+            # fields or worker-authored QA evidence in it.
+            "worker-submit": {
+                "run_id",
+                "lease_id",
+                "adapter_id",
+                "patch_manifest",
+                "claim_impact_manifest",
+                "claim_surface_manifest",
+                "feedback_response_manifest",
+            },
+        }
+        allowed_fields = common_fields | action_fields[action]
+        unexpected = sorted(str(key) for key in request if key not in allowed_fields)
+        if unexpected:
+            raise ValueError(
+                "Structured website delivery contains unsupported fields: " + ", ".join(unexpected)
+            )
+
+        def required_text(field: str) -> str:
+            value = request.get(field)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"Structured website delivery field '{field}' must be a non-empty string.")
+            return value.strip()
+
+        def relative_artifact(field: str, *, optional: bool = False) -> str | None:
+            value = request.get(field)
+            if value is None and optional:
+                return None
+            text = required_text(field)
+            normalised = text.replace("\\", "/")
+            parts = [part for part in normalised.split("/") if part]
+            if (
+                normalised.startswith("/")
+                or normalised.startswith("//")
+                or any(part == ".." for part in parts)
+                or (parts and ":" in parts[0])
+            ):
+                raise ValueError(
+                    f"Structured website delivery field '{field}' must be a repository-relative path."
+                )
+            return "/".join(parts)
+
+        normalised: Dict[str, Any] = {
+            "request_schema": PUBLIC_WEBSITE_DESIGN_DELIVERY_REQUEST_SCHEMA,
+            "action": action,
+            "delivery_mode": "staged-only",
+            "release_eligible": False,
+            "package_authority": "none",
+            "deployment_authority": "none",
+        }
+        if action == "create":
+            normalised.update(
+                {
+                    "goal": required_text("goal"),
+                    "route_id": required_text("route_id"),
+                    "reconciliation_receipt": relative_artifact("reconciliation_receipt"),
+                    "run_id": required_text("run_id"),
+                }
+            )
+            for field in ("owner_source_decision", "backup_receipt"):
+                value = relative_artifact(field, optional=True)
+                if value is not None:
+                    normalised[field] = value
+            design_cycle_receipt = relative_artifact(
+                "design_cycle_receipt",
+                optional=True,
+            )
+            design_copy_task_id = request.get("design_copy_task_id")
+            if (design_cycle_receipt is None) != (design_copy_task_id is None):
+                raise ValueError(
+                    "Structured website copy delivery requires both "
+                    "'design_cycle_receipt' and 'design_copy_task_id'."
+                )
+            if design_cycle_receipt is not None:
+                task_id = required_text("design_copy_task_id")
+                if re.fullmatch(r"DESIGN-COPY-[0-9]{3}", task_id) is None:
+                    raise ValueError(
+                        "Structured website field 'design_copy_task_id' must be DESIGN-COPY-NNN."
+                    )
+                normalised["design_cycle_receipt"] = design_cycle_receipt
+                normalised["design_copy_task_id"] = task_id
+        elif action in {"stage", "context", "status"}:
+            normalised["run_id"] = required_text("run_id")
+        elif action == "validate":
+            impacts = request.get("claim_impacts")
+            if not isinstance(impacts, list) or not all(isinstance(item, Mapping) for item in impacts):
+                raise ValueError("Structured website delivery field 'claim_impacts' must be an object list.")
+            claim_surface_manifest = request.get("claim_surface_manifest")
+            if not isinstance(claim_surface_manifest, list) or not all(
+                isinstance(item, Mapping) for item in claim_surface_manifest
+            ):
+                raise ValueError(
+                    "Structured website delivery field 'claim_surface_manifest' must be an object list."
+                )
+            normalised["run_id"] = required_text("run_id")
+            normalised["claim_impacts"] = [dict(item) for item in impacts]
+            normalised["claim_surface_manifest"] = [dict(item) for item in claim_surface_manifest]
+        elif action == "initial-gate":
+            engine_name = request.get("engine_name")
+            if engine_name is None:
+                engine_name = "chromium"
+            if not isinstance(engine_name, str) or not engine_name.strip():
+                raise ValueError(
+                    "Structured website delivery field 'engine_name' must be a non-empty string."
+                )
+            normalised.update(
+                {
+                    "run_id": required_text("run_id"),
+                    "visual_receipt": relative_artifact("visual_receipt"),
+                    "route_name": required_text("route_name"),
+                    "engine_name": engine_name.strip(),
+                }
+            )
+        elif action == "visual-review":
+            normalised.update(
+                {
+                    "run_id": required_text("run_id"),
+                    "capture_receipt": relative_artifact("capture_receipt"),
+                    "manual_review": relative_artifact("manual_review"),
+                    "human_acceptance": relative_artifact("human_acceptance"),
+                }
+            )
+        elif action == "worker-lease":
+            normalised["run_id"] = required_text("run_id")
+            adapter_id = request.get("adapter_id")
+            if adapter_id is not None:
+                if not isinstance(adapter_id, str) or not adapter_id.strip():
+                    raise ValueError(
+                        "Structured website delivery field 'adapter_id' must be a non-empty string."
+                    )
+                normalised["adapter_id"] = adapter_id.strip()
+            ttl_seconds = request.get("ttl_seconds")
+            if ttl_seconds is not None:
+                if (
+                    not isinstance(ttl_seconds, int)
+                    or isinstance(ttl_seconds, bool)
+                    or not 1 <= ttl_seconds <= 900
+                ):
+                    raise ValueError(
+                        "Structured website delivery field 'ttl_seconds' must be an integer from 1 to 900."
+                    )
+                normalised["ttl_seconds"] = ttl_seconds
+        elif action == "worker-submit":
+            def contains_worker_qa_field(value: object) -> bool:
+                pending = [value]
+                visited_containers: set[int] = set()
+                while pending:
+                    nested = pending.pop()
+                    if isinstance(nested, Mapping):
+                        identity = id(nested)
+                        if identity in visited_containers:
+                            continue
+                        visited_containers.add(identity)
+                        for key, child in nested.items():
+                            if isinstance(key, str) and key.casefold() == "test_manifest":
+                                return True
+                            pending.append(child)
+                    elif isinstance(nested, (list, tuple)):
+                        identity = id(nested)
+                        if identity in visited_containers:
+                            continue
+                        visited_containers.add(identity)
+                        pending.extend(nested)
+                return False
+
+            try:
+                json.dumps(request, ensure_ascii=False, allow_nan=False)
+            except (TypeError, ValueError, OverflowError, RecursionError) as exc:
+                raise ValueError(
+                    "Structured website delivery worker submissions must be "
+                    "acyclic JSON-compatible objects."
+                ) from exc
+            if contains_worker_qa_field(request):
+                raise ValueError(
+                    "Structured website delivery worker submissions must not contain "
+                    "worker-authored test_manifest evidence."
+                )
+
+            normalised.update(
+                {
+                    "run_id": required_text("run_id"),
+                    "lease_id": required_text("lease_id"),
+                    "adapter_id": required_text("adapter_id"),
+                }
+            )
+            for field in (
+                "patch_manifest",
+                "claim_impact_manifest",
+                "claim_surface_manifest",
+            ):
+                manifest = request.get(field)
+                if not isinstance(manifest, list) or not all(isinstance(item, Mapping) for item in manifest):
+                    raise ValueError(f"Structured website delivery field '{field}' must be an object list.")
+                normalised[field] = [dict(item) for item in manifest]
+            raw_feedback_responses = request.get("feedback_response_manifest")
+            if not isinstance(raw_feedback_responses, Mapping):
+                raise ValueError(
+                    "Structured website delivery field 'feedback_response_manifest' "
+                    "must be an object keyed by controlled signal id."
+                )
+            feedback_responses: Dict[str, Dict[str, Any]] = {}
+            for signal_id, response in raw_feedback_responses.items():
+                if not isinstance(signal_id, str) or not signal_id or signal_id.strip() != signal_id:
+                    raise ValueError(
+                        "Structured website delivery field 'feedback_response_manifest' "
+                        "must use non-empty controlled signal ids."
+                    )
+                if not isinstance(response, Mapping):
+                    raise ValueError(
+                        "Structured website delivery field 'feedback_response_manifest' "
+                        "values must be objects."
+                    )
+                feedback_responses[signal_id] = dict(response)
+            normalised["feedback_response_manifest"] = feedback_responses
+        return normalised
+
     # ------------------------------------------------------------------
     # Decomposition (3-tier: LLM -> AgentCore regex -> heuristic)
     # ------------------------------------------------------------------
@@ -840,6 +1328,26 @@ class GoalExecutionEngine:
             )]
             plan.steps = steps
             plan.success_criteria = "Coding work journal evidence and UI surface are present and validated"
+            return plan
+
+        website_design = self._match_public_website_design_goal(text)
+        if website_design:
+            steps = [
+                GoalStep(
+                    title="Aureon run public website Design Nexus cycle",
+                    intent="public_website_design_cycle",
+                    params=website_design,
+                    expected_outcome=(
+                        "Source-bound competitor benchmark, specialist design council, "
+                        "objective quality gates, bounded work orders, and local-only receipt published"
+                    ),
+                )
+            ]
+            plan.steps = steps
+            plan.success_criteria = (
+                "Website design cycle passes local evidence, route, benchmark and Design Nexus gates "
+                "without receiving deployment authority"
+            )
             return plan
 
         capability_forge = self._match_capability_forge_goal(text)
@@ -1008,7 +1516,7 @@ class GoalExecutionEngine:
         plan.success_criteria = f"All {len(steps)} steps completed and validated"
         return plan
 
-    def _match_repo_self_repair_goal(self, text: str) -> Optional[Dict[str, Any]]:
+    def _match_repo_self_repair_goal(self, text: str) -> Dict[str, Any] | None:
         """Detect a request for Aureon to inspect and fix its repo/codebase."""
         import re as _re
 
@@ -1024,7 +1532,7 @@ class GoalExecutionEngine:
             "authoring_contract": "goal_engine_repo_self_repair_to_queen_code_architect",
         }
 
-    def _match_frontend_work_order_goal(self, text: str) -> Optional[Dict[str, Any]]:
+    def _match_frontend_work_order_goal(self, text: str) -> Dict[str, Any] | None:
         """Detect a request for Aureon to execute frontend evolution work orders."""
         import re as _re
 
@@ -1039,7 +1547,7 @@ class GoalExecutionEngine:
             "authoring_contract": "goal_engine_frontend_work_orders_to_queen_code_architect",
         }
 
-    def _match_coding_agent_skill_base_goal(self, text: str) -> Optional[Dict[str, Any]]:
+    def _match_coding_agent_skill_base_goal(self, text: str) -> Dict[str, Any] | None:
         """Detect a request to teach Aureon its coder-agent/skill/web-learning system."""
         import re as _re
 
@@ -1058,10 +1566,10 @@ class GoalExecutionEngine:
         return {
             "goal": text,
             "online": bool(web_hit),
-            "authoring_contract": "goal_engine_coding_agent_skill_base_to_queen_code_architect",
+            "authoring_contract": "goal_engine_coding_agent_skill_base_to_bounded_local_writer",
         }
 
-    def _match_director_capability_bridge_goal(self, text: str) -> Optional[Dict[str, Any]]:
+    def _match_director_capability_bridge_goal(self, text: str) -> Dict[str, Any] | None:
         """Detect a director-mode request to compare Codex-class ability with Aureon."""
         import re as _re
 
@@ -1077,7 +1585,7 @@ class GoalExecutionEngine:
             "authoring_contract": "goal_engine_director_capability_bridge_to_queen_code_architect",
         }
 
-    def _match_codex_capability_ingestion_goal(self, text: str) -> Optional[Dict[str, Any]]:
+    def _match_codex_capability_ingestion_goal(self, text: str) -> Dict[str, Any] | None:
         """Detect a request to ingest the Everything Codex Can Do source file."""
         import re as _re
 
@@ -1094,15 +1602,17 @@ class GoalExecutionEngine:
             "authoring_contract": "goal_engine_codex_capability_ingestion_to_queen_code_architect",
         }
 
-    def _match_coding_work_journal_goal(self, text: str) -> Optional[Dict[str, Any]]:
+    def _match_coding_work_journal_goal(self, text: str) -> Dict[str, Any] | None:
         """Detect a request for the coding organism to show its full work trail."""
         import re as _re
 
         lower = (text or "").lower()
         aureon_hit = "aureon" in lower or "system" in lower or "organism" in lower
-        journal_hit = _re.search(
-            r"\b(?:work journal|show its work|show the work|stages|prompt to finished files|prompt-to-finished|flow|prompt lane|send to aureon|operator terminal)\b",
-            lower,
+        journal_hit = bool(
+            _re.search(
+                r"\b(?:work journal|show its work|show the work|stages|prompt to finished files|prompt-to-finished|flow|prompt lane|send to aureon|operator terminal)\b",
+                lower,
+            )
         )
         coding_panel_hit = (
             "aureoncodingorganismconsole" in lower
@@ -1114,7 +1624,7 @@ class GoalExecutionEngine:
         ui_hit = _re.search(r"\b(?:ui|console|panel|screen|frontend|show|terminal|textarea|prompt box|prompt lane|send to aureon|local hub|endpoint)\b", lower)
         evidence_hit = _re.search(r"\b(?:prompt|route|goal steps|code proposal|files|tests|desktop handoff|completion|report|hub endpoint|local hub)\b", lower)
         if aureon_hit and coding_panel_hit and ui_hit and evidence_hit:
-            journal_hit = journal_hit or True
+            journal_hit = True
         if not (aureon_hit and journal_hit and ui_hit and evidence_hit):
             return None
         return {
@@ -1127,7 +1637,45 @@ class GoalExecutionEngine:
             ],
         }
 
-    def _match_capability_forge_goal(self, text: str) -> Optional[Dict[str, Any]]:
+    def _match_public_website_design_goal(self, text: str) -> Dict[str, Any] | None:
+        lowered = str(text or "").lower()
+        website_terms = (
+            "website",
+            "web site",
+            "webpage",
+            "web page",
+            "public site",
+            "landing page",
+            "home.pl",
+        )
+        design_terms = (
+            "design",
+            "redesign",
+            "graphic",
+            "animation",
+            "motion",
+            "brand",
+            "investor-ready",
+            "investor ready",
+            "competitor",
+            "benchmark",
+            "high spec",
+            "high-spec",
+            "serious",
+        )
+        if not any(term in lowered for term in website_terms):
+            return None
+        if not any(term in lowered for term in design_terms):
+            return None
+        return {
+            "goal": str(text or "").strip(),
+            "routes": [],
+            "run_external": "skip external" not in lowered,
+            "authority": "local-design-only",
+            "deployment_authority": "none",
+        }
+
+    def _match_capability_forge_goal(self, text: str) -> Dict[str, Any] | None:
         """Detect a request for Aureon's local capability forge / quality gate."""
         import re as _re
 
@@ -1156,7 +1704,7 @@ class GoalExecutionEngine:
             ],
         }
 
-    def _match_visual_asset_goal(self, text: str) -> Optional[Dict[str, Any]]:
+    def _match_visual_asset_goal(self, text: str) -> Dict[str, Any] | None:
         """Detect direct visual artifact requests before desktop heuristics split them."""
         import re as _re
 
@@ -1212,7 +1760,7 @@ class GoalExecutionEngine:
             ],
         }
 
-    def _match_agent_company_goal(self, text: str) -> Optional[Dict[str, Any]]:
+    def _match_agent_company_goal(self, text: str) -> Dict[str, Any] | None:
         """Detect a request to build Aureon's company-of-agents registry."""
         import re as _re
 
@@ -1245,7 +1793,7 @@ class GoalExecutionEngine:
             ],
         }
 
-    def _match_agent_creative_process_guardian_goal(self, text: str) -> Optional[Dict[str, Any]]:
+    def _match_agent_creative_process_guardian_goal(self, text: str) -> Dict[str, Any] | None:
         """Detect a request to bind all Aureon agents to mind/HNC creative process proof."""
         import re as _re
 
@@ -1276,7 +1824,7 @@ class GoalExecutionEngine:
             ],
         }
 
-    def _match_operational_ui_self_repair_goal(self, text: str) -> Optional[Dict[str, Any]]:
+    def _match_operational_ui_self_repair_goal(self, text: str) -> Dict[str, Any] | None:
         """Detect a request for Aureon to diagnose and fix its own UI defects."""
         import re as _re
 
@@ -1311,7 +1859,7 @@ class GoalExecutionEngine:
             "authoring_contract": "goal_engine_self_review_repair_to_queen_code_architect",
         }
 
-    def _match_operational_ui_goal(self, text: str) -> Optional[Dict[str, Any]]:
+    def _match_operational_ui_goal(self, text: str) -> Dict[str, Any] | None:
         """Detect a request for Aureon to design/write its own live UI."""
         import re as _re
 
@@ -1333,7 +1881,7 @@ class GoalExecutionEngine:
             "authoring_contract": "goal_engine_to_queen_code_architect",
         }
 
-    def _match_document_pdf_goal(self, text: str) -> Optional[Dict[str, Any]]:
+    def _match_document_pdf_goal(self, text: str) -> Dict[str, Any] | None:
         """Detect long-form writing requests that must become a PDF artifact."""
         import re as _re
 
@@ -2289,7 +2837,9 @@ class GoalExecutionEngine:
     def _execute_director_capability_bridge(self, step: GoalStep) -> Dict[str, Any]:
         """Build the Codex-class capability parity map and Aureon bridge orders."""
         try:
-            from aureon.autonomous.aureon_director_capability_bridge import build_and_write_director_capability_bridge
+            from aureon.autonomous.aureon_director_capability_bridge import (
+                build_and_write_director_capability_bridge,
+            )
 
             result = build_and_write_director_capability_bridge(str(step.params.get("goal") or step.title))
             summary = result.get("summary", {}) if isinstance(result, dict) else {}
@@ -2310,7 +2860,9 @@ class GoalExecutionEngine:
     def _execute_codex_capability_ingestion(self, step: GoalStep) -> Dict[str, Any]:
         """Let Aureon ingest the public Codex capability document and publish a completion report."""
         try:
-            from aureon.autonomous.aureon_codex_capability_ingestion import build_and_write_codex_capability_ingestion
+            from aureon.autonomous.aureon_codex_capability_ingestion import (
+                build_and_write_codex_capability_ingestion,
+            )
 
             result = build_and_write_codex_capability_ingestion(
                 str(step.params.get("source_md") or "EVERYTHING_CODEX_CAN_DO.md"),
@@ -2358,6 +2910,274 @@ class GoalExecutionEngine:
                 "success": False,
                 "result": None,
                 "tool_used": "agent_company_builder",
+                "error": str(exc),
+            }
+
+    def _execute_public_website_design_cycle(self, step: GoalStep) -> Dict[str, Any]:
+        """Run the source-bound, local-only public website design council."""
+        try:
+            import json
+
+            from aureon.operator.website_operator import WebsiteOperator
+
+            operator = WebsiteOperator.from_paths()
+            receipt_path = operator.design_cycle(
+                goal=str(step.params.get("goal") or step.title),
+                routes=step.params.get("routes") or None,
+                run_external=bool(step.params.get("run_external", True)),
+            )
+            payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+            passed = bool(payload.get("hard_gates_pass"))
+            return {
+                "success": passed,
+                "result": payload,
+                "tool_used": "website_operator_design_cycle",
+                "target_files": [str(receipt_path)],
+                "output_files": [str(receipt_path)],
+                "error": None if passed else payload.get("state"),
+            }
+        except Exception as exc:
+            return {
+                "success": False,
+                "result": None,
+                "tool_used": "website_operator_design_cycle",
+                "error": str(exc),
+            }
+
+    def _execute_public_website_design_delivery(self, step: GoalStep) -> Dict[str, Any]:
+        """Advance exactly one explicit staged-candidate runner action.
+
+        The dispatcher intentionally contains no canonical-mutation, package,
+        owner-gate, or deployment operation.  Every action is revalidated
+        against the structured contract before the runner is imported.
+        """
+        tool_used = "public_website_design_delivery_runner"
+        try:
+            request = self._normalise_public_website_design_delivery_request(step.params)
+            action = str(request["action"])
+
+            # The worker broker has a deliberately narrower surface than the
+            # runner.  Do not import or call runner APIs for either broker
+            # action: a lease or a sealed submission is one explicit action,
+            # never an inferred lifecycle transition.
+            if action in {"worker-lease", "worker-submit"}:
+                from aureon.autonomous import aureon_staged_design_worker_broker as broker
+
+                tool_used = "staged_design_worker_broker"
+                broker_receipt: Path | None = None
+                broker_result_payload: Any
+                action_success = True
+                broker_action_error: str | None = None
+                if action == "worker-lease":
+                    lease_kwargs: Dict[str, Any] = {}
+                    if "adapter_id" in request:
+                        lease_kwargs["adapter_id"] = request["adapter_id"]
+                    if "ttl_seconds" in request:
+                        lease_kwargs["ttl_seconds"] = request["ttl_seconds"]
+                    broker_result_payload, broker_receipt = broker.issue_staged_design_worker_lease(
+                        request["run_id"],
+                        **lease_kwargs,
+                    )
+                else:
+                    submission = {
+                        field: request[field]
+                        for field in (
+                            "patch_manifest",
+                            "claim_impact_manifest",
+                            "claim_surface_manifest",
+                            "feedback_response_manifest",
+                        )
+                    }
+                    broker_result_payload, broker_receipt = broker.submit_staged_design_worker_delivery(
+                        request["run_id"],
+                        request["lease_id"],
+                        adapter_id=request["adapter_id"],
+                        submission=submission,
+                    )
+                    candidate_outcome = (
+                        broker_result_payload.get("candidate_outcome")
+                        if isinstance(broker_result_payload, Mapping)
+                        else None
+                    )
+                    candidate_validation = (
+                        candidate_outcome.get("candidate_validation")
+                        if isinstance(candidate_outcome, Mapping)
+                        else None
+                    )
+                    action_success = bool(
+                        isinstance(candidate_outcome, Mapping)
+                        and candidate_outcome.get("state") == "candidate-validated"
+                        and isinstance(candidate_validation, Mapping)
+                        and candidate_validation.get("passed") is True
+                    )
+                    if not action_success:
+                        broker_action_error = str(
+                            (broker_result_payload or {}).get("state")
+                            if isinstance(broker_result_payload, Mapping)
+                            else "worker-submission-repair-required"
+                        )
+
+                # Equality with the broker's sealed authority map rejects
+                # missing, added, or altered authority fields.  The explicit
+                # top-level checks make the no-release/no-credentials result
+                # contract visible to goal-engine callers as well.
+                expected_authority = dict(broker.AUTHORITY)
+                boundary_ok = (
+                    isinstance(broker_result_payload, Mapping)
+                    and broker_result_payload.get("authority") == expected_authority
+                    and broker_result_payload.get("release_eligible") is False
+                    and broker_result_payload.get("package_authority") == "none"
+                    and broker_result_payload.get("deployment_authority") == "none"
+                    and broker_result_payload.get("credential_access") == "none"
+                )
+                receipt_verified = isinstance(
+                    broker_result_payload, Mapping
+                ) and _broker_receipt_matches_result(
+                    action=action,
+                    request=request,
+                    broker_result=broker_result_payload,
+                    receipt=broker_receipt,
+                    broker=broker,
+                )
+                if not boundary_ok:
+                    action_success = False
+                    broker_action_error = "worker-broker-authority-boundary-invalid"
+                elif not receipt_verified:
+                    action_success = False
+                    broker_action_error = "worker-broker-result-contract-invalid"
+
+                return {
+                    "success": action_success,
+                    "result": {
+                        "schema": PUBLIC_WEBSITE_DESIGN_DELIVERY_RESULT_SCHEMA,
+                        "action": action,
+                        "broker_result": broker_result_payload,
+                        "receipt": (str(broker_receipt) if broker_receipt is not None else None),
+                        "authority": expected_authority,
+                        "release_eligible": False,
+                        "package_authority": "none",
+                        "deployment_authority": "none",
+                        "credential_access": "none",
+                        "authority_boundary_verified": boundary_ok,
+                        "broker_receipt_verified": receipt_verified,
+                    },
+                    "tool_used": tool_used,
+                    "error": broker_action_error,
+                }
+
+            from aureon.autonomous import aureon_public_website_design_runner as runner
+
+            receipt: Path | None = None
+            result_payload: Any
+            action_success = True
+            action_error: str | None = None
+
+            if action == "create":
+                result_payload, receipt = runner.create_design_delivery_job(
+                    goal=request["goal"],
+                    route_id=request["route_id"],
+                    reconciliation_receipt=Path(request["reconciliation_receipt"]),
+                    owner_source_decision=(
+                        Path(request["owner_source_decision"])
+                        if request.get("owner_source_decision")
+                        else None
+                    ),
+                    backup_receipt=(
+                        Path(request["backup_receipt"]) if request.get("backup_receipt") else None
+                    ),
+                    design_cycle_receipt=(
+                        Path(request["design_cycle_receipt"]) if request.get("design_cycle_receipt") else None
+                    ),
+                    design_copy_task_id=(
+                        str(request["design_copy_task_id"]) if request.get("design_copy_task_id") else None
+                    ),
+                    run_id=request["run_id"],
+                )
+            elif action == "stage":
+                result_payload, receipt = runner.stage_design_delivery_job(request["run_id"])
+            elif action == "context":
+                result_payload = runner.worker_context_for_delivery_job(request["run_id"])
+            elif action == "validate":
+                result_payload, receipt = runner.validate_design_delivery_job(
+                    request["run_id"],
+                    claim_impacts=request["claim_impacts"],
+                    claim_surface_manifest=request["claim_surface_manifest"],
+                )
+                action_success = bool(
+                    (result_payload.get("candidate_validation") or {}).get("passed") is True
+                )
+                if not action_success:
+                    action_error = str(result_payload.get("state") or "candidate-repair-required")
+            elif action == "initial-gate":
+                result_payload, receipt = runner.evaluate_delivery_initial_gate(
+                    request["run_id"],
+                    visual_receipt=Path(request["visual_receipt"]),
+                    route_name=request["route_name"],
+                    engine_name=request["engine_name"],
+                )
+                action_success = bool((result_payload.get("initial_gate") or {}).get("passed") is True)
+                if not action_success:
+                    action_error = str(result_payload.get("state") or "initial-gate-rejected")
+            elif action == "visual-review":
+                result_payload, receipt = runner.record_delivery_visual_review(
+                    request["run_id"],
+                    capture_receipt=Path(request["capture_receipt"]),
+                    manual_review=Path(request["manual_review"]),
+                    human_acceptance=Path(request["human_acceptance"]),
+                )
+                action_success = bool((result_payload.get("visual_review") or {}).get("passed") is True)
+                if not action_success:
+                    action_error = str(result_payload.get("state") or "visual-review-repair-required")
+            elif action == "status":
+                job, receipt = runner.load_latest_delivery_job(request["run_id"])
+                verification = runner.verify_design_delivery_job(job)
+                result_payload = {"job": job, "verification": verification}
+                action_success = verification.get("passed") is True
+                if not action_success:
+                    action_error = "delivery-job-verification-blocked"
+            else:  # Defensive in case the action allow-list changes without this dispatcher.
+                raise ValueError("Structured website delivery action is not implemented by this engine.")
+
+            boundary_payload = (
+                result_payload.get("job")
+                if action == "status" and isinstance(result_payload, Mapping)
+                else result_payload
+            )
+            boundary = boundary_payload.get("authority") if isinstance(boundary_payload, Mapping) else None
+            boundary_ok = (
+                isinstance(boundary_payload, Mapping)
+                and boundary_payload.get("release_eligible") is False
+                and boundary_payload.get("package_authority") == "none"
+                and boundary_payload.get("deployment_authority") == "none"
+                and isinstance(boundary, Mapping)
+                and boundary.get("release_eligible") is False
+                and boundary.get("package_authority") == "none"
+                and boundary.get("deployment_authority") == "none"
+            )
+            if not boundary_ok:
+                action_success = False
+                action_error = "runner-authority-boundary-invalid"
+
+            return {
+                "success": action_success,
+                "result": {
+                    "schema": PUBLIC_WEBSITE_DESIGN_DELIVERY_RESULT_SCHEMA,
+                    "action": action,
+                    "runner_result": result_payload,
+                    "receipt": str(receipt) if receipt is not None else None,
+                    "release_eligible": False,
+                    "package_authority": "none",
+                    "deployment_authority": "none",
+                    "authority_boundary_verified": boundary_ok,
+                },
+                "tool_used": "public_website_design_delivery_runner",
+                "error": action_error,
+            }
+        except Exception as exc:
+            return {
+                "success": False,
+                "result": None,
+                "tool_used": tool_used,
                 "error": str(exc),
             }
 
@@ -2421,7 +3241,7 @@ class GoalExecutionEngine:
 
             root = Path.cwd().resolve()
             target_files = list(step.params.get("target_files") or [])
-            checks = []
+            checks: List[Dict[str, Any]] = []
             expectations = {
                 "aureon/autonomous/aureon_coding_organism_bridge.py": ["_build_work_journal", "aureon-coding-work-journal-v1"],
                 "frontend/src/components/generated/AureonCodingOrganismConsole.tsx": [
@@ -2581,7 +3401,6 @@ class GoalExecutionEngine:
         """
         form = step.params.get("form", "poem")
         topic = step.params.get("topic", "existence")
-        source_text = step.params.get("source_text", "")
 
         # 1. Gather factual background
         facts: List[str] = []
@@ -2671,8 +3490,9 @@ class GoalExecutionEngine:
             adapter_used = False
 
         # 5. Write to disk
-        import re as _re, os as _os
-        safe_topic = _re.sub(r'[^a-zA-Z0-9_]', '_', topic)[:40]
+        import re as _re
+
+        safe_topic = _re.sub(r"[^a-zA-Z0-9_]", "_", topic)[:40]
         artifact_path = f"/tmp/aureon_{form}_{safe_topic}.txt"
         try:
             with open(artifact_path, "w", encoding="utf-8") as f:
@@ -2749,9 +3569,21 @@ class GoalExecutionEngine:
         from collections import Counter
         top = [w for w, _ in Counter(keywords).most_common(12)]
         # Seed with strong default imagery if facts didn't give enough
-        defaults = ["spirit", "fire", "dawn", "stone", "voice", "land",
-                    "thunder", "flame", "iron", "courage", "silence", "banner"]
-        k = []
+        defaults = [
+            "spirit",
+            "fire",
+            "dawn",
+            "stone",
+            "voice",
+            "land",
+            "thunder",
+            "flame",
+            "iron",
+            "courage",
+            "silence",
+            "banner",
+        ]
+        k: List[str] = []
         seen = set()
         for w in top + defaults:
             if w not in seen and len(k) < 12:
@@ -2776,16 +3608,16 @@ class GoalExecutionEngine:
                 f"The {k[2]} rose like fire within the chest,",
                 f"And {k[3]} met {k[4]} neither blind nor vain,",
                 f"While {topic} held its people to the test.",
-                f"No king, no crown, no distant ruling hand,",
+                "No king, no crown, no distant ruling hand,",
                 f"Could silence what the {k[5]} spoke at night,",
                 f"For {k[6]} burned in every corner of the land,",
                 f"And {k[7]} would not yield to foreign might.",
-                f"The years will carry echoes of their name,",
-                f"The stones remember where the brave had stood,",
-                f"The wind still whispers of their righteous claim,",
-                f"And every field still tastes their sacred blood.",
-                f"  So let the verse remain though flesh must fall,",
-                f"  For {topic} answered when its time did call."
+                "The years will carry echoes of their name,",
+                "The stones remember where the brave had stood,",
+                "The wind still whispers of their righteous claim,",
+                "And every field still tastes their sacred blood.",
+                "  So let the verse remain though flesh must fall,",
+                f"  For {topic} answered when its time did call.",
             ]
             return "\n".join(lines)
 
@@ -2839,13 +3671,13 @@ class GoalExecutionEngine:
             f"They carried the {k[5]} toward the edge of the light.",
             "",
             f"The story of {topic} is a song no one forgets,",
-            f"A name the old rivers return without regrets,",
+            "A name the old rivers return without regrets,",
             f"For the ones who did not come home laid their {k[6]} in the flame,",
-            f"And the wind along the valleys still remembers their name.",
+            "And the wind along the valleys still remembers their name.",
             "",
             f"So raise a glass to {primary}, to the fallen and the free,",
-            f"To the stones that hold their footprints by the edge of every sea,",
-            f"As long as one breath whispers what the silent hearts adored,",
+            "To the stones that hold their footprints by the edge of every sea,",
+            "As long as one breath whispers what the silent hearts adored,",
             f"The spirit of {topic} will answer, and will never be ignored.",
         ]
         return "\n".join(lines)
@@ -2876,6 +3708,12 @@ class GoalExecutionEngine:
 
         if step.intent == "agent_company_builder":
             return self._execute_agent_company_builder(step)
+
+        if step.intent == PUBLIC_WEBSITE_DESIGN_DELIVERY_INTENT:
+            return self._execute_public_website_design_delivery(step)
+
+        if step.intent == "public_website_design_cycle":
+            return self._execute_public_website_design_cycle(step)
 
         if step.intent == "capability_forge":
             return self._execute_capability_forge(step)
@@ -2997,7 +3835,7 @@ class GoalExecutionEngine:
         if intent == "repo_self_repair":
             payload = result.get("result") or {}
             summary = payload.get("summary") if isinstance(payload, dict) else {}
-            authoring_path = payload.get("authoring_path") if isinstance(payload, dict) else []
+            authoring_path: Any = payload.get("authoring_path") if isinstance(payload, dict) else []
             passed = (
                 result.get("success")
                 and isinstance(summary, dict)
@@ -3054,17 +3892,17 @@ class GoalExecutionEngine:
                 and int((summary or {}).get("coding_logic_rule_count") or 0) >= 5
                 and isinstance(work_orders, list)
                 and work_orders
-                and "QueenCodeArchitect.write_file" in authoring_path
-                and writer == "QueenCodeArchitect"
+                and "bounded_local_writer.write_text" in authoring_path
+                and writer == "bounded-local-writer"
             ):
                 return {
                     "valid": True,
-                    "reason": "Coding-agent skill base published with who/what/where/when/how routing, active web/repo learning tools, and Queen provenance",
+                    "reason": "Coding-agent skill base published with who/what/where/when/how routing, active web/repo learning tools, and bounded local-writer provenance",
                     "confidence": 0.95,
                 }
             return {
                 "valid": False,
-                "reason": "Coding-agent skill base missing agents, web tools, logic map, work orders, or Queen provenance",
+                "reason": "Coding-agent skill base missing agents, web tools, logic map, work orders, or bounded local-writer provenance",
                 "confidence": 0.25,
             }
 
@@ -3124,7 +3962,7 @@ class GoalExecutionEngine:
             payload = result.get("result") or {}
             summary = payload.get("summary") if isinstance(payload, dict) else {}
             completion = payload.get("completion_report") if isinstance(payload, dict) else {}
-            roles = payload.get("roles") if isinstance(payload, dict) else []
+            roles: Any = payload.get("roles") if isinstance(payload, dict) else []
             agents = payload.get("agents") if isinstance(payload, dict) else []
             boundaries = payload.get("authority_boundaries") if isinstance(payload, dict) else []
             role_titles = {str(role.get("title")) for role in roles if isinstance(role, dict)}
@@ -3175,10 +4013,109 @@ class GoalExecutionEngine:
                 "confidence": 0.25,
             }
 
+        if intent == PUBLIC_WEBSITE_DESIGN_DELIVERY_INTENT:
+            payload = result.get("result") or {}
+            action = payload.get("action") if isinstance(payload, Mapping) else None
+            try:
+                request = self._normalise_public_website_design_delivery_request(step.params)
+                request_ok = request.get("action") == action
+            except ValueError:
+                request_ok = False
+            worker_broker_authority_ok = True
+            if action in {"worker-lease", "worker-submit"}:
+                try:
+                    from aureon.autonomous import aureon_staged_design_worker_broker as broker
+
+                    broker_result = payload.get("broker_result") if isinstance(payload, Mapping) else None
+                    expected_authority = dict(broker.AUTHORITY)
+                    worker_broker_authority_ok = (
+                        isinstance(broker_result, Mapping)
+                        and broker_result.get("authority") == expected_authority
+                        and broker_result.get("release_eligible") is False
+                        and broker_result.get("package_authority") == "none"
+                        and broker_result.get("deployment_authority") == "none"
+                        and broker_result.get("credential_access") == "none"
+                        and payload.get("authority") == expected_authority
+                        and payload.get("credential_access") == "none"
+                        and payload.get("broker_receipt_verified") is True
+                    )
+                except Exception:
+                    worker_broker_authority_ok = False
+            if (
+                success
+                and isinstance(payload, Mapping)
+                and payload.get("schema") == PUBLIC_WEBSITE_DESIGN_DELIVERY_RESULT_SCHEMA
+                and action in _PUBLIC_WEBSITE_DESIGN_DELIVERY_ACTIONS
+                and request_ok
+                and payload.get("authority_boundary_verified") is True
+                and (
+                    action not in {"worker-lease", "worker-submit"}
+                    or payload.get("broker_receipt_verified") is True
+                )
+                and payload.get("release_eligible") is False
+                and payload.get("package_authority") == "none"
+                and payload.get("deployment_authority") == "none"
+                and worker_broker_authority_ok
+            ):
+                return {
+                    "valid": True,
+                    "reason": (
+                        "Explicit structured website delivery recorded one bounded staged-candidate "
+                        "state with immutable runner evidence and zero promotion or deployment authority"
+                    ),
+                    "confidence": 0.97,
+                }
+            return {
+                "valid": False,
+                "reason": (
+                    "Structured website delivery is missing its exact staged-only request, runner "
+                    "or broker evidence, or zero-authority boundary"
+                ),
+                "confidence": 0.1,
+            }
+
+        if intent == "public_website_design_cycle":
+            payload = result.get("result") or {}
+            nexus = payload.get("design_nexus") if isinstance(payload, dict) else {}
+            boundaries = payload.get("authority_boundaries") if isinstance(payload, dict) else {}
+            council = payload.get("design_council") if isinstance(payload, dict) else []
+            gates = payload.get("hard_gates") if isinstance(payload, dict) else []
+            if (
+                success
+                and payload.get("schema") == "aureon-website-design-job-v1"
+                and bool(payload.get("source_tree_sha256"))
+                and bool(payload.get("hard_gates_pass"))
+                and float((nexus or {}).get("score") or 0.0)
+                >= float((nexus or {}).get("minimum_score") or 100.0)
+                and (boundaries or {}).get("deployment") == "none"
+                and bool((boundaries or {}).get("human_visual_acceptance_required"))
+                and payload.get("deployment_state") == "not-authorised-not-attempted"
+                and isinstance(council, list)
+                and len(council) >= 8
+                and isinstance(gates, list)
+                and len(gates) >= 5
+            ):
+                return {
+                    "valid": True,
+                    "reason": (
+                        "Public website Design Nexus published source-bound benchmark, specialist "
+                        "design council, objective local gates, human visual review and zero deployment authority"
+                    ),
+                    "confidence": 0.96,
+                }
+            return {
+                "valid": False,
+                "reason": (
+                    "Website design cycle is missing a passing source-bound gate, complete design "
+                    "council, human visual review boundary, or local-only authority"
+                ),
+                "confidence": 0.25,
+            }
+
         if intent == "capability_forge":
             payload = result.get("result") or {}
             summary = payload.get("summary") if isinstance(payload, dict) else {}
-            quality = payload.get("artifact_quality_report") if isinstance(payload, dict) else {}
+            quality: Any = payload.get("artifact_quality_report") if isinstance(payload, dict) else {}
             approval = payload.get("approval_state") if isinstance(payload, dict) else {}
             references = payload.get("reference_patterns") if isinstance(payload, dict) else []
             if (
@@ -3396,7 +4333,7 @@ class GoalExecutionEngine:
 
         try:
             state = self._lambda_engine.step()
-            return state.coherence_gamma
+            return cast(float, state.coherence_gamma)
         except Exception:
             return 0.5
 

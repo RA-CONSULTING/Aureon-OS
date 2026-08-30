@@ -1,0 +1,17 @@
+# Hash-bound website governance files must retain their reviewed Git-blob bytes
+# on every platform. Their runtime integrity checks deliberately hash raw bytes.
+aureon/operator/website_source_rationalisation.py text eol=lf
+tools/run-website-source-rationalisation.py text eol=lf
+aureon/operator/website_runtime_optimisation.py text eol=lf
+tools/run-website-runtime-optimisation.py text eol=lf
+data/website_operator/browser_acceptance_contract.v1.json text eol=lf
+docs/research/schemas/AUREON_WEBSITE_RUNTIME_OPTIMISATION_MEASUREMENT_V1.schema.json text eol=lf
+docs/research/schemas/AUREON_WEBSITE_RUNTIME_OPTIMISATION_PROPOSAL_V1.schema.json text eol=lf
+aureon/operator/website_runtime_measurement_provenance.py text eol=lf
+tools/run-website-runtime-measurement-provenance.py text eol=lf
+docs/research/schemas/AUREON_WEBSITE_RUNTIME_MEASUREMENT_STATIC_INTEGRITY_V1.schema.json text eol=lf
+tools/build-homepl-v28-narrow-release.ps1 text eol=lf
+aureon/operator/design_candidate_motion_policy_compiler.py text eol=lf
+aureon/operator/secure_immutable_artifact.py text eol=lf
+skills/aureon-harmonic-design-suite/references/design-doctrine.md text eol=lf
+aureon/operator/website_operator.defaults.json text eol=lf

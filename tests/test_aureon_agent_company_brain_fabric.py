@@ -173,9 +173,29 @@ def test_company_builder_explicitly_attaches_live_brain_fabric(tmp_path) -> None
     assert report["summary"]["executable_agents_created"] is True
     assert report["summary"]["agent_brain_count"] == 41
     assert report["summary"]["process_brain_count"] == 41
-    assert report["completion_report"]["did_provision_all_agent_and_process_brains"] is True
     assert report["brain_fabric"]["brain_passport_count"] == 82
-    assert all(role["brain_binding"]["provisioned"] for role in report["roles"])
     assert all(role["brain_binding"]["tools_enabled"] is False for role in report["roles"])
     assert all(agent["tools_enabled"] is False for agent in report["agents"])
-    assert all(agent["metadata"]["registry_only_v1"] is False for agent in report["agents"])
+    canonical_titles = set(canonical_agent_company_brain_topology()[0])
+    roles = {item["title"]: item for item in report["roles"]}
+    agents = {item["name"]: item for item in report["agents"]}
+    design_titles = {
+        title for title, item in roles.items() if item["department"] == "public_design"
+    }
+
+    assert len(canonical_titles) == 41
+    assert len(design_titles) == 9
+    assert report["summary"]["canonical_brain_role_count"] == 41
+    assert report["summary"]["registry_only_role_count"] == 9
+    assert report["summary"]["provisioned_role_count"] == 41
+    assert report["completion_report"]["did_provision_all_agent_and_process_brains"] is False
+    assert (
+        report["completion_report"]["did_provision_all_canonical_agent_and_process_brains"]
+        is True
+    )
+    assert report["completion_report"]["did_keep_public_design_roles_registry_only"] is True
+    assert all(roles[title]["brain_binding"]["provisioned"] for title in canonical_titles)
+    assert all(not roles[title]["brain_binding"]["provisioned"] for title in design_titles)
+    assert all(not agents[title]["metadata"]["registry_only_v1"] for title in canonical_titles)
+    assert all(agents[title]["metadata"]["registry_only_v1"] for title in design_titles)
+    assert all(agents[title]["tools_enabled"] is False for title in design_titles)

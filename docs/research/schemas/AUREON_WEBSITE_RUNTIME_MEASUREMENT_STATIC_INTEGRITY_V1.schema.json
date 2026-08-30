@@ -1,0 +1,425 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.pl/schemas/aureon-website-runtime-measurement-static-integrity-v1.json",
+  "title": "Aureon Website Runtime Measurement Static Integrity v1",
+  "description": "Strict evidence for read-only integrity verification of two pre-existing, identical image derivative replicas against a complete website source manifest. Header inspection is not a full image decode, copied bytes do not prove independent production, and reviewed launcher pins remain external. Verification is always provenance-unverified and production-blocked and grants no mutation, execution, candidate, package, release, deployment, network, or credential authority.",
+  "$comment": "The runtime verifier additionally enforces exact NFC portable paths, a 400000000-pixel product bound, and a maximum five-minute future clock skew.",
+  "type": "object",
+  "required": [
+    "schema",
+    "observed_at",
+    "run_id",
+    "state",
+    "mode",
+    "source_manifest",
+    "transformations",
+    "summary",
+    "eligible_for_proposal_compilation",
+    "authority",
+    "payload_sha256"
+  ],
+  "properties": {
+    "schema": {
+      "const": "aureon.website-runtime-measurement-static-integrity.v1"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]{1,6})?Z$"
+    },
+    "run_id": {
+      "$ref": "#/$defs/safeId"
+    },
+    "state": {
+      "const": "static-integrity-verified-production-blocked"
+    },
+    "mode": {
+      "const": "static-artifact-integrity-only"
+    },
+    "source_manifest": {
+      "$ref": "#/$defs/sourceManifest"
+    },
+    "transformations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5000,
+      "items": {
+        "$ref": "#/$defs/transformation"
+      }
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "eligible_for_proposal_compilation": {
+      "const": false
+    },
+    "authority": {
+      "$ref": "#/$defs/authority"
+    },
+    "payload_sha256": {
+      "$ref": "#/$defs/sha256"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "safeId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,80}$"
+    },
+    "safeRelativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*:)(?!.*[<>\"|?*])(?!.*[\\u0000-\\u001F])(?!.*(?:^|/)\\.\\.?(?:/|$))(?!.*//)(?!.*[ .](?:/|$))(?!.*[/]$).+$"
+    },
+    "positiveBytes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 536870912
+    },
+    "dimension": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20000
+    },
+    "mediaType": {
+      "enum": [
+        "image/png",
+        "image/jpeg",
+        "image/webp"
+      ]
+    },
+    "manifestFile": {
+      "type": "object",
+      "required": [
+        "path",
+        "bytes",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/safeRelativePath"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 536870912
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    },
+    "sourceManifest": {
+      "type": "object",
+      "required": [
+        "root",
+        "file_count",
+        "total_bytes",
+        "manifest_sha256",
+        "tree_sha256",
+        "files"
+      ],
+      "properties": {
+        "root": {
+          "const": "website"
+        },
+        "file_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "total_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 536870912
+        },
+        "manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 5000,
+          "items": {
+            "$ref": "#/$defs/manifestFile"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "replicaBase": {
+      "type": "object",
+      "required": [
+        "role",
+        "path",
+        "file_sha256",
+        "bytes",
+        "media_type",
+        "width",
+        "height"
+      ],
+      "properties": {
+        "role": {
+          "enum": [
+            "replica-a",
+            "replica-b"
+          ]
+        },
+        "path": {
+          "$ref": "#/$defs/safeRelativePath"
+        },
+        "file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "bytes": {
+          "$ref": "#/$defs/positiveBytes"
+        },
+        "media_type": {
+          "$ref": "#/$defs/mediaType"
+        },
+        "width": {
+          "$ref": "#/$defs/dimension"
+        },
+        "height": {
+          "$ref": "#/$defs/dimension"
+        }
+      },
+      "additionalProperties": false
+    },
+    "replicaA": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/replicaBase"
+        },
+        {
+          "properties": {
+            "role": {
+              "const": "replica-a"
+            },
+            "path": {
+              "$ref": "#/$defs/safeRelativePath"
+            }
+          }
+        }
+      ]
+    },
+    "replicaB": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/replicaBase"
+        },
+        {
+          "properties": {
+            "role": {
+              "const": "replica-b"
+            },
+            "path": {
+              "$ref": "#/$defs/safeRelativePath"
+            }
+          }
+        }
+      ]
+    },
+    "transformation": {
+      "type": "object",
+      "required": [
+        "id",
+        "source_path",
+        "source_sha256",
+        "source_bytes",
+        "source_media_type",
+        "source_width",
+        "source_height",
+        "projected_runtime_path",
+        "projected_sha256",
+        "projected_bytes",
+        "projected_media_type",
+        "projected_width",
+        "projected_height",
+        "expected_saving_bytes",
+        "replicas",
+        "source_master_preserved",
+        "execution_state"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/safeId"
+        },
+        "source_path": {
+          "$ref": "#/$defs/safeRelativePath"
+        },
+        "source_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_bytes": {
+          "$ref": "#/$defs/positiveBytes"
+        },
+        "source_media_type": {
+          "$ref": "#/$defs/mediaType"
+        },
+        "source_width": {
+          "$ref": "#/$defs/dimension"
+        },
+        "source_height": {
+          "$ref": "#/$defs/dimension"
+        },
+        "projected_runtime_path": {
+          "$ref": "#/$defs/safeRelativePath"
+        },
+        "projected_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "projected_bytes": {
+          "$ref": "#/$defs/positiveBytes"
+        },
+        "projected_media_type": {
+          "$ref": "#/$defs/mediaType"
+        },
+        "projected_width": {
+          "$ref": "#/$defs/dimension"
+        },
+        "projected_height": {
+          "$ref": "#/$defs/dimension"
+        },
+        "expected_saving_bytes": {
+          "$ref": "#/$defs/positiveBytes"
+        },
+        "replicas": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/replicaA"
+            },
+            {
+              "$ref": "#/$defs/replicaB"
+            }
+          ],
+          "items": false
+        },
+        "source_master_preserved": {
+          "const": true
+        },
+        "execution_state": {
+          "const": "pre-existing-static-artifacts-only"
+        }
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "transformation_count",
+        "source_bytes",
+        "projected_bytes",
+        "expected_saving_bytes",
+        "replica_bytes"
+      ],
+      "properties": {
+        "transformation_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "source_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2684354560000
+        },
+        "projected_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2684354560000
+        },
+        "expected_saving_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2684354560000
+        },
+        "replica_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5368709120000
+        }
+      },
+      "additionalProperties": false
+    },
+    "authority": {
+      "type": "object",
+      "required": [
+        "scope",
+        "measurement_creation_authority",
+        "source_selection_authority",
+        "canonical_website_mutation",
+        "physical_source_file_removal",
+        "encoding_execution",
+        "css_transformation_execution",
+        "reference_mutation",
+        "candidate_authority",
+        "staging_authority",
+        "package_authority",
+        "release_eligible",
+        "deployment_authority",
+        "network_access",
+        "credential_access"
+      ],
+      "properties": {
+        "scope": {
+          "const": "read-only static artifact integrity verification only"
+        },
+        "measurement_creation_authority": {
+          "const": "none"
+        },
+        "source_selection_authority": {
+          "const": "none"
+        },
+        "canonical_website_mutation": {
+          "const": "none"
+        },
+        "physical_source_file_removal": {
+          "const": "none"
+        },
+        "encoding_execution": {
+          "const": "none"
+        },
+        "css_transformation_execution": {
+          "const": "none"
+        },
+        "reference_mutation": {
+          "const": "none"
+        },
+        "candidate_authority": {
+          "const": "none"
+        },
+        "staging_authority": {
+          "const": "none"
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "network_access": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

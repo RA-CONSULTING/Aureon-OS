@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureon.local/schemas/aureon-design-candidate-visual-review-v1.json",
+  "title": "Aureon staged candidate visual-review receipt",
+  "description": "Binds one staged V30+ candidate-control receipt to candidate-hosted browser QA, screenshots, completed manual pixel review and a separate named human acceptance. It never grants canonical mutation, package, release, credential or deployment authority and never replaces fresh canonical V28 release evidence after owner-controlled promotion.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "reviewed_at",
+    "state",
+    "passed",
+    "release_eligible",
+    "package_authority",
+    "deployment_authority",
+    "canonical_promotion_authority",
+    "candidate",
+    "evidence",
+    "checks",
+    "next_gate"
+  ],
+  "properties": {
+    "schema": {
+      "const": "aureon.design-candidate-visual-review.v1"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "state": {
+      "enum": [
+        "prepromotion-visual-review-passed",
+        "blocked"
+      ]
+    },
+    "passed": {
+      "type": "boolean"
+    },
+    "release_eligible": {
+      "const": false
+    },
+    "package_authority": {
+      "const": "none"
+    },
+    "deployment_authority": {
+      "const": "none"
+    },
+    "canonical_promotion_authority": {
+      "const": "owner-controlled"
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "receipt",
+        "root",
+        "website_path",
+        "control_tree_sha256",
+        "visual_qa_tree_sha256"
+      ],
+      "properties": {
+        "receipt": {
+          "$ref": "#/$defs/reference"
+        },
+        "root": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}$"
+        },
+        "website_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "control_tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "visual_qa_tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capture",
+        "visual_receipt",
+        "manual_pixel_review",
+        "human_visual_acceptance"
+      ],
+      "properties": {
+        "capture": {
+          "$ref": "#/$defs/reference"
+        },
+        "visual_receipt": {
+          "$ref": "#/$defs/reference"
+        },
+        "manual_pixel_review": {
+          "$ref": "#/$defs/reference"
+        },
+        "human_visual_acceptance": {
+          "$ref": "#/$defs/reference"
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object"
+      }
+    },
+    "next_gate": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-Fa-f0-9]{64}$"
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,339 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.pl/schemas/aureon-design-stakeholder-feedback-v1.json",
+  "title": "Aureon privacy-preserving stakeholder design signal contract",
+  "description": "Exact local contracts for redacted stakeholder design signals and their hash-bound response manifest. Neither contract carries raw correspondence or website, claim, package, credential, connector, release or deployment authority.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/feedback"
+    },
+    {
+      "$ref": "#/$defs/responseManifest"
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{2,127}$"
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "raw_correspondence_access",
+        "canonical_website_mutation",
+        "claim_register_mutation",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "credential_access",
+        "network_access",
+        "connector_access",
+        "human_review"
+      ],
+      "properties": {
+        "scope": {
+          "const": "local privacy-preserving stakeholder design signals only"
+        },
+        "raw_correspondence_access": {
+          "const": "none"
+        },
+        "canonical_website_mutation": {
+          "const": "never"
+        },
+        "claim_register_mutation": {
+          "const": "never"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "network_access": {
+          "const": "none"
+        },
+        "connector_access": {
+          "const": "none"
+        },
+        "human_review": {
+          "const": "required before any staged design response"
+        }
+      }
+    },
+    "fileBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "const": "data/website_operator/public_claim_evidence_register.v1.json"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "evidenceSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "kind": {
+          "const": "human-created-redacted-evidence-snapshot"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^docs/research/[A-Za-z0-9][A-Za-z0-9._/-]*\\.(?:md|json)$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "routeScope": {
+      "enum": [
+        "/",
+        "/funding/investor-deck/",
+        "/projects/",
+        "/research/"
+      ]
+    },
+    "signal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signal_id",
+        "signal_kind",
+        "disposition",
+        "priority",
+        "requested_response_dimension",
+        "route_scope",
+        "claim_ids"
+      ],
+      "properties": {
+        "signal_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "signal_kind": {
+          "enum": [
+            "boundary-confirmation",
+            "clarity-gap",
+            "diligence-question",
+            "evidence-request",
+            "positioning-guidance"
+          ]
+        },
+        "disposition": {
+          "enum": [
+            "action-requested",
+            "consider",
+            "deferred",
+            "no-action"
+          ]
+        },
+        "priority": {
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "requested_response_dimension": {
+          "enum": [
+            "audience-specificity",
+            "business-model-clarity",
+            "claim-boundary",
+            "differentiation-clarity",
+            "evidence-hierarchy",
+            "first-visit-clarity",
+            "narrative-sequencing",
+            "product-clarity"
+          ]
+        },
+        "route_scope": {
+          "$ref": "#/$defs/routeScope"
+        },
+        "claim_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/identifier"
+          }
+        }
+      }
+    },
+    "feedback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "feedback_id",
+        "issued_at",
+        "refresh_by",
+        "authority",
+        "claim_register",
+        "evidence_snapshot",
+        "signals"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.design-stakeholder-feedback.v1"
+        },
+        "feedback_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "issued_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "refresh_by": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "authority": {
+          "$ref": "#/$defs/authority"
+        },
+        "claim_register": {
+          "$ref": "#/$defs/fileBinding"
+        },
+        "evidence_snapshot": {
+          "$ref": "#/$defs/evidenceSnapshot"
+        },
+        "signals": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/signal"
+          }
+        }
+      }
+    },
+    "feedbackResponseBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "feedback_id",
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "feedback_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "path": {
+          "const": "data/website_operator/design_stakeholder_feedback.v1.json"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "disposition",
+        "response_code",
+        "route_scope",
+        "changed_paths",
+        "claim_ids",
+        "signal_capsule_sha256"
+      ],
+      "properties": {
+        "disposition": {
+          "enum": [
+            "action-requested",
+            "consider",
+            "deferred",
+            "no-action"
+          ]
+        },
+        "response_code": {
+          "enum": [
+            "addressed",
+            "declined",
+            "deferred",
+            "unchanged"
+          ]
+        },
+        "route_scope": {
+          "$ref": "#/$defs/routeScope"
+        },
+        "changed_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(?:index\\.html|script\\.js|styles\\.css|funding/investor-deck/index\\.html|projects/index\\.html|research/index\\.html|data/(?:blades|research-catalogue)\\.json)$"
+          }
+        },
+        "claim_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/identifier"
+          }
+        },
+        "signal_capsule_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "responseManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "feedback",
+        "authority",
+        "responses",
+        "manifest_sha256"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.design-stakeholder-response-manifest.v1"
+        },
+        "feedback": {
+          "$ref": "#/$defs/feedbackResponseBinding"
+        },
+        "authority": {
+          "$ref": "#/$defs/authority"
+        },
+        "responses": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "$ref": "#/$defs/identifier"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/response"
+          }
+        },
+        "manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    }
+  }
+}

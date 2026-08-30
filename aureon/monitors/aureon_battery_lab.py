@@ -204,14 +204,17 @@ class BatteryLab:
 
         self._readings.append(reading)
 
-        # Detect transitions
-        if self._last_percent >= 0 and reading.percent != self._last_percent:
+        # Detect transitions. Preserve the previous value until both the event
+        # and its interval have been recorded; the old ordering updated
+        # ``_last_percent`` first, so transition timestamps were never advanced.
+        previous_percent = self._last_percent
+        if previous_percent >= 0 and reading.percent != previous_percent:
             elapsed = t - self._last_transition_time if self._last_transition_time > 0 else 0
             direction = "charge" if reading.percent > self._last_percent else "discharge"
 
             event = TransitionEvent(
                 timestamp=t,
-                from_pct=self._last_percent,
+                from_pct=previous_percent,
                 to_pct=reading.percent,
                 elapsed_since_last=elapsed,
                 rate_mw_at_transition=rate,
@@ -219,9 +222,9 @@ class BatteryLab:
             )
             self._transitions.append(event)
 
-        self._last_percent = reading.percent
-        if reading.percent != self._last_percent or self._last_transition_time == 0:
+        if previous_percent < 0 or reading.percent != previous_percent:
             self._last_transition_time = t
+        self._last_percent = reading.percent
 
         return reading
 

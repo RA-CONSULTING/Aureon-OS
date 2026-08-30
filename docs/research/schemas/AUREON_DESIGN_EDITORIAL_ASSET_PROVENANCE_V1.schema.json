@@ -1,0 +1,721 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.pl/schemas/AUREON_DESIGN_EDITORIAL_ASSET_PROVENANCE_V1.schema.json",
+  "title": "Aureon Design Editorial Asset Provenance v1",
+  "description": "Strict, non-authoritative per-asset provenance, representational-safety and controlled owner-reviewer rights-decision contract. Provider delivery evidence has no rights effect and global artwork policy remains not-cleared.",
+  "$ref": "#/$defs/manifest",
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{2,127}$"
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "global_artwork_policy_mutation",
+        "canonical_website_mutation",
+        "source_asset_import",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "credential_access",
+        "network_access",
+        "connector_access",
+        "human_rights_decision"
+      ],
+      "properties": {
+        "scope": {
+          "const": "local per-asset editorial provenance and rights preflight only"
+        },
+        "global_artwork_policy_mutation": {
+          "const": "never"
+        },
+        "canonical_website_mutation": {
+          "const": "never"
+        },
+        "source_asset_import": {
+          "const": "never"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "network_access": {
+          "const": "none"
+        },
+        "connector_access": {
+          "const": "none"
+        },
+        "human_rights_decision": {
+          "const": "required for each exact candidate-use-ready asset"
+        }
+      }
+    },
+    "globalArtworkPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "cleared_for_use",
+        "per_asset_effect",
+        "boundary"
+      ],
+      "properties": {
+        "state": {
+          "const": "not-cleared"
+        },
+        "cleared_for_use": {
+          "const": false
+        },
+        "per_asset_effect": {
+          "const": "candidate-use-ready only; never global clearance"
+        },
+        "boundary": {
+          "const": "File integrity and delivery evidence do not grant rights. Each exact asset, variant, route, destination and copy binding requires a separate named human rights decision before staged use."
+        }
+      }
+    },
+    "safeRoots": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_assets",
+        "website_assets",
+        "redacted_evidence",
+        "rights_decisions"
+      ],
+      "properties": {
+        "source_assets": {
+          "const": "docs/design-assets/substack-public-art"
+        },
+        "website_assets": {
+          "const": "website/assets/images/research/substack"
+        },
+        "redacted_evidence": {
+          "const": "docs/research/editorial-assets"
+        },
+        "rights_decisions": {
+          "const": "docs/research/editorial-assets/rights-decisions"
+        }
+      }
+    },
+    "evidenceBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "redacted-delivery-evidence",
+            "redacted-local-asset-inventory"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^docs/research/editorial-assets/(?!rights-decisions/)[A-Za-z0-9._-]+\\.json$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "sourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "media_type",
+        "bytes",
+        "width",
+        "height",
+        "frame_count",
+        "animation",
+        "metadata_profile",
+        "metadata_sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^docs/design-assets/substack-public-art/[a-z0-9-]+\\.jpg$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "media_type": {
+          "const": "image/jpeg"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10485760
+        },
+        "width": {
+          "const": 1200
+        },
+        "height": {
+          "const": 675
+        },
+        "frame_count": {
+          "const": 1
+        },
+        "animation": {
+          "const": "static"
+        },
+        "metadata_profile": {
+          "const": "technical-exif-only"
+        },
+        "metadata_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "variantFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "path",
+        "sha256",
+        "media_type",
+        "bytes",
+        "width",
+        "height",
+        "frame_count",
+        "animation",
+        "metadata_profile",
+        "metadata_sha256"
+      ],
+      "properties": {
+        "role": {
+          "enum": [
+            "small",
+            "large"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^website/assets/images/research/substack/[a-z0-9-]+-(720|1200)\\.webp$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "media_type": {
+          "const": "image/webp"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10485760
+        },
+        "width": {
+          "enum": [
+            720,
+            1200
+          ]
+        },
+        "height": {
+          "enum": [
+            405,
+            675
+          ]
+        },
+        "frame_count": {
+          "const": 1
+        },
+        "animation": {
+          "const": "static"
+        },
+        "metadata_profile": {
+          "const": "none"
+        },
+        "metadata_sha256": {
+          "const": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "role": {
+                "const": "small"
+              }
+            },
+            "required": [
+              "role"
+            ]
+          },
+          "then": {
+            "properties": {
+              "path": {
+                "pattern": "-720\\.webp$"
+              },
+              "width": {
+                "const": 720
+              },
+              "height": {
+                "const": 405
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "role": {
+                "const": "large"
+              }
+            },
+            "required": [
+              "role"
+            ]
+          },
+          "then": {
+            "properties": {
+              "path": {
+                "pattern": "-1200\\.webp$"
+              },
+              "width": {
+                "const": 1200
+              },
+              "height": {
+                "const": 675
+              }
+            }
+          }
+        }
+      ]
+    },
+    "deliveryEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "snapshot_id",
+        "evidence_code",
+        "rights_effect"
+      ],
+      "properties": {
+        "snapshot_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "evidence_code": {
+          "const": "shareable-assets-message-observed"
+        },
+        "rights_effect": {
+          "const": "none"
+        }
+      }
+    },
+    "representation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "classification",
+            "risk",
+            "boundary"
+          ],
+          "properties": {
+            "classification": {
+              "const": "abstract-editorial"
+            },
+            "risk": {
+              "const": "low"
+            },
+            "boundary": {
+              "const": "editorial-only-not-evidence"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "classification",
+            "risk",
+            "boundary"
+          ],
+          "properties": {
+            "classification": {
+              "const": "concept-system-not-data"
+            },
+            "risk": {
+              "const": "elevated"
+            },
+            "boundary": {
+              "const": "conceptual-system-not-measured-data-or-validated-evidence"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "classification",
+            "risk",
+            "boundary"
+          ],
+          "properties": {
+            "classification": {
+              "const": "concept-lab-not-facility"
+            },
+            "risk": {
+              "const": "high"
+            },
+            "boundary": {
+              "const": "conceptual-lab-not-company-facility-measured-data-or-tested-hardware"
+            }
+          }
+        }
+      ]
+    },
+    "placement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route_scope",
+        "destination_path",
+        "surface_id",
+        "variant_roles",
+        "alt",
+        "caption",
+        "credit"
+      ],
+      "properties": {
+        "route_scope": {
+          "enum": [
+            "/",
+            "/research/",
+            "/research/journal/"
+          ]
+        },
+        "destination_path": {
+          "enum": [
+            "website/index.html",
+            "website/research/index.html",
+            "website/research/journal/index.html",
+            "website/data/substack-research-index.json"
+          ]
+        },
+        "surface_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{2,95}$"
+        },
+        "variant_roles": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "small",
+              "large"
+            ]
+          }
+        },
+        "alt": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 220
+        },
+        "caption": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 260
+        },
+        "credit": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 220
+        }
+      }
+    },
+    "rightsDecisionBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^docs/research/editorial-assets/rights-decisions/[a-zA-Z0-9._-]+\\.json$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "pendingRights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "named_human_decision",
+        "decision_evidence"
+      ],
+      "properties": {
+        "state": {
+          "const": "pending"
+        },
+        "named_human_decision": {
+          "const": false
+        },
+        "decision_evidence": {
+          "type": "null"
+        }
+      }
+    },
+    "decidedRights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "named_human_decision",
+        "decision_evidence"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "approved",
+            "rejected"
+          ]
+        },
+        "named_human_decision": {
+          "const": true
+        },
+        "decision_evidence": {
+          "$ref": "#/$defs/rightsDecisionBinding"
+        }
+      }
+    },
+    "rightsDecision": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/pendingRights"
+        },
+        {
+          "$ref": "#/$defs/decidedRights"
+        }
+      ]
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "public_post_url",
+        "delivery_evidence",
+        "source_asset",
+        "variants",
+        "representation",
+        "placements",
+        "rights_decision"
+      ],
+      "properties": {
+        "asset_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "public_post_url": {
+          "type": "string",
+          "pattern": "^https://garyleckey\\.substack\\.com/p/[a-z0-9][a-z0-9-]{2,160}$"
+        },
+        "delivery_evidence": {
+          "$ref": "#/$defs/deliveryEvidence"
+        },
+        "source_asset": {
+          "$ref": "#/$defs/sourceFile"
+        },
+        "variants": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/variantFile"
+          }
+        },
+        "representation": {
+          "$ref": "#/$defs/representation"
+        },
+        "placements": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/placement"
+          }
+        },
+        "rights_decision": {
+          "$ref": "#/$defs/rightsDecision"
+        }
+      }
+    },
+    "unmappedAsset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "source_asset",
+        "mapping_state",
+        "rights_state",
+        "reason_code"
+      ],
+      "properties": {
+        "asset_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "source_asset": {
+          "$ref": "#/$defs/sourceFile"
+        },
+        "mapping_state": {
+          "const": "unmapped"
+        },
+        "rights_state": {
+          "const": "not-authorised"
+        },
+        "reason_code": {
+          "const": "no-direct-public-post-or-variant-binding"
+        }
+      }
+    },
+    "humanRightsDecisionEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "decision_id",
+        "asset_id",
+        "decision",
+        "decided_by",
+        "decided_at",
+        "rights_basis",
+        "usage_scope",
+        "asset_scope_sha256",
+        "boundary_acknowledgement"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.editorial-asset-human-rights-decision.v1"
+        },
+        "decision_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "asset_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "decision": {
+          "enum": [
+            "approved",
+            "rejected"
+          ]
+        },
+        "decided_by": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 120
+        },
+        "decided_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "rights_basis": {
+          "enum": [
+            "copyright-owner-authorisation",
+            "documented-provider-use-rights",
+            "licensed-for-bound-public-use"
+          ]
+        },
+        "usage_scope": {
+          "const": "bound-routes-destinations-copy-and-variants-only"
+        },
+        "asset_scope_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "boundary_acknowledgement": {
+          "const": "editorial-only; not evidence, validation, facilities, measured data or tested hardware"
+        }
+      }
+    },
+    "manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "manifest_id",
+        "issued_at",
+        "authority",
+        "global_artwork_policy",
+        "safe_roots",
+        "evidence_snapshots",
+        "assets",
+        "unmapped_assets"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.design-editorial-asset-provenance.v1"
+        },
+        "manifest_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "issued_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "authority": {
+          "$ref": "#/$defs/authority"
+        },
+        "global_artwork_policy": {
+          "$ref": "#/$defs/globalArtworkPolicy"
+        },
+        "safe_roots": {
+          "$ref": "#/$defs/safeRoots"
+        },
+        "evidence_snapshots": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/evidenceBinding"
+          }
+        },
+        "assets": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/asset"
+          }
+        },
+        "unmapped_assets": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/unmappedAsset"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "AUREON_DESIGN_CANDIDATE_INITIAL_GATE_V1.schema.json",
+  "title": "Aureon Design Candidate Initial Gate",
+  "type": "object",
+  "required": [
+    "schema",
+    "assessed_at",
+    "state",
+    "passed",
+    "repeatability_series_permitted",
+    "release_eligible",
+    "package_authority",
+    "deployment_authority",
+    "authority",
+    "candidate",
+    "evidence",
+    "checks",
+    "next_gate"
+  ],
+  "properties": {
+    "schema": {"const": "aureon.design-candidate-initial-gate.v1"},
+    "assessed_at": {"type": "string", "format": "date-time"},
+    "state": {
+      "enum": [
+        "eligible-for-repeatability",
+        "rejected-geometry",
+        "rejected-performance",
+        "blocked"
+      ]
+    },
+    "passed": {"type": "boolean"},
+    "repeatability_series_permitted": {"type": "boolean"},
+    "release_eligible": {"const": false},
+    "package_authority": {"const": "none"},
+    "deployment_authority": {"const": "none"},
+    "authority": {"type": "object"},
+    "candidate": {
+      "type": "object",
+      "required": ["receipt", "root", "website_path", "control_tree_sha256", "control_verification"]
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["focused_browser_receipt", "target"]
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "required": ["id", "passed", "message", "evidence"]
+      }
+    },
+    "next_gate": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": false
+}

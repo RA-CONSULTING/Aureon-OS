@@ -1,0 +1,3172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.pl/schemas/aureon-public-website-design-delivery-runner-v2.json",
+  "title": "Aureon staged public website design delivery runner V2",
+  "description": "Schema bundle for immutable V2 staged-candidate delivery jobs, trusted one-attempt candidate QA bindings, local verification receipts, and least-privilege worker context. Historical V1 receipts are read-only and cannot advance.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/deliveryJob"
+    },
+    {
+      "$ref": "#/$defs/verification"
+    },
+    {
+      "$ref": "#/$defs/workerContext"
+    },
+    {
+      "$ref": "#/$defs/candidateQaClaim"
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "runId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,80}$"
+    },
+    "feedbackIdentifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{2,127}$"
+    },
+    "pathReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+    },
+    "relativeHtmlPath": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+\\.html?$"
+    },
+    "nonNegativeCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "deliveryContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "copy_repair_required"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "route-bounded-design",
+            "investor-copy-repair"
+          ]
+        },
+        "copy_repair_required": {
+          "type": "boolean"
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "kind": {
+              "const": "route-bounded-design"
+            },
+            "copy_repair_required": {
+              "const": false
+            }
+          }
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "investor-copy-repair"
+            },
+            "copy_repair_required": {
+              "const": true
+            }
+          }
+        }
+      ]
+    },
+    "investorCopyRepairReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "required",
+        "contract_id",
+        "path",
+        "sha256",
+        "task_id",
+        "task_sha256",
+        "design_cycle_receipt_sha256"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.design-investor-copy-repair.v1"
+        },
+        "required": {
+          "const": true
+        },
+        "contract_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^artifacts/website-operator/copy-repairs/[a-z0-9][a-z0-9._-]{2,127}\\.json$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "task_id": {
+          "type": "string",
+          "pattern": "^DESIGN-COPY-[0-9]{3}$"
+        },
+        "task_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "design_cycle_receipt_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "investorCopyRuleHistogramRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule_id",
+        "finding_count",
+        "blocker_count",
+        "warning_count"
+      ],
+      "properties": {
+        "rule_id": {
+          "enum": [
+            "category-language",
+            "claim-boundary",
+            "financial-figure",
+            "hype-language",
+            "meta-description",
+            "page-title",
+            "policy-freshness",
+            "required-concept",
+            "single-h1",
+            "snapshot-date",
+            "static-operating-count",
+            "static-research-count",
+            "static-traction-count"
+          ]
+        },
+        "finding_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "blocker_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "warning_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        }
+      }
+    },
+    "investorCopySourceAuditProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "findings_sha256",
+        "rule_histogram",
+        "finding_count",
+        "blocker_count",
+        "warning_count",
+        "target_blocker_count",
+        "target_warning_count"
+      ],
+      "properties": {
+        "findings_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "rule_histogram": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/investorCopyRuleHistogramRow"
+          }
+        },
+        "finding_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "blocker_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "warning_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "target_blocker_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "target_warning_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        }
+      }
+    },
+    "investorCopyClaimControlProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route_claim_capsule_sha256",
+        "required_claim_ids",
+        "required_concept_groups_sha256",
+        "satisfied_concept_ids"
+      ],
+      "properties": {
+        "route_claim_capsule_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "required_claim_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/identifier"
+          }
+        },
+        "required_concept_groups_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "satisfied_concept_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/identifier"
+          }
+        }
+      }
+    },
+    "investorCopyAcceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_reaudit_required",
+        "zero_blockers_required",
+        "zero_warnings_required",
+        "exact_route_only",
+        "unchanged_non_target_files_required"
+      ],
+      "properties": {
+        "candidate_reaudit_required": {
+          "const": true
+        },
+        "zero_blockers_required": {
+          "const": true
+        },
+        "zero_warnings_required": {
+          "const": true
+        },
+        "exact_route_only": {
+          "const": true
+        },
+        "unchanged_non_target_files_required": {
+          "const": true
+        }
+      }
+    },
+    "investorCopyWorkerAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workspace",
+        "canonical_write_authority",
+        "claim_register_mutation",
+        "package_authority",
+        "deployment_authority",
+        "credential_access"
+      ],
+      "properties": {
+        "workspace": {
+          "const": "exact staged HTML path only"
+        },
+        "canonical_write_authority": {
+          "const": "none"
+        },
+        "claim_register_mutation": {
+          "const": "none"
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        }
+      }
+    },
+    "investorCopyWorkerContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "required",
+        "contract_id",
+        "contract_file_sha256",
+        "contract_json_sha256",
+        "task_id",
+        "task_sha256",
+        "route",
+        "path",
+        "source_audit",
+        "claim_control",
+        "acceptance",
+        "authority"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.public-website-investor-copy-worker-context.v1"
+        },
+        "required": {
+          "const": true
+        },
+        "contract_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "contract_file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "contract_json_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "task_id": {
+          "type": "string",
+          "pattern": "^DESIGN-COPY-[0-9]{3}$"
+        },
+        "task_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "route": {
+          "type": "string",
+          "pattern": "^/[^?#]*$"
+        },
+        "path": {
+          "$ref": "#/$defs/relativeHtmlPath"
+        },
+        "source_audit": {
+          "$ref": "#/$defs/investorCopySourceAuditProjection"
+        },
+        "claim_control": {
+          "$ref": "#/$defs/investorCopyClaimControlProjection"
+        },
+        "acceptance": {
+          "$ref": "#/$defs/investorCopyAcceptance"
+        },
+        "authority": {
+          "$ref": "#/$defs/investorCopyWorkerAuthority"
+        }
+      }
+    },
+    "investorCopyCandidateAudit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "audited_at",
+        "findings_sha256",
+        "rule_histogram",
+        "route_count",
+        "finding_count",
+        "blocker_count",
+        "warning_count",
+        "target_blocker_count",
+        "target_warning_count"
+      ],
+      "properties": {
+        "audited_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "findings_sha256": {
+          "type": "string",
+          "pattern": "^$|^[A-F0-9]{64}$"
+        },
+        "rule_histogram": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/investorCopyRuleHistogramRow"
+          }
+        },
+        "route_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "finding_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "blocker_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "warning_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "target_blocker_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "target_warning_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        }
+      }
+    },
+    "investorCopyEvaluationAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "canonical_website_mutation",
+        "candidate_staging",
+        "claim_register_mutation",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "credential_access",
+        "network_access",
+        "human_copy_review",
+        "human_visual_acceptance",
+        "release_authority"
+      ],
+      "properties": {
+        "scope": {
+          "const": "one local source-bound staged investor-copy repair"
+        },
+        "canonical_website_mutation": {
+          "const": "never"
+        },
+        "candidate_staging": {
+          "const": "never"
+        },
+        "claim_register_mutation": {
+          "const": "never"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "network_access": {
+          "const": "none"
+        },
+        "human_copy_review": {
+          "const": "required"
+        },
+        "human_visual_acceptance": {
+          "const": "required"
+        },
+        "release_authority": {
+          "const": "WebsiteOperator owner gate only"
+        }
+      }
+    },
+    "investorCopyEvaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "evaluated_at",
+        "state",
+        "passed",
+        "contract_id",
+        "contract_sha256",
+        "route",
+        "path",
+        "candidate_sha256",
+        "candidate_tree_sha256",
+        "candidate_audit",
+        "checks",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "authority",
+        "next_gate"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.design-investor-copy-repair-evaluation.v1"
+        },
+        "evaluated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "state": {
+          "enum": [
+            "pass",
+            "blocked"
+          ]
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "contract_id": {
+          "type": "string",
+          "pattern": "^$|^[a-z0-9][a-z0-9._-]{2,127}$"
+        },
+        "contract_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "route": {
+          "type": "string",
+          "pattern": "^$|^/[^?#]*$"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^$|^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+\\.html?$"
+        },
+        "candidate_sha256": {
+          "type": "string",
+          "pattern": "^$|^[A-F0-9]{64}$"
+        },
+        "candidate_tree_sha256": {
+          "type": "string",
+          "pattern": "^$|^[A-F0-9]{64}$"
+        },
+        "candidate_audit": {
+          "$ref": "#/$defs/investorCopyCandidateAudit"
+        },
+        "checks": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "passed"
+            ],
+            "properties": {
+              "id": {
+                "enum": [
+                  "contract-current",
+                  "exact-candidate-root",
+                  "exact-target-only-diff",
+                  "target-changed",
+                  "policy-current",
+                  "zero-blockers",
+                  "zero-warnings",
+                  "stable-post-audit-tree"
+                ]
+              },
+              "passed": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "authority": {
+          "$ref": "#/$defs/investorCopyEvaluationAuthority"
+        },
+        "next_gate": {
+          "const": "A passing receipt may proceed only to existing claim-surface, browser, accessibility, visual, package, owner, backup and live read-back gates."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "passed"
+            ],
+            "properties": {
+              "passed": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "const": "pass"
+              },
+              "contract_id": {
+                "$ref": "#/$defs/identifier"
+              },
+              "route": {
+                "pattern": "^/[^?#]*$"
+              },
+              "path": {
+                "$ref": "#/$defs/relativeHtmlPath"
+              },
+              "candidate_sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "candidate_tree_sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "candidate_audit": {
+                "properties": {
+                  "finding_count": {
+                    "const": 0
+                  },
+                  "blocker_count": {
+                    "const": 0
+                  },
+                  "warning_count": {
+                    "const": 0
+                  },
+                  "target_blocker_count": {
+                    "const": 0
+                  },
+                  "target_warning_count": {
+                    "const": 0
+                  }
+                }
+              },
+              "checks": {
+                "items": {
+                  "properties": {
+                    "passed": {
+                      "const": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "state": {
+                "const": "blocked"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "runnerAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "canonical_website_mutation",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "credential_access",
+        "human_visual_acceptance",
+        "release_authority"
+      ],
+      "properties": {
+        "scope": {
+          "const": "local source-bound staged website-candidate delivery orchestration only"
+        },
+        "canonical_website_mutation": {
+          "const": "never by this runner or a design agent"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "human_visual_acceptance": {
+          "const": "required for material brand changes"
+        },
+        "release_authority": {
+          "const": "WebsiteOperator owner gate only"
+        }
+      }
+    },
+    "stateHistory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "recorded_at",
+        "actor"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "evidence-bound",
+            "brief-ready",
+            "reconciled",
+            "work-order-ready",
+            "candidate-staged",
+            "candidate-assets-ready",
+            "candidate-validated",
+            "candidate-repair-required",
+            "candidate-qa-verified",
+            "candidate-qa-repair-required",
+            "initial-gate-rejected",
+            "awaiting-browser-evidence",
+            "visual-review-repair-required",
+            "awaiting-owner-promotion"
+          ]
+        },
+        "recorded_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "actor": {
+          "const": "PublicWebsiteDesignRunner"
+        }
+      }
+    },
+    "claimCapsule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route_id",
+        "route",
+        "claims"
+      ],
+      "properties": {
+        "route_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "route": {
+          "type": "string",
+          "pattern": "^/[^?#]*$"
+        },
+        "claims": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "stakeholderSignal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signal_id",
+        "signal_kind",
+        "disposition",
+        "priority",
+        "requested_response_dimension",
+        "route_scope",
+        "claim_ids"
+      ],
+      "properties": {
+        "signal_id": {
+          "$ref": "#/$defs/feedbackIdentifier"
+        },
+        "signal_kind": {
+          "enum": [
+            "boundary-confirmation",
+            "clarity-gap",
+            "diligence-question",
+            "evidence-request",
+            "positioning-guidance"
+          ]
+        },
+        "disposition": {
+          "enum": [
+            "action-requested",
+            "consider",
+            "deferred",
+            "no-action"
+          ]
+        },
+        "priority": {
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "requested_response_dimension": {
+          "enum": [
+            "audience-specificity",
+            "business-model-clarity",
+            "claim-boundary",
+            "differentiation-clarity",
+            "evidence-hierarchy",
+            "first-visit-clarity",
+            "narrative-sequencing",
+            "product-clarity"
+          ]
+        },
+        "route_scope": {
+          "enum": [
+            "/",
+            "/funding/investor-deck/",
+            "/projects/",
+            "/research/"
+          ]
+        },
+        "claim_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/feedbackIdentifier"
+          }
+        }
+      }
+    },
+    "stakeholderSignalCapsule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signal",
+        "signal_capsule_sha256"
+      ],
+      "properties": {
+        "signal": {
+          "$ref": "#/$defs/stakeholderSignal"
+        },
+        "signal_capsule_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "routeFeedbackCapsule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route_id",
+        "route",
+        "signals"
+      ],
+      "properties": {
+        "route_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "route": {
+          "type": "string",
+          "pattern": "^/[^?#]*$"
+        },
+        "signals": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/stakeholderSignalCapsule"
+          }
+        }
+      }
+    },
+    "stakeholderFeedbackBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "feedback_id",
+        "path",
+        "sha256",
+        "state",
+        "passed",
+        "signal_ids",
+        "signal_capsules_sha256"
+      ],
+      "properties": {
+        "feedback_id": {
+          "$ref": "#/$defs/feedbackIdentifier"
+        },
+        "path": {
+          "const": "data/website_operator/design_stakeholder_feedback.v1.json"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "state": {
+          "const": "current"
+        },
+        "passed": {
+          "const": true
+        },
+        "signal_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/feedbackIdentifier"
+          }
+        },
+        "signal_capsules_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "briefBindingRoute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "route",
+        "local_path",
+        "allowed_paths",
+        "claim_ids",
+        "content_order",
+        "claim_capsule",
+        "claim_capsule_sha256",
+        "feedback_capsule",
+        "feedback_capsule_sha256"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "route": {
+          "type": "string",
+          "pattern": "^/[^?#]*$"
+        },
+        "local_path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/).+"
+        },
+        "allowed_paths": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!/).+"
+          }
+        },
+        "claim_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "content_order": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "claim_capsule": {
+          "$ref": "#/$defs/claimCapsule"
+        },
+        "claim_capsule_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "feedback_capsule": {
+          "$ref": "#/$defs/routeFeedbackCapsule"
+        },
+        "feedback_capsule_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "researchRefreshBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "declaration_path",
+        "declaration_sha256",
+        "state",
+        "passed",
+        "artwork"
+      ],
+      "properties": {
+        "declaration_path": {
+          "const": "data/website_operator/design_research_sources.v1.json"
+        },
+        "declaration_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "state": {
+          "const": "current"
+        },
+        "passed": {
+          "const": true
+        },
+        "artwork": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "cleared_for_use"
+          ],
+          "properties": {
+            "state": {
+              "const": "not-cleared"
+            },
+            "cleared_for_use": {
+              "const": false
+            }
+          }
+        }
+      }
+    },
+    "briefBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "audit_schema",
+        "brief",
+        "research_refresh",
+        "stakeholder_feedback",
+        "claim_control",
+        "source_inputs_sha256",
+        "all_route_claim_capsules_sha256",
+        "all_route_feedback_capsules_sha256",
+        "route"
+      ],
+      "properties": {
+        "audit_schema": {
+          "const": "aureon.design-evidence-brief-audit.v1"
+        },
+        "brief": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "path",
+            "sha256",
+            "refresh_by"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "path": {
+              "const": "data/website_operator/investor_site_design_brief.v1.json"
+            },
+            "sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "refresh_by": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "research_refresh": {
+          "$ref": "#/$defs/researchRefreshBinding"
+        },
+        "stakeholder_feedback": {
+          "$ref": "#/$defs/stakeholderFeedbackBinding"
+        },
+        "claim_control": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "register_path",
+            "register_sha256",
+            "claim_ids"
+          ],
+          "properties": {
+            "register_path": {
+              "const": "data/website_operator/public_claim_evidence_register.v1.json"
+            },
+            "register_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "claim_ids": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "source_inputs_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "all_route_claim_capsules_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "all_route_feedback_capsules_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "route": {
+          "$ref": "#/$defs/briefBindingRoute"
+        }
+      }
+    },
+    "workOrderReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "run_id"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/work-orders/.+\\.v4\\.json$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "run_id": {
+          "$ref": "#/$defs/runId"
+        }
+      }
+    },
+    "stagedCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_root",
+        "candidate_website",
+        "staged_claim_register",
+        "work_order"
+      ],
+      "properties": {
+        "candidate_root": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}$"
+        },
+        "candidate_website": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}/website$"
+        },
+        "staged_claim_register": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}/claim-evidence/public_claim_evidence_register\\.v1\\.json$"
+        },
+        "work_order": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/work-orders/.+\\.v4\\.json$"
+        }
+      }
+    },
+    "candidateValidation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "control_passed",
+        "passed"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}/candidate\\.v1\\.json$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "control_passed": {
+          "type": "boolean"
+        },
+        "passed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "initialGate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "passed",
+        "state"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}/initial-gate\\.v1\\.json$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "state": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "visualReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "passed",
+        "state"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}/visual-review/prepromotion-review\\.v1\\.json$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "state": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "assetRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "declared_binary_paths",
+        "trusted_import_extensions",
+        "import_operation",
+        "receipt_replay_required"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "declared_binary_paths": {
+          "type": "array",
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(?!/).+\\.webp$"
+          }
+        },
+        "trusted_import_extensions": {
+          "const": [
+            ".webp"
+          ]
+        },
+        "import_operation": {
+          "enum": [
+            "runner-only-trusted-editorial-importer",
+            "not-required-text-only"
+          ]
+        },
+        "receipt_replay_required": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "required": {
+                "const": true
+              }
+            },
+            "required": [
+              "required"
+            ]
+          },
+          "then": {
+            "properties": {
+              "declared_binary_paths": {
+                "minItems": 1
+              },
+              "import_operation": {
+                "const": "runner-only-trusted-editorial-importer"
+              },
+              "receipt_replay_required": {
+                "const": true
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "declared_binary_paths": {
+                "maxItems": 0
+              },
+              "import_operation": {
+                "const": "not-required-text-only"
+              },
+              "receipt_replay_required": {
+                "const": false
+              }
+            }
+          }
+        }
+      ]
+    },
+    "editorialAuthoringVariant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "public_path",
+        "media_type",
+        "width",
+        "height"
+      ],
+      "properties": {
+        "role": {
+          "enum": [
+            "small",
+            "large"
+          ]
+        },
+        "public_path": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+\\.webp$"
+        },
+        "media_type": {
+          "const": "image/webp"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "editorialAuthoringSurface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route",
+        "destination",
+        "surface_id",
+        "public_post_url",
+        "variants",
+        "alt",
+        "caption",
+        "credit"
+      ],
+      "properties": {
+        "route": {
+          "type": "string",
+          "pattern": "^/[^?#]*$"
+        },
+        "destination": {
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+\\.(?:css|html|js|json|svg|txt|webmanifest|xml)$"
+        },
+        "surface_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "public_post_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://[^?#]+$"
+        },
+        "variants": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/editorialAuthoringVariant"
+          }
+        },
+        "alt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "caption": {
+          "type": "string",
+          "minLength": 1
+        },
+        "credit": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "editorialAuthoringContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "state",
+        "surfaces",
+        "surfaces_sha256",
+        "trusted_evidence",
+        "trusted_evidence_sha256",
+        "contract_sha256"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.public-website-editorial-authoring-contract.v1"
+        },
+        "state": {
+          "const": "trusted-route-bound"
+        },
+        "surfaces": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": {
+            "$ref": "#/$defs/editorialAuthoringSurface"
+          }
+        },
+        "surfaces_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "trusted_evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "import_receipt_payload_sha256",
+            "imports_sha256",
+            "provenance_manifest_sha256",
+            "selected_asset_capsules_sha256",
+            "selected_route_asset_capsules_sha256"
+          ],
+          "properties": {
+            "import_receipt_payload_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "imports_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "provenance_manifest_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "selected_asset_capsules_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "selected_route_asset_capsules_sha256": {
+              "$ref": "#/$defs/sha256"
+            }
+          }
+        },
+        "trusted_evidence_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "contract_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "assetImport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "state",
+        "receipt",
+        "verification",
+        "provenance",
+        "declared_binary_paths",
+        "imported_targets",
+        "authoring_contract",
+        "assets_ready",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority"
+      ],
+      "properties": {
+        "required": {
+          "const": true
+        },
+        "state": {
+          "const": "candidate-assets-ready"
+        },
+        "receipt": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "file_sha256",
+            "payload_sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}/editorial-asset-import-receipt\\.v1\\.json$"
+            },
+            "file_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "payload_sha256": {
+              "$ref": "#/$defs/sha256"
+            }
+          }
+        },
+        "verification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema",
+            "state",
+            "imports_sha256",
+            "binary_delta_sha256",
+            "work_order_json_sha256",
+            "baseline_tree_sha256"
+          ],
+          "properties": {
+            "schema": {
+              "const": "aureon.design-editorial-asset-candidate-import-verification.v1"
+            },
+            "state": {
+              "const": "verified-local-candidate"
+            },
+            "imports_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "binary_delta_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "work_order_json_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "baseline_tree_sha256": {
+              "$ref": "#/$defs/sha256"
+            }
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "manifest_file_sha256",
+            "selected_asset_capsules_sha256",
+            "route_asset_capsules_sha256",
+            "candidate_ready_asset_ids"
+          ],
+          "properties": {
+            "manifest_file_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "selected_asset_capsules_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "route_asset_capsules_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "candidate_ready_asset_ids": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "declared_binary_paths": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(?!/).+\\.webp$"
+          }
+        },
+        "imported_targets": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}/website/.+\\.webp$"
+          }
+        },
+        "authoring_contract": {
+          "$ref": "#/$defs/editorialAuthoringContract"
+        },
+        "assets_ready": {
+          "const": true
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        }
+      }
+    },
+    "textOnlyAssetImport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "state",
+        "assets_ready",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority"
+      ],
+      "properties": {
+        "required": {
+          "const": false
+        },
+        "state": {
+          "const": "not-required-text-only"
+        },
+        "assets_ready": {
+          "const": false
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        }
+      }
+    },
+    "mutationContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text_write_paths",
+        "binary_read_authority",
+        "binary_write_authority",
+        "binary_import_authority",
+        "canonical_write_authority"
+      ],
+      "properties": {
+        "text_write_paths": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(?!/).+\\.(?:css|html|js|json|svg|txt|webmanifest|xml)$"
+          }
+        },
+        "binary_read_authority": {
+          "const": "none"
+        },
+        "binary_write_authority": {
+          "const": "none"
+        },
+        "binary_import_authority": {
+          "const": "none"
+        },
+        "canonical_write_authority": {
+          "const": "none"
+        }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "passed",
+        "message",
+        "evidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "object"
+        }
+      }
+    },
+    "qaAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "canonical_website_mutation",
+        "candidate_mutation",
+        "worker_qa_authority",
+        "threshold_override_authority",
+        "test_selection_authority",
+        "retry_authority",
+        "promotion_authority",
+        "package_authority",
+        "release_authority",
+        "deployment_authority",
+        "credential_access"
+      ],
+      "properties": {
+        "scope": {
+          "const": "trusted one-attempt staged candidate QA orchestration only"
+        },
+        "canonical_website_mutation": {
+          "const": "none"
+        },
+        "candidate_mutation": {
+          "const": "none"
+        },
+        "worker_qa_authority": {
+          "const": "none"
+        },
+        "threshold_override_authority": {
+          "const": "none"
+        },
+        "test_selection_authority": {
+          "const": "none"
+        },
+        "retry_authority": {
+          "const": "none"
+        },
+        "promotion_authority": {
+          "const": "none"
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "release_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        }
+      }
+    },
+    "qaStaticTree": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "root",
+        "tree_sha256",
+        "file_count",
+        "total_bytes",
+        "algorithm"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "canonical-static-tree",
+            "staged-static-tree"
+          ]
+        },
+        "root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "file_count": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "total_bytes": {
+          "$ref": "#/$defs/nonNegativeCount"
+        },
+        "algorithm": {
+          "const": "sha256(canonical-json([{path,bytes,sha256}]), paths sorted)"
+        }
+      }
+    },
+    "qaCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "root",
+        "website_path",
+        "validation_tree_sha256",
+        "candidate_tree_algorithm",
+        "motion_tree_sha256",
+        "motion_tree_algorithm",
+        "captured_manifest_sha256",
+        "validation_receipt"
+      ],
+      "properties": {
+        "root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "website_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "validation_tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "candidate_tree_algorithm": {
+          "const": "sha256(canonical-json-without-trailing-newline([{path,bytes,sha256}]), paths sorted)"
+        },
+        "motion_tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "motion_tree_algorithm": {
+          "const": "sha256(canonical-json([{path,bytes,sha256}]), paths sorted)"
+        },
+        "captured_manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "validation_receipt": {
+          "$ref": "#/$defs/pathReference"
+        }
+      }
+    },
+    "qaTrustedToolchain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runner",
+        "test_evidence",
+        "motion_policy_compiler",
+        "test_policy_compiler",
+        "motion_budget",
+        "secure_immutable_artifact"
+      ],
+      "properties": {
+        "runner": {
+          "$ref": "#/$defs/pathReference"
+        },
+        "test_evidence": {
+          "$ref": "#/$defs/pathReference"
+        },
+        "motion_policy_compiler": {
+          "$ref": "#/$defs/pathReference"
+        },
+        "test_policy_compiler": {
+          "$ref": "#/$defs/pathReference"
+        },
+        "motion_budget": {
+          "$ref": "#/$defs/pathReference"
+        },
+        "secure_immutable_artifact": {
+          "$ref": "#/$defs/pathReference"
+        }
+      }
+    },
+    "motionPolicyCompilerAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "executable_source_ingress",
+        "worker_threshold_selection",
+        "audit_execution_authority",
+        "canonical_website_mutation",
+        "candidate_mutation",
+        "candidate_validation_authority",
+        "promotion_authority",
+        "package_authority",
+        "release_authority",
+        "deployment_authority",
+        "credential_access"
+      ],
+      "properties": {
+        "scope": {
+          "const": "fixed local candidate motion-config compilation and replay only"
+        },
+        "executable_source_ingress": {
+          "const": "sealed only by direct compiler-file execution; imported API is drift-check-only"
+        },
+        "worker_threshold_selection": {
+          "const": "none"
+        },
+        "audit_execution_authority": {
+          "const": "none"
+        },
+        "canonical_website_mutation": {
+          "const": "none"
+        },
+        "candidate_mutation": {
+          "const": "none"
+        },
+        "candidate_validation_authority": {
+          "const": "none"
+        },
+        "promotion_authority": {
+          "const": "none"
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "release_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        }
+      }
+    },
+    "motionPolicyCompilerVerification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "state",
+        "passed",
+        "verification_scope",
+        "compiler_replayed",
+        "origin_attested",
+        "candidate_receipt_path",
+        "candidate_tree_sha256",
+        "candidate_tree_algorithm",
+        "motion_tree_sha256",
+        "motion_tree_algorithm",
+        "captured_manifest_sha256",
+        "doctrine_sha256",
+        "source_policy_sha256",
+        "config_path",
+        "config_id",
+        "config_file_sha256",
+        "config_json_sha256",
+        "thresholds_sha256",
+        "authority"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.design-candidate-motion-config-verification.v2"
+        },
+        "state": {
+          "const": "pass"
+        },
+        "passed": {
+          "const": true
+        },
+        "verification_scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "compiler_replayed": {
+          "const": true
+        },
+        "origin_attested": {
+          "const": false
+        },
+        "candidate_receipt_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate_tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "candidate_tree_algorithm": {
+          "const": "sha256(canonical-json-without-trailing-newline([{path,bytes,sha256}]), paths sorted)"
+        },
+        "motion_tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "motion_tree_algorithm": {
+          "const": "sha256(canonical-json([{path,bytes,sha256}]), paths sorted)"
+        },
+        "captured_manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "doctrine_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_policy_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "config_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "config_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "config_file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "config_json_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "thresholds_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "authority": {
+          "$ref": "#/$defs/motionPolicyCompilerAuthority"
+        }
+      }
+    },
+    "testPolicyCompilerAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "executable_source_ingress",
+        "worker_command_selection",
+        "test_execution_authority",
+        "canonical_website_mutation",
+        "candidate_validation_authority",
+        "promotion_authority",
+        "package_authority",
+        "release_authority",
+        "deployment_authority",
+        "credential_access",
+        "composite_visual_gate"
+      ],
+      "properties": {
+        "scope": {
+          "const": "deterministic compilation and replay of one exact local candidate test policy"
+        },
+        "executable_source_ingress": {
+          "const": "sealed only by direct compiler-file execution; imported API is drift-check-only"
+        },
+        "worker_command_selection": {
+          "const": "none"
+        },
+        "test_execution_authority": {
+          "const": "none"
+        },
+        "canonical_website_mutation": {
+          "const": "none"
+        },
+        "candidate_validation_authority": {
+          "const": "none"
+        },
+        "promotion_authority": {
+          "const": "none"
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "release_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "composite_visual_gate": {
+          "const": "deferred-not-passed"
+        }
+      }
+    },
+    "testPolicyCompilerVerification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "state",
+        "passed",
+        "verification_scope",
+        "compiler_replayed",
+        "origin_attested",
+        "candidate_receipt_path",
+        "candidate_tree_sha256",
+        "source_policy_file_sha256",
+        "policy_path",
+        "policy_id",
+        "policy_content_core_sha256",
+        "policy_file_sha256",
+        "policy_json_sha256",
+        "required_command_ids",
+        "deferred_source_ids",
+        "authority"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.design-candidate-test-policy-verification.v2"
+        },
+        "state": {
+          "const": "pass"
+        },
+        "passed": {
+          "const": true
+        },
+        "verification_scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "compiler_replayed": {
+          "const": true
+        },
+        "origin_attested": {
+          "const": false
+        },
+        "candidate_receipt_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate_tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_policy_file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "policy_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy_content_core_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "policy_file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "policy_json_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "required_command_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "deferred_source_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "authority": {
+          "$ref": "#/$defs/testPolicyCompilerAuthority"
+        }
+      }
+    },
+    "candidateQa": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "status",
+        "attempt_consumed",
+        "attempt",
+        "candidate",
+        "canonical_website",
+        "trusted_toolchain",
+        "motion_config_compiler",
+        "test_policy_compiler",
+        "motion",
+        "tests",
+        "authority",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.public-website-design-candidate-qa.v2"
+        },
+        "status": {
+          "enum": [
+            "verified",
+            "repair-required"
+          ]
+        },
+        "attempt_consumed": {
+          "const": true
+        },
+        "attempt": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "sha256",
+            "claim_payload_sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "claim_payload_sha256": {
+              "$ref": "#/$defs/sha256"
+            }
+          }
+        },
+        "candidate": {
+          "$ref": "#/$defs/qaCandidate"
+        },
+        "canonical_website": {
+          "$ref": "#/$defs/qaStaticTree"
+        },
+        "trusted_toolchain": {
+          "$ref": "#/$defs/qaTrustedToolchain"
+        },
+        "motion_config_compiler": {
+          "$ref": "#/$defs/motionPolicyCompilerVerification"
+        },
+        "test_policy_compiler": {
+          "$ref": "#/$defs/testPolicyCompilerVerification"
+        },
+        "motion": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "config",
+            "state",
+            "receipt",
+            "eligible_for_next_local_gate",
+            "replayed"
+          ],
+          "properties": {
+            "config": {
+              "$ref": "#/$defs/pathReference"
+            },
+            "state": {
+              "enum": [
+                "passed",
+                "blocked"
+              ]
+            },
+            "receipt": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "path",
+                "sha256",
+                "receipt_sha256"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "$ref": "#/$defs/sha256"
+                },
+                "receipt_sha256": {
+                  "$ref": "#/$defs/sha256"
+                }
+              }
+            },
+            "eligible_for_next_local_gate": {
+              "type": "boolean"
+            },
+            "replayed": {
+              "const": true
+            }
+          }
+        },
+        "tests": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "policy",
+            "state",
+            "receipt",
+            "evidence_passed",
+            "ordered_command_ids_sha256",
+            "command_count",
+            "trusted_same_process_execution_write",
+            "structural_verification_origin_attested",
+            "replayed",
+            "candidate_tree_sha256",
+            "canonical_website_tree_sha256"
+          ],
+          "properties": {
+            "policy": {
+              "$ref": "#/$defs/pathReference"
+            },
+            "state": {
+              "enum": [
+                "passed",
+                "failed",
+                "not-run-motion-blocked"
+              ]
+            },
+            "receipt": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "path",
+                    "sha256",
+                    "receipt_payload_sha256"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "sha256": {
+                      "$ref": "#/$defs/sha256"
+                    },
+                    "receipt_payload_sha256": {
+                      "$ref": "#/$defs/sha256"
+                    }
+                  }
+                }
+              ]
+            },
+            "evidence_passed": {
+              "type": "boolean"
+            },
+            "ordered_command_ids_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "command_count": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "trusted_same_process_execution_write": {
+              "type": "boolean"
+            },
+            "structural_verification_origin_attested": {
+              "const": false
+            },
+            "replayed": {
+              "type": "boolean"
+            },
+            "candidate_tree_sha256": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[A-F0-9]{64}$"
+            },
+            "canonical_website_tree_sha256": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[A-F0-9]{64}$"
+            }
+          }
+        },
+        "authority": {
+          "$ref": "#/$defs/qaAuthority"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        }
+      }
+    },
+    "candidateQaClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "state",
+        "claimed_at",
+        "run_id",
+        "delivery_receipt",
+        "candidate",
+        "canonical_website",
+        "trusted_toolchain",
+        "motion_config",
+        "motion_config_compiler",
+        "test_policy",
+        "test_policy_compiler",
+        "authority",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "claim_payload_sha256"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.public-website-design-candidate-qa-claim.v2"
+        },
+        "state": {
+          "const": "qa-execution-claimed"
+        },
+        "claimed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "run_id": {
+          "$ref": "#/$defs/runId"
+        },
+        "delivery_receipt": {
+          "$ref": "#/$defs/pathReference"
+        },
+        "candidate": {
+          "$ref": "#/$defs/qaCandidate"
+        },
+        "canonical_website": {
+          "$ref": "#/$defs/qaStaticTree"
+        },
+        "trusted_toolchain": {
+          "$ref": "#/$defs/qaTrustedToolchain"
+        },
+        "motion_config": {
+          "$ref": "#/$defs/pathReference"
+        },
+        "motion_config_compiler": {
+          "$ref": "#/$defs/motionPolicyCompilerVerification"
+        },
+        "test_policy": {
+          "$ref": "#/$defs/pathReference"
+        },
+        "test_policy_compiler": {
+          "$ref": "#/$defs/testPolicyCompilerVerification"
+        },
+        "authority": {
+          "$ref": "#/$defs/qaAuthority"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "claim_payload_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "deliveryJob": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "created_at",
+        "updated_at",
+        "run_id",
+        "goal",
+        "state",
+        "state_history",
+        "brief_binding",
+        "work_order",
+        "asset_requirement",
+        "delivery_contract",
+        "authority",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "next_required_stage"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.public-website-design-delivery-job.v2"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "run_id": {
+          "$ref": "#/$defs/runId"
+        },
+        "goal": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "enum": [
+            "work-order-ready",
+            "candidate-staged",
+            "candidate-assets-ready",
+            "candidate-validated",
+            "candidate-repair-required",
+            "candidate-qa-verified",
+            "candidate-qa-repair-required",
+            "initial-gate-rejected",
+            "awaiting-browser-evidence",
+            "visual-review-repair-required",
+            "awaiting-owner-promotion"
+          ]
+        },
+        "state_history": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "$ref": "#/$defs/stateHistory"
+          }
+        },
+        "brief_binding": {
+          "$ref": "#/$defs/briefBinding"
+        },
+        "work_order": {
+          "$ref": "#/$defs/workOrderReference"
+        },
+        "asset_requirement": {
+          "$ref": "#/$defs/assetRequirement"
+        },
+        "delivery_contract": {
+          "$ref": "#/$defs/deliveryContract"
+        },
+        "investor_copy_repair": {
+          "$ref": "#/$defs/investorCopyRepairReference"
+        },
+        "investor_copy_evaluation": {
+          "$ref": "#/$defs/investorCopyEvaluation"
+        },
+        "asset_import": {
+          "$ref": "#/$defs/assetImport"
+        },
+        "previous_receipt": {
+          "$ref": "#/$defs/pathReference"
+        },
+        "candidate": {
+          "$ref": "#/$defs/stagedCandidate"
+        },
+        "candidate_validation": {
+          "$ref": "#/$defs/candidateValidation"
+        },
+        "candidate_qa": {
+          "$ref": "#/$defs/candidateQa"
+        },
+        "initial_gate": {
+          "$ref": "#/$defs/initialGate"
+        },
+        "visual_review": {
+          "$ref": "#/$defs/visualReview"
+        },
+        "authority": {
+          "$ref": "#/$defs/runnerAuthority"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "next_required_stage": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "delivery_contract"
+            ],
+            "properties": {
+              "delivery_contract": {
+                "required": [
+                  "kind"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "investor-copy-repair"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "investor_copy_repair"
+            ]
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "investor_copy_repair"
+                  ]
+                },
+                {
+                  "required": [
+                    "investor_copy_evaluation"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "delivery_contract",
+              "state"
+            ],
+            "properties": {
+              "delivery_contract": {
+                "required": [
+                  "kind"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "investor-copy-repair"
+                  }
+                }
+              },
+              "state": {
+                "enum": [
+                  "candidate-validated",
+                  "candidate-repair-required",
+                  "candidate-qa-verified",
+                  "candidate-qa-repair-required",
+                  "initial-gate-rejected",
+                  "awaiting-browser-evidence",
+                  "visual-review-repair-required",
+                  "awaiting-owner-promotion"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "investor_copy_evaluation"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "investor_copy_evaluation"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "candidate-qa-verified",
+                  "candidate-qa-repair-required",
+                  "initial-gate-rejected",
+                  "awaiting-browser-evidence",
+                  "visual-review-repair-required",
+                  "awaiting-owner-promotion"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "candidate_qa"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "candidate_qa"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "work-order-ready"
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "required": [
+                "previous_receipt"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "previous_receipt"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "candidate-staged",
+                  "candidate-assets-ready",
+                  "candidate-validated",
+                  "candidate-repair-required",
+                  "candidate-qa-verified",
+                  "candidate-qa-repair-required",
+                  "initial-gate-rejected",
+                  "awaiting-browser-evidence",
+                  "visual-review-repair-required",
+                  "awaiting-owner-promotion"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "candidate"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "asset_requirement": {
+                "properties": {
+                  "required": {
+                    "const": false
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            },
+            "required": [
+              "asset_requirement"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "asset_import"
+              ]
+            },
+            "properties": {
+              "state": {
+                "not": {
+                  "const": "candidate-assets-ready"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "asset_requirement": {
+                "properties": {
+                  "required": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              },
+              "state": {
+                "enum": [
+                  "work-order-ready",
+                  "candidate-staged"
+                ]
+              }
+            },
+            "required": [
+              "asset_requirement",
+              "state"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "asset_import"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "asset_requirement": {
+                "properties": {
+                  "required": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              },
+              "state": {
+                "enum": [
+                  "candidate-assets-ready",
+                  "candidate-validated",
+                  "candidate-repair-required",
+                  "candidate-qa-verified",
+                  "candidate-qa-repair-required",
+                  "initial-gate-rejected",
+                  "awaiting-browser-evidence",
+                  "visual-review-repair-required",
+                  "awaiting-owner-promotion"
+                ]
+              }
+            },
+            "required": [
+              "asset_requirement",
+              "state"
+            ]
+          },
+          "then": {
+            "required": [
+              "asset_import"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "candidate-validated",
+                  "candidate-repair-required",
+                  "candidate-qa-verified",
+                  "candidate-qa-repair-required",
+                  "initial-gate-rejected",
+                  "awaiting-browser-evidence",
+                  "visual-review-repair-required",
+                  "awaiting-owner-promotion"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "candidate_validation"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "initial-gate-rejected",
+                  "awaiting-browser-evidence",
+                  "visual-review-repair-required",
+                  "awaiting-owner-promotion"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "initial_gate"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "visual-review-repair-required",
+                  "awaiting-owner-promotion"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "visual_review"
+            ]
+          }
+        }
+      ]
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "verified_at",
+        "state",
+        "passed",
+        "compatibility",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "checks"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.public-website-design-delivery-verification.v2"
+        },
+        "verified_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "state": {
+          "enum": [
+            "pass",
+            "blocked"
+          ]
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "compatibility": {
+          "enum": [
+            "current-v2",
+            "historical-v1-read-only"
+          ]
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/check"
+          }
+        }
+      }
+    },
+    "workerContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "run_id",
+        "workspace",
+        "work_order",
+        "asset_requirement",
+        "asset_import",
+        "mutation_contract",
+        "route",
+        "authority",
+        "release_eligible",
+        "deployment_authority",
+        "prohibited_operations"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.public-website-design-worker-context.v1"
+        },
+        "run_id": {
+          "$ref": "#/$defs/runId"
+        },
+        "workspace": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "candidate_website"
+          ],
+          "properties": {
+            "candidate_website": {
+              "type": "string",
+              "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}/website$"
+            }
+          }
+        },
+        "work_order": {
+          "$ref": "#/$defs/workOrderReference"
+        },
+        "asset_requirement": {
+          "$ref": "#/$defs/assetRequirement"
+        },
+        "asset_import": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/assetImport"
+            },
+            {
+              "$ref": "#/$defs/textOnlyAssetImport"
+            }
+          ]
+        },
+        "mutation_contract": {
+          "$ref": "#/$defs/mutationContract"
+        },
+        "investor_copy_repair": {
+          "$ref": "#/$defs/investorCopyWorkerContext"
+        },
+        "route": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "route",
+            "allowed_paths",
+            "claim_capsule",
+            "claim_capsule_sha256",
+            "feedback_capsule",
+            "feedback_capsule_sha256"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "route": {
+              "type": "string",
+              "pattern": "^/[^?#]*$"
+            },
+            "allowed_paths": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 12,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^(?!/).+\\.(?:css|html|js|json|svg|txt|webmanifest|xml)$"
+              }
+            },
+            "claim_capsule": {
+              "$ref": "#/$defs/claimCapsule"
+            },
+            "claim_capsule_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "feedback_capsule": {
+              "$ref": "#/$defs/routeFeedbackCapsule"
+            },
+            "feedback_capsule_sha256": {
+              "$ref": "#/$defs/sha256"
+            }
+          }
+        },
+        "authority": {
+          "$ref": "#/$defs/runnerAuthority"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "prohibited_operations": {
+          "const": [
+            "canonical website mutation",
+            "candidate promotion",
+            "package creation",
+            "backup",
+            "owner gate",
+            "deployment",
+            "credential access",
+            "binary asset read",
+            "binary asset write",
+            "binary asset import"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "asset_requirement": {
+                "properties": {
+                  "required": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            },
+            "required": [
+              "asset_requirement"
+            ]
+          },
+          "then": {
+            "properties": {
+              "asset_import": {
+                "$ref": "#/$defs/assetImport"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "asset_import": {
+                "$ref": "#/$defs/textOnlyAssetImport"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "investor_copy_repair"
+            ]
+          },
+          "then": {
+            "properties": {
+              "route": {
+                "properties": {
+                  "allowed_paths": {
+                    "maxItems": 1
+                  }
+                }
+              },
+              "mutation_contract": {
+                "properties": {
+                  "text_write_paths": {
+                    "maxItems": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

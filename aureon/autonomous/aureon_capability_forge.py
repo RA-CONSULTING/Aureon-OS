@@ -7,18 +7,16 @@ import json
 import py_compile
 import re
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from html import escape
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence
+from typing import Any, Dict, Iterable, List, Sequence
 
 from aureon.autonomous.aureon_artifact_quality_gate import (
     DEFAULT_PUBLIC_QUALITY_JSON,
-    build_artifact_quality_report,
     write_artifact_quality_report,
 )
 from aureon.autonomous.aureon_safe_code_control import CodeProposal, SafeCodeControl
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_STATE_PATH = Path("state/aureon_capability_forge_last_run.json")
@@ -94,6 +92,7 @@ REFERENCE_PATTERNS = [
 ]
 
 TASK_FAMILIES = [
+    "website_design",
     "full_stack",
     "video",
     "image_graphic_design",
@@ -106,6 +105,19 @@ TASK_FAMILIES = [
 ]
 
 FAMILY_KEYWORDS = {
+    "website_design": (
+        "website",
+        "web site",
+        "webpage",
+        "web page",
+        "public site",
+        "site redesign",
+        "website redesign",
+        "landing page",
+        "investor-ready site",
+        "investor ready site",
+        "home.pl",
+    ),
     "full_stack": (
         "full stack",
         "full-stack",
@@ -119,7 +131,17 @@ FAMILY_KEYWORDS = {
         "frontend and backend",
     ),
     "video": ("video", "clip", "animation", "mp4", "webm", "10 second", "seconds"),
-    "image_graphic_design": ("image", "picture", "graphic", "logo", "design", "poster", "draw", "illustration", "svg"),
+    "image_graphic_design": (
+        "image",
+        "picture",
+        "graphic",
+        "logo",
+        "design",
+        "poster",
+        "draw",
+        "illustration",
+        "svg",
+    ),
     "coding": (
         "code",
         "repo",
@@ -141,7 +163,19 @@ FAMILY_KEYWORDS = {
         "generator",
         "workflow",
     ),
-    "ui": ("ui", "frontend", "dashboard", "console", "panel", "react", "tsx", "screen", "keyboard", "playable", "controls"),
+    "ui": (
+        "ui",
+        "frontend",
+        "dashboard",
+        "console",
+        "panel",
+        "react",
+        "tsx",
+        "screen",
+        "keyboard",
+        "playable",
+        "controls",
+    ),
     "document": ("document", "pdf", "markdown", "report", "runbook", "docx"),
     "research": ("research", "online", "official docs", "search", "learn", "source"),
     "browser_qa": ("browser", "playwright", "smoke", "screenshot", "open the page", "render"),
@@ -157,7 +191,7 @@ def _rooted(root: Path, rel_path: Path) -> Path:
 
 
 def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _write_text(path: Path, content: str) -> Dict[str, Any]:
@@ -187,7 +221,24 @@ def _contains_any(text: str, needles: Iterable[str]) -> bool:
 def classify_task_family(prompt: str) -> Dict[str, Any]:
     text = str(prompt or "").lower()
     hits = [family for family, needles in FAMILY_KEYWORDS.items() if _contains_any(text, needles)]
-    priority = ("full_stack", "video", "image_graphic_design", "browser_qa", "ui", "coding", "document", "research")
+    priority = (
+        "website_design",
+        "full_stack",
+        "video",
+        "image_graphic_design",
+        "browser_qa",
+        "ui",
+        "coding",
+        "document",
+        "research",
+    )
+    if "website_design" in hits:
+        return {
+            "task_family": "website_design",
+            "primary_family": "website_design",
+            "detected_families": hits,
+            "local_only": True,
+        }
     if "full_stack" in hits:
         return {
             "task_family": "full_stack",
@@ -215,19 +266,86 @@ def classify_task_family(prompt: str) -> Dict[str, Any]:
 def _crew_for_families(families: Sequence[str]) -> List[Dict[str, Any]]:
     base = [
         ("Client Brief Broker", "scope", "lock goal, deliverables, constraints, and acceptance proof"),
-        ("Skill Headhunter", "research", "scan local repo first and use official docs as reference-only patterns"),
-        ("Subcontractor Crew Builder", "orchestration", "hire the temporary specialist crew and define handoffs"),
+        (
+            "Skill Headhunter",
+            "research",
+            "scan local repo first and use official docs as reference-only patterns",
+        ),
+        (
+            "Subcontractor Crew Builder",
+            "orchestration",
+            "hire the temporary specialist crew and define handoffs",
+        ),
         ("Quality Gate Inspector", "qa", "reject weak artifacts before handover"),
         ("Release Manager", "handover", "publish evidence and wait for approval"),
     ]
     family_roles = {
+        "website_design": [
+            (
+                "Website Design Director",
+                "design",
+                "own the evidence-led brief, institutional quality bar, design council, and human visual review",
+            ),
+            (
+                "Competitor Research Scout",
+                "research",
+                "refresh official-source benchmark patterns without copying competitor expression",
+            ),
+            (
+                "Brand and Design-System Lead",
+                "design",
+                "maintain typography, colour, spacing, components, imagery, and responsive coherence",
+            ),
+            (
+                "Technical Editorial Writer",
+                "editorial",
+                "write precise en-GB proposition, research, product, and buyer-journey copy",
+            ),
+            (
+                "Claims and Evidence Editor",
+                "editorial",
+                "bind material public claims to current evidence state and permitted wording",
+            ),
+            (
+                "Motion Designer",
+                "design",
+                "use restrained purposeful motion with keyboard and reduced-motion parity",
+            ),
+            (
+                "Visual Asset Director",
+                "design",
+                "create or commission source-cleared graphics under explicit asset budgets",
+            ),
+            (
+                "Accessibility and Performance QA",
+                "qa",
+                "prove responsive, keyboard, contrast, motion, browser, and performance behaviour",
+            ),
+            (
+                "Design Release QA",
+                "release",
+                "prove dependency closure, package integrity, backup readiness, and live read-back boundaries",
+            ),
+        ],
         "full_stack": [
-            ("Product Manager", "product", "turn the client prompt into a full-stack scope and acceptance checklist"),
+            (
+                "Product Manager",
+                "product",
+                "turn the client prompt into a full-stack scope and acceptance checklist",
+            ),
             ("API Engineer", "engineering", "write the local backend API, data contract, and run command"),
-            ("Frontend Engineer", "engineering", "write the browser UI that talks to the local backend contract"),
+            (
+                "Frontend Engineer",
+                "engineering",
+                "write the browser UI that talks to the local backend contract",
+            ),
             ("Data Modeler", "engineering", "define seed data, validation rules, and persistence shape"),
             ("Integration Test Pilot", "qa", "prove backend functions and API contract before handover"),
-            ("Security Auditor", "security", "keep secrets, live actions, and destructive operations out of the generated system"),
+            (
+                "Security Auditor",
+                "security",
+                "keep secrets, live actions, and destructive operations out of the generated system",
+            ),
         ],
         "video": [
             ("Storyboard Artist", "media", "turn prompt into frames, motion, duration, and preview plan"),
@@ -250,10 +368,16 @@ def _crew_for_families(families: Sequence[str]) -> List[Dict[str, Any]]:
             ("Browser Smoke Inspector", "qa", "confirm visible UI proof"),
         ],
         "document": [("Runbook Writer", "docs", "publish readable operator evidence and handover docs")],
-        "research": [("Research Scout", "research", "summarize source-linked patterns without external execution")],
-        "browser_qa": [("Browser Smoke Inspector", "qa", "open local UI, inspect console state, and record proof")],
+        "research": [
+            ("Research Scout", "research", "summarize source-linked patterns without external execution")
+        ],
+        "browser_qa": [
+            ("Browser Smoke Inspector", "qa", "open local UI, inspect console state, and record proof")
+        ],
     }
-    crew = [{"role": role, "department": dept, "day_to_day": duty, "temporary": True} for role, dept, duty in base]
+    crew = [
+        {"role": role, "department": dept, "day_to_day": duty, "temporary": True} for role, dept, duty in base
+    ]
     for family in families:
         for role, dept, duty in family_roles.get(family, []):
             if not any(item["role"] == role for item in crew):
@@ -264,20 +388,101 @@ def _crew_for_families(families: Sequence[str]) -> List[Dict[str, Any]]:
 def _tools_for_families(families: Sequence[str]) -> List[Dict[str, Any]]:
     tools = [
         {"name": "Repo search", "surface": "rg / RepoSelfCatalog", "mode": "read_only"},
-        {"name": "SafeCodeControl", "surface": "aureon.autonomous.aureon_safe_code_control", "mode": "local_safe_route"},
-        {"name": "Artifact quality gate", "surface": "aureon.autonomous.aureon_artifact_quality_gate", "mode": "local_quality_gate"},
+        {
+            "name": "SafeCodeControl",
+            "surface": "aureon.autonomous.aureon_safe_code_control",
+            "mode": "local_safe_route",
+        },
+        {
+            "name": "Artifact quality gate",
+            "surface": "aureon.autonomous.aureon_artifact_quality_gate",
+            "mode": "local_quality_gate",
+        },
     ]
-    if "video" in families or "image_graphic_design" in families:
-        tools.append({"name": "Visual asset worker", "surface": "aureon.autonomous.aureon_visual_asset_request", "mode": "local_generation"})
+    if "website_design" in families:
+        tools.extend(
+            [
+                {
+                    "name": "WebsiteOperator Design Nexus",
+                    "surface": "aureon.operator.website_operator",
+                    "mode": "local_design_cycle",
+                },
+                {
+                    "name": "Public-site visual QA",
+                    "surface": "tools/aureon_website_visual_qa_v28.js",
+                    "mode": "local_browser_proof",
+                },
+                {
+                    "name": "Motion/performance budget protocol",
+                    "surface": "aureon.operator.design_motion_performance_budget",
+                    "mode": "installed_not_authorised_metadata_only",
+                },
+                {
+                    "name": "Candidate-test evidence protocol",
+                    "surface": "aureon.operator.design_candidate_test_evidence",
+                    "mode": "installed_not_authorised_metadata_only",
+                },
+                {
+                    "name": "V2 candidate-QA control plane",
+                    "surface": "aureon.operator.design_capability_registry",
+                    "mode": "installed_not_authorised_fixed_order_metadata_only",
+                },
+                {
+                    "name": "Dependency-closed release builder",
+                    "surface": "tools/build-homepl-v28-narrow-release.ps1",
+                    "mode": "local_package_only",
+                },
+            ]
+        )
+    if ("video" in families or "image_graphic_design" in families) and "website_design" not in families:
+        tools.append(
+            {
+                "name": "Visual asset worker",
+                "surface": "aureon.autonomous.aureon_visual_asset_request",
+                "mode": "local_generation",
+            }
+        )
     if "browser_qa" in families or "ui" in families or "video" in families:
-        tools.append({"name": "Playwright/browser smoke", "surface": "frontend Playwright", "mode": "local_browser_proof"})
+        tools.append(
+            {
+                "name": "Playwright/browser smoke",
+                "surface": "frontend Playwright",
+                "mode": "local_browser_proof",
+            }
+        )
     if "full_stack" in families:
-        tools.append({"name": "Full-stack local system forge", "surface": "frontend/public/aureon_full_stack_apps", "mode": "local_backend_frontend_generation"})
-        tools.append({"name": "Python stdlib API server", "surface": "generated backend/server.py", "mode": "local_backend_runtime"})
-        tools.append({"name": "Contract validation", "surface": "py_compile + imported backend contract", "mode": "local_validation"})
+        tools.append(
+            {
+                "name": "Full-stack local system forge",
+                "surface": "frontend/public/aureon_full_stack_apps",
+                "mode": "local_backend_frontend_generation",
+            }
+        )
+        tools.append(
+            {
+                "name": "Python stdlib API server",
+                "surface": "generated backend/server.py",
+                "mode": "local_backend_runtime",
+            }
+        )
+        tools.append(
+            {
+                "name": "Contract validation",
+                "surface": "py_compile + imported backend contract",
+                "mode": "local_validation",
+            }
+        )
     if "coding" in families or "ui" in families or "full_stack" in families:
-        tools.append({"name": "Focused pytest/build", "surface": "pytest / npm run build", "mode": "local_validation"})
-        tools.append({"name": "Adaptive local app forge", "surface": "frontend/public/aureon_generated_apps", "mode": "local_file_generation"})
+        tools.append(
+            {"name": "Focused pytest/build", "surface": "pytest / npm run build", "mode": "local_validation"}
+        )
+        tools.append(
+            {
+                "name": "Adaptive local app forge",
+                "surface": "frontend/public/aureon_generated_apps",
+                "mode": "local_file_generation",
+            }
+        )
     return tools
 
 
@@ -297,6 +502,713 @@ def _visual_artifact(prompt: str, root: Path) -> Dict[str, Any]:
 
     result = build_and_write_visual_asset_request(prompt, root=root, open_requested=True)
     return result if isinstance(result, dict) else {}
+
+
+def _design_capability_registry_preflight(root: Path) -> Dict[str, Any]:
+    """Capture the current design-stack source binding for a local work order.
+
+    This is intentionally a discovery/preflight step only.  It refuses to
+    treat the registry as a release authority, even when all of its local
+    consistency checks pass.
+    """
+
+    result: Dict[str, Any] = {
+        "available": False,
+        "verified": False,
+        "release_eligible": False,
+        "deployment_authority": "none",
+        "human_visual_acceptance": "required for material brand changes",
+        "owner_release_boundary": "WebsiteOperator owner gate only",
+        "schema": "",
+        "authority": {},
+        "sources": [],
+        "design_evidence_brief_readiness": {
+            "available": False,
+            "state": "unavailable",
+            "brief_ready": False,
+            "planning_pipeline_available": False,
+            "candidate_delivery_ready": False,
+            "release_eligible": False,
+            "deployment_authority": "none",
+        },
+        "motion_performance_budget_readiness": {
+            "available": False,
+            "installed": False,
+            "state": "unavailable",
+            "audit_protocol_available": False,
+            "receipt_replay_available": False,
+            "audit_executed": False,
+            "decision_passed": False,
+            "eligible_for_next_local_gate": False,
+            "pass_inferred_from_installation": False,
+            "candidate_validation_authority": "none",
+            "promotion_authority": "none",
+            "package_authority": "none",
+            "release_eligible": False,
+            "deployment_authority": "none",
+        },
+        "candidate_test_evidence_readiness": {
+            "available": False,
+            "installed": False,
+            "state": "unavailable",
+            "execution_protocol_available": False,
+            "structural_verification_available": False,
+            "reviewed_node_toolchain": {
+                "protocol_available": False,
+                "schema": "aureon.node-toolchain-binding.v1",
+                "locator_authority": "reviewed-source-pinned-absolute-path-no-path-fallback",
+                "absolute_path_size_sha256_bound": False,
+                "ambient_path_fallback_allowed": False,
+                "resolved": False,
+                "executed": False,
+            },
+            "bounded_process": {
+                "protocol_available": False,
+                "launcher": "subprocess.Popen",
+                "shell": False,
+                "max_stream_bytes": 2 * 1024 * 1024,
+                "retry_authority": "none",
+                "executed": False,
+            },
+            "execution_authorised": False,
+            "test_suite_executed": False,
+            "worker_pass_strings_are_evidence": False,
+            "origin_attested": False,
+            "trusted_orchestration_seal_required": True,
+            "evidence_passed": False,
+            "pass_inferred_from_installation": False,
+            "candidate_validation_authority": "none",
+            "promotion_authority": "none",
+            "package_authority": "none",
+            "release_eligible": False,
+            "deployment_authority": "none",
+        },
+        "candidate_qa_control_plane_readiness": {
+            "available": False,
+            "installed": False,
+            "state": "unavailable",
+            "static_qa_available": False,
+            "fixed_test_policy_compiler_available": False,
+            "fixed_motion_policy_compiler_available": False,
+            "handle_bound_immutable_writer_available": False,
+            "v2_runner_available": False,
+            "candidate_test_evidence_runtime_available": False,
+            "compiler_verification_ingress": {
+                "discovery_mode": "metadata-only-no-subprocess",
+                "discovery_subprocess_launched": False,
+                "imported_api": {
+                    "scope": "drift-check-only",
+                    "motion_read_only_verifier_available": False,
+                    "test_read_only_verifier_available": False,
+                    "pre_import_source_authentication": False,
+                },
+                "sealed_direct_file_read_only": {
+                    "protocol_available": False,
+                    "motion_protocol_available": False,
+                    "test_protocol_available": False,
+                    "executed": False,
+                    "python_flags": ["-I", "-S", "-B"],
+                    "motion_verify_flag": "--verify-config",
+                    "test_verify_flag": "--verify-policy",
+                    "source_closure_helper_available": False,
+                },
+                "runner_delegation": {
+                    "protocol_available": False,
+                    "required_for_candidate_qa": True,
+                    "bounded_popen_protocol_available": False,
+                    "launcher": "subprocess.Popen",
+                    "shell": False,
+                    "timeout_seconds": 300,
+                    "max_aggregate_output_bytes": 64 * 1024,
+                    "retry_authority": "none",
+                    "invoked": False,
+                },
+            },
+            "execution_order_enforced": False,
+            "qa_execution_authorised": False,
+            "qa_executed": False,
+            "qa_passed": False,
+            "pass_inferred_from_installation": False,
+            "candidate_validation_authority": "none",
+            "promotion_authority": "none",
+            "package_authority": "none",
+            "release_eligible": False,
+            "deployment_authority": "none",
+        },
+        "verification": {
+            "passed": False,
+            "release_eligible": False,
+            "deployment_authority": "none",
+        },
+        "error": "",
+    }
+    try:
+        from aureon.operator.design_capability_registry import discover_design_capability_registry
+
+        registry = discover_design_capability_registry(root)
+        verification = registry.get("verification")
+        authority = registry.get("authority")
+        brief_readiness = registry.get("design_evidence_brief_readiness")
+        motion_budget_readiness = registry.get("motion_performance_budget_readiness")
+        candidate_test_readiness = registry.get("candidate_test_evidence_readiness")
+        candidate_qa_readiness = registry.get("candidate_qa_control_plane_readiness")
+        verified = (
+            isinstance(verification, dict)
+            and verification.get("passed") is True
+            and verification.get("release_eligible") is False
+            and verification.get("deployment_authority") == "none"
+            and isinstance(authority, dict)
+            and authority.get("release_eligibility") == "always-false"
+            and authority.get("deployment_authority") == "none"
+            and authority.get("release_authority") == "WebsiteOperator owner gate only"
+        )
+        result.update(
+            {
+                "available": True,
+                "verified": verified,
+                "schema": str(registry.get("schema") or ""),
+                "authority": authority if isinstance(authority, dict) else {},
+                "sources": registry.get("sources") if isinstance(registry.get("sources"), list) else [],
+                "design_evidence_brief_readiness": (
+                    brief_readiness
+                    if isinstance(brief_readiness, dict)
+                    else result["design_evidence_brief_readiness"]
+                ),
+                "motion_performance_budget_readiness": (
+                    motion_budget_readiness
+                    if isinstance(motion_budget_readiness, dict)
+                    else result["motion_performance_budget_readiness"]
+                ),
+                "candidate_test_evidence_readiness": (
+                    candidate_test_readiness
+                    if isinstance(candidate_test_readiness, dict)
+                    else result["candidate_test_evidence_readiness"]
+                ),
+                "candidate_qa_control_plane_readiness": (
+                    candidate_qa_readiness
+                    if isinstance(candidate_qa_readiness, dict)
+                    else result["candidate_qa_control_plane_readiness"]
+                ),
+                "verification": verification if isinstance(verification, dict) else result["verification"],
+            }
+        )
+    except Exception as exc:
+        result["error"] = f"{type(exc).__name__}: {exc}"
+    return result
+
+
+def _brief_readiness_metadata(registry: Dict[str, Any]) -> Dict[str, Any]:
+    """Return planning-state evidence without treating it as candidate authority."""
+
+    raw = registry.get("design_evidence_brief_readiness")
+    readiness = raw if isinstance(raw, dict) else {}
+    return {
+        "available": readiness.get("available") is True,
+        "state": str(readiness.get("state") or "unavailable"),
+        "brief_ready": readiness.get("brief_ready") is True,
+        "planning_pipeline_available": readiness.get("planning_pipeline_available") is True,
+        # The capability forge only reports readiness. It never creates a work
+        # order or a staged candidate, even if the source-bound brief passes.
+        "candidate_delivery_ready": False,
+        "candidate_creation": "none; metadata-only capability-forge report",
+        "release_eligible": False,
+        "deployment_authority": "none",
+    }
+
+
+def _delivery_runner_metadata(
+    registry: Dict[str, Any],
+    brief_readiness: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Describe the runner boundary without importing or invoking the runner."""
+
+    qa_raw = registry.get("candidate_qa_control_plane_readiness")
+    qa_readiness = qa_raw if isinstance(qa_raw, dict) else {}
+    ingress_raw = qa_readiness.get("compiler_verification_ingress")
+    ingress = ingress_raw if isinstance(ingress_raw, dict) else {}
+    delegation_raw = ingress.get("runner_delegation")
+    delegation = delegation_raw if isinstance(delegation_raw, dict) else {}
+    sealed_delegation_available = (
+        ingress.get("discovery_mode") == "metadata-only-no-subprocess"
+        and ingress.get("discovery_subprocess_launched") is False
+        and delegation.get("protocol_available") is True
+        and delegation.get("required_for_candidate_qa") is True
+        and delegation.get("bounded_popen_protocol_available") is True
+        and delegation.get("launcher") == "subprocess.Popen"
+        and delegation.get("shell") is False
+        and delegation.get("timeout_seconds") == 300
+        and delegation.get("max_aggregate_output_bytes") == 64 * 1024
+        and delegation.get("retry_authority") == "none"
+        and delegation.get("invoked") is False
+    )
+    return {
+        "available": registry.get("verified") is True,
+        "module": "aureon.autonomous.aureon_public_website_design_runner",
+        "mode": "metadata-only; explicit runner action required for immutable staged receipts",
+        "invoked": False,
+        "candidate_qa_discovery_subprocess_launched": False,
+        "sealed_compiler_read_only_delegation_available": sealed_delegation_available,
+        "sealed_compiler_read_only_delegation_invoked": False,
+        "candidate_creation": "none; capability forge does not create delivery jobs or staged candidates",
+        "candidate_staged": False,
+        "brief_ready": brief_readiness.get("brief_ready") is True,
+        "planning_pipeline_available": brief_readiness.get("planning_pipeline_available") is True,
+        "canonical_website_mutation": "never",
+        "promotion_authority": "none",
+        "terminal_boundary": "awaiting-owner-promotion",
+        "release_eligible": False,
+        "deployment_authority": "none",
+        "next_action": (
+            "Use the runner only through an explicit, separately governed action after current "
+            "reconciliation, any required owner source decision and verified backup; this forge "
+            "report creates neither a delivery job nor a candidate."
+        ),
+    }
+
+
+def _motion_performance_budget_metadata(registry: Dict[str, Any]) -> Dict[str, Any]:
+    """Describe the installed static protocol without running or passing it."""
+
+    raw = registry.get("motion_performance_budget_readiness")
+    readiness = raw if isinstance(raw, dict) else {}
+    protocol_available = (
+        readiness.get("state") == "installed-not-authorised"
+        and readiness.get("audit_protocol_available") is True
+        and readiness.get("receipt_replay_available") is True
+    )
+    return {
+        "available": protocol_available,
+        "state": "installed-not-authorised" if protocol_available else "unavailable",
+        "module": "aureon.operator.design_motion_performance_budget",
+        "mode": "metadata-only; capability forge never runs or interprets the audit",
+        "invoked": False,
+        "audit_executed": False,
+        "decision_status": "not-evaluated",
+        "decision_passed": False,
+        "eligible_for_next_local_gate": False,
+        "pass_inferred_from_installation": False,
+        "pass_requirement": (
+            "exact receipt decision.status pass and decision.eligible_for_next_local_gate true"
+        ),
+        "candidate_validation_authority": "none",
+        "promotion_authority": "none",
+        "canonical_website_mutation": "none",
+        "package_authority": "none",
+        "release_eligible": False,
+        "deployment_authority": "none",
+    }
+
+
+def _candidate_test_evidence_metadata(registry: Dict[str, Any]) -> Dict[str, Any]:
+    """Describe trusted-test evidence without executing or trusting worker text."""
+
+    raw = registry.get("candidate_test_evidence_readiness")
+    readiness = raw if isinstance(raw, dict) else {}
+    node_raw = readiness.get("reviewed_node_toolchain")
+    node = node_raw if isinstance(node_raw, dict) else {}
+    process_raw = readiness.get("bounded_process")
+    process = process_raw if isinstance(process_raw, dict) else {}
+    reviewed_node_toolchain_available = (
+        node.get("protocol_available") is True
+        and node.get("schema") == "aureon.node-toolchain-binding.v1"
+        and node.get("locator_authority") == "reviewed-source-pinned-absolute-path-no-path-fallback"
+        and node.get("absolute_path_size_sha256_bound") is True
+        and node.get("ambient_path_fallback_allowed") is False
+        and node.get("resolved") is False
+        and node.get("executed") is False
+    )
+    bounded_popen_available = (
+        process.get("protocol_available") is True
+        and process.get("launcher") == "subprocess.Popen"
+        and process.get("shell") is False
+        and process.get("max_stream_bytes") == 2 * 1024 * 1024
+        and process.get("retry_authority") == "none"
+        and process.get("executed") is False
+    )
+    protocol_available = (
+        readiness.get("state") == "installed-not-authorised"
+        and readiness.get("execution_protocol_available") is True
+        and readiness.get("structural_verification_available") is True
+        and reviewed_node_toolchain_available
+        and bounded_popen_available
+    )
+    return {
+        "available": protocol_available,
+        "state": "installed-not-authorised" if protocol_available else "unavailable",
+        "module": "aureon.operator.design_candidate_test_evidence",
+        "mode": "metadata-only; capability forge never executes a candidate test suite",
+        "invoked": False,
+        "reviewed_node_toolchain_available": reviewed_node_toolchain_available,
+        "reviewed_node_ambient_path_fallback_allowed": False,
+        "reviewed_node_resolved": False,
+        "bounded_popen_protocol_available": bounded_popen_available,
+        "bounded_popen_shell": False,
+        "bounded_popen_executed": False,
+        "execution_authorised": False,
+        "test_suite_executed": False,
+        "worker_pass_strings_are_evidence": False,
+        "structural_verification_passed": False,
+        "origin_attested": False,
+        "trusted_orchestration_seal_required": True,
+        "evidence_passed": False,
+        "pass_inferred_from_installation": False,
+        "pass_requirement": (
+            "independently preserved trusted orchestration seal plus strict verification "
+            "with origin_attested false and evidence_passed true"
+        ),
+        "candidate_validation_authority": "none",
+        "promotion_authority": "none",
+        "canonical_website_mutation": "none",
+        "package_authority": "none",
+        "release_eligible": False,
+        "deployment_authority": "none",
+    }
+
+
+def _candidate_qa_control_plane_metadata(registry: Dict[str, Any]) -> Dict[str, Any]:
+    """Describe the fixed V2 QA chain without compiling or executing it."""
+
+    raw = registry.get("candidate_qa_control_plane_readiness")
+    readiness = raw if isinstance(raw, dict) else {}
+    ingress_raw = readiness.get("compiler_verification_ingress")
+    ingress = ingress_raw if isinstance(ingress_raw, dict) else {}
+    imported_raw = ingress.get("imported_api")
+    imported_api = imported_raw if isinstance(imported_raw, dict) else {}
+    sealed_raw = ingress.get("sealed_direct_file_read_only")
+    sealed = sealed_raw if isinstance(sealed_raw, dict) else {}
+    delegation_raw = ingress.get("runner_delegation")
+    delegation = delegation_raw if isinstance(delegation_raw, dict) else {}
+    imported_drift_checks_available = (
+        imported_api.get("scope") == "drift-check-only"
+        and imported_api.get("motion_read_only_verifier_available") is True
+        and imported_api.get("test_read_only_verifier_available") is True
+        and imported_api.get("pre_import_source_authentication") is False
+    )
+    sealed_read_only_protocol_available = (
+        sealed.get("protocol_available") is True
+        and sealed.get("motion_protocol_available") is True
+        and sealed.get("test_protocol_available") is True
+        and sealed.get("executed") is False
+        and sealed.get("python_flags") == ["-I", "-S", "-B"]
+        and sealed.get("motion_verify_flag") == "--verify-config"
+        and sealed.get("test_verify_flag") == "--verify-policy"
+        and sealed.get("source_closure_helper_available") is True
+    )
+    runner_delegation_available = (
+        delegation.get("protocol_available") is True
+        and delegation.get("required_for_candidate_qa") is True
+        and delegation.get("bounded_popen_protocol_available") is True
+        and delegation.get("launcher") == "subprocess.Popen"
+        and delegation.get("shell") is False
+        and delegation.get("timeout_seconds") == 300
+        and delegation.get("max_aggregate_output_bytes") == 64 * 1024
+        and delegation.get("retry_authority") == "none"
+        and delegation.get("invoked") is False
+    )
+    available = (
+        readiness.get("available") is True
+        and readiness.get("state") == "installed-not-authorised"
+        and readiness.get("execution_order_enforced") is True
+        and readiness.get("candidate_test_evidence_runtime_available") is True
+        and ingress.get("discovery_mode") == "metadata-only-no-subprocess"
+        and ingress.get("discovery_subprocess_launched") is False
+        and imported_drift_checks_available
+        and sealed_read_only_protocol_available
+        and runner_delegation_available
+    )
+    return {
+        "available": available,
+        "state": "installed-not-authorised" if available else "unavailable",
+        "module": "aureon.operator.design_capability_registry",
+        "runner": "aureon.autonomous.aureon_public_website_design_runner",
+        "mode": "metadata-only-no-subprocess; capability forge never compiles, claims, executes, delegates, or enters a gate",
+        "invoked": False,
+        "discovery_subprocess_launched": False,
+        "imported_compiler_drift_check_apis_available": imported_drift_checks_available,
+        "imported_compiler_pre_import_source_authentication": False,
+        "sealed_direct_file_read_only_protocol_available": sealed_read_only_protocol_available,
+        "sealed_direct_file_read_only_verification_executed": False,
+        "sealed_compiler_python_flags": ["-I", "-S", "-B"],
+        "sealed_motion_verify_flag": "--verify-config",
+        "sealed_test_verify_flag": "--verify-policy",
+        "source_closure_helper_available": sealed.get("source_closure_helper_available") is True,
+        "runner_delegation_available": runner_delegation_available,
+        "runner_delegation_required_for_candidate_qa": True,
+        "runner_bounded_popen_protocol_available": runner_delegation_available,
+        "runner_bounded_popen_shell": False,
+        "runner_bounded_popen_timeout_seconds": 300,
+        "runner_bounded_popen_max_aggregate_output_bytes": 64 * 1024,
+        "runner_bounded_popen_retry_authority": "none",
+        "runner_delegation_invoked": False,
+        "static_qa_available": readiness.get("static_qa_available") is True,
+        "fixed_test_policy_compiler_available": (
+            readiness.get("fixed_test_policy_compiler_available") is True
+        ),
+        "fixed_motion_policy_compiler_available": (
+            readiness.get("fixed_motion_policy_compiler_available") is True
+        ),
+        "handle_bound_immutable_writer_available": (
+            readiness.get("handle_bound_immutable_writer_available") is True
+        ),
+        "execution_order": list(readiness.get("execution_order") or []),
+        "execution_order_enforced": available,
+        "policy_selection_authority": "none",
+        "threshold_selection_authority": "none",
+        "retry_authority": "none",
+        "qa_execution_authorised": False,
+        "qa_executed": False,
+        "motion_audit_executed": False,
+        "test_suite_executed": False,
+        "browser_gate_executed": False,
+        "qa_passed": False,
+        "pass_inferred_from_installation": False,
+        "candidate_creation_authority": "none",
+        "candidate_mutation_authority": "none",
+        "candidate_validation_authority": "none",
+        "canonical_website_mutation": "none",
+        "promotion_authority": "none",
+        "package_authority": "none",
+        "release_authority": "none",
+        "release_eligible": False,
+        "deployment_authority": "none",
+    }
+
+
+def _blocked_website_design_artifact(
+    registry: Dict[str, Any],
+) -> Dict[str, Any]:
+    reason = registry.get("error") or "Source-bound design capability registry did not verify."
+    quality = {
+        "schema_version": "aureon-website-design-quality-report-v1",
+        "status": "artifact_quality_blocked",
+        "generated_at": _utc_now(),
+        "task_family": "website_design",
+        "provider_policy": "local_only_v1",
+        "score": 0.0,
+        "minimum_score": 0.85,
+        "handover_ready": False,
+        "release_eligible": False,
+        "deployment_authority": "none",
+        "next_required_gate": (
+            "Repair the source-bound design registry before local design work; a named human visual "
+            "reviewer and WebsiteOperator owner gate remain required afterwards."
+        ),
+        "checks": [
+            {
+                "id": "source_bound_design_capability_registry",
+                "label": "Source-bound design capability registry",
+                "ok": False,
+                "blocking": True,
+                "evidence": reason,
+            }
+        ],
+        "snags": [
+            {
+                "id": "source_bound_design_capability_registry",
+                "reason": reason,
+            }
+        ],
+        "regeneration_attempts": [
+            {
+                "attempt": 0,
+                "status": "repair-required",
+                "reason": reason,
+            }
+        ],
+        "browser_render_proof": {
+            "proof_status": "not-run-registry-preflight-blocked",
+            "preview_url": "",
+            "public_url": "/",
+            "local_probe": False,
+        },
+        "artifact_manifest": {
+            "kind": "website_design_cycle",
+            "subject": "Aureon public website",
+            "asset_path": "",
+            "public_url": "/",
+            "preview_url": "",
+        },
+    }
+    brief_readiness = _brief_readiness_metadata(registry)
+    return {
+        "ok": False,
+        "artifact_manifest": quality["artifact_manifest"],
+        "artifact_quality_report": quality,
+        "design_cycle": {},
+        "design_capability_registry": registry,
+        "candidate_control": {
+            "available": False,
+            "mode": "blocked-before-staging",
+            "canonical_website_mutation": "never",
+            "release_eligible": False,
+            "deployment_authority": "none",
+            "brief_readiness": brief_readiness,
+            "delivery_runner": _delivery_runner_metadata(registry, brief_readiness),
+            "motion_performance_budget": _motion_performance_budget_metadata(registry),
+            "candidate_test_evidence": _candidate_test_evidence_metadata(registry),
+            "candidate_qa_control_plane": _candidate_qa_control_plane_metadata(registry),
+        },
+        "output_files": [],
+        "adaptive_skill": {
+            "name": "aureon_harmonic_design_suite",
+            "created_for_prompt": False,
+            "reusable": True,
+            "skill_contract": "source-bound local design work only; no release authority",
+        },
+    }
+
+
+def _website_design_artifact(prompt: str, root: Path) -> Dict[str, Any]:
+    from aureon.operator.website_operator import WebsiteOperator
+
+    registry = _design_capability_registry_preflight(root)
+    if not registry["verified"]:
+        return _blocked_website_design_artifact(registry)
+
+    operator = WebsiteOperator.from_paths(repo_root=root)
+    receipt_path = operator.design_cycle(
+        goal=prompt,
+        run_external=False,
+    )
+    payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+    brief_readiness = _brief_readiness_metadata(registry)
+    gates = payload.get("hard_gates", [])
+    passed = bool(payload.get("hard_gates_pass"))
+    quality = {
+        "schema_version": "aureon-website-design-quality-report-v1",
+        "status": "artifact_quality_passed" if passed else "artifact_quality_blocked",
+        "generated_at": _utc_now(),
+        "task_family": "website_design",
+        "provider_policy": "local_only_v1",
+        "score": round(float(payload.get("design_nexus", {}).get("score", 0.0)) / 100.0, 4),
+        "minimum_score": round(
+            float(payload.get("design_nexus", {}).get("minimum_score", 85.0)) / 100.0,
+            4,
+        ),
+        "handover_ready": passed,
+        "release_eligible": False,
+        "deployment_authority": "none",
+        "next_required_gate": (
+            "Named human visual acceptance followed by the WebsiteOperator owner gate; "
+            "this local capability result cannot authorise deployment."
+        ),
+        "checks": [
+            {
+                "id": "source_bound_design_capability_registry",
+                "label": "Source-bound design capability registry",
+                "ok": True,
+                "blocking": True,
+                "evidence": {
+                    "schema": registry.get("schema"),
+                    "verified": registry.get("verified"),
+                    "source_count": len(registry.get("sources") or []),
+                },
+            }
+        ]
+        + [
+            {
+                "id": str(gate.get("id") or ""),
+                "label": str(gate.get("id") or "").replace("_", " "),
+                "ok": bool(gate.get("passed")),
+                "blocking": True,
+                "evidence": gate.get("evidence"),
+            }
+            for gate in gates
+            if isinstance(gate, dict)
+        ],
+        "snags": [
+            {
+                "id": str(gate.get("id") or "design_gate"),
+                "reason": gate.get("evidence"),
+            }
+            for gate in gates
+            if isinstance(gate, dict) and not gate.get("passed")
+        ],
+        "regeneration_attempts": [
+            {
+                "attempt": int(payload.get("iteration", 1) or 1),
+                "status": "accepted-for-human-review" if passed else "repair-required",
+                "reason": payload.get("state"),
+            }
+        ],
+        "browser_render_proof": {
+            "proof_status": "required-by-design-council",
+            "preview_url": "",
+            "public_url": "/",
+            "local_probe": True,
+        },
+        "artifact_manifest": {
+            "kind": "website_design_cycle",
+            "subject": "Aureon public website",
+            "asset_path": str(receipt_path),
+            "public_url": "/",
+            "preview_url": "",
+            "design_capability_registry_schema": registry.get("schema"),
+            "design_capability_registry_verified": True,
+        },
+    }
+    return {
+        "ok": passed,
+        "artifact_manifest": quality["artifact_manifest"],
+        "artifact_quality_report": quality,
+        "design_cycle": payload,
+        "design_capability_registry": registry,
+        "candidate_control": {
+            "available": True,
+            "module": "aureon.operator.design_candidate_control",
+            "mode": "explicit-reconciled-v30-work-order-required-before-any-autonomous-candidate",
+            "canonical_website_mutation": "never",
+            "release_eligible": False,
+            "deployment_authority": "none",
+            "brief_readiness": brief_readiness,
+            "delivery_runner": _delivery_runner_metadata(registry, brief_readiness),
+            "motion_performance_budget": _motion_performance_budget_metadata(registry),
+            "candidate_test_evidence": _candidate_test_evidence_metadata(registry),
+            "candidate_qa_control_plane": _candidate_qa_control_plane_metadata(registry),
+            "next_action": (
+                "Observe the relevant public routes, resolve any drift through a fresh verified backup and owner source decision, then issue an exact-path source-bound work order with reconciliation binding; stage only below "
+                "artifacts/website-candidates, validate the diff and claim-impact declarations, then "
+                "capture source-bound staged visual evidence, run the initial gate before any "
+                "repeatability series, and obtain a separate named human review."
+            ),
+            "initial_gate": {
+                "module": "aureon.operator.design_candidate_initial_gate",
+                "mode": "focused-source-bound-performance-decision-before-any-repeatability-series",
+                "release_eligible": False,
+                "deployment_authority": "none",
+            },
+            "research_route_attribution": {
+                "module": "tools/aureon_research_hydration_attribution.js",
+                "mode": "single-self-hosted-runtime-only-temporal-diagnostic-after-a-source-bound-performance-rejection",
+                "candidate_creation": "none",
+                "release_eligible": False,
+                "deployment_authority": "none",
+            },
+            "owner_source_reconciliation": {
+                "module": "aureon.operator.owner_source_reconciliation",
+                "mode": "owner-decision-and-verified-backup-required-only-after-observed-live-drift",
+                "canonical_promotion_authority": "owner-controlled",
+                "release_eligible": False,
+                "deployment_authority": "none",
+            },
+            "prepromotion_visual_review": {
+                "module": "aureon.operator.design_candidate_visual_review",
+                "canonical_promotion_authority": "owner-controlled",
+                "release_eligible": False,
+                "deployment_authority": "none",
+            },
+        },
+        "output_files": [str(receipt_path)],
+        "adaptive_skill": {
+            "name": "aureon_harmonic_design_suite",
+            "created_for_prompt": False,
+            "reusable": True,
+            "skill_contract": (
+                "research, brief, design, write, test, challenge, package, and learn locally; "
+                "production release remains owner-gated"
+            ),
+        },
+    }
 
 
 def _safe_slug(text: str, fallback: str = "artifact") -> str:
@@ -351,17 +1263,24 @@ def _needs_interactive_app(prompt: str, families: Sequence[str]) -> bool:
     text = str(prompt or "").lower()
     app_words = ("game", "keyboard", "arrow key", "wasd", "walks", "player", "level", "html app", "micro app")
     has_app_word = bool(re.search(r"\b(app|application)\b", text))
-    return any(word in text for word in app_words) or ("coding" in families and "ui" in families and has_app_word)
+    return any(word in text for word in app_words) or (
+        "coding" in families and "ui" in families and has_app_word
+    )
 
 
 def _is_barcode_label_prompt(prompt: str) -> bool:
     text = str(prompt or "").lower()
-    return "barcode" in text and any(word in text for word in ("label", "labels", "sku", "warehouse", "inventory"))
+    return "barcode" in text and any(
+        word in text for word in ("label", "labels", "sku", "warehouse", "inventory")
+    )
 
 
 def _requests_finished_domain_tool(prompt: str) -> bool:
     text = str(prompt or "").lower()
-    if any(meta in text for meta in ("capability forge", "coding forge", "quality gate", "research how ai systems")):
+    if any(
+        meta in text
+        for meta in ("capability forge", "coding forge", "quality gate", "research how ai systems")
+    ):
         return False
     tool_words = (
         "build a local",
@@ -433,7 +1352,9 @@ def _full_stack_quality_report(
             {
                 "attempt": 1,
                 "status": "accepted" if handover_ready else "needs_repair",
-                "reason": "local backend/frontend/test contract validated" if handover_ready else "blocking full-stack proof missing",
+                "reason": "local backend/frontend/test contract validated"
+                if handover_ready
+                else "blocking full-stack proof missing",
             }
         ],
         "browser_render_proof": {
@@ -730,9 +1651,24 @@ code { color: #86d8ba; }
         {
             "build_id": build_id,
             "items": [
-                {"id": "task-001", "title": "Scope client brief", "owner": "Product Manager", "status": "ready"},
-                {"id": "task-002", "title": "Build API contract", "owner": "API Engineer", "status": "in_progress"},
-                {"id": "task-003", "title": "Run integration proof", "owner": "Test Pilot", "status": "queued"},
+                {
+                    "id": "task-001",
+                    "title": "Scope client brief",
+                    "owner": "Product Manager",
+                    "status": "ready",
+                },
+                {
+                    "id": "task-002",
+                    "title": "Build API contract",
+                    "owner": "API Engineer",
+                    "status": "in_progress",
+                },
+                {
+                    "id": "task-003",
+                    "title": "Run integration proof",
+                    "owner": "Test Pilot",
+                    "status": "queued",
+                },
             ],
         },
         indent=2,
@@ -850,16 +1786,76 @@ Then open `{public_url}` from the Aureon console. The static preview still rende
 
     files = [server_path, app_path, index_path, styles_path, data_path, test_path, readme_path, metadata_path]
     checks = [
-        {"id": "project_directory_exists", "label": "Full-stack project directory exists", "ok": project_dir.exists(), "blocking": True, "evidence": str(project_dir)},
-        {"id": "backend_server_exists", "label": "Backend API server file exists", "ok": server_path.exists(), "blocking": True, "evidence": str(server_path)},
-        {"id": "frontend_index_exists", "label": "Frontend browser UI exists", "ok": index_path.exists(), "blocking": True, "evidence": str(index_path)},
-        {"id": "api_contract_test_exists", "label": "API contract test exists", "ok": test_path.exists(), "blocking": True, "evidence": str(test_path)},
-        {"id": "backend_compiles", "label": "Backend compiles", "ok": validation["py_compile_backend"], "blocking": True, "evidence": str(server_path)},
-        {"id": "backend_imports", "label": "Backend imports locally", "ok": validation["backend_imported"], "blocking": True, "evidence": validation["status"]},
-        {"id": "health_contract_passes", "label": "Health contract passes", "ok": validation["health_ok"], "blocking": True, "evidence": "/api/health"},
-        {"id": "crud_contract_passes", "label": "Create/list contract passes", "ok": validation["crud_ok"], "blocking": True, "evidence": "/api/items"},
-        {"id": "frontend_references_api", "label": "Frontend references backend API", "ok": "/api/items" in app_js, "blocking": True, "evidence": str(app_path)},
-        {"id": "unique_build_id_present", "label": "Fresh build id is present", "ok": build_id in public_url and build_id in server_py, "blocking": True, "evidence": build_id},
+        {
+            "id": "project_directory_exists",
+            "label": "Full-stack project directory exists",
+            "ok": project_dir.exists(),
+            "blocking": True,
+            "evidence": str(project_dir),
+        },
+        {
+            "id": "backend_server_exists",
+            "label": "Backend API server file exists",
+            "ok": server_path.exists(),
+            "blocking": True,
+            "evidence": str(server_path),
+        },
+        {
+            "id": "frontend_index_exists",
+            "label": "Frontend browser UI exists",
+            "ok": index_path.exists(),
+            "blocking": True,
+            "evidence": str(index_path),
+        },
+        {
+            "id": "api_contract_test_exists",
+            "label": "API contract test exists",
+            "ok": test_path.exists(),
+            "blocking": True,
+            "evidence": str(test_path),
+        },
+        {
+            "id": "backend_compiles",
+            "label": "Backend compiles",
+            "ok": validation["py_compile_backend"],
+            "blocking": True,
+            "evidence": str(server_path),
+        },
+        {
+            "id": "backend_imports",
+            "label": "Backend imports locally",
+            "ok": validation["backend_imported"],
+            "blocking": True,
+            "evidence": validation["status"],
+        },
+        {
+            "id": "health_contract_passes",
+            "label": "Health contract passes",
+            "ok": validation["health_ok"],
+            "blocking": True,
+            "evidence": "/api/health",
+        },
+        {
+            "id": "crud_contract_passes",
+            "label": "Create/list contract passes",
+            "ok": validation["crud_ok"],
+            "blocking": True,
+            "evidence": "/api/items",
+        },
+        {
+            "id": "frontend_references_api",
+            "label": "Frontend references backend API",
+            "ok": "/api/items" in app_js,
+            "blocking": True,
+            "evidence": str(app_path),
+        },
+        {
+            "id": "unique_build_id_present",
+            "label": "Fresh build id is present",
+            "ok": build_id in public_url and build_id in server_py,
+            "blocking": True,
+            "evidence": build_id,
+        },
     ]
     artifact_manifest = {
         "kind": "full_stack_system",
@@ -919,7 +1915,9 @@ def _interactive_game_artifact(prompt: str, root: Path, *, build_id: str) -> Dic
     prompt_html = escape(prompt)
     uniqueness = _uniqueness_contract(prompt, digest, family="interactive_game")
     prompt_lower = str(prompt or "").lower()
-    is_space_shooter = any(token in prompt_lower for token in ("space ship", "spaceship", "spacecraft", "rocket")) and any(
+    is_space_shooter = any(
+        token in prompt_lower for token in ("space ship", "spaceship", "spacecraft", "rocket")
+    ) and any(
         token in prompt_lower for token in ("shoot", "shot", "laser", "enemy", "enemies", "alien", "asteroid")
     )
     game_kind = "space_shooter" if is_space_shooter else "platformer_adventure"
@@ -1151,13 +2149,37 @@ def _interactive_game_artifact(prompt: str, root: Path, *, build_id: str) -> Dic
     html_lower = html.lower()
     if game_kind == "space_shooter":
         prompt_specific_checks = [
-            {"id": "spaceship_player_present", "label": "Prompt-specific spaceship player exists", "ok": "spaceship" in html_lower and "drawship" in html_lower, "blocking": True, "evidence": "spaceship/drawShip"},
-            {"id": "enemy_shooter_loop_present", "label": "Prompt-specific enemies and shooting loop exist", "ok": "enemies" in html_lower and "bullets" in html_lower and "shoot" in html_lower, "blocking": True, "evidence": "enemies/bullets/shoot"},
-            {"id": "score_lives_wave_present", "label": "Shooter HUD has score, lives, and wave state", "ok": all(token in html_lower for token in ("score", "lives", "wave")), "blocking": True, "evidence": "score/lives/wave"},
+            {
+                "id": "spaceship_player_present",
+                "label": "Prompt-specific spaceship player exists",
+                "ok": "spaceship" in html_lower and "drawship" in html_lower,
+                "blocking": True,
+                "evidence": "spaceship/drawShip",
+            },
+            {
+                "id": "enemy_shooter_loop_present",
+                "label": "Prompt-specific enemies and shooting loop exist",
+                "ok": "enemies" in html_lower and "bullets" in html_lower and "shoot" in html_lower,
+                "blocking": True,
+                "evidence": "enemies/bullets/shoot",
+            },
+            {
+                "id": "score_lives_wave_present",
+                "label": "Shooter HUD has score, lives, and wave state",
+                "ok": all(token in html_lower for token in ("score", "lives", "wave")),
+                "blocking": True,
+                "evidence": "score/lives/wave",
+            },
         ]
     else:
         prompt_specific_checks = [
-            {"id": "platformer_goal_present", "label": "Platformer goal and movement loop exist", "ok": "glowing door" in html_lower and "player" in html_lower, "blocking": True, "evidence": "glowing door/player"},
+            {
+                "id": "platformer_goal_present",
+                "label": "Platformer goal and movement loop exist",
+                "ok": "glowing door" in html_lower and "player" in html_lower,
+                "blocking": True,
+                "evidence": "glowing door/player",
+            },
         ]
     prompt_specific_ok = all(bool(check.get("ok")) for check in prompt_specific_checks)
     uniqueness_checks = _fresh_project_checks(
@@ -1171,13 +2193,17 @@ def _interactive_game_artifact(prompt: str, root: Path, *, build_id: str) -> Dic
     quality_score = 0.94 if gate_ok else 0.62
     handover_ready = gate_ok
     quality_status = "artifact_quality_passed" if gate_ok else "artifact_quality_blocked"
-    quality_snags = [] if prompt_specific_ok else [
-        {
-            "id": "prompt_specific_gameplay_missing",
-            "severity": "blocking",
-            "detail": "Generated game did not contain gameplay mechanics matching the operator prompt.",
-        }
-    ]
+    quality_snags = (
+        []
+        if prompt_specific_ok
+        else [
+            {
+                "id": "prompt_specific_gameplay_missing",
+                "severity": "blocking",
+                "detail": "Generated game did not contain gameplay mechanics matching the operator prompt.",
+            }
+        ]
+    )
     if not unique_ok:
         quality_snags.append(
             {
@@ -1217,11 +2243,37 @@ def _interactive_game_artifact(prompt: str, root: Path, *, build_id: str) -> Dic
         "minimum_score": 0.8,
         "handover_ready": handover_ready,
         "checks": [
-            {"id": "html_artifact_exists", "label": "Playable HTML artifact exists", "ok": html_path.exists(), "blocking": True, "evidence": str(html_path)},
-            {"id": "keyboard_controls_visible", "label": "Keyboard controls are documented on screen", "ok": True, "blocking": True, "evidence": "Arrow/WASD/Space/R"},
-            {"id": "local_only_generation", "label": "Artifact was generated locally", "ok": True, "blocking": True, "evidence": "no external API calls"},
-            {"id": "browser_preview_url", "label": "Browser preview URL is available", "ok": True, "blocking": True, "evidence": public_url},
-        ] + prompt_specific_checks + uniqueness_checks,
+            {
+                "id": "html_artifact_exists",
+                "label": "Playable HTML artifact exists",
+                "ok": html_path.exists(),
+                "blocking": True,
+                "evidence": str(html_path),
+            },
+            {
+                "id": "keyboard_controls_visible",
+                "label": "Keyboard controls are documented on screen",
+                "ok": True,
+                "blocking": True,
+                "evidence": "Arrow/WASD/Space/R",
+            },
+            {
+                "id": "local_only_generation",
+                "label": "Artifact was generated locally",
+                "ok": True,
+                "blocking": True,
+                "evidence": "no external API calls",
+            },
+            {
+                "id": "browser_preview_url",
+                "label": "Browser preview URL is available",
+                "ok": True,
+                "blocking": True,
+                "evidence": public_url,
+            },
+        ]
+        + prompt_specific_checks
+        + uniqueness_checks,
         "snags": quality_snags,
         "regeneration_attempts": [
             {
@@ -1232,7 +2284,12 @@ def _interactive_game_artifact(prompt: str, root: Path, *, build_id: str) -> Dic
                 else "prompt-specific deterministic checks failed",
             }
         ],
-        "browser_render_proof": {"proof_status": "html_preview_ready", "preview_url": public_url, "public_url": public_url, "local_probe": True},
+        "browser_render_proof": {
+            "proof_status": "html_preview_ready",
+            "preview_url": public_url,
+            "public_url": public_url,
+            "local_probe": True,
+        },
         "artifact_manifest": {
             "kind": "html_game",
             "game_kind": game_kind,
@@ -1563,12 +2620,48 @@ SKU-003,Fragile Cable,Aisle C2</textarea>
         build_id=digest,
     )
     checks = [
-        {"id": "barcode_preview_exists", "label": "Browser label preview exists", "ok": index_path.exists(), "blocking": True, "evidence": str(index_path)},
-        {"id": "barcode_metadata_exists", "label": "Barcode skill metadata exists", "ok": metadata_path.exists(), "blocking": True, "evidence": str(metadata_path)},
-        {"id": "barcode_run_contract_exists", "label": "Python run contract exists", "ok": tool_path.exists(), "blocking": True, "evidence": str(tool_path)},
-        {"id": "domain_specific_barcode_logic", "label": "Domain-specific barcode logic exists", "ok": sample_ok, "blocking": True, "evidence": "CODE39_PATTERNS + build_labels"},
-        {"id": "printable_label_preview", "label": "Printable label preview is available", "ok": "window.print" in html, "blocking": True, "evidence": public_url},
-        {"id": "local_only_generation", "label": "Skill was generated locally", "ok": True, "blocking": True, "evidence": "no external API calls"},
+        {
+            "id": "barcode_preview_exists",
+            "label": "Browser label preview exists",
+            "ok": index_path.exists(),
+            "blocking": True,
+            "evidence": str(index_path),
+        },
+        {
+            "id": "barcode_metadata_exists",
+            "label": "Barcode skill metadata exists",
+            "ok": metadata_path.exists(),
+            "blocking": True,
+            "evidence": str(metadata_path),
+        },
+        {
+            "id": "barcode_run_contract_exists",
+            "label": "Python run contract exists",
+            "ok": tool_path.exists(),
+            "blocking": True,
+            "evidence": str(tool_path),
+        },
+        {
+            "id": "domain_specific_barcode_logic",
+            "label": "Domain-specific barcode logic exists",
+            "ok": sample_ok,
+            "blocking": True,
+            "evidence": "CODE39_PATTERNS + build_labels",
+        },
+        {
+            "id": "printable_label_preview",
+            "label": "Printable label preview is available",
+            "ok": "window.print" in html,
+            "blocking": True,
+            "evidence": public_url,
+        },
+        {
+            "id": "local_only_generation",
+            "label": "Skill was generated locally",
+            "ok": True,
+            "blocking": True,
+            "evidence": "no external API calls",
+        },
     ] + uniqueness_checks
     snags = [
         {
@@ -1601,7 +2694,12 @@ SKU-003,Fragile Cable,Aisle C2</textarea>
                 else "barcode label generator missed blocking local checks",
             }
         ],
-        "browser_render_proof": {"proof_status": "barcode_preview_ready", "preview_url": public_url, "public_url": public_url, "local_probe": True},
+        "browser_render_proof": {
+            "proof_status": "barcode_preview_ready",
+            "preview_url": public_url,
+            "public_url": public_url,
+            "local_probe": True,
+        },
         "artifact_manifest": {
             "kind": "barcode_label_generator",
             "subject": "warehouse barcode labels",
@@ -1837,18 +2935,45 @@ if __name__ == "__main__":
         "minimum_score": 0.8,
         "handover_ready": handover_ready,
         "checks": [
-            {"id": "adaptive_skill_preview_exists", "label": "Browser preview exists", "ok": index_path.exists(), "blocking": True, "evidence": str(index_path)},
-            {"id": "adaptive_skill_metadata_exists", "label": "Skill metadata exists", "ok": metadata_path.exists(), "blocking": True, "evidence": str(metadata_path)},
-            {"id": "adaptive_skill_run_contract_exists", "label": "Local run contract exists", "ok": tool_path.exists(), "blocking": True, "evidence": str(tool_path)},
+            {
+                "id": "adaptive_skill_preview_exists",
+                "label": "Browser preview exists",
+                "ok": index_path.exists(),
+                "blocking": True,
+                "evidence": str(index_path),
+            },
+            {
+                "id": "adaptive_skill_metadata_exists",
+                "label": "Skill metadata exists",
+                "ok": metadata_path.exists(),
+                "blocking": True,
+                "evidence": str(metadata_path),
+            },
+            {
+                "id": "adaptive_skill_run_contract_exists",
+                "label": "Local run contract exists",
+                "ok": tool_path.exists(),
+                "blocking": True,
+                "evidence": str(tool_path),
+            },
             {
                 "id": "domain_specific_worker_present",
                 "label": "Finished domain-specific worker exists when a tool is requested",
                 "ok": not requests_finished_tool,
                 "blocking": requests_finished_tool,
-                "evidence": "generic capsule only" if requests_finished_tool else "generic capsule/prototype request",
+                "evidence": "generic capsule only"
+                if requests_finished_tool
+                else "generic capsule/prototype request",
             },
-            {"id": "local_only_generation", "label": "Skill was generated locally", "ok": True, "blocking": True, "evidence": "no external API calls"},
-        ] + uniqueness_checks,
+            {
+                "id": "local_only_generation",
+                "label": "Skill was generated locally",
+                "ok": True,
+                "blocking": True,
+                "evidence": "no external API calls",
+            },
+        ]
+        + uniqueness_checks,
         "snags": snags,
         "regeneration_attempts": [
             {
@@ -1859,7 +2984,12 @@ if __name__ == "__main__":
                 else "adaptive skill capsule passed local file and preview checks",
             }
         ],
-        "browser_render_proof": {"proof_status": "adaptive_preview_ready", "preview_url": public_url, "public_url": public_url, "local_probe": True},
+        "browser_render_proof": {
+            "proof_status": "adaptive_preview_ready",
+            "preview_url": public_url,
+            "public_url": public_url,
+            "local_probe": True,
+        },
         "artifact_manifest": {
             "kind": "adaptive_skill_capsule",
             "subject": task_family,
@@ -1896,7 +3026,7 @@ def _safe_code_proposal(
     prompt: str,
     root: Path,
     families: Sequence[str],
-    generated_files: Optional[Sequence[str]] = None,
+    generated_files: Sequence[str] | None = None,
 ) -> Dict[str, Any]:
     controller = SafeCodeControl(state_path=_rooted(root, DEFAULT_SAFE_CODE_STATE))
     target_files = [
@@ -1904,6 +3034,13 @@ def _safe_code_proposal(
         "aureon/autonomous/aureon_artifact_quality_gate.py",
         "frontend/src/components/generated/AureonCodingOrganismConsole.tsx",
     ]
+    if "website_design" in families:
+        target_files = [
+            "website/",
+            "aureon/operator/website_operator.py",
+            "skills/aureon-harmonic-design-suite/",
+            "tools/aureon_website_visual_qa_v28.js",
+        ]
     for item in generated_files or []:
         if item and item not in target_files:
             target_files.append(str(item))
@@ -1912,7 +3049,9 @@ def _safe_code_proposal(
             kind="capability_forge_coding_job",
             title=prompt[:120],
             summary="Local capability forge scoped this coding/UI request, generated local artifacts when suitable, and queued safe route evidence for after-apply review.",
-            target_files=target_files if any(family in families for family in ("coding", "ui", "mixed")) else [],
+            target_files=target_files
+            if any(family in families for family in ("website_design", "coding", "ui", "mixed"))
+            else [],
             patch_text="",
             metadata={
                 "provider_policy": "local_only_v1",
@@ -1970,7 +3109,9 @@ def _placeholder_quality(prompt: str, root: Path, family: str) -> Dict[str, Any]
         "handover_ready": True,
         "checks": checks,
         "snags": [],
-        "regeneration_attempts": [{"attempt": 1, "status": "accepted", "reason": "non-media evidence route passed"}],
+        "regeneration_attempts": [
+            {"attempt": 1, "status": "accepted", "reason": "non-media evidence route passed"}
+        ],
         "browser_render_proof": {
             "proof_status": "non_media_evidence_ready",
             "preview_url": "",
@@ -2019,7 +3160,7 @@ def _make_markdown(report: Dict[str, Any]) -> str:
 def build_and_write_capability_forge(
     prompt: str,
     *,
-    root: Optional[Path] = None,
+    root: Path | None = None,
     provider_policy: str = "local_only_v1",
     approval_gate: str = "after_apply",
 ) -> Dict[str, Any]:
@@ -2036,28 +3177,43 @@ def build_and_write_capability_forge(
     uniqueness_contract = _uniqueness_contract(prompt_text, build_id, family=task_family)
     crew = _crew_for_families(detected_families)
     tools = _tools_for_families(detected_families)
-    visual = _visual_artifact(prompt_text, root) if any(family in detected_families for family in ("video", "image_graphic_design")) else {}
+    website_design = _website_design_artifact(prompt_text, root) if task_family == "website_design" else {}
+    visual = (
+        _visual_artifact(prompt_text, root)
+        if not website_design
+        and any(family in detected_families for family in ("video", "image_graphic_design"))
+        else {}
+    )
     full_stack = (
         _full_stack_system_artifact(prompt_text, root, build_id=build_id)
-        if not visual and _needs_full_stack_system(prompt_text, detected_families)
+        if not website_design and not visual and _needs_full_stack_system(prompt_text, detected_families)
         else {}
     )
     interactive = (
         _interactive_game_artifact(prompt_text, root, build_id=build_id)
-        if not visual and not full_stack and _needs_interactive_app(prompt_text, detected_families)
+        if not website_design
+        and not visual
+        and not full_stack
+        and _needs_interactive_app(prompt_text, detected_families)
         else {}
     )
     specialized = (
         _barcode_label_skill_capsule(prompt_text, root, detected_families, task_family, build_id=build_id)
-        if not visual and not full_stack and not interactive and _is_barcode_label_prompt(prompt_text)
+        if not website_design
+        and not visual
+        and not full_stack
+        and not interactive
+        and _is_barcode_label_prompt(prompt_text)
         else {}
     )
     adaptive = (
         _adaptive_skill_capsule(prompt_text, root, detected_families, task_family, build_id=build_id)
-        if not visual and not full_stack and not interactive and not specialized
+        if not website_design and not visual and not full_stack and not interactive and not specialized
         else {}
     )
-    adaptive_skill_source = full_stack or interactive or specialized or adaptive
+    adaptive_skill_source: Dict[str, Any] = (
+        website_design or full_stack or interactive or specialized or adaptive
+    )
     if adaptive_skill_source and not any(item.get("role") == "Adaptive Skill Composer" for item in crew):
         crew.append(
             {
@@ -2075,11 +3231,17 @@ def build_and_write_capability_forge(
                 "mode": "local_file_generation",
             }
         )
-    artifact_source = visual or full_stack or interactive or specialized or adaptive
-    artifact_manifest = artifact_source.get("artifact_manifest") if isinstance(artifact_source.get("artifact_manifest"), dict) else {}
-    artifact_quality_report = (
-        artifact_source.get("artifact_quality_report")
-        if isinstance(artifact_source.get("artifact_quality_report"), dict)
+    artifact_source: Dict[str, Any] = (
+        website_design or visual or full_stack or interactive or specialized or adaptive
+    )
+    raw_artifact_manifest = artifact_source.get("artifact_manifest")
+    artifact_manifest: Dict[str, Any] = (
+        raw_artifact_manifest if isinstance(raw_artifact_manifest, dict) else {}
+    )
+    raw_artifact_quality_report = artifact_source.get("artifact_quality_report")
+    artifact_quality_report: Dict[str, Any] = (
+        raw_artifact_quality_report
+        if isinstance(raw_artifact_quality_report, dict)
         else _placeholder_quality(prompt_text, root, task_family)
     )
     write_artifact_quality_report(artifact_quality_report, root=root)
@@ -2089,7 +3251,9 @@ def build_and_write_capability_forge(
         str(artifact_manifest.get("runbook_path") or ""),
         str(artifact_manifest.get("tool_path") or ""),
     ]
-    for item in artifact_manifest.get("files", []) if isinstance(artifact_manifest.get("files"), list) else []:
+    for item in (
+        artifact_manifest.get("files", []) if isinstance(artifact_manifest.get("files"), list) else []
+    ):
         generated_files.append(str(item))
     generated_files = [item for item in generated_files if item]
     applied_change_evidence = _safe_code_proposal(
@@ -2101,6 +3265,32 @@ def build_and_write_capability_forge(
 
     quality_ready = bool(artifact_quality_report.get("handover_ready"))
     route_ready = provider_policy == "local_only_v1" and quality_ready
+    website_design_registry = (
+        website_design.get("design_capability_registry", {}) if isinstance(website_design, dict) else {}
+    )
+    website_registry_verified = bool(website_design_registry.get("verified"))
+    approval_state = {
+        "state": "pending_user_review_after_apply" if route_ready else "blocked_by_quality_gate",
+        "policy": approval_gate,
+        "approved": False,
+        "reviewer": "operator_or_codex",
+        "next_action": "approve, reject, or request revision from the cockpit",
+    }
+    if task_family == "website_design":
+        approval_state = {
+            "state": (
+                "candidate_ready_for_human_visual_review" if route_ready else "blocked_by_design_quality_gate"
+            ),
+            "policy": "named_human_visual_review_then_websiteoperator_owner_gate",
+            "approved": False,
+            "reviewer": "named_human_visual_reviewer",
+            "next_action": (
+                "Repair any objective gate failures, then obtain named human visual acceptance; "
+                "only WebsiteOperator may later run the separate owner-controlled release path."
+            ),
+            "release_eligible": False,
+            "deployment_authority": "none",
+        }
     output_files = [
         DEFAULT_STATE_PATH.as_posix(),
         DEFAULT_AUDIT_JSON.as_posix(),
@@ -2109,6 +3299,9 @@ def build_and_write_capability_forge(
         DEFAULT_PUBLIC_QUALITY_JSON.as_posix(),
     ]
     for item in visual.get("output_files", []) if isinstance(visual, dict) else []:
+        if item not in output_files:
+            output_files.append(str(item))
+    for item in website_design.get("output_files", []) if isinstance(website_design, dict) else []:
         if item not in output_files:
             output_files.append(str(item))
     for item in full_stack.get("output_files", []) if isinstance(full_stack, dict) else []:
@@ -2124,6 +3317,17 @@ def build_and_write_capability_forge(
         if item not in output_files:
             output_files.append(str(item))
 
+    raw_adaptive_skill_evidence = adaptive_skill_source.get("adaptive_skill")
+    adaptive_skill_evidence: Dict[str, Any] = (
+        raw_adaptive_skill_evidence
+        if isinstance(raw_adaptive_skill_evidence, dict)
+        else {
+            "name": "existing_capability_path",
+            "created_for_prompt": False,
+            "reusable": True,
+            "skill_contract": "classified prompt routed through existing local capability forge path",
+        }
+    )
     report: Dict[str, Any] = {
         "schema_version": "aureon-local-capability-forge-v1",
         "status": "capability_forge_ready" if route_ready else "capability_forge_quality_blocked",
@@ -2149,6 +3353,8 @@ def build_and_write_capability_forge(
         "recruited_crew": crew,
         "local_tools_used": tools,
         "artifact_manifest": artifact_manifest,
+        "website_design_report": website_design,
+        "website_design_capability_registry": website_design_registry,
         "visual_asset_report": visual,
         "full_stack_system_report": full_stack,
         "interactive_artifact_report": interactive,
@@ -2157,27 +3363,18 @@ def build_and_write_capability_forge(
         "artifact_quality_report": artifact_quality_report,
         "regeneration_attempts": artifact_quality_report.get("regeneration_attempts", []),
         "applied_change_evidence": applied_change_evidence,
-        "adaptive_skill_evidence": adaptive_skill_source.get("adaptive_skill", {})
-        if isinstance(adaptive_skill_source.get("adaptive_skill"), dict)
-        else {
-            "name": "existing_capability_path",
-            "created_for_prompt": False,
-            "reusable": True,
-            "skill_contract": "classified prompt routed through existing local capability forge path",
-        },
-        "approval_state": {
-            "state": "pending_user_review_after_apply" if route_ready else "blocked_by_quality_gate",
-            "policy": approval_gate,
-            "approved": False,
-            "reviewer": "operator_or_codex",
-            "next_action": "approve, reject, or request revision from the cockpit",
-        },
+        "adaptive_skill_evidence": adaptive_skill_evidence,
+        "approval_state": approval_state,
         "handover_ready": route_ready,
+        "release_eligible": False,
+        "deployment_authority": "none",
         "authority_boundaries": [
             "No paid/cloud provider call in local-only v1.",
             "No credential values emitted.",
             "No live trading, payment, filing, or destructive OS authority changes.",
             "Coding work uses safe local routes and after-apply evidence review.",
+            "Website design registry discovery never authorises a package or deployment.",
+            "Material public-site changes require named human visual acceptance and WebsiteOperator owner release.",
         ],
         "summary": {
             "task_family": task_family,
@@ -2193,10 +3390,13 @@ def build_and_write_capability_forge(
             "artifact_quality_passed": quality_ready,
             "blocking_snag_count": len(artifact_quality_report.get("snags", [])),
             "safe_code_route_recorded": bool(applied_change_evidence.get("proposal")),
-            "adaptive_skill_created": bool((adaptive_skill_source.get("adaptive_skill") or {}).get("created_for_prompt"))
-            if isinstance(adaptive_skill_source, dict)
-            else False,
+            "adaptive_skill_created": bool(adaptive_skill_evidence.get("created_for_prompt")),
             "full_stack_system_created": bool(full_stack),
+            "website_design_cycle_created": bool(website_design.get("design_cycle"))
+            if isinstance(website_design, dict)
+            else False,
+            "website_design_registry_verified": website_registry_verified,
+            "website_design_release_eligible": False,
             "handover_ready": route_ready,
         },
         "output_files": output_files,
@@ -2206,6 +3406,7 @@ def build_and_write_capability_forge(
                 "classify_task_family",
                 "recruit_local_crew",
                 "reference_patterns_marked_reference_only",
+                "website_design_nexus_before_generic_visual_generation",
                 "local_visual_or_safe_code_route",
                 "adaptive_skill_composer_for_missing_capabilities",
                 "artifact_quality_gate",
@@ -2228,7 +3429,7 @@ def build_and_write_capability_forge(
     return report
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run Aureon's local capability forge and quality gate.")
     parser.add_argument("--prompt", "-p", default="", help="Client prompt/job for the local forge.")
     parser.add_argument("--prompt-file", default="", help="Read the prompt from a file.")

@@ -1,0 +1,362 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.pl/schemas/aureon-website-runtime-optimisation-measurement-v1.json",
+  "title": "Aureon Website Runtime Optimisation Measurement Evidence v1",
+  "description": "Strict, SHA-256-bound, non-operational measurement evidence for a website runtime optimisation proposal. It records projected transformations but grants no source-selection, mutation, execution, staging, release, credential, network or deployment authority.",
+  "type": "object",
+  "required": [
+    "schema",
+    "measured_at",
+    "run_id",
+    "state",
+    "source_plan_binding",
+    "acceptance_contract_binding",
+    "methodology",
+    "transformations",
+    "authority",
+    "payload_sha256"
+  ],
+  "properties": {
+    "schema": {
+      "const": "aureon.website-runtime-optimisation-measurement-evidence.v1"
+    },
+    "measured_at": {
+      "$ref": "#/$defs/utcTimestamp"
+    },
+    "run_id": {
+      "$ref": "#/$defs/safeId"
+    },
+    "state": {
+      "const": "measurement-only"
+    },
+    "source_plan_binding": {
+      "$ref": "#/$defs/sourcePlanBinding"
+    },
+    "acceptance_contract_binding": {
+      "$ref": "#/$defs/acceptanceContractBinding"
+    },
+    "methodology": {
+      "$ref": "#/$defs/methodology"
+    },
+    "transformations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5000,
+      "items": {
+        "$ref": "#/$defs/transformation"
+      }
+    },
+    "authority": {
+      "$ref": "#/$defs/measurementAuthority"
+    },
+    "payload_sha256": {
+      "$ref": "#/$defs/sha256"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "safeId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,80}$"
+    },
+    "safeRelativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))[^\\\\\\u0000]+$"
+    },
+    "sourcePlanBinding": {
+      "type": "object",
+      "required": [
+        "path",
+        "file_sha256",
+        "payload_sha256",
+        "plan_run_id",
+        "source_tree_sha256",
+        "retained_tree_sha256",
+        "retained_manifest_sha256"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/safeRelativePath"
+        },
+        "file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "payload_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "plan_run_id": {
+          "$ref": "#/$defs/safeId"
+        },
+        "source_tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "retained_tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "retained_manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    },
+    "acceptanceContractBinding": {
+      "type": "object",
+      "required": [
+        "path",
+        "file_sha256",
+        "payload_sha256",
+        "contract_id"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/safeRelativePath"
+        },
+        "file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "payload_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "contract_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "methodology": {
+      "type": "object",
+      "required": [
+        "id",
+        "tool_path",
+        "tool_sha256",
+        "measurement_mode",
+        "ephemeral_workspace_only",
+        "source_masters_preserved",
+        "network_access",
+        "commands_recorded"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/safeId"
+        },
+        "tool_path": {
+          "$ref": "#/$defs/safeRelativePath"
+        },
+        "tool_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "measurement_mode": {
+          "const": "read-only-source-ephemeral-derivatives"
+        },
+        "ephemeral_workspace_only": {
+          "const": true
+        },
+        "source_masters_preserved": {
+          "const": true
+        },
+        "network_access": {
+          "const": "none"
+        },
+        "commands_recorded": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "transformation": {
+      "type": "object",
+      "required": [
+        "id",
+        "action",
+        "source_path",
+        "source_sha256",
+        "source_bytes",
+        "projected_runtime_path",
+        "projected_sha256",
+        "projected_bytes",
+        "expected_saving_bytes",
+        "measurement_basis",
+        "source_master_preserved",
+        "reference_mutation_required",
+        "execution_state"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/safeId"
+        },
+        "action": {
+          "enum": [
+            "replace-runtime-bytes",
+            "omit-from-runtime-closure"
+          ]
+        },
+        "source_path": {
+          "$ref": "#/$defs/safeRelativePath"
+        },
+        "source_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 536870912
+        },
+        "projected_runtime_path": {
+          "type": "string"
+        },
+        "projected_sha256": {
+          "type": "string"
+        },
+        "projected_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 536870912
+        },
+        "expected_saving_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 536870912
+        },
+        "measurement_basis": {
+          "enum": [
+            "measured-derivative",
+            "deterministic-minification-measurement",
+            "static-reference-analysis",
+            "browser-computed-style-analysis"
+          ]
+        },
+        "source_master_preserved": {
+          "const": true
+        },
+        "reference_mutation_required": {
+          "type": "boolean"
+        },
+        "execution_state": {
+          "const": "not-executed"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "omit-from-runtime-closure"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "projected_runtime_path": {
+                "const": ""
+              },
+              "projected_sha256": {
+                "const": ""
+              },
+              "projected_bytes": {
+                "const": 0
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "projected_runtime_path": {
+                "$ref": "#/$defs/safeRelativePath"
+              },
+              "projected_sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "projected_bytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 536870912
+              }
+            }
+          }
+        }
+      ],
+      "additionalProperties": false
+    },
+    "measurementAuthority": {
+      "type": "object",
+      "required": [
+        "scope",
+        "source_selection_authority",
+        "measurement_creation_authority",
+        "canonical_website_mutation",
+        "physical_source_file_removal",
+        "encoding_execution",
+        "css_transformation_execution",
+        "reference_mutation",
+        "candidate_authority",
+        "staging_authority",
+        "package_authority",
+        "release_eligible",
+        "deployment_authority",
+        "credential_access",
+        "network_access"
+      ],
+      "properties": {
+        "scope": {
+          "const": "strict machine-readable optimisation measurement declaration only"
+        },
+        "source_selection_authority": {
+          "const": "none"
+        },
+        "measurement_creation_authority": {
+          "const": "none"
+        },
+        "canonical_website_mutation": {
+          "const": "none"
+        },
+        "physical_source_file_removal": {
+          "const": "none"
+        },
+        "encoding_execution": {
+          "const": "none"
+        },
+        "css_transformation_execution": {
+          "const": "none"
+        },
+        "reference_mutation": {
+          "const": "none"
+        },
+        "candidate_authority": {
+          "const": "none"
+        },
+        "staging_authority": {
+          "const": "none"
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "network_access": {
+          "const": "none"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

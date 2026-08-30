@@ -1,0 +1,316 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureon.local/schemas/aureon-design-candidate-control-v1.json",
+  "title": "Aureon staged website design candidate control",
+  "description": "Schema bundle for a source-bound reconciled v3 work order and a v1 staged candidate receipt. Neither object grants canonical website mutation, package, release, credential, or deployment authority.",
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "authority": {
+      "type": "object",
+      "required": [
+        "scope",
+        "canonical_website_mutation",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "credential_access",
+        "human_visual_acceptance",
+        "release_authority"
+      ],
+      "properties": {
+        "scope": {
+          "const": "local staged website-candidate provenance and diff control"
+        },
+        "canonical_website_mutation": {
+          "const": "never by this control or a design agent"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "human_visual_acceptance": {
+          "const": "required for material brand changes"
+        },
+        "release_authority": {
+          "const": "WebsiteOperator owner gate only"
+        }
+      },
+      "additionalProperties": false
+    },
+    "fileManifest": {
+      "type": "object",
+      "required": [
+        "tree_sha256",
+        "file_count",
+        "total_bytes",
+        "files"
+      ],
+      "properties": {
+        "tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "file_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "sha256",
+              "bytes"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "workOrder": {
+      "type": "object",
+      "required": [
+        "schema",
+        "created_at",
+        "run_id",
+        "goal",
+        "routes",
+        "allowed_paths",
+        "allowed_new_origins",
+        "live_reconciliation",
+        "baseline",
+        "claim_control",
+        "test_policy",
+        "candidate_layout",
+        "authority"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.design-work-order.v3"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "run_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,80}$"
+        },
+        "goal": {
+          "type": "string",
+          "minLength": 1
+        },
+        "routes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^/"
+          },
+          "uniqueItems": true
+        },
+        "allowed_paths": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "allowed_new_origins": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {
+            "type": "string",
+            "pattern": "^https://"
+          },
+          "uniqueItems": true
+        },
+        "live_reconciliation": {
+          "type": "object",
+          "required": [
+            "receipt_path",
+            "receipt_sha256",
+            "state",
+            "selected_tree_sha256",
+            "covered_local_paths",
+            "current_local_paths",
+            "owner_source_reconciliation"
+          ],
+          "properties": {
+            "receipt_path": { "type": "string", "pattern": "^artifacts/website-operator/" },
+            "receipt_sha256": { "$ref": "#/$defs/sha256" },
+            "state": {
+              "enum": [
+                "live-surface-semantically-aligned",
+                "live-drift-detected"
+              ]
+            },
+            "selected_tree_sha256": { "$ref": "#/$defs/sha256" },
+            "covered_local_paths": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "pattern": "(^|/)[^/]+\\.html$" },
+              "uniqueItems": true
+            },
+            "current_local_paths": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "pattern": "(^|/)[^/]+\\.html$" },
+              "uniqueItems": true
+            },
+            "owner_source_reconciliation": {
+              "type": "object",
+              "required": [
+                "required",
+                "decision_path",
+                "decision_sha256",
+                "backup_receipt_path",
+                "backup_receipt_sha256",
+                "validation_state"
+              ],
+              "properties": {
+                "required": { "type": "boolean" },
+                "decision_path": { "type": "string" },
+                "decision_sha256": { "type": "string", "pattern": "^$|^[A-F0-9]{64}$" },
+                "backup_receipt_path": { "type": "string" },
+                "backup_receipt_sha256": { "type": "string", "pattern": "^$|^[A-F0-9]{64}$" },
+                "validation_state": {
+                  "enum": [
+                    "not-required-semantic-alignment",
+                    "owner-reconciled-for-staged-candidate"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "baseline": {
+          "$ref": "#/$defs/fileManifest"
+        },
+        "claim_control": {
+          "type": "object"
+        },
+        "test_policy": {
+          "type": "object"
+        },
+        "candidate_layout": {
+          "type": "object"
+        },
+        "authority": {
+          "$ref": "#/$defs/authority"
+        }
+      },
+      "additionalProperties": false
+    },
+    "candidateReceipt": {
+      "type": "object",
+      "required": [
+        "schema",
+        "validated_at",
+        "state",
+        "passed",
+        "release_eligible",
+        "deployment_authority",
+        "authority",
+        "work_order",
+        "candidate",
+        "changes",
+        "claims",
+        "claim_surface",
+        "checks",
+        "next_gate"
+      ],
+      "properties": {
+        "schema": {
+          "const": "aureon.design-candidate.v1"
+        },
+        "validated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "state": {
+          "enum": [
+            "validated-local",
+            "blocked"
+          ]
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "authority": {
+          "$ref": "#/$defs/authority"
+        },
+        "work_order": {
+          "type": "object"
+        },
+        "candidate": {
+          "type": "object"
+        },
+        "changes": {
+          "type": "array"
+        },
+        "claims": {
+          "type": "object"
+        },
+        "claim_surface": {
+          "$ref": "https://aureon.local/schemas/aureon-design-candidate-claim-surface-v1.json"
+        },
+        "checks": {
+          "type": "array"
+        },
+        "next_gate": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/workOrder"
+    },
+    {
+      "$ref": "#/$defs/candidateReceipt"
+    }
+  ]
+}

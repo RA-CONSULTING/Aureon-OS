@@ -17,10 +17,9 @@ import re
 import time
 import zlib
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Optional, Sequence
-
+from typing import Any, Sequence
 
 SCHEMA_VERSION = "aureon-agent-company-bill-list-v1"
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -35,7 +34,7 @@ DEFAULT_MEMORY_BUNDLE_DIR = Path("state/aureon_agent_company_memory_bundles")
 
 
 def utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _default_root() -> Path:
@@ -770,11 +769,31 @@ SUBCONTRACTOR_RETIREMENT_POLICY: dict[str, Any] = {
 
 
 LABOR_MARKET_SKILL_SOURCE_TYPES: list[dict[str, str]] = [
-    {"id": "repo_first", "title": "Repo skill inventory", "use": "Map the prompt to existing Aureon modules and tests before seeking anything external."},
-    {"id": "official_docs", "title": "Official technical docs", "use": "Learn current API/framework rules for a required skill."},
-    {"id": "job_descriptions", "title": "Job and contractor descriptions", "use": "Extract common role names, responsibilities, tools, and acceptance standards."},
-    {"id": "open_source_examples", "title": "Open source project patterns", "use": "Identify implementation patterns that can be rebuilt inside Aureon safely."},
-    {"id": "internal_history", "title": "Aureon past jobs", "use": "Reuse accepted skills, reports, and crew patterns from prior prompts."},
+    {
+        "id": "repo_first",
+        "title": "Repo skill inventory",
+        "use": "Map the prompt to existing Aureon modules and tests before seeking anything external.",
+    },
+    {
+        "id": "official_docs",
+        "title": "Official technical docs",
+        "use": "Learn current API/framework rules for a required skill.",
+    },
+    {
+        "id": "job_descriptions",
+        "title": "Job and contractor descriptions",
+        "use": "Extract common role names, responsibilities, tools, and acceptance standards.",
+    },
+    {
+        "id": "open_source_examples",
+        "title": "Open source project patterns",
+        "use": "Identify implementation patterns that can be rebuilt inside Aureon safely.",
+    },
+    {
+        "id": "internal_history",
+        "title": "Aureon past jobs",
+        "use": "Reuse accepted skills, reports, and crew patterns from prior prompts.",
+    },
 ]
 
 
@@ -810,14 +829,51 @@ WORKFORCE_MEMORY_ARCHIVE_POLICY: dict[str, Any] = {
 
 
 DEPARTMENTS: list[dict[str, str]] = [
-    {"id": "executive", "title": "Executive Command", "mission": "Own goals, strategy, capital discipline, and authority boundaries."},
-    {"id": "agency_workforce", "title": "Agency And Workforce", "mission": "Turn prompts into client jobs, scout skills, assemble temporary crews, and retire them cleanly."},
-    {"id": "product_ui", "title": "Product And UI", "mission": "Turn evidence and capability into usable operator surfaces."},
-    {"id": "engineering", "title": "Engineering And Release", "mission": "Map, build, test, smoke, and publish repo changes."},
-    {"id": "trading_data", "title": "Trading And Data", "mission": "Gather fresh market evidence, validate routes, and preserve portfolio survival."},
-    {"id": "intelligence", "title": "Research And Intelligence", "mission": "Learn from official sources, market context, news, macro, and memory."},
-    {"id": "accounting_admin", "title": "Accounting And Administration", "mission": "Prepare evidence packs, checklists, and manual filing support."},
-    {"id": "security_ops", "title": "Security And Operations", "mission": "Protect secrets, inspect risks, clean stale state, and keep queues healthy."},
+    {
+        "id": "executive",
+        "title": "Executive Command",
+        "mission": "Own goals, strategy, capital discipline, and authority boundaries.",
+    },
+    {
+        "id": "agency_workforce",
+        "title": "Agency And Workforce",
+        "mission": "Turn prompts into client jobs, scout skills, assemble temporary crews, and retire them cleanly.",
+    },
+    {
+        "id": "product_ui",
+        "title": "Product And UI",
+        "mission": "Turn evidence and capability into usable operator surfaces.",
+    },
+    {
+        "id": "public_design",
+        "title": "Public Website Design Studio",
+        "mission": "Research, write, design, test, and package an institutional evidence-led public website without publication authority.",
+    },
+    {
+        "id": "engineering",
+        "title": "Engineering And Release",
+        "mission": "Map, build, test, smoke, and publish repo changes.",
+    },
+    {
+        "id": "trading_data",
+        "title": "Trading And Data",
+        "mission": "Gather fresh market evidence, validate routes, and preserve portfolio survival.",
+    },
+    {
+        "id": "intelligence",
+        "title": "Research And Intelligence",
+        "mission": "Learn from official sources, market context, news, macro, and memory.",
+    },
+    {
+        "id": "accounting_admin",
+        "title": "Accounting And Administration",
+        "mission": "Prepare evidence packs, checklists, and manual filing support.",
+    },
+    {
+        "id": "security_ops",
+        "title": "Security And Operations",
+        "mission": "Protect secrets, inspect risks, clean stale state, and keep queues healthy.",
+    },
 ]
 
 
@@ -836,7 +892,7 @@ def _role(
     tests: list[str],
     aureon_surfaces: list[str],
     *,
-    handoffs_in: Optional[list[str]] = None,
+    handoffs_in: list[str] | None = None,
 ) -> AgentCompanyRole:
     role_id = _slug(title)
     workflow = {
@@ -898,7 +954,9 @@ def _standing_checks_for(role: AgentCompanyRole) -> list[str]:
         "confirm output can be traced back to a source, handoff, or test result",
     ]
     if "trading" in role.authority_level or "trading" in role.capabilities:
-        checks.append("confirm live trading remains runtime-gated and stale/position/rate checks are respected")
+        checks.append(
+            "confirm live trading remains runtime-gated and stale/position/rate checks are respected"
+        )
     if "manual_filing" in role.authority_level:
         checks.append("confirm official submission and payment stay manual-only")
     if "code" in role.capabilities or "implementation" in role.capabilities:
@@ -948,7 +1006,9 @@ def _whole_organism_access_for(role: AgentCompanyRole) -> dict[str, Any]:
 
 def _workforce_lifecycle_for(role: AgentCompanyRole) -> dict[str, Any]:
     permanent_departments = {"executive", "security_ops", "agency_workforce"}
-    employment_model = "permanent_core_role" if role.department in permanent_departments else "subcontractor_eligible"
+    employment_model = (
+        "permanent_core_role" if role.department in permanent_departments else "subcontractor_eligible"
+    )
     if role.seniority in {"cleaner", "operator"}:
         employment_model = "retainer_role_report_before_mutation"
     return {
@@ -989,47 +1049,853 @@ def _workforce_lifecycle_for(role: AgentCompanyRole) -> dict[str, Any]:
 
 def _role_specs() -> list[AgentCompanyRole]:
     return [
-        _role("CEO Goal Steward", "executive", "board", "Set the organism goal, priority, and success criteria.", ["goal_routing", "strategy", "contract_creation", "handoff"], ["organism_contracts", "thoughtbus"], ["operator prompt", "runtime state"], ["goal contract", "priority memo"], ["COO Runtime Steward", "Chief Trading Officer"], "contract_and_runtime_gated", ["goal id", "success criteria"], ["goal route test"], ["aureon/core/goal_execution_engine.py", "aureon/core/organism_contracts.py", "aureon/autonomous/aureon_goal_capability_map.py"]),
-        _role("COO Runtime Steward", "executive", "board", "Keep production, data ocean, queues, and supervisors coordinated.", ["supervision", "queue_management", "downtime_advice"], ["status_read", "scheduler"], ["supervisor manifest", "queue state"], ["run status", "restart advice"], ["Test Pilot", "Log Janitor"], "runtime_gated", ["manifest", "heartbeat"], ["launcher validate"], ["AUREON_PRODUCTION_LIVE.cmd", "AUREON_DATA_OCEAN.cmd", "aureon/autonomous/aureon_local_task_queue.py"]),
-        _role("CTO Code Architect", "executive", "board", "Own code architecture, patch discipline, and engineering quality.", ["code", "architecture", "safe_patch", "verification"], ["repo_search", "safe_code_control"], ["work order", "repo map"], ["code proposal", "test plan"], ["Implementation Worker", "Test Pilot"], "code_work_enabled", ["diff summary", "test command"], ["pytest", "npm build"], ["aureon/autonomous/aureon_safe_code_control.py", "aureon/code_architect/architect.py", "aureon/queen/queen_code_architect.py"]),
-        _role("CFO Accounting Controller", "executive", "board", "Own accounting evidence, pack generation, and manual filing boundaries.", ["accounting", "evidence", "manual_filing_boundary"], ["read_files", "pack_generator"], ["bank/accounting data", "HMRC requirements"], ["support pack", "requirements matrix"], ["Accounting Pack Builder", "Filing Boundary Officer"], "manual_filing_only", ["reconciliation", "source count"], ["accounting pytest"], ["Kings_Accounting_Suite/tools/generate_statutory_filing_pack.py", "aureon/queen/accounting_context_bridge.py"]),
-        _role("CISO Secret Keeper", "executive", "board", "Own credential visibility, secret redaction, and security boundaries.", ["security", "redaction", "guardrails", "incident_response"], ["repo_search", "secret_scan"], ["public artifacts", "credential status"], ["security blocker", "redaction report"], ["Security Auditor", "Incident Responder"], "security_review_required", ["secret scan", "blocker reason"], ["secret safety test"], ["aureon/autonomous/hnc_saas_security_architect.py", "aureon/autonomous/hnc_authorized_attack_lab.py"]),
-        _role("Chief Trading Officer", "executive", "board", "Own trading action posture, exchange readiness, and portfolio survival.", ["trading", "risk", "shadow_validation", "runtime_gates"], ["read_runtime", "exchange_clients"], ["runtime feed", "position state"], ["order-intent readiness", "risk memo"], ["Risk Governor", "Exchange Execution Specialist"], "live_trading_runtime_gated", ["flight test", "guard state"], ["runtime status tests"], ["aureon/exchanges/unified_market_trader.py", "aureon/autonomous/aureon_trading_intelligence_checklist.py"]),
-        _role("Chief Research Officer", "executive", "board", "Own source-linked learning and market/world context.", ["research", "web_learning", "source_citation", "memory"], ["web_search", "vault_read"], ["official docs", "market context"], ["research digest", "source links"], ["Research Scout", "News Sentiment Analyst"], "read_only_research", ["source url", "freshness"], ["research report test"], ["aureon/autonomous/aureon_data_ocean.py", "aureon/autonomous/aureon_coding_agent_skill_base.py"]),
-        _role("Chief Memory Vault Officer", "executive", "board", "Own vault memory, expression context, and knowledge continuity.", ["memory", "voice", "knowledge_graph", "redaction"], ["vault_read", "voice_profile"], ["knowledge dataset", "state snapshots"], ["memory note", "expression profile"], ["Archive Librarian", "Runbook Writer"], "read_and_publish_evidence", ["source path", "redaction status"], ["voice/redaction tests"], ["aureon/vault/voice", ".obsidian", "state/knowledge_dataset.json"]),
-        _role("Client Brief Broker", "agency_workforce", "lead", "Treat every prompt as a potential client job and turn it into a scoped brief.", ["client_intake", "briefing", "acceptance_criteria", "authority_scoping"], ["goal_execution_engine", "task_queue"], ["operator prompt", "conversation context"], ["client brief", "job card"], ["Skill Headhunter", "CEO Goal Steward"], "contract_and_runtime_gated", ["client goal", "acceptance criteria"], ["agent company route test"], ["aureon/core/goal_execution_engine.py", "aureon/autonomous/aureon_local_task_queue.py", "aureon/autonomous/aureon_coding_organism_bridge.py"]),
-        _role("Skill Headhunter", "agency_workforce", "specialist", "Find the relevant role types, skills, tools, and standards needed for the client job.", ["skill_scouting", "labor_market_scan", "repo_first_search", "source_linked_learning"], ["repo_search", "web_search", "vault_read"], ["client brief", "skill gap"], ["skill requirements", "role shortlist"], ["Subcontractor Crew Builder", "Research Scout"], "read_only_research", ["source path", "skill match"], ["skill source test"], ["aureon/autonomous/aureon_coding_agent_skill_base.py", "aureon/autonomous/aureon_codex_capability_ingestion.py", "aureon/autonomous/aureon_external_capability_bridge.py"]),
-        _role("Subcontractor Crew Builder", "agency_workforce", "builder", "Assemble the temporary worker crew that will deliver the job.", ["crew_selection", "handoff_design", "temporary_role_pack", "tool_assignment"], ["organism_contracts", "task_queue"], ["client brief", "skill requirements"], ["crew plan", "handoff map"], ["Implementation Worker", "Test Pilot", "Client Acceptance Officer"], "contract_and_runtime_gated", ["selected roles", "authority map"], ["crew plan test"], ["aureon/core/organism_contracts.py", "aureon/core/goal_execution_engine.py", "aureon/autonomous/aureon_agent_company_builder.py"]),
-        _role("Client Acceptance Officer", "agency_workforce", "specialist", "Compare the finished job with the client brief and decide accepted, revise, or blocked.", ["client_acceptance", "quality_gate", "revision_queue", "completion_report"], ["read_reports", "test_results"], ["client brief", "finished product evidence"], ["acceptance decision", "revision list"], ["Workforce Retirement Clerk", "Product Manager"], "operator_review_required", ["acceptance status", "test result"], ["acceptance gate test"], ["docs/audits", "frontend/public", "aureon/autonomous/aureon_coding_organism_bridge.py"]),
-        _role("Workforce Retirement Clerk", "agency_workforce", "operator", "Retire temporary crews after acceptance while preserving reusable skills and evidence.", ["workforce_retirement", "skill_retention", "cleanup_queue", "archive_proposal"], ["task_queue", "vault_read", "repo_search"], ["acceptance decision", "temporary crew plan"], ["retirement record", "retained skill pack"], ["Archive Librarian", "Stale State Cleaner"], "report_before_mutation", ["retired role id", "retained artifact"], ["retirement no-delete test"], ["aureon/autonomous/aureon_local_task_queue.py", "docs/audits", ".obsidian"]),
-        _role("Product Manager", "product_ui", "lead", "Translate organism capabilities into user-facing screens and priorities.", ["product", "workflow", "unification", "operator_experience"], ["frontend_manifest"], ["capability reports", "operator needs"], ["screen plan", "backlog"], ["UX Designer", "Frontend Console Builder"], "ui_evidence_only", ["work order id", "screen target"], ["frontend plan test"], ["aureon/autonomous/aureon_frontend_unification_plan.py", "aureon/autonomous/aureon_frontend_evolution_queue.py"]),
-        _role("UX Designer", "product_ui", "specialist", "Design dense, readable, operational console surfaces.", ["ui_design", "information_architecture", "visual_smoke"], ["read_public_json"], ["manifest data", "runtime states"], ["layout contract", "copy rules"], ["Frontend Console Builder"], "ui_evidence_only", ["data contract", "screen state"], ["frontend build"], ["frontend/src/App.tsx", "frontend/src/components/generated"]),
-        _role("Frontend Console Builder", "product_ui", "builder", "Build and mount generated React panels for evidence artifacts.", ["react", "typescript", "component_mount", "public_json"], ["read_public_json", "npm_build"], ["JSON artifact", "screen plan"], ["mounted component", "build evidence"], ["Browser Smoke Inspector"], "code_work_enabled", ["component path", "build result"], ["npm run build"], ["frontend/src/App.tsx", "frontend/src/components/generated"]),
-        _role("Runbook Writer", "product_ui", "specialist", "Keep README, running docs, quick starts, and capabilities current.", ["documentation", "operator_runbook", "release_notes"], ["repo_search", "read_files"], ["current paths", "commands"], ["README update", "runbook note"], ["Release Manager"], "docs_only", ["path exists", "command verified"], ["doc stale command scan"], ["README.md", "RUNNING.md", "QUICK_START.md", "CAPABILITIES.md"]),
-        _role("Repo Cartographer", "engineering", "specialist", "Map files, ownership, tests, and dependency hints before edits.", ["repo_search", "classification", "ownership"], ["repo_search", "read_files"], ["repo tree", "work order"], ["path map", "risk notes"], ["Code Architect", "Implementation Worker"], "read_only_repo", ["path list", "domain classification"], ["self catalog test"], ["aureon/autonomous/aureon_repo_self_catalog.py", "aureon/autonomous/aureon_repo_explorer_service.py"]),
-        _role("Code Architect", "engineering", "lead", "Turn requirements into scoped implementation plans and patch contracts.", ["architecture", "patch_planning", "contract_design"], ["safe_code_control"], ["repo map", "plan"], ["patch contract", "target files"], ["Implementation Worker", "Security Auditor"], "code_work_enabled", ["ownership", "tests"], ["compile/test plan"], ["aureon/autonomous/aureon_safe_code_control.py", "aureon/core/goal_execution_engine.py"]),
-        _role("Implementation Worker", "engineering", "builder", "Apply approved code work through existing safe authoring routes.", ["implementation", "file_edit", "tests", "evidence"], ["QueenCodeArchitect", "execute_shell"], ["patch contract", "target file"], ["changed files", "write evidence"], ["Test Pilot"], "code_work_enabled", ["writer provenance", "diff summary"], ["focused pytest"], ["aureon/autonomous/aureon_coding_organism_bridge.py", "aureon/autonomous/aureon_queen_code_bridge.py"]),
-        _role("Test Pilot", "engineering", "specialist", "Run focused unit, build, smoke, and regression checks.", ["testing", "build", "smoke", "regression"], ["execute_shell"], ["test plan", "changed files"], ["test result", "stderr tail"], ["Release Manager", "Browser Smoke Inspector"], "local_tests_only", ["command", "return code"], ["pytest", "npm build"], ["tests", "frontend/package.json"]),
-        _role("Browser Smoke Inspector", "engineering", "specialist", "Inspect local UI state and browser-visible evidence.", ["browser_smoke", "visual_check", "console_error_check"], ["safe_desktop", "vm_control"], ["local URL", "component path"], ["smoke report", "screenshot evidence"], ["UX Designer"], "desktop_dry_run_default", ["URL", "visible text"], ["browser smoke"], ["aureon/autonomous/aureon_safe_desktop_control.py", "aureon/autonomous/vm_control/tools.py"]),
-        _role("Release Manager", "engineering", "lead", "Prepare clean commits and public release evidence when asked.", ["git_review", "secret_scan", "release_notes"], ["git_status", "secret_scan"], ["dirty files", "test results"], ["release checklist", "commit proposal"], ["Runbook Writer"], "operator_explicit_push", ["secret scan", "test result"], ["git dry run", "doc scan"], ["README.md", "CAPABILITIES.md"]),
-        _role("Market Data Ocean Operator", "trading_data", "specialist", "Expand licensed/reachable financial data coverage without stalling trading.", ["data_ocean", "rate_governor", "market_data", "history"], ["read_runtime", "data_ocean"], ["source registry", "API governor"], ["coverage map", "missing feed list"], ["Profit Timing Analyst"], "read_only_market_data", ["source freshness", "rate budget"], ["coverage map test"], ["AUREON_DATA_OCEAN.cmd", "aureon/autonomous/aureon_data_ocean.py", "aureon/autonomous/aureon_global_financial_coverage_map.py"]),
-        _role("Exchange Execution Specialist", "trading_data", "specialist", "Know exchange modes, clients, credentials status, and execution routes.", ["exchange_clients", "spot_margin", "broker_routes"], ["read_runtime", "exchange_clients"], ["venue readiness", "credential status"], ["route capability", "missing wire"], ["Risk Governor"], "live_trading_runtime_gated", ["exchange status", "mode"], ["exchange tests"], ["aureon/exchanges", "aureon/exchanges/kraken_asset_registry.py"]),
-        _role("Risk Governor", "trading_data", "lead", "Preserve portfolio survival before any new exposure.", ["risk", "portfolio_survival", "margin", "stress_buffer"], ["read_positions", "read_runtime"], ["portfolio state", "candidate trade"], ["risk envelope", "blocker"], ["Shadow Trade Validator"], "live_trading_runtime_gated", ["exposure", "stress buffer"], ["risk envelope test"], ["aureon/exchanges/unified_market_trader.py", "aureon/autonomous/aureon_trading_intelligence_checklist.py"]),
-        _role("Profit Timing Analyst", "trading_data", "specialist", "Rank fastest net-profit opportunities using fresh and historical signals.", ["profit_velocity", "momentum", "ETA", "take_profit"], ["read_prices", "market_history"], ["ticker stream", "history"], ["ranked candidates", "ETA evidence"], ["Shadow Trade Validator"], "live_trading_runtime_gated", ["fresh tick", "fee-adjusted estimate"], ["profit timing test"], ["aureon/autonomous/aureon_trading_intelligence_checklist.py", "aureon/exchanges/unified_market_trader.py"]),
-        _role("Shadow Trade Validator", "trading_data", "specialist", "Validate trade logic non-mutating before live intent.", ["shadow_trading", "validation", "counter_signal"], ["read_runtime"], ["candidate", "cross-market evidence"], ["shadow verdict", "reject reason"], ["Chief Trading Officer"], "non_mutating_validation", ["candidate id", "verdict"], ["shadow gate test"], ["aureon/autonomous/aureon_trading_intelligence_checklist.py", "state/unified_runtime_status.json"]),
-        _role("Research Scout", "intelligence", "specialist", "Find official docs, APIs, and source-linked learning material.", ["web_learning", "official_sources", "citations"], ["web_search", "web_fetch"], ["learning query", "unknown fact"], ["source summary", "citation"], ["Runbook Writer", "Code Architect"], "read_only_research", ["URL", "access date"], ["source report test"], ["aureon/autonomous/aureon_coding_agent_skill_base.py", "aureon/autonomous/aureon_external_capability_bridge.py"]),
-        _role("News Sentiment Analyst", "intelligence", "specialist", "Turn news and sentiment into context, not blind action.", ["news", "sentiment", "market_context"], ["data_ocean", "research_index"], ["news feed", "market state"], ["sentiment note", "confidence"], ["Profit Timing Analyst"], "read_only_research", ["source", "timestamp"], ["sentiment fixture test"], ["aureon/autonomous/aureon_data_ocean.py", "aureon/autonomous/aureon_global_financial_coverage_map.py"]),
-        _role("Macro Onchain Analyst", "intelligence", "specialist", "Read macro, calendar, crypto, and on-chain context for regime awareness.", ["macro", "onchain", "calendar", "regime"], ["data_ocean", "market_history"], ["macro snapshot", "chain data"], ["regime note", "blocker"], ["Risk Governor"], "read_only_research", ["freshness", "source"], ["macro fixture test"], ["scripts/python/ingest_economic_calendar.py", "scripts/python/ingest_market_history.py"]),
-        _role("Counter Intelligence Validator", "intelligence", "specialist", "Reject stale, false, contradictory, or low-quality evidence.", ["counter_intelligence", "stale_detection", "contradiction_check"], ["read_runtime", "checklists"], ["candidate evidence", "runtime watchdog"], ["accept/reject verdict", "reason"], ["Shadow Trade Validator", "Security Auditor"], "non_mutating_validation", ["blocker reason", "stale state"], ["checklist tests"], ["aureon/autonomous/aureon_trading_intelligence_checklist.py", "aureon/autonomous/hnc_authorized_attack_lab.py"]),
-        _role("Accounting Pack Builder", "accounting_admin", "builder", "Generate manual filing support packs and reconciliation evidence.", ["accounting", "pack_generation", "reconciliation"], ["pack_generator"], ["transactions", "company profile"], ["support pack", "manifest"], ["Evidence Clerk"], "manual_filing_only", ["transaction count", "reconciliation"], ["accounting pack tests"], ["Kings_Accounting_Suite/tools/generate_statutory_filing_pack.py"]),
-        _role("Evidence Clerk", "accounting_admin", "specialist", "Collect missing evidence lists, checklists, and source paths.", ["evidence", "checklist", "requirements_matrix"], ["read_files"], ["pack manifest", "requirements"], ["evidence list", "missing items"], ["Filing Boundary Officer"], "manual_filing_only", ["path exists", "missing item"], ["requirements matrix test"], ["docs/audits/accounting_system_registry.json", "aureon/queen/accounting_context_bridge.py"]),
-        _role("Filing Boundary Officer", "accounting_admin", "guard", "Keep official submission and payment manual-only.", ["compliance_boundary", "manual_only", "redaction"], ["read_reports"], ["filing pack", "operator request"], ["boundary statement", "blocker"], ["CFO Accounting Controller"], "manual_filing_only", ["manual-only note"], ["boundary regression test"], ["aureon/core/organism_contracts.py", "aureon/autonomous/aureon_goal_capability_map.py"]),
-        _role("Security Auditor", "security_ops", "specialist", "Review generated systems for secrets, unsafe mutation, and missing tests.", ["security_review", "secret_scan", "guardrails"], ["repo_search", "secret_scan"], ["changed files", "public artifacts"], ["security report", "blocker"], ["CISO Secret Keeper"], "security_review_required", ["scan result", "blocker"], ["secret scan test"], ["aureon/autonomous/hnc_saas_security_architect.py", "tests"]),
-        _role("Incident Responder", "security_ops", "specialist", "Triage runtime/security incidents and produce recovery work orders.", ["incident_response", "recovery", "audit"], ["status_read", "logs_read"], ["alert", "runtime state"], ["incident report", "recovery plan"], ["COO Runtime Steward"], "operator_review_required", ["incident id", "timeline"], ["incident fixture test"], ["aureon/autonomous/aureon_system_readiness_audit.py", "logs"]),
-        _role("Log Janitor", "security_ops", "cleaner", "Summarize noisy logs and identify stale or repeated failures.", ["log_review", "noise_reduction", "cleanup_report"], ["logs_read"], ["logs", "runtime warning"], ["log summary", "cleanup work order"], ["Stale State Cleaner"], "report_before_mutation", ["log path", "pattern"], ["log report test"], ["logs", "docs/audits"]),
-        _role("Stale State Cleaner", "security_ops", "cleaner", "Find stale generated state and queue safe refresh or archive work.", ["state_cleanup", "archive_queue", "refresh_work_order"], ["repo_search", "read_state"], ["stale file", "manifest age"], ["refresh work order", "archive candidate"], ["Queue Steward", "Archive Librarian"], "report_before_mutation", ["stale age", "owner"], ["cleanup no-delete test"], ["state", "frontend/public", "docs/audits"]),
-        _role("Queue Steward", "security_ops", "operator", "Keep task queues visible, ordered, and unblocked.", ["queue_management", "work_order_triage", "status"], ["task_queue"], ["work orders", "blockers"], ["queue status", "next action"], ["COO Runtime Steward"], "queue_only", ["queue count", "blocked reason"], ["queue status test"], ["aureon/autonomous/aureon_local_task_queue.py", "state"]),
-        _role("Archive Librarian", "security_ops", "operator", "Classify old dashboards, reports, and generated artifacts for archive decisions.", ["archive", "classification", "memory"], ["repo_search", "vault_read"], ["candidate files", "owner"], ["archive proposal", "memory note"], ["Chief Memory Vault Officer"], "report_before_mutation", ["candidate path", "reason"], ["archive proposal test"], ["docs/audits", ".obsidian"]),
+        _role(
+            "CEO Goal Steward",
+            "executive",
+            "board",
+            "Set the organism goal, priority, and success criteria.",
+            ["goal_routing", "strategy", "contract_creation", "handoff"],
+            ["organism_contracts", "thoughtbus"],
+            ["operator prompt", "runtime state"],
+            ["goal contract", "priority memo"],
+            ["COO Runtime Steward", "Chief Trading Officer"],
+            "contract_and_runtime_gated",
+            ["goal id", "success criteria"],
+            ["goal route test"],
+            [
+                "aureon/core/goal_execution_engine.py",
+                "aureon/core/organism_contracts.py",
+                "aureon/autonomous/aureon_goal_capability_map.py",
+            ],
+        ),
+        _role(
+            "COO Runtime Steward",
+            "executive",
+            "board",
+            "Keep production, data ocean, queues, and supervisors coordinated.",
+            ["supervision", "queue_management", "downtime_advice"],
+            ["status_read", "scheduler"],
+            ["supervisor manifest", "queue state"],
+            ["run status", "restart advice"],
+            ["Test Pilot", "Log Janitor"],
+            "runtime_gated",
+            ["manifest", "heartbeat"],
+            ["launcher validate"],
+            [
+                "AUREON_PRODUCTION_LIVE.cmd",
+                "AUREON_DATA_OCEAN.cmd",
+                "aureon/autonomous/aureon_local_task_queue.py",
+            ],
+        ),
+        _role(
+            "CTO Code Architect",
+            "executive",
+            "board",
+            "Own code architecture, patch discipline, and engineering quality.",
+            ["code", "architecture", "safe_patch", "verification"],
+            ["repo_search", "safe_code_control"],
+            ["work order", "repo map"],
+            ["code proposal", "test plan"],
+            ["Implementation Worker", "Test Pilot"],
+            "code_work_enabled",
+            ["diff summary", "test command"],
+            ["pytest", "npm build"],
+            [
+                "aureon/autonomous/aureon_safe_code_control.py",
+                "aureon/code_architect/architect.py",
+                "aureon/queen/queen_code_architect.py",
+            ],
+        ),
+        _role(
+            "CFO Accounting Controller",
+            "executive",
+            "board",
+            "Own accounting evidence, pack generation, and manual filing boundaries.",
+            ["accounting", "evidence", "manual_filing_boundary"],
+            ["read_files", "pack_generator"],
+            ["bank/accounting data", "HMRC requirements"],
+            ["support pack", "requirements matrix"],
+            ["Accounting Pack Builder", "Filing Boundary Officer"],
+            "manual_filing_only",
+            ["reconciliation", "source count"],
+            ["accounting pytest"],
+            [
+                "Kings_Accounting_Suite/tools/generate_statutory_filing_pack.py",
+                "aureon/queen/accounting_context_bridge.py",
+            ],
+        ),
+        _role(
+            "CISO Secret Keeper",
+            "executive",
+            "board",
+            "Own credential visibility, secret redaction, and security boundaries.",
+            ["security", "redaction", "guardrails", "incident_response"],
+            ["repo_search", "secret_scan"],
+            ["public artifacts", "credential status"],
+            ["security blocker", "redaction report"],
+            ["Security Auditor", "Incident Responder"],
+            "security_review_required",
+            ["secret scan", "blocker reason"],
+            ["secret safety test"],
+            [
+                "aureon/autonomous/hnc_saas_security_architect.py",
+                "aureon/autonomous/hnc_authorized_attack_lab.py",
+            ],
+        ),
+        _role(
+            "Chief Trading Officer",
+            "executive",
+            "board",
+            "Own trading action posture, exchange readiness, and portfolio survival.",
+            ["trading", "risk", "shadow_validation", "runtime_gates"],
+            ["read_runtime", "exchange_clients"],
+            ["runtime feed", "position state"],
+            ["order-intent readiness", "risk memo"],
+            ["Risk Governor", "Exchange Execution Specialist"],
+            "live_trading_runtime_gated",
+            ["flight test", "guard state"],
+            ["runtime status tests"],
+            [
+                "aureon/exchanges/unified_market_trader.py",
+                "aureon/autonomous/aureon_trading_intelligence_checklist.py",
+            ],
+        ),
+        _role(
+            "Chief Research Officer",
+            "executive",
+            "board",
+            "Own source-linked learning and market/world context.",
+            ["research", "web_learning", "source_citation", "memory"],
+            ["web_search", "vault_read"],
+            ["official docs", "market context"],
+            ["research digest", "source links"],
+            ["Research Scout", "News Sentiment Analyst"],
+            "read_only_research",
+            ["source url", "freshness"],
+            ["research report test"],
+            ["aureon/autonomous/aureon_data_ocean.py", "aureon/autonomous/aureon_coding_agent_skill_base.py"],
+        ),
+        _role(
+            "Chief Memory Vault Officer",
+            "executive",
+            "board",
+            "Own vault memory, expression context, and knowledge continuity.",
+            ["memory", "voice", "knowledge_graph", "redaction"],
+            ["vault_read", "voice_profile"],
+            ["knowledge dataset", "state snapshots"],
+            ["memory note", "expression profile"],
+            ["Archive Librarian", "Runbook Writer"],
+            "read_and_publish_evidence",
+            ["source path", "redaction status"],
+            ["voice/redaction tests"],
+            ["aureon/vault/voice", ".obsidian", "state/knowledge_dataset.json"],
+        ),
+        _role(
+            "Client Brief Broker",
+            "agency_workforce",
+            "lead",
+            "Treat every prompt as a potential client job and turn it into a scoped brief.",
+            ["client_intake", "briefing", "acceptance_criteria", "authority_scoping"],
+            ["goal_execution_engine", "task_queue"],
+            ["operator prompt", "conversation context"],
+            ["client brief", "job card"],
+            ["Skill Headhunter", "CEO Goal Steward"],
+            "contract_and_runtime_gated",
+            ["client goal", "acceptance criteria"],
+            ["agent company route test"],
+            [
+                "aureon/core/goal_execution_engine.py",
+                "aureon/autonomous/aureon_local_task_queue.py",
+                "aureon/autonomous/aureon_coding_organism_bridge.py",
+            ],
+        ),
+        _role(
+            "Skill Headhunter",
+            "agency_workforce",
+            "specialist",
+            "Find the relevant role types, skills, tools, and standards needed for the client job.",
+            ["skill_scouting", "labor_market_scan", "repo_first_search", "source_linked_learning"],
+            ["repo_search", "web_search", "vault_read"],
+            ["client brief", "skill gap"],
+            ["skill requirements", "role shortlist"],
+            ["Subcontractor Crew Builder", "Research Scout"],
+            "read_only_research",
+            ["source path", "skill match"],
+            ["skill source test"],
+            [
+                "aureon/autonomous/aureon_coding_agent_skill_base.py",
+                "aureon/autonomous/aureon_codex_capability_ingestion.py",
+                "aureon/autonomous/aureon_external_capability_bridge.py",
+            ],
+        ),
+        _role(
+            "Subcontractor Crew Builder",
+            "agency_workforce",
+            "builder",
+            "Assemble the temporary worker crew that will deliver the job.",
+            ["crew_selection", "handoff_design", "temporary_role_pack", "tool_assignment"],
+            ["organism_contracts", "task_queue"],
+            ["client brief", "skill requirements"],
+            ["crew plan", "handoff map"],
+            ["Implementation Worker", "Test Pilot", "Client Acceptance Officer"],
+            "contract_and_runtime_gated",
+            ["selected roles", "authority map"],
+            ["crew plan test"],
+            [
+                "aureon/core/organism_contracts.py",
+                "aureon/core/goal_execution_engine.py",
+                "aureon/autonomous/aureon_agent_company_builder.py",
+            ],
+        ),
+        _role(
+            "Client Acceptance Officer",
+            "agency_workforce",
+            "specialist",
+            "Compare the finished job with the client brief and decide accepted, revise, or blocked.",
+            ["client_acceptance", "quality_gate", "revision_queue", "completion_report"],
+            ["read_reports", "test_results"],
+            ["client brief", "finished product evidence"],
+            ["acceptance decision", "revision list"],
+            ["Workforce Retirement Clerk", "Product Manager"],
+            "operator_review_required",
+            ["acceptance status", "test result"],
+            ["acceptance gate test"],
+            ["docs/audits", "frontend/public", "aureon/autonomous/aureon_coding_organism_bridge.py"],
+        ),
+        _role(
+            "Workforce Retirement Clerk",
+            "agency_workforce",
+            "operator",
+            "Retire temporary crews after acceptance while preserving reusable skills and evidence.",
+            ["workforce_retirement", "skill_retention", "cleanup_queue", "archive_proposal"],
+            ["task_queue", "vault_read", "repo_search"],
+            ["acceptance decision", "temporary crew plan"],
+            ["retirement record", "retained skill pack"],
+            ["Archive Librarian", "Stale State Cleaner"],
+            "report_before_mutation",
+            ["retired role id", "retained artifact"],
+            ["retirement no-delete test"],
+            ["aureon/autonomous/aureon_local_task_queue.py", "docs/audits", ".obsidian"],
+        ),
+        _role(
+            "Product Manager",
+            "product_ui",
+            "lead",
+            "Translate organism capabilities into user-facing screens and priorities.",
+            ["product", "workflow", "unification", "operator_experience"],
+            ["frontend_manifest"],
+            ["capability reports", "operator needs"],
+            ["screen plan", "backlog"],
+            ["UX Designer", "Frontend Console Builder"],
+            "ui_evidence_only",
+            ["work order id", "screen target"],
+            ["frontend plan test"],
+            [
+                "aureon/autonomous/aureon_frontend_unification_plan.py",
+                "aureon/autonomous/aureon_frontend_evolution_queue.py",
+            ],
+        ),
+        _role(
+            "UX Designer",
+            "product_ui",
+            "specialist",
+            "Design dense, readable, operational console surfaces.",
+            ["ui_design", "information_architecture", "visual_smoke"],
+            ["read_public_json"],
+            ["manifest data", "runtime states"],
+            ["layout contract", "copy rules"],
+            ["Frontend Console Builder"],
+            "ui_evidence_only",
+            ["data contract", "screen state"],
+            ["frontend build"],
+            ["frontend/src/App.tsx", "frontend/src/components/generated"],
+        ),
+        _role(
+            "Website Design Director",
+            "public_design",
+            "lead",
+            "Own the evidence-led public-site brief, institutional quality bar, design council, and human visual review.",
+            [
+                "design_direction",
+                "creative_brief",
+                "design_council",
+                "candidate_selection",
+                "human_review_gate",
+            ],
+            ["website_operator", "repo_search", "read_reports"],
+            ["company ethos", "evidence sources", "competitor benchmark", "website inventory"],
+            ["design brief", "candidate decision", "design council receipt"],
+            ["Brand and Design-System Lead", "Technical Editorial Writer", "Design Release QA"],
+            "website_local_only",
+            ["source hash", "brief hash", "council verdict"],
+            ["website operator design-cycle", "visual QA"],
+            ["website", "aureon/operator/website_operator.py", "skills/aureon-harmonic-design-suite"],
+        ),
+        _role(
+            "Competitor Research Scout",
+            "public_design",
+            "specialist",
+            "Refresh official-source website benchmarks and extract patterns without copying competitor expression.",
+            ["official_source_research", "benchmark_rubric", "source_freshness", "pattern_synthesis"],
+            ["web_search", "repo_search", "read_reports"],
+            ["design brief", "official competitor URLs"],
+            ["dated source ledger", "benchmark scores", "pattern notes"],
+            ["Website Design Director", "Brand and Design-System Lead"],
+            "read_only_research",
+            ["URL", "checked timestamp", "source hash"],
+            ["benchmark freshness gate"],
+            ["data/website_operator", "docs/audits", "aureon/operator/website_operator.defaults.json"],
+        ),
+        _role(
+            "Brand and Design-System Lead",
+            "public_design",
+            "specialist",
+            "Maintain typography, colour, spacing, component, imagery, and responsive coherence across public routes.",
+            [
+                "brand_system",
+                "design_tokens",
+                "responsive_layout",
+                "component_governance",
+                "visual_hierarchy",
+            ],
+            ["website_scoped_writer", "repo_search", "browser_smoke"],
+            ["design brief", "route map", "benchmark patterns"],
+            ["token changes", "component work order", "before-after proof"],
+            ["Motion Designer", "Accessibility and Performance QA"],
+            "website_scoped_code_work",
+            ["work order id", "before and after hashes", "changed paths"],
+            ["design-system audit", "responsive visual regression"],
+            ["website/tokens.css", "website/styles.css", "website"],
+        ),
+        _role(
+            "Technical Editorial Writer",
+            "public_design",
+            "specialist",
+            "Write precise en-GB proposition, research, product, investor, and buyer-journey copy.",
+            ["technical_writing", "information_architecture", "journey_copy", "grammar", "terminology"],
+            ["website_scoped_writer", "claim_register", "repo_search"],
+            ["evidence ledger", "research catalogue", "design brief"],
+            ["bounded website copy", "CTA map", "terminology report"],
+            ["Claims and Evidence Editor", "Website Design Director"],
+            "website_scoped_content_work",
+            ["claim ids", "source paths", "permitted wording"],
+            ["copy lint", "route journey test", "claims audit"],
+            ["website", "website/data", "docs/CLAIMS_AND_EVIDENCE.md"],
+        ),
+        _role(
+            "Claims and Evidence Editor",
+            "public_design",
+            "guard",
+            "Bind material public statements to current evidence state, source, expiry, boundary, and permitted wording.",
+            ["claims_control", "evidence_binding", "boundary_editing", "contradiction_detection"],
+            ["claim_register", "repo_search", "read_reports"],
+            ["candidate copy", "evidence inputs", "source dates"],
+            ["claim verdict", "weaker wording", "missing-evidence blocker"],
+            ["Technical Editorial Writer", "Design Release QA"],
+            "claims_veto_no_deploy",
+            ["claim id", "source", "checked date", "boundary"],
+            ["claims audit", "prohibited-claim regression"],
+            ["website/data", "aureon/operator/website_operator.py", "docs/CLAIMS_AND_EVIDENCE.md"],
+        ),
+        _role(
+            "Motion Designer",
+            "public_design",
+            "specialist",
+            "Create restrained purposeful motion with keyboard, focus, and reduced-motion parity.",
+            ["motion_design", "interaction_states", "reduced_motion", "keyboard_parity", "timing_budget"],
+            ["website_scoped_writer", "browser_smoke"],
+            ["interaction brief", "component states", "motion policy"],
+            ["motion tokens", "interaction implementation", "reduced-motion proof"],
+            ["Accessibility and Performance QA"],
+            "website_scoped_code_work",
+            ["work order id", "motion purpose", "fallback state"],
+            ["keyboard interaction test", "reduced-motion test", "animation budget"],
+            [
+                "website/script.js",
+                "website/styles.css",
+                "website/tokens.css",
+                "tools/aureon_website_visual_qa_v28.js",
+            ],
+        ),
+        _role(
+            "Visual Asset Director",
+            "public_design",
+            "specialist",
+            "Create or commission source-cleared graphics under explicit composition, provenance, and performance budgets.",
+            ["art_direction", "graphic_design", "asset_provenance", "image_budget", "responsive_art"],
+            ["approved_visual_tool", "website_scoped_writer", "repo_search"],
+            ["creative brief", "asset ledger", "route need"],
+            ["approved asset", "alt text", "provenance and budget receipt"],
+            ["Brand and Design-System Lead", "Accessibility and Performance QA"],
+            "website_assets_only_no_deploy",
+            ["source or generation receipt", "licence state", "asset hash"],
+            ["asset budget", "alt-text audit", "render test"],
+            ["website/assets", "website/data", "docs/audits"],
+        ),
+        _role(
+            "Accessibility and Performance QA",
+            "public_design",
+            "guard",
+            "Prove responsive, keyboard, contrast, reduced-motion, browser, and performance behaviour before acceptance.",
+            [
+                "wcag_review",
+                "responsive_matrix",
+                "keyboard_test",
+                "visual_regression",
+                "performance_budget",
+                "browser_errors",
+            ],
+            ["browser_smoke", "execute_shell", "read_reports"],
+            ["candidate site", "test policy", "viewport matrix"],
+            ["objective gate report", "veto", "repair work order"],
+            ["Brand and Design-System Lead", "Motion Designer", "Design Release QA"],
+            "local_tests_and_veto",
+            ["tool versions", "source hash", "screenshots", "return codes"],
+            ["axe WCAG 2.2 AA", "visual QA", "performance budget", "browser matrix"],
+            [
+                "tools/aureon_website_visual_qa_v28.js",
+                "tools/aureon_website_design_audit_v28.js",
+                "docs/audits",
+            ],
+        ),
+        _role(
+            "Design Release QA",
+            "public_design",
+            "guard",
+            "Prove runtime dependency closure, reproducible package integrity, backup readiness, and live read-back boundaries.",
+            ["dependency_closure", "package_manifest", "release_preflight", "backup_gate", "live_readback"],
+            ["website_operator", "read_reports", "execute_shell"],
+            ["passing design cycle", "source hash", "release manifest"],
+            ["package readiness verdict", "release blocker", "handover receipt"],
+            ["Release Manager", "Website Design Director"],
+            "no_deploy_owner_gate_required",
+            ["package hash", "manifest closure", "backup receipt"],
+            ["offline extracted-package smoke", "manifest readback preflight", "website operator tests"],
+            [
+                "aureon/operator/website_operator.py",
+                "tools/build-homepl-v28-narrow-release.ps1",
+                "tools/aureon_homepl_manifest_readback.ps1",
+                "docs/runbooks/WEBSITE_OPERATOR.md",
+            ],
+        ),
+        _role(
+            "Frontend Console Builder",
+            "product_ui",
+            "builder",
+            "Build and mount generated React panels for evidence artifacts.",
+            ["react", "typescript", "component_mount", "public_json"],
+            ["read_public_json", "npm_build"],
+            ["JSON artifact", "screen plan"],
+            ["mounted component", "build evidence"],
+            ["Browser Smoke Inspector"],
+            "code_work_enabled",
+            ["component path", "build result"],
+            ["npm run build"],
+            ["frontend/src/App.tsx", "frontend/src/components/generated"],
+        ),
+        _role(
+            "Runbook Writer",
+            "product_ui",
+            "specialist",
+            "Keep README, running docs, quick starts, and capabilities current.",
+            ["documentation", "operator_runbook", "release_notes"],
+            ["repo_search", "read_files"],
+            ["current paths", "commands"],
+            ["README update", "runbook note"],
+            ["Release Manager"],
+            "docs_only",
+            ["path exists", "command verified"],
+            ["doc stale command scan"],
+            ["README.md", "RUNNING.md", "QUICK_START.md", "CAPABILITIES.md"],
+        ),
+        _role(
+            "Repo Cartographer",
+            "engineering",
+            "specialist",
+            "Map files, ownership, tests, and dependency hints before edits.",
+            ["repo_search", "classification", "ownership"],
+            ["repo_search", "read_files"],
+            ["repo tree", "work order"],
+            ["path map", "risk notes"],
+            ["Code Architect", "Implementation Worker"],
+            "read_only_repo",
+            ["path list", "domain classification"],
+            ["self catalog test"],
+            [
+                "aureon/autonomous/aureon_repo_self_catalog.py",
+                "aureon/autonomous/aureon_repo_explorer_service.py",
+            ],
+        ),
+        _role(
+            "Code Architect",
+            "engineering",
+            "lead",
+            "Turn requirements into scoped implementation plans and patch contracts.",
+            ["architecture", "patch_planning", "contract_design"],
+            ["safe_code_control"],
+            ["repo map", "plan"],
+            ["patch contract", "target files"],
+            ["Implementation Worker", "Security Auditor"],
+            "code_work_enabled",
+            ["ownership", "tests"],
+            ["compile/test plan"],
+            ["aureon/autonomous/aureon_safe_code_control.py", "aureon/core/goal_execution_engine.py"],
+        ),
+        _role(
+            "Implementation Worker",
+            "engineering",
+            "builder",
+            "Apply approved code work through existing safe authoring routes.",
+            ["implementation", "file_edit", "tests", "evidence"],
+            ["QueenCodeArchitect", "execute_shell"],
+            ["patch contract", "target file"],
+            ["changed files", "write evidence"],
+            ["Test Pilot"],
+            "code_work_enabled",
+            ["writer provenance", "diff summary"],
+            ["focused pytest"],
+            [
+                "aureon/autonomous/aureon_coding_organism_bridge.py",
+                "aureon/autonomous/aureon_queen_code_bridge.py",
+            ],
+        ),
+        _role(
+            "Test Pilot",
+            "engineering",
+            "specialist",
+            "Run focused unit, build, smoke, and regression checks.",
+            ["testing", "build", "smoke", "regression"],
+            ["execute_shell"],
+            ["test plan", "changed files"],
+            ["test result", "stderr tail"],
+            ["Release Manager", "Browser Smoke Inspector"],
+            "local_tests_only",
+            ["command", "return code"],
+            ["pytest", "npm build"],
+            ["tests", "frontend/package.json"],
+        ),
+        _role(
+            "Browser Smoke Inspector",
+            "engineering",
+            "specialist",
+            "Inspect local UI state and browser-visible evidence.",
+            ["browser_smoke", "visual_check", "console_error_check"],
+            ["safe_desktop", "vm_control"],
+            ["local URL", "component path"],
+            ["smoke report", "screenshot evidence"],
+            ["UX Designer"],
+            "desktop_dry_run_default",
+            ["URL", "visible text"],
+            ["browser smoke"],
+            ["aureon/autonomous/aureon_safe_desktop_control.py", "aureon/autonomous/vm_control/tools.py"],
+        ),
+        _role(
+            "Release Manager",
+            "engineering",
+            "lead",
+            "Prepare clean commits and public release evidence when asked.",
+            ["git_review", "secret_scan", "release_notes"],
+            ["git_status", "secret_scan"],
+            ["dirty files", "test results"],
+            ["release checklist", "commit proposal"],
+            ["Runbook Writer"],
+            "operator_explicit_push",
+            ["secret scan", "test result"],
+            ["git dry run", "doc scan"],
+            ["README.md", "CAPABILITIES.md"],
+        ),
+        _role(
+            "Market Data Ocean Operator",
+            "trading_data",
+            "specialist",
+            "Expand licensed/reachable financial data coverage without stalling trading.",
+            ["data_ocean", "rate_governor", "market_data", "history"],
+            ["read_runtime", "data_ocean"],
+            ["source registry", "API governor"],
+            ["coverage map", "missing feed list"],
+            ["Profit Timing Analyst"],
+            "read_only_market_data",
+            ["source freshness", "rate budget"],
+            ["coverage map test"],
+            [
+                "AUREON_DATA_OCEAN.cmd",
+                "aureon/autonomous/aureon_data_ocean.py",
+                "aureon/autonomous/aureon_global_financial_coverage_map.py",
+            ],
+        ),
+        _role(
+            "Exchange Execution Specialist",
+            "trading_data",
+            "specialist",
+            "Know exchange modes, clients, credentials status, and execution routes.",
+            ["exchange_clients", "spot_margin", "broker_routes"],
+            ["read_runtime", "exchange_clients"],
+            ["venue readiness", "credential status"],
+            ["route capability", "missing wire"],
+            ["Risk Governor"],
+            "live_trading_runtime_gated",
+            ["exchange status", "mode"],
+            ["exchange tests"],
+            ["aureon/exchanges", "aureon/exchanges/kraken_asset_registry.py"],
+        ),
+        _role(
+            "Risk Governor",
+            "trading_data",
+            "lead",
+            "Preserve portfolio survival before any new exposure.",
+            ["risk", "portfolio_survival", "margin", "stress_buffer"],
+            ["read_positions", "read_runtime"],
+            ["portfolio state", "candidate trade"],
+            ["risk envelope", "blocker"],
+            ["Shadow Trade Validator"],
+            "live_trading_runtime_gated",
+            ["exposure", "stress buffer"],
+            ["risk envelope test"],
+            [
+                "aureon/exchanges/unified_market_trader.py",
+                "aureon/autonomous/aureon_trading_intelligence_checklist.py",
+            ],
+        ),
+        _role(
+            "Profit Timing Analyst",
+            "trading_data",
+            "specialist",
+            "Rank fastest net-profit opportunities using fresh and historical signals.",
+            ["profit_velocity", "momentum", "ETA", "take_profit"],
+            ["read_prices", "market_history"],
+            ["ticker stream", "history"],
+            ["ranked candidates", "ETA evidence"],
+            ["Shadow Trade Validator"],
+            "live_trading_runtime_gated",
+            ["fresh tick", "fee-adjusted estimate"],
+            ["profit timing test"],
+            [
+                "aureon/autonomous/aureon_trading_intelligence_checklist.py",
+                "aureon/exchanges/unified_market_trader.py",
+            ],
+        ),
+        _role(
+            "Shadow Trade Validator",
+            "trading_data",
+            "specialist",
+            "Validate trade logic non-mutating before live intent.",
+            ["shadow_trading", "validation", "counter_signal"],
+            ["read_runtime"],
+            ["candidate", "cross-market evidence"],
+            ["shadow verdict", "reject reason"],
+            ["Chief Trading Officer"],
+            "non_mutating_validation",
+            ["candidate id", "verdict"],
+            ["shadow gate test"],
+            [
+                "aureon/autonomous/aureon_trading_intelligence_checklist.py",
+                "state/unified_runtime_status.json",
+            ],
+        ),
+        _role(
+            "Research Scout",
+            "intelligence",
+            "specialist",
+            "Find official docs, APIs, and source-linked learning material.",
+            ["web_learning", "official_sources", "citations"],
+            ["web_search", "web_fetch"],
+            ["learning query", "unknown fact"],
+            ["source summary", "citation"],
+            ["Runbook Writer", "Code Architect"],
+            "read_only_research",
+            ["URL", "access date"],
+            ["source report test"],
+            [
+                "aureon/autonomous/aureon_coding_agent_skill_base.py",
+                "aureon/autonomous/aureon_external_capability_bridge.py",
+            ],
+        ),
+        _role(
+            "News Sentiment Analyst",
+            "intelligence",
+            "specialist",
+            "Turn news and sentiment into context, not blind action.",
+            ["news", "sentiment", "market_context"],
+            ["data_ocean", "research_index"],
+            ["news feed", "market state"],
+            ["sentiment note", "confidence"],
+            ["Profit Timing Analyst"],
+            "read_only_research",
+            ["source", "timestamp"],
+            ["sentiment fixture test"],
+            [
+                "aureon/autonomous/aureon_data_ocean.py",
+                "aureon/autonomous/aureon_global_financial_coverage_map.py",
+            ],
+        ),
+        _role(
+            "Macro Onchain Analyst",
+            "intelligence",
+            "specialist",
+            "Read macro, calendar, crypto, and on-chain context for regime awareness.",
+            ["macro", "onchain", "calendar", "regime"],
+            ["data_ocean", "market_history"],
+            ["macro snapshot", "chain data"],
+            ["regime note", "blocker"],
+            ["Risk Governor"],
+            "read_only_research",
+            ["freshness", "source"],
+            ["macro fixture test"],
+            ["scripts/python/ingest_economic_calendar.py", "scripts/python/ingest_market_history.py"],
+        ),
+        _role(
+            "Counter Intelligence Validator",
+            "intelligence",
+            "specialist",
+            "Reject stale, false, contradictory, or low-quality evidence.",
+            ["counter_intelligence", "stale_detection", "contradiction_check"],
+            ["read_runtime", "checklists"],
+            ["candidate evidence", "runtime watchdog"],
+            ["accept/reject verdict", "reason"],
+            ["Shadow Trade Validator", "Security Auditor"],
+            "non_mutating_validation",
+            ["blocker reason", "stale state"],
+            ["checklist tests"],
+            [
+                "aureon/autonomous/aureon_trading_intelligence_checklist.py",
+                "aureon/autonomous/hnc_authorized_attack_lab.py",
+            ],
+        ),
+        _role(
+            "Accounting Pack Builder",
+            "accounting_admin",
+            "builder",
+            "Generate manual filing support packs and reconciliation evidence.",
+            ["accounting", "pack_generation", "reconciliation"],
+            ["pack_generator"],
+            ["transactions", "company profile"],
+            ["support pack", "manifest"],
+            ["Evidence Clerk"],
+            "manual_filing_only",
+            ["transaction count", "reconciliation"],
+            ["accounting pack tests"],
+            ["Kings_Accounting_Suite/tools/generate_statutory_filing_pack.py"],
+        ),
+        _role(
+            "Evidence Clerk",
+            "accounting_admin",
+            "specialist",
+            "Collect missing evidence lists, checklists, and source paths.",
+            ["evidence", "checklist", "requirements_matrix"],
+            ["read_files"],
+            ["pack manifest", "requirements"],
+            ["evidence list", "missing items"],
+            ["Filing Boundary Officer"],
+            "manual_filing_only",
+            ["path exists", "missing item"],
+            ["requirements matrix test"],
+            ["docs/audits/accounting_system_registry.json", "aureon/queen/accounting_context_bridge.py"],
+        ),
+        _role(
+            "Filing Boundary Officer",
+            "accounting_admin",
+            "guard",
+            "Keep official submission and payment manual-only.",
+            ["compliance_boundary", "manual_only", "redaction"],
+            ["read_reports"],
+            ["filing pack", "operator request"],
+            ["boundary statement", "blocker"],
+            ["CFO Accounting Controller"],
+            "manual_filing_only",
+            ["manual-only note"],
+            ["boundary regression test"],
+            ["aureon/core/organism_contracts.py", "aureon/autonomous/aureon_goal_capability_map.py"],
+        ),
+        _role(
+            "Security Auditor",
+            "security_ops",
+            "specialist",
+            "Review generated systems for secrets, unsafe mutation, and missing tests.",
+            ["security_review", "secret_scan", "guardrails"],
+            ["repo_search", "secret_scan"],
+            ["changed files", "public artifacts"],
+            ["security report", "blocker"],
+            ["CISO Secret Keeper"],
+            "security_review_required",
+            ["scan result", "blocker"],
+            ["secret scan test"],
+            ["aureon/autonomous/hnc_saas_security_architect.py", "tests"],
+        ),
+        _role(
+            "Incident Responder",
+            "security_ops",
+            "specialist",
+            "Triage runtime/security incidents and produce recovery work orders.",
+            ["incident_response", "recovery", "audit"],
+            ["status_read", "logs_read"],
+            ["alert", "runtime state"],
+            ["incident report", "recovery plan"],
+            ["COO Runtime Steward"],
+            "operator_review_required",
+            ["incident id", "timeline"],
+            ["incident fixture test"],
+            ["aureon/autonomous/aureon_system_readiness_audit.py", "logs"],
+        ),
+        _role(
+            "Log Janitor",
+            "security_ops",
+            "cleaner",
+            "Summarize noisy logs and identify stale or repeated failures.",
+            ["log_review", "noise_reduction", "cleanup_report"],
+            ["logs_read"],
+            ["logs", "runtime warning"],
+            ["log summary", "cleanup work order"],
+            ["Stale State Cleaner"],
+            "report_before_mutation",
+            ["log path", "pattern"],
+            ["log report test"],
+            ["logs", "docs/audits"],
+        ),
+        _role(
+            "Stale State Cleaner",
+            "security_ops",
+            "cleaner",
+            "Find stale generated state and queue safe refresh or archive work.",
+            ["state_cleanup", "archive_queue", "refresh_work_order"],
+            ["repo_search", "read_state"],
+            ["stale file", "manifest age"],
+            ["refresh work order", "archive candidate"],
+            ["Queue Steward", "Archive Librarian"],
+            "report_before_mutation",
+            ["stale age", "owner"],
+            ["cleanup no-delete test"],
+            ["state", "frontend/public", "docs/audits"],
+        ),
+        _role(
+            "Queue Steward",
+            "security_ops",
+            "operator",
+            "Keep task queues visible, ordered, and unblocked.",
+            ["queue_management", "work_order_triage", "status"],
+            ["task_queue"],
+            ["work orders", "blockers"],
+            ["queue status", "next action"],
+            ["COO Runtime Steward"],
+            "queue_only",
+            ["queue count", "blocked reason"],
+            ["queue status test"],
+            ["aureon/autonomous/aureon_local_task_queue.py", "state"],
+        ),
+        _role(
+            "Archive Librarian",
+            "security_ops",
+            "operator",
+            "Classify old dashboards, reports, and generated artifacts for archive decisions.",
+            ["archive", "classification", "memory"],
+            ["repo_search", "vault_read"],
+            ["candidate files", "owner"],
+            ["archive proposal", "memory note"],
+            ["Chief Memory Vault Officer"],
+            "report_before_mutation",
+            ["candidate path", "reason"],
+            ["archive proposal test"],
+            ["docs/audits", ".obsidian"],
+        ),
     ]
 
 
@@ -1175,7 +2041,9 @@ def _memory_bundle_for_payload(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _memory_phonebook_for_roles(root: Path, roles: list[AgentCompanyRole], generated_at: str) -> dict[str, Any]:
+def _memory_phonebook_for_roles(
+    root: Path, roles: list[AgentCompanyRole], generated_at: str
+) -> dict[str, Any]:
     entries: list[dict[str, Any]] = []
     total_raw = 0
     total_compressed = 0
@@ -1186,7 +2054,8 @@ def _memory_phonebook_for_roles(root: Path, roles: list[AgentCompanyRole], gener
         total_compressed += int(bundle["compressed_bytes"])
         bundle_path = _rooted(
             root,
-            DEFAULT_MEMORY_BUNDLE_DIR / f"{role.role_id}.{str(bundle['sha256_compressed_payload'])[:16]}.json.zlib.b64",
+            DEFAULT_MEMORY_BUNDLE_DIR
+            / f"{role.role_id}.{str(bundle['sha256_compressed_payload'])[:16]}.json.zlib.b64",
         )
         entries.append(
             {
@@ -1204,11 +2073,13 @@ def _memory_phonebook_for_roles(root: Path, roles: list[AgentCompanyRole], gener
                 "bundle_path": str(bundle_path),
                 "restore_as": "temporary_crew_candidate",
                 "rehydration_owner": "Workforce Retirement Clerk",
-                "search_terms": sorted(set([role.role_id, role.title, role.department, *role.capabilities])),
+                "search_terms": sorted({role.role_id, role.title, role.department, *role.capabilities}),
                 "_encoded_payload": bundle["encoded_payload"],
             }
         )
-    public_entries = [{key: value for key, value in entry.items() if key != "_encoded_payload"} for entry in entries]
+    public_entries = [
+        {key: value for key, value in entry.items() if key != "_encoded_payload"} for entry in entries
+    ]
     return {
         "schema_version": "aureon-agent-company-memory-phonebook-v1",
         "generated_at": generated_at,
@@ -1238,7 +2109,7 @@ def _public_phonebook(phonebook: dict[str, Any]) -> dict[str, Any]:
 def _summary(
     roles: list[AgentCompanyRole],
     work_orders: list[dict[str, Any]],
-    recruitment_engine: Optional[dict[str, Any]] = None,
+    recruitment_engine: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     active = [role for role in roles if role.existing_surfaces]
     day_plan = [role for role in roles if len(role.day_to_day) >= 5 and role.standing_checks]
@@ -1246,15 +2117,23 @@ def _summary(
     not_one_trick = [
         role
         for role in roles
-        if len(role.capabilities) >= 3 and role.handoffs_out and role.cross_training and role.whole_organism_access
+        if len(role.capabilities) >= 3
+        and role.handoffs_out
+        and role.cross_training
+        and role.whole_organism_access
     ]
     lifecycle_roles = [role for role in roles if role.workforce_lifecycle]
     subcontractor_eligible = [
-        role for role in roles if (role.workforce_lifecycle or {}).get("employment_model") == "subcontractor_eligible"
+        role
+        for role in roles
+        if (role.workforce_lifecycle or {}).get("employment_model") == "subcontractor_eligible"
     ]
     agency_roles = [role for role in roles if role.department == "agency_workforce"]
     recruitment_engine = recruitment_engine or {}
-    recruitment_summary = recruitment_engine.get("summary") if isinstance(recruitment_engine.get("summary"), dict) else {}
+    raw_recruitment_summary = recruitment_engine.get("summary")
+    recruitment_summary: dict[str, Any] = (
+        raw_recruitment_summary if isinstance(raw_recruitment_summary, dict) else {}
+    )
     return {
         "department_count": len(DEPARTMENTS),
         "role_count": len(roles),
@@ -1354,7 +2233,9 @@ def _goal_terms(goal: str) -> list[str]:
     return ordered[:18]
 
 
-def _internal_recruitment_search(root: Path, queries: Sequence[str], limit_per_query: int = 5) -> list[dict[str, Any]]:
+def _internal_recruitment_search(
+    root: Path, queries: Sequence[str], limit_per_query: int = 5
+) -> list[dict[str, Any]]:
     search_roots = [
         root / "aureon",
         root / "docs",
@@ -1405,7 +2286,9 @@ def _run_online_recruitment_search(enabled: bool, limit: int = 4) -> dict[str, A
         from aureon.autonomous.aureon_agent_core import AureonAgentCore
 
         agent = AureonAgentCore()
-        for query in RECRUITMENT_ONLINE_QUERIES[: max(1, min(int(limit or 4), len(RECRUITMENT_ONLINE_QUERIES)))]:
+        for query in RECRUITMENT_ONLINE_QUERIES[
+            : max(1, min(int(limit or 4), len(RECRUITMENT_ONLINE_QUERIES)))
+        ]:
             results = agent.web_search(query["query"], num_results=3)
             searches.append(
                 {
@@ -1429,7 +2312,9 @@ def _run_online_recruitment_search(enabled: bool, limit: int = 4) -> dict[str, A
     }
 
 
-def _select_recruited_workers(roles: list[AgentCompanyRole], goal_terms: Sequence[str]) -> list[AgentCompanyRole]:
+def _select_recruited_workers(
+    roles: list[AgentCompanyRole], goal_terms: Sequence[str]
+) -> list[AgentCompanyRole]:
     terms = {term.lower() for term in goal_terms}
     priority_titles = {
         "Client Brief Broker",
@@ -1445,6 +2330,33 @@ def _select_recruited_workers(roles: list[AgentCompanyRole], goal_terms: Sequenc
         "Release Manager",
         "Archive Librarian",
     }
+    if terms.intersection(
+        {
+            "website",
+            "webpage",
+            "design",
+            "redesign",
+            "graphic",
+            "motion",
+            "animation",
+            "brand",
+            "investor",
+            "competitor",
+        }
+    ):
+        priority_titles.update(
+            {
+                "Website Design Director",
+                "Competitor Research Scout",
+                "Brand and Design-System Lead",
+                "Technical Editorial Writer",
+                "Claims and Evidence Editor",
+                "Motion Designer",
+                "Visual Asset Director",
+                "Accessibility and Performance QA",
+                "Design Release QA",
+            }
+        )
     recruited: list[tuple[int, AgentCompanyRole]] = []
     for role in roles:
         searchable = " ".join(
@@ -1480,7 +2392,9 @@ def _agent_blueprint_for(role: AgentCompanyRole, goal: str) -> dict[str, Any]:
         "agent_id": f"temp_{role.role_id}",
         "source_role_id": role.role_id,
         "title": role.title,
-        "employment_model": (role.workforce_lifecycle or {}).get("employment_model", "subcontractor_eligible"),
+        "employment_model": (role.workforce_lifecycle or {}).get(
+            "employment_model", "subcontractor_eligible"
+        ),
         "scope_contract": {
             "client_goal": goal,
             "who": role.title,
@@ -1525,7 +2439,8 @@ def _build_recruitment_engine(
     recruited_roles = _select_recruited_workers(roles, terms)
     blueprints = [_agent_blueprint_for(role, goal) for role in recruited_roles]
     internal_hit_count = sum(int(item.get("hit_count") or 0) for item in internal_searches)
-    online_searches = online_search.get("searches") if isinstance(online_search.get("searches"), list) else []
+    raw_online_searches = online_search.get("searches")
+    online_searches: list[Any] = raw_online_searches if isinstance(raw_online_searches, list) else []
     return {
         "schema_version": "aureon-agent-recruitment-engine-v1",
         "status": "recruitment_ready",
@@ -1637,7 +2552,9 @@ def _market_capability_comparison(roles: list[AgentCompanyRole]) -> list[dict[st
         comparison.append(
             {
                 **system,
-                "aureon_gap_status": "partially_wired" if system.get("aureon_current_equivalent") else "missing",
+                "aureon_gap_status": "partially_wired"
+                if system.get("aureon_current_equivalent")
+                else "missing",
                 "hired_temporary_workers": hired,
                 "next_work_order": {
                     "title": f"Bridge {system['provider']} capability pattern into Aureon",
@@ -1657,7 +2574,7 @@ def _market_capability_comparison(roles: list[AgentCompanyRole]) -> list[dict[st
 
 def build_agent_company_bill_list(
     *,
-    root: Optional[Path] = None,
+    root: Path | None = None,
     goal: str = "",
     online: bool = False,
     online_limit: int = 4,
@@ -1722,33 +2639,73 @@ def build_agent_company_bill_list(
         for item in brain_fabric.get("passports", [])
         if isinstance(item, dict)
     }
-    role_payloads = []
-    agent_payloads = []
+    role_payloads: list[dict[str, Any]] = []
+    agent_payloads: list[dict[str, Any]] = []
     for role in roles:
-        process_id = role_process_bindings[role.title]
-        agent_passport = passport_by_subject.get(("agent", role.title), {})
-        process_passport = passport_by_subject.get(("process", process_id), {})
+        canonical_brain_member = role.title in role_brain_lanes
+        process_id = role_process_bindings.get(role.title)
+        agent_passport = (
+            passport_by_subject.get(("agent", role.title), {})
+            if canonical_brain_member
+            else {}
+        )
+        process_passport = (
+            passport_by_subject.get(("process", process_id), {})
+            if canonical_brain_member and process_id
+            else {}
+        )
+        role_brain_provisioned = bool(
+            brain_fabric_ready
+            and canonical_brain_member
+            and agent_passport
+            and process_passport
+        )
         binding = {
-            "lane": role_brain_lanes[role.title],
+            "topology": (
+                "canonical_41_role_brain_fabric"
+                if canonical_brain_member
+                else "registry_only_public_design"
+            ),
+            "canonical_brain_fabric_member": canonical_brain_member,
+            "registry_only": not canonical_brain_member,
+            "registry_only_reason": (
+                "public_design_roles_preserve_website_operator_planning_and_owner_gates_without_joining_the_executable_brain_fabric"
+                if not canonical_brain_member
+                else ""
+            ),
+            "lane": role_brain_lanes.get(role.title),
             "paired_process_id": process_id,
             "agent_brain_passport_id": agent_passport.get("receipt_id"),
             "process_brain_passport_id": process_passport.get("receipt_id"),
-            "provisioned": bool(agent_passport and process_passport),
+            "provisioned": role_brain_provisioned,
             "tools_enabled": False,
             "action_eligible": False,
             "economic_eligible": False,
         }
         role_payloads.append({**role.to_dict(), "brain_binding": binding})
         agent_config = _agent_config_for(role)
-        if brain_fabric_ready:
+        if brain_fabric_ready or not canonical_brain_member:
             agent_config["tools_enabled"] = False
         agent_config["metadata"] = {
             **agent_config["metadata"],
-            "registry_only_v1": not brain_fabric_ready,
-            "brain_fabric_provisioned": brain_fabric_ready,
+            "registry_only_v1": not role_brain_provisioned,
+            "brain_fabric_provisioned": role_brain_provisioned,
             "brain_binding": binding,
         }
         agent_payloads.append(agent_config)
+    canonical_brain_role_count = sum(
+        1 for item in role_payloads if item["brain_binding"]["canonical_brain_fabric_member"]
+    )
+    registry_only_role_count = len(role_payloads) - canonical_brain_role_count
+    provisioned_role_count = sum(
+        1 for item in role_payloads if item["brain_binding"]["provisioned"]
+    )
+    all_canonical_brains_provisioned = bool(
+        brain_fabric_ready and provisioned_role_count == canonical_brain_role_count
+    )
+    all_registered_roles_brain_provisioned = bool(
+        role_payloads and provisioned_role_count == len(role_payloads)
+    )
     departments = []
     for department in DEPARTMENTS:
         department_roles = [role for role in roles if role.department == department["id"]]
@@ -1756,7 +2713,9 @@ def build_agent_company_bill_list(
             {
                 **department,
                 "role_count": len(department_roles),
-                "active_surface_role_count": len([role for role in department_roles if role.existing_surfaces]),
+                "active_surface_role_count": len(
+                    [role for role in department_roles if role.existing_surfaces]
+                ),
                 "roles": [role.role_id for role in department_roles],
             }
         )
@@ -1780,6 +2739,9 @@ def build_agent_company_bill_list(
             "agent_brain_count": int(brain_fabric.get("agent_brain_count") or 0),
             "process_brain_count": int(brain_fabric.get("process_brain_count") or 0),
             "brain_passport_count": int(brain_fabric.get("brain_passport_count") or 0),
+            "canonical_brain_role_count": canonical_brain_role_count,
+            "registry_only_role_count": registry_only_role_count,
+            "provisioned_role_count": provisioned_role_count,
         }
     )
     return {
@@ -1842,7 +2804,8 @@ def build_agent_company_bill_list(
             "did_attach_whole_organism_access": all(bool(role.whole_organism_access) for role in roles),
             "did_attach_agency_prompt_job_model": True,
             "did_attach_hire_retire_lifecycle": all(bool(role.workforce_lifecycle) for role in roles),
-            "did_build_sha256_zlib_memory_phonebook": memory_phonebook.get("summary", {}).get("entry_count") == len(roles),
+            "did_build_sha256_zlib_memory_phonebook": memory_phonebook.get("summary", {}).get("entry_count")
+            == len(roles),
             "did_compare_market_ai_systems": len(market_comparison) == len(MARKET_AI_SYSTEMS),
             "did_build_recruitment_engine": recruitment_engine.get("status") == "recruitment_ready",
             "did_attach_mycelium_organisation_doctrine": MYCELIUM_ORGANISATION_DOCTRINE["ethos"]
@@ -1850,10 +2813,19 @@ def build_agent_company_bill_list(
             "did_attach_bio_cosmic_organisation_doctrine": BIO_COSMIC_ORGANISATION_DOCTRINE["ethos"]
             == "bio_cosmic_living_system_organisation",
             "did_build_agent_blueprints": bool(recruitment_engine.get("agent_blueprints")),
-            "did_provision_all_agent_and_process_brains": brain_fabric_ready,
+            "did_provision_all_agent_and_process_brains": all_registered_roles_brain_provisioned,
+            "did_provision_all_canonical_agent_and_process_brains": all_canonical_brains_provisioned,
+            "did_keep_public_design_roles_registry_only": all(
+                item["brain_binding"]["registry_only"]
+                and item["brain_binding"]["provisioned"] is False
+                for item in role_payloads
+                if item.get("department") == "public_design"
+            ),
             "did_run_internal_skill_search": bool(recruitment_engine.get("internal_skill_searches")),
             "did_run_online_skill_search_when_requested": (
-                not online or (recruitment_engine.get("online_skill_searches") or {}).get("status") in {"search_complete", "search_failed"}
+                not online
+                or (recruitment_engine.get("online_skill_searches") or {}).get("status")
+                in {"search_complete", "search_failed"}
             ),
             "did_preserve_existing_authority_gates": True,
             "did_map_roles_to_surfaces_or_work_orders": all(
@@ -1875,7 +2847,12 @@ def _write_text(path: Path, content: str) -> dict[str, Any]:
     for attempt in range(6):
         try:
             tmp.replace(path)
-            return {"path": str(path), "ok": True, "writer": "AgentCompanyBuilder", "write_mode": "atomic_replace"}
+            return {
+                "path": str(path),
+                "ok": True,
+                "writer": "AgentCompanyBuilder",
+                "write_mode": "atomic_replace",
+            }
         except PermissionError as exc:
             last_error = str(exc)
             time.sleep(0.2 * (attempt + 1))
@@ -1885,7 +2862,12 @@ def _write_text(path: Path, content: str) -> dict[str, Any]:
             tmp.unlink(missing_ok=True)
         except Exception:
             pass
-        return {"path": str(path), "ok": True, "writer": "AgentCompanyBuilder", "write_mode": "direct_fallback"}
+        return {
+            "path": str(path),
+            "ok": True,
+            "writer": "AgentCompanyBuilder",
+            "write_mode": "direct_fallback",
+        }
     except PermissionError as exc:
         return {
             "path": str(path),
@@ -1901,14 +2883,18 @@ def _write_json(path: Path, payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _write_memory_phonebook(root: Path, report: dict[str, Any]) -> list[dict[str, Any]]:
-    phonebook = report.get("workforce_memory_phonebook") if isinstance(report.get("workforce_memory_phonebook"), dict) else {}
-    bundle_payloads = report.pop("_workforce_memory_bundle_payloads", {})
+    raw_phonebook = report.get("workforce_memory_phonebook")
+    phonebook: dict[str, Any] = raw_phonebook if isinstance(raw_phonebook, dict) else {}
+    raw_bundle_payloads = report.pop("_workforce_memory_bundle_payloads", {})
+    bundle_payloads: dict[str, Any] = raw_bundle_payloads if isinstance(raw_bundle_payloads, dict) else {}
     writes: list[dict[str, Any]] = []
     for raw_path, encoded_payload in sorted((bundle_payloads or {}).items()):
         path = Path(str(raw_path))
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(str(encoded_payload), encoding="ascii")
-        writes.append({"path": str(path), "ok": True, "writer": "AgentCompanyMemoryPhonebook", "kind": "bundle"})
+        writes.append(
+            {"path": str(path), "ok": True, "writer": "AgentCompanyMemoryPhonebook", "kind": "bundle"}
+        )
     phonebook_payload = {
         **phonebook,
         "write_info": {
@@ -2035,8 +3021,8 @@ def _make_markdown(report: dict[str, Any]) -> str:
     lines.extend(
         [
             "",
-        "## Daily Operating Loop",
-        "",
+            "## Daily Operating Loop",
+            "",
         ]
     )
     for step in report.get("daily_operating_loop", []):
@@ -2057,14 +3043,18 @@ def _make_markdown(report: dict[str, Any]) -> str:
     lines.extend(
         [
             "",
-        "## Authority Boundaries",
-        "",
+            "## Authority Boundaries",
+            "",
         ]
     )
     for boundary in report.get("authority_boundaries", []):
         lines.append(f"- **{boundary.get('title')}**: {boundary.get('rule')}")
-    recruitment = report.get("recruitment_engine", {}) if isinstance(report.get("recruitment_engine"), dict) else {}
-    recruitment_summary = recruitment.get("summary", {}) if isinstance(recruitment.get("summary"), dict) else {}
+    recruitment = (
+        report.get("recruitment_engine", {}) if isinstance(report.get("recruitment_engine"), dict) else {}
+    )
+    recruitment_summary = (
+        recruitment.get("summary", {}) if isinstance(recruitment.get("summary"), dict) else {}
+    )
     lines.extend(
         [
             "",
@@ -2089,7 +3079,11 @@ def _make_markdown(report: dict[str, Any]) -> str:
         caps = ", ".join(worker.get("capabilities", [])[:4])
         lines.append(f"- **{worker.get('title')}** ({worker.get('authority_level')}): {caps}")
     lines.extend(["", "### Online Skill Searches", ""])
-    online = recruitment.get("online_skill_searches", {}) if isinstance(recruitment.get("online_skill_searches"), dict) else {}
+    online = (
+        recruitment.get("online_skill_searches", {})
+        if isinstance(recruitment.get("online_skill_searches"), dict)
+        else {}
+    )
     for search in online.get("searches", []):
         lines.append(f"- {search.get('query')} -> {search.get('result_count')} result(s)")
     lines.extend(["", "## Market AI System Comparison", ""])
@@ -2135,7 +3129,7 @@ def _make_markdown(report: dict[str, Any]) -> str:
 
 def build_and_write_agent_company_bill_list(
     *,
-    root: Optional[Path] = None,
+    root: Path | None = None,
     goal: str = "",
     online: bool = False,
     online_limit: int = 4,
@@ -2169,11 +3163,13 @@ def build_and_write_agent_company_bill_list(
     return report
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build Aureon's agent company bill list.")
     parser.add_argument("--goal", default="")
     parser.add_argument("--json", action="store_true", help="Print JSON report.")
-    parser.add_argument("--online", action="store_true", help="Run bounded online recruitment skill searches.")
+    parser.add_argument(
+        "--online", action="store_true", help="Run bounded online recruitment skill searches."
+    )
     parser.add_argument("--online-limit", type=int, default=4)
     parser.add_argument(
         "--provision-brains",

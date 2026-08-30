@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.pl/schemas/aureon-design-learning-manifest-v1.json",
+  "title": "Aureon Design Learning Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "pattern_id",
+    "version",
+    "title",
+    "summary",
+    "input_contract",
+    "output_contract",
+    "allowed_paths",
+    "regression_tests",
+    "proposed_skill_target",
+    "refresh_by"
+  ],
+  "properties": {
+    "schema": { "const": "aureon.design-learning-manifest.v1" },
+    "pattern_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,80}$" },
+    "version": { "type": "string", "pattern": "^(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)$" },
+    "title": { "type": "string", "minLength": 1, "maxLength": 180 },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 1000 },
+    "input_contract": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1, "maxLength": 500 }
+    },
+    "output_contract": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1, "maxLength": 500 }
+    },
+    "allowed_paths": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "regression_tests": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^tests/" }
+    },
+    "proposed_skill_target": {
+      "type": "string",
+      "pattern": "^skills/aureon-harmonic-design-suite/.+\\.md$"
+    },
+    "refresh_by": { "type": "string", "format": "date-time" }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureonzorzatechnologies.pl/schemas/aureon-design-learning-record-v1.json",
+  "title": "Aureon Design Learning Record v1",
+  "type": "object",
+  "required": [
+    "schema",
+    "recorded_at",
+    "state",
+    "passed",
+    "release_eligible",
+    "package_authority",
+    "deployment_authority",
+    "authority",
+    "candidate",
+    "visual_review",
+    "learning_manifest",
+    "pattern",
+    "promotion",
+    "checks",
+    "next_gate"
+  ],
+  "properties": {
+    "schema": { "const": "aureon.design-learning-record.v1" },
+    "state": { "enum": ["learning-proposal-recorded", "blocked"] },
+    "passed": { "type": "boolean" },
+    "release_eligible": { "const": false },
+    "package_authority": { "const": "none" },
+    "deployment_authority": { "const": "none" },
+    "promotion": {
+      "type": "object",
+      "required": ["state", "applied", "target", "authority"],
+      "properties": {
+        "state": { "enum": ["proposed-human-reviewed-skill-update", "not-proposed"] },
+        "applied": { "const": false },
+        "authority": { "type": "string" }
+      }
+    }
+  }
+}

@@ -7,36 +7,48 @@ See ``docs/architecture/AUREON_OPERATOR_SWITCHBOARD.md`` for the full picture.
     print(run_operator("How does Aureon integrate data across systems?").text)
 """
 
-from typing import Any
+from __future__ import annotations
 
-_OPERATOR_EXPORTS = {"AureonOperator", "run_operator"}
-_COGNITION_EXPORTS = {"AureonCognition", "run_cognition"}
-_SCHEMA_EXPORTS = {
-    "CognitionResult",
-    "ConsensusReading",
-    "GroundingContext",
-    "OperatorResponse",
-    "ProviderAnswer",
-    "ToolInvocation",
+import importlib
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from aureon.operator.aureon_operator import AureonOperator, run_operator
+    from aureon.operator.cognition import AureonCognition, run_cognition
+    from aureon.operator.schemas import (
+        CognitionResult,
+        ConsensusReading,
+        GroundingContext,
+        OperatorResponse,
+        ProviderAnswer,
+        ToolInvocation,
+    )
+
+
+_LAZY_EXPORTS = {
+    "AureonOperator": ("aureon.operator.aureon_operator", "AureonOperator"),
+    "run_operator": ("aureon.operator.aureon_operator", "run_operator"),
+    "AureonCognition": ("aureon.operator.cognition", "AureonCognition"),
+    "run_cognition": ("aureon.operator.cognition", "run_cognition"),
+    "OperatorResponse": ("aureon.operator.schemas", "OperatorResponse"),
+    "ProviderAnswer": ("aureon.operator.schemas", "ProviderAnswer"),
+    "GroundingContext": ("aureon.operator.schemas", "GroundingContext"),
+    "ConsensusReading": ("aureon.operator.schemas", "ConsensusReading"),
+    "ToolInvocation": ("aureon.operator.schemas", "ToolInvocation"),
+    "CognitionResult": ("aureon.operator.schemas", "CognitionResult"),
 }
 
 
 def __getattr__(name: str) -> Any:
-    # Keep package discovery side-effect-free. The operator, cognition loop,
-    # providers, and schema graph load only when their public name is used.
-    if name in _OPERATOR_EXPORTS:
-        from aureon.operator import aureon_operator as _operator
+    """Load an operator surface only when that exact surface is requested."""
 
-        return getattr(_operator, name)
-    if name in _COGNITION_EXPORTS:
-        from aureon.operator import cognition as _c
-
-        return getattr(_c, name)
-    if name in _SCHEMA_EXPORTS:
-        from aureon.operator import schemas as _schemas
-
-        return getattr(_schemas, name)
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    target = _LAZY_EXPORTS.get(name)
+    if target is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    module_name, attribute = target
+    value = getattr(importlib.import_module(module_name), attribute)
+    globals()[name] = value
+    return value
 
 
 __all__ = [

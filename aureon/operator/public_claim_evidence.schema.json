@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureon.local/schemas/public-claim-evidence-register-v1.json",
+  "title": "Aureon public claim evidence register",
+  "description": "A source-bound internal inventory of material public positioning claims. A conforming register is never a release or deployment authorisation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "generated_at",
+    "authority",
+    "scope",
+    "claims"
+  ],
+  "properties": {
+    "schema": {
+      "const": "aureon.public-claim-evidence-register.v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "scope": {
+      "const": "material public website positioning claims"
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "release_eligible",
+        "deployment_authority",
+        "package_authority",
+        "human_review"
+      ],
+      "properties": {
+        "scope": {
+          "const": "read-only public-claim evidence control"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "human_review": {
+          "const": "required for material public wording changes"
+        }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/claim"
+      }
+    }
+  },
+  "$defs": {
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "claim",
+        "state",
+        "boundary",
+        "permitted_wording",
+        "prohibited_inferences",
+        "expires_on",
+        "source",
+        "public_routes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{2,80}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "claim": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "enum": [
+            "attention-signal",
+            "company-authored",
+            "external-recognition",
+            "prospective-application",
+            "public-research-record",
+            "public-source-available",
+            "research-proposition"
+          ]
+        },
+        "boundary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "permitted_wording": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "prohibited_inferences": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "expires_on": {
+          "type": "string",
+          "format": "date"
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "public_routes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^/"
+          }
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "locator",
+        "evidence_texts",
+        "boundary_text"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^website/"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}$"
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_texts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "boundary_text": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aureon.local/schemas/aureon-design-editorial-asset-candidate-import-verification-v1.json",
+  "title": "Aureon editorial asset candidate import verification",
+  "description": "Exact non-authoritative replay verification for one persisted editorial binary import receipt, its current source-bound work order, rights state, and staged candidate bytes.",
+  "type": "object",
+  "required": [
+    "schema",
+    "verified_at",
+    "state",
+    "passed",
+    "release_eligible",
+    "package_authority",
+    "deployment_authority",
+    "authority",
+    "receipt",
+    "work_order",
+    "summary",
+    "next_gate"
+  ],
+  "properties": {
+    "schema": {
+      "const": "aureon.design-editorial-asset-candidate-import-verification.v1"
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "state": {
+      "const": "verified-local-candidate"
+    },
+    "passed": {
+      "const": true
+    },
+    "release_eligible": {
+      "const": false
+    },
+    "package_authority": {
+      "const": "none"
+    },
+    "deployment_authority": {
+      "const": "none"
+    },
+    "authority": {
+      "$ref": "#/$defs/authority"
+    },
+    "receipt": {
+      "$ref": "#/$defs/receiptBinding"
+    },
+    "work_order": {
+      "$ref": "#/$defs/workOrderBinding"
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "next_gate": {
+      "const": "candidate controller revalidates the complete staged diff, editorial import receipt, public claims, visual quality, accessibility and performance before any separate owner-gated release process"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "authority": {
+      "type": "object",
+      "required": [
+        "scope",
+        "canonical_website_mutation",
+        "candidate_write_scope",
+        "binary_read_scope",
+        "transformations",
+        "release_eligible",
+        "package_authority",
+        "deployment_authority",
+        "credential_access",
+        "network_access",
+        "connector_access",
+        "importer_receipt_required"
+      ],
+      "properties": {
+        "scope": {
+          "const": "local trusted editorial binary import into one staged candidate"
+        },
+        "canonical_website_mutation": {
+          "const": "never"
+        },
+        "candidate_write_scope": {
+          "const": "exact work-order-declared image targets only"
+        },
+        "binary_read_scope": {
+          "const": "content-addressed verified editorial intake only"
+        },
+        "transformations": {
+          "const": "none"
+        },
+        "release_eligible": {
+          "const": false
+        },
+        "package_authority": {
+          "const": "none"
+        },
+        "deployment_authority": {
+          "const": "none"
+        },
+        "credential_access": {
+          "const": "none"
+        },
+        "network_access": {
+          "const": "none"
+        },
+        "connector_access": {
+          "const": "none"
+        },
+        "importer_receipt_required": {
+          "const": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "receiptBinding": {
+      "type": "object",
+      "required": [
+        "path",
+        "payload_sha256",
+        "file_sha256",
+        "persisted"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/[a-z0-9][a-z0-9._-]{2,80}/editorial-asset-import-receipt\\.v1\\.json$"
+        },
+        "payload_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "persisted": {
+          "const": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "workOrderBinding": {
+      "type": "object",
+      "required": [
+        "run_id",
+        "path",
+        "file_sha256",
+        "json_sha256",
+        "baseline_tree_sha256",
+        "candidate_copy_file_sha256"
+      ],
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,80}$"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^artifacts/website-candidates/work-orders/(?!.*(?:^|/)\\.\\.?(?:/|$))[^\\\\]+\\.json$"
+        },
+        "file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "json_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "baseline_tree_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "candidate_copy_file_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "asset_count",
+        "file_count",
+        "total_bytes",
+        "batch_complete",
+        "imports_sha256"
+      ],
+      "properties": {
+        "asset_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6
+        },
+        "file_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "total_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 125829120
+        },
+        "batch_complete": {
+          "const": true
+        },
+        "imports_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

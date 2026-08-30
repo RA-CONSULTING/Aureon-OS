@@ -12,9 +12,31 @@ on:
       - "aureon/saas/**"
       - "aureon/core/aureon_connectome.py"
       - "aureon/core/organism_daemon.py"
+      - "aureon/core/goal_execution_engine.py"
+      - "aureon/autonomous/aureon_capability_growth_loop.py"
+      - "aureon/autonomous/aureon_coding_agent_skill_base.py"
+      - "aureon/autonomous/aureon_public_website_design_runner.py"
+      - "aureon/autonomous/aureon_staged_design_worker_broker.py"
       - "tests/test_operator_*.py"
+      - "tests/test_design_*.py"
+      - "tests/test_public_website_design_runner.py"
+      - "tests/test_staged_design_worker_broker.py"
+      - "tests/test_goal_execution_engine_public_website_delivery.py"
+      - "tests/test_owner_source_reconciliation.py"
+      - "tests/test_coding_agent_skill_base.py"
+      - "tests/test_website_operator.py"
+      - "tests/test_website_*.js"
       - "tests/test_saas_*.py"
       - "tests/test_connectome.py"
+      - "tools/aureon_*"
+      - "website/**"
+      - "data/website_operator/**"
+      - "docs/research/schemas/**"
+      - "docs/runbooks/INVESTOR_COPY_GOVERNANCE_APPLICATION.md"
+      - "docs/runbooks/INVESTOR_COPY_REPAIR_CONTRACT.md"
+      - "docs/runbooks/OWNER_SOURCE_RECONCILIATION_DECISION.md"
+      - "docs/runbooks/WEBSITE_OPERATOR.md"
+      - "skills/aureon-harmonic-design-suite/**"
       - "pyproject.toml"
       - ".github/workflows/operator-ci.yml"
   pull_request:
@@ -23,9 +45,31 @@ on:
       - "aureon/saas/**"
       - "aureon/core/aureon_connectome.py"
       - "aureon/core/organism_daemon.py"
+      - "aureon/core/goal_execution_engine.py"
+      - "aureon/autonomous/aureon_capability_growth_loop.py"
+      - "aureon/autonomous/aureon_coding_agent_skill_base.py"
+      - "aureon/autonomous/aureon_public_website_design_runner.py"
+      - "aureon/autonomous/aureon_staged_design_worker_broker.py"
       - "tests/test_operator_*.py"
+      - "tests/test_design_*.py"
+      - "tests/test_public_website_design_runner.py"
+      - "tests/test_staged_design_worker_broker.py"
+      - "tests/test_goal_execution_engine_public_website_delivery.py"
+      - "tests/test_owner_source_reconciliation.py"
+      - "tests/test_coding_agent_skill_base.py"
+      - "tests/test_website_operator.py"
+      - "tests/test_website_*.js"
       - "tests/test_saas_*.py"
       - "tests/test_connectome.py"
+      - "tools/aureon_*"
+      - "website/**"
+      - "data/website_operator/**"
+      - "docs/research/schemas/**"
+      - "docs/runbooks/INVESTOR_COPY_GOVERNANCE_APPLICATION.md"
+      - "docs/runbooks/INVESTOR_COPY_REPAIR_CONTRACT.md"
+      - "docs/runbooks/OWNER_SOURCE_RECONCILIATION_DECISION.md"
+      - "docs/runbooks/WEBSITE_OPERATOR.md"
+      - "skills/aureon-harmonic-design-suite/**"
       - "pyproject.toml"
       - ".github/workflows/operator-ci.yml"
   workflow_dispatch:
@@ -43,6 +87,10 @@ jobs:
         python-version: ["3.12"]
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Node 20 for static website contract tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -58,7 +106,23 @@ jobs:
       - name: Pytest (offline — no keys/network)
         env:
           AUREON_LLM_OFFLINE: "1"
-        run: pytest tests/test_operator_server.py tests/test_operator_cognition.py tests/test_operator_production.py tests/test_operator_wearable.py tests/test_operator_providers_keys.py tests/test_operator_connections.py tests/test_aureon_operator.py tests/test_saas_catalog.py tests/test_saas_gateway.py tests/test_saas_billing.py tests/test_connectome.py tests/test_credential_bootstrap.py tests/test_world_data_keyed.py tests/test_grounded_action.py tests/test_organism_unification.py tests/test_soul.py tests/test_soul_company.py tests/test_soul_benchmark.py tests/test_inner_work.py tests/test_pursuit.py tests/test_approval_queue.py tests/test_cognitive_saas.py tests/test_consciousness_catalog.py tests/test_automation_index.py tests/test_awakening.py tests/test_mycelium_field.py tests/test_linux_packaging.py tests/test_feature_switchboard.py -q
+        run: pytest tests/test_operator_server.py tests/test_operator_cognition.py tests/test_operator_production.py tests/test_operator_wearable.py tests/test_operator_providers_keys.py tests/test_operator_connections.py tests/test_aureon_operator.py tests/test_website_operator.py tests/test_saas_catalog.py tests/test_saas_gateway.py tests/test_saas_billing.py tests/test_connectome.py tests/test_credential_bootstrap.py tests/test_world_data_keyed.py tests/test_grounded_action.py tests/test_organism_unification.py tests/test_soul.py tests/test_soul_company.py tests/test_soul_benchmark.py tests/test_inner_work.py tests/test_pursuit.py tests/test_approval_queue.py tests/test_cognitive_saas.py tests/test_consciousness_catalog.py tests/test_automation_index.py tests/test_awakening.py tests/test_mycelium_field.py tests/test_linux_packaging.py tests/test_feature_switchboard.py -q
+      - name: Governed website-design contract tests
+        env:
+          AUREON_LLM_OFFLINE: "1"
+          AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS: "1"
+        run: pytest -q tests/test_owner_source_reconciliation.py tests/test_website_source_rationalisation.py tests/test_website_runtime_optimisation.py tests/test_design_research_refresh.py tests/test_design_stakeholder_feedback.py tests/test_design_evidence_brief.py tests/test_design_benchmark_evidence.py tests/test_design_candidate_control.py tests/test_design_candidate_claim_surface.py tests/test_design_candidate_initial_gate.py tests/test_design_candidate_visual_review.py tests/test_design_editorial_asset_provenance.py tests/test_design_editorial_asset_candidate_importer.py tests/test_design_investor_copy_quality.py tests/test_design_investor_copy_repair.py tests/test_design_investor_copy_governance.py tests/test_design_hnc_evidence_graph.py tests/test_design_capability_registry.py tests/test_public_website_design_runner.py tests/test_staged_design_worker_broker.py tests/test_goal_execution_engine_public_website_delivery.py tests/test_design_agent_capability_integration.py tests/test_coding_agent_skill_base.py tests/test_capability_growth_loop.py
+      - name: Executable WebsiteOperator design-cycle JSON Schema contract
+        env:
+          AUREON_LLM_OFFLINE: "1"
+          AUREON_SUPPRESS_IMPORT_SIDE_EFFECTS: "1"
+        run: pytest -q tests/test_design_contract_schemas.py
+      - name: Ruff (governed website-design delivery additions)
+        run: ruff check aureon/operator/owner_source_reconciliation.py aureon/operator/website_source_rationalisation.py tools/run-website-source-rationalisation.py aureon/operator/website_runtime_optimisation.py tools/run-website-runtime-optimisation.py aureon/operator/design_research_refresh.py aureon/operator/design_stakeholder_feedback.py aureon/operator/design_evidence_brief.py aureon/operator/design_benchmark_evidence.py aureon/operator/design_candidate_control.py aureon/operator/design_candidate_claim_surface.py aureon/operator/design_candidate_initial_gate.py aureon/operator/design_candidate_visual_review.py aureon/operator/design_editorial_asset_provenance.py aureon/operator/design_editorial_asset_candidate_importer.py aureon/operator/design_investor_copy_quality.py aureon/operator/design_investor_copy_repair.py aureon/operator/design_investor_copy_governance.py aureon/operator/design_hnc_evidence_graph.py aureon/operator/design_capability_registry.py aureon/operator/website_operator.py aureon/autonomous/aureon_coding_agent_skill_base.py aureon/autonomous/aureon_public_website_design_runner.py aureon/autonomous/aureon_staged_design_worker_broker.py aureon/autonomous/aureon_capability_growth_loop.py
+      - name: Mypy (governed website-design source and authority controls)
+        run: mypy --strict aureon/operator/owner_source_reconciliation.py aureon/operator/website_source_rationalisation.py tools/run-website-source-rationalisation.py aureon/operator/website_runtime_optimisation.py tools/run-website-runtime-optimisation.py aureon/operator/design_editorial_asset_provenance.py aureon/operator/design_investor_copy_quality.py aureon/operator/design_investor_copy_repair.py aureon/operator/design_investor_copy_governance.py aureon/operator/design_capability_registry.py aureon/operator/website_operator.py aureon/autonomous/aureon_capability_growth_loop.py aureon/autonomous/aureon_coding_agent_skill_base.py aureon/autonomous/aureon_public_website_design_runner.py aureon/autonomous/aureon_staged_design_worker_broker.py
+      - name: Static website release-contract tests
+        run: node --test tests/test_website_visual_qa_v28.js tests/test_website_composite_gate_v28.js tests/test_website_manual_pixel_review_workbench_v28.js tests/test_candidate_visual_review_v1.js tests/test_website_performance_repeatability_report_v1.js
       - name: Organism unification audit (all connective edges must be live)
         env:
           AUREON_LLM_OFFLINE: "1"

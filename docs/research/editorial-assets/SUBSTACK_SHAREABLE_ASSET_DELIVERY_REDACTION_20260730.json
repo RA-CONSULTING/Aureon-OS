@@ -1,0 +1,58 @@
+{
+  "schema": "aureon.redacted-editorial-asset-delivery-evidence.v1",
+  "snapshot_id": "substack-shareable-assets-delivery-20260730",
+  "observed_at": "2026-07-29T23:30:07Z",
+  "source_channel": "substack-shareable-assets-email",
+  "privacy": {
+    "raw_correspondence": "excluded",
+    "mailbox_identifiers": "excluded",
+    "provider_identifiers": "excluded",
+    "credential_material": "excluded",
+    "private_source_registers": "excluded"
+  },
+  "rights_effect": "none",
+  "items": [
+    {
+      "asset_id": "substack-ai-evidence",
+      "public_post_url": "https://garyleckey.substack.com/p/when-does-an-ai-look-aliveand-what",
+      "source_asset_path": "docs/design-assets/substack-public-art/ai-evidence.jpg",
+      "evidence_code": "shareable-assets-message-observed",
+      "rights_effect": "none"
+    },
+    {
+      "asset_id": "substack-antarctic-working-model",
+      "public_post_url": "https://garyleckey.substack.com/p/the-antarctic-anomaly-that-became",
+      "source_asset_path": "docs/design-assets/substack-public-art/antarctic-working-model.jpg",
+      "evidence_code": "shareable-assets-message-observed",
+      "rights_effect": "none"
+    },
+    {
+      "asset_id": "substack-falsifiability",
+      "public_post_url": "https://garyleckey.substack.com/p/how-do-you-make-an-unconventional",
+      "source_asset_path": "docs/design-assets/substack-public-art/falsifiability.jpg",
+      "evidence_code": "shareable-assets-message-observed",
+      "rights_effect": "none"
+    },
+    {
+      "asset_id": "substack-feedback-loop",
+      "public_post_url": "https://garyleckey.substack.com/p/can-you-replace-a-laser-mirror-with",
+      "source_asset_path": "docs/design-assets/substack-public-art/feedback-loop.jpg",
+      "evidence_code": "shareable-assets-message-observed",
+      "rights_effect": "none"
+    },
+    {
+      "asset_id": "substack-orbital-null-model",
+      "public_post_url": "https://garyleckey.substack.com/p/how-do-you-search-109000-orbits-without",
+      "source_asset_path": "docs/design-assets/substack-public-art/orbital-null-model.jpg",
+      "evidence_code": "shareable-assets-message-observed",
+      "rights_effect": "none"
+    },
+    {
+      "asset_id": "substack-research-index",
+      "public_post_url": "https://garyleckey.substack.com/p/the-harmonic-nexus-research-index",
+      "source_asset_path": "docs/design-assets/substack-public-art/research-index.jpg",
+      "evidence_code": "shareable-assets-message-observed",
+      "rights_effect": "none"
+    }
+  ]
+}
