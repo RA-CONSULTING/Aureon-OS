@@ -131,7 +131,7 @@ contents and are excluded from Git:
 | Local-only file | Bytes | SHA-256 | Ignore source |
 | --- | ---: | --- | --- |
 | `.env` | 14,853 | `0967c7ec0df3669b80a2b0e46e3783a8a441bb59002d8901e32328c5d54257f2` | `.gitignore` |
-| `.env1` | 1,232 | `b3334d906cf7fe7ed10ba134eacefa57020dd3feb605a2da48c3dfa9ec141aa5` | clone-local `.git/info/exclude` |
+| `.env1` | 1,232 | `b3334d906cf7fe7ed10ba134eacefa57020dd3feb605a2da48c3dfa9ec141aa5` | `.gitignore` |
 
 ## Validation record
 
@@ -148,7 +148,7 @@ The following completed under explicit offline/dry-run/audit/import-suppressed c
 - isolated `Kings_Accounting_Suite`: 12 passed
 - appliance packaging/workflow: 31 passed
 - canonical bootstrap and unified organism builder: 7 passed
-- dormant grant/approval/connectors/gates/identity/portal bundle: 879 passed
+- final clean-clone dormant grant/approval/connectors/gates/identity/portal bundle: 879 passed
 - forward-ported JSON, handover, local-action, SaaS coverage, approval, and tenant-security
   tests: passed
 - `git fsck --no-dangling --no-reflogs`: passed
