@@ -1,0 +1,26 @@
+Self-hosted webfont notices
+===========================
+
+Manrope
+-------
+Copyright 2018 The Manrope Project Authors
+Licensed under the SIL Open Font License, Version 1.1.
+Source: https://github.com/sharanda/manrope
+License: https://openfontlicense.org/open-font-license-official-text/
+
+IBM Plex Mono
+-------------
+Copyright 2017 IBM Corp.
+Licensed under the SIL Open Font License, Version 1.1.
+Source: https://github.com/IBM/plex
+License: https://github.com/IBM/plex/blob/master/LICENSE.txt
+
+Source Serif 4
+--------------
+Copyright 2014-2021 Adobe
+Licensed under the SIL Open Font License, Version 1.1.
+Source: https://github.com/adobe-fonts/source-serif
+Package: @fontsource-variable/source-serif-4 5.3.0
+
+The website serves local WOFF2 Latin subsets only. It does not load a
+third-party font CDN.

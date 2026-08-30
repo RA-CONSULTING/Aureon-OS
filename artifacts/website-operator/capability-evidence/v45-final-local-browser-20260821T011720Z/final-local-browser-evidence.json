@@ -1,0 +1,781 @@
+{
+  "schema": "aureon.local-browser-evidence.v1",
+  "run_id": "v45-final-local-browser-20260821T011720Z",
+  "captured_at_utc": "2026-08-21T01:17:20Z",
+  "scope": {
+    "kind": "local_preview",
+    "origin": "http://127.0.0.1:8765",
+    "homepl_live": false,
+    "statement": "This evidence does not prove Home.pl deployment or live read-back."
+  },
+  "source": {
+    "head_commit": "72ccc28de9b3ccc2a20a5007d9d9992221589ac8",
+    "working_tree_note": "Critical website source was hash-stable across a second check; evidence/copy edits were declared complete before capture.",
+    "files": [
+      {
+        "path": "website/index.html",
+        "sha256": "40a00d5c8315273d0a8bc9060b3f12fa1c956e27487b18c217c1b32ad1045ffe"
+      },
+      {
+        "path": "website/funding/investor-deck/index.html",
+        "sha256": "12703ab79676865b1b444bc81475f73be7c733975e6f82eb4be1cb924d9a54d2"
+      },
+      {
+        "path": "website/projects/index.html",
+        "sha256": "6d4e7f0e8c5783023c3c933ffe4956419e8141c76f5ebc1bcb239dae08820f13"
+      },
+      {
+        "path": "website/research/index.html",
+        "sha256": "1d60c9d690ae99e8c567de69e1e11ca2ef101d50087c9fb5a0c675399bdc4b4d"
+      },
+      {
+        "path": "website/styles.css",
+        "sha256": "ffdb750c05fc403060986d693b17f8d984e7937ea4305d9a52c5dc695119b29b"
+      },
+      {
+        "path": "website/tokens.css",
+        "sha256": "d6bae043e849677b6883bfd724cfaa24fd34b1a778eb5d9545a8afc05a2e3e7e"
+      },
+      {
+        "path": "website/script.js",
+        "sha256": "52b60a49579c1ecd34610a754b7dc1a486b09c27e00a9793a98aecfe2b3d8291"
+      }
+    ]
+  },
+  "visual": {
+    "manifest": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/visual-regression-manifest.json",
+    "case_count": 8,
+    "baseline_policy": "First V45 run: baseline=current by explicit policy; future runs compare against these files.",
+    "viewport_note": "Declared layout viewports are 1440x900 and 390x844. Browser screenshot PNGs exclude scrollbar/browser viewport chrome; exact PNG dimensions are recorded per case.",
+    "all_difference_ratios_zero": true,
+    "all_document_horizontal_overflow_zero": true,
+    "all_uncontained_overflow_zero": true
+  },
+  "performance": {
+    "measurement": "Chrome PerformanceObserver buffered LCP and layout-shift entries; medians of three local navigations.",
+    "field_inp": {
+      "status": "unavailable",
+      "reason": "A short local lab session does not produce representative field INP."
+    },
+    "synthetic_interaction": {
+      "measurement": "Tab keydown to skip-link focus",
+      "classification": "local synthetic interaction latency, not INP"
+    },
+    "cases": [
+      {
+        "id": "home-desktop",
+        "route": "/",
+        "viewport": {
+          "device_pixel_ratio": 1,
+          "height": 900,
+          "width": 1440
+        },
+        "lcp_ms": 412,
+        "cls": 0.015640679285934135,
+        "navigation_duration_ms": 705.5999999642372,
+        "resource_count": 10,
+        "synthetic_interaction_latency_ms": 3.399999976158142,
+        "synthetic_label": "keyboard Tab keydown to skip-link focus; local synthetic lab timing; not field INP",
+        "reduced_motion": {
+          "active_animation_count": 0,
+          "active_animations": [],
+          "media_matches": true
+        },
+        "h1": {
+          "text": "One evidence-native core. Multiple deep-tech systems.",
+          "matches_expected": true,
+          "visible": true
+        },
+        "samples": [
+          {
+            "run": 1,
+            "lcp_ms": 412,
+            "cls": 0.015640679285934135,
+            "navigation_duration_ms": 705.5999999642372,
+            "synthetic_interaction_latency_ms": null
+          },
+          {
+            "run": 2,
+            "lcp_ms": 604,
+            "cls": 0.015640679285934135,
+            "navigation_duration_ms": 810.6999999880791,
+            "synthetic_interaction_latency_ms": 0
+          },
+          {
+            "run": 3,
+            "lcp_ms": 348,
+            "cls": 0,
+            "navigation_duration_ms": 537.8999999761581,
+            "synthetic_interaction_latency_ms": 6.700000047683716
+          }
+        ],
+        "sample_policy": "LCP, CLS and navigation are medians of three local browser navigations; synthetic latency is the median of three independent keydown-to-focus samples",
+        "synthetic_samples": [
+          3.599999964237213,
+          3.399999976158142,
+          2.099999964237213
+        ]
+      },
+      {
+        "id": "investor-desktop",
+        "route": "/funding/investor-deck/",
+        "viewport": {
+          "device_pixel_ratio": 1,
+          "height": 900,
+          "width": 1440
+        },
+        "lcp_ms": 364,
+        "cls": 0,
+        "navigation_duration_ms": 509.10000002384186,
+        "resource_count": 10,
+        "synthetic_interaction_latency_ms": 4.100000023841858,
+        "synthetic_label": "keyboard Tab keydown to skip-link focus; local synthetic lab timing; not field INP",
+        "reduced_motion": {
+          "active_animation_count": 0,
+          "active_animations": [],
+          "media_matches": true
+        },
+        "h1": {
+          "text": "One evidence-native core. Multiple deep-tech paths to value.",
+          "matches_expected": true,
+          "visible": true
+        },
+        "samples": [
+          {
+            "run": 1,
+            "lcp_ms": 844,
+            "cls": 0,
+            "navigation_duration_ms": 748.3999999761581,
+            "synthetic_interaction_latency_ms": null
+          },
+          {
+            "run": 2,
+            "lcp_ms": 364,
+            "cls": 0,
+            "navigation_duration_ms": 303.19999998807907,
+            "synthetic_interaction_latency_ms": 5.300000011920929
+          },
+          {
+            "run": 3,
+            "lcp_ms": 288,
+            "cls": 0,
+            "navigation_duration_ms": 509.10000002384186,
+            "synthetic_interaction_latency_ms": 44.60000002384186
+          }
+        ],
+        "sample_policy": "LCP, CLS and navigation are medians of three local browser navigations; synthetic latency is the median of three independent keydown-to-focus samples",
+        "synthetic_samples": [
+          4.5,
+          3.099999964237213,
+          4.100000023841858
+        ]
+      },
+      {
+        "id": "projects-desktop",
+        "route": "/projects/",
+        "viewport": {
+          "device_pixel_ratio": 1,
+          "height": 900,
+          "width": 1440
+        },
+        "lcp_ms": 416,
+        "cls": 0,
+        "navigation_duration_ms": 1023.6999999880792,
+        "resource_count": 8,
+        "synthetic_interaction_latency_ms": 3.800000011920929,
+        "synthetic_label": "keyboard Tab keydown to skip-link focus; local synthetic lab timing; not field INP",
+        "reduced_motion": {
+          "active_animation_count": 0,
+          "active_animations": [],
+          "media_matches": true
+        },
+        "h1": {
+          "text": "One architecture. Evidence, signals and deep-tech systems.",
+          "matches_expected": true,
+          "visible": true
+        },
+        "samples": [
+          {
+            "run": 1,
+            "lcp_ms": 9216,
+            "cls": 0,
+            "navigation_duration_ms": 9639.30000001192,
+            "synthetic_interaction_latency_ms": null
+          },
+          {
+            "run": 2,
+            "lcp_ms": 344,
+            "cls": 0,
+            "navigation_duration_ms": 313.60000002384186,
+            "synthetic_interaction_latency_ms": 4.599999964237213
+          },
+          {
+            "run": 3,
+            "lcp_ms": 416,
+            "cls": 0,
+            "navigation_duration_ms": 1023.6999999880792,
+            "synthetic_interaction_latency_ms": 12.699999988079073
+          }
+        ],
+        "sample_policy": "LCP, CLS and navigation are medians of three local browser navigations; synthetic latency is the median of three independent keydown-to-focus samples",
+        "synthetic_samples": [
+          4.800000011920929,
+          3.800000011920929,
+          2.5
+        ]
+      },
+      {
+        "id": "research-desktop",
+        "route": "/research/",
+        "viewport": {
+          "device_pixel_ratio": 1,
+          "height": 900,
+          "width": 1440
+        },
+        "lcp_ms": 564,
+        "cls": 0,
+        "navigation_duration_ms": 1091.5999999642372,
+        "resource_count": 12,
+        "synthetic_interaction_latency_ms": 3.100000023841858,
+        "synthetic_label": "keyboard Tab keydown to skip-link focus; local synthetic lab timing; not field INP",
+        "reduced_motion": {
+          "active_animation_count": 0,
+          "active_animations": [],
+          "media_matches": true
+        },
+        "h1": {
+          "text": "Make the ambitious question testable before asking anyone to believe it.",
+          "matches_expected": true,
+          "visible": true
+        },
+        "samples": [
+          {
+            "run": 1,
+            "lcp_ms": 796,
+            "cls": 0,
+            "navigation_duration_ms": 1170.300000011921,
+            "synthetic_interaction_latency_ms": null
+          },
+          {
+            "run": 2,
+            "lcp_ms": 292,
+            "cls": 0,
+            "navigation_duration_ms": 460.60000002384186,
+            "synthetic_interaction_latency_ms": 0
+          },
+          {
+            "run": 3,
+            "lcp_ms": 564,
+            "cls": 0,
+            "navigation_duration_ms": 1091.5999999642372,
+            "synthetic_interaction_latency_ms": 0
+          }
+        ],
+        "sample_policy": "LCP, CLS and navigation are medians of three local browser navigations; synthetic latency is the median of three independent keydown-to-focus samples",
+        "synthetic_samples": [
+          3.100000023841858,
+          4.100000023841858,
+          2.699999988079071
+        ]
+      },
+      {
+        "id": "home-mobile",
+        "route": "/",
+        "viewport": {
+          "device_pixel_ratio": 1,
+          "height": 844,
+          "width": 390
+        },
+        "lcp_ms": 320,
+        "cls": 0,
+        "navigation_duration_ms": 475.199999988079,
+        "resource_count": 11,
+        "synthetic_interaction_latency_ms": 2.800000011920929,
+        "synthetic_label": "keyboard Tab keydown to skip-link focus; local synthetic lab timing; not field INP",
+        "reduced_motion": {
+          "active_animation_count": 0,
+          "active_animations": [],
+          "media_matches": true
+        },
+        "h1": {
+          "text": "One evidence-native core. Multiple deep-tech systems.",
+          "matches_expected": true,
+          "visible": true
+        },
+        "samples": [
+          {
+            "run": 1,
+            "lcp_ms": 320,
+            "cls": 0,
+            "navigation_duration_ms": 428.10000002384186,
+            "synthetic_interaction_latency_ms": null
+          },
+          {
+            "run": 2,
+            "lcp_ms": 364,
+            "cls": 0,
+            "navigation_duration_ms": 475.199999988079,
+            "synthetic_interaction_latency_ms": 7.300000011920929
+          },
+          {
+            "run": 3,
+            "lcp_ms": 296,
+            "cls": 0,
+            "navigation_duration_ms": 553.6000000238419,
+            "synthetic_interaction_latency_ms": 15.399999976158142
+          }
+        ],
+        "sample_policy": "LCP, CLS and navigation are medians of three local browser navigations; synthetic latency is the median of three independent keydown-to-focus samples",
+        "synthetic_samples": [
+          2.800000011920929,
+          2.699999988079071,
+          5.100000023841858
+        ]
+      },
+      {
+        "id": "investor-mobile",
+        "route": "/funding/investor-deck/",
+        "viewport": {
+          "device_pixel_ratio": 1,
+          "height": 844,
+          "width": 390
+        },
+        "lcp_ms": 328,
+        "cls": 0,
+        "navigation_duration_ms": 518.5,
+        "resource_count": 10,
+        "synthetic_interaction_latency_ms": 2.600000023841858,
+        "synthetic_label": "keyboard Tab keydown to skip-link focus; local synthetic lab timing; not field INP",
+        "reduced_motion": {
+          "active_animation_count": 0,
+          "active_animations": [],
+          "media_matches": true
+        },
+        "h1": {
+          "text": "One evidence-native core. Multiple deep-tech paths to value.",
+          "matches_expected": true,
+          "visible": true
+        },
+        "samples": [
+          {
+            "run": 1,
+            "lcp_ms": 344,
+            "cls": 0,
+            "navigation_duration_ms": 472,
+            "synthetic_interaction_latency_ms": null
+          },
+          {
+            "run": 2,
+            "lcp_ms": 292,
+            "cls": 0,
+            "navigation_duration_ms": 518.5,
+            "synthetic_interaction_latency_ms": 12
+          },
+          {
+            "run": 3,
+            "lcp_ms": 328,
+            "cls": 0,
+            "navigation_duration_ms": 589.1999999880791,
+            "synthetic_interaction_latency_ms": 7.100000023841858
+          }
+        ],
+        "sample_policy": "LCP, CLS and navigation are medians of three local browser navigations; synthetic latency is the median of three independent keydown-to-focus samples",
+        "synthetic_samples": [
+          5.399999976158142,
+          2,
+          2.600000023841858
+        ]
+      },
+      {
+        "id": "projects-mobile",
+        "route": "/projects/",
+        "viewport": {
+          "device_pixel_ratio": 1,
+          "height": 844,
+          "width": 390
+        },
+        "lcp_ms": 304,
+        "cls": 0,
+        "navigation_duration_ms": 446.10000002384186,
+        "resource_count": 8,
+        "synthetic_interaction_latency_ms": 2.699999988079071,
+        "synthetic_label": "keyboard Tab keydown to skip-link focus; local synthetic lab timing; not field INP",
+        "reduced_motion": {
+          "active_animation_count": 0,
+          "active_animations": [],
+          "media_matches": true
+        },
+        "h1": {
+          "text": "One architecture. Evidence, signals and deep-tech systems.",
+          "matches_expected": true,
+          "visible": true
+        },
+        "samples": [
+          {
+            "run": 1,
+            "lcp_ms": 304,
+            "cls": 0,
+            "navigation_duration_ms": 388.300000011921,
+            "synthetic_interaction_latency_ms": null
+          },
+          {
+            "run": 2,
+            "lcp_ms": 308,
+            "cls": 0,
+            "navigation_duration_ms": 446.10000002384186,
+            "synthetic_interaction_latency_ms": 8
+          },
+          {
+            "run": 3,
+            "lcp_ms": 236,
+            "cls": 0,
+            "navigation_duration_ms": 472.2999999523163,
+            "synthetic_interaction_latency_ms": 12.600000023841858
+          }
+        ],
+        "sample_policy": "LCP, CLS and navigation are medians of three local browser navigations; synthetic latency is the median of three independent keydown-to-focus samples",
+        "synthetic_samples": [
+          2.699999988079071,
+          2,
+          2.699999988079071
+        ]
+      },
+      {
+        "id": "research-mobile",
+        "route": "/research/",
+        "viewport": {
+          "device_pixel_ratio": 1,
+          "height": 844,
+          "width": 390
+        },
+        "lcp_ms": 252,
+        "cls": 0,
+        "navigation_duration_ms": 582.8000000119209,
+        "resource_count": 12,
+        "synthetic_interaction_latency_ms": 4.600000023841858,
+        "synthetic_label": "keyboard Tab keydown to skip-link focus; local synthetic lab timing; not field INP",
+        "reduced_motion": {
+          "active_animation_count": 0,
+          "active_animations": [],
+          "media_matches": true
+        },
+        "h1": {
+          "text": "Make the ambitious question testable before asking anyone to believe it.",
+          "matches_expected": true,
+          "visible": true
+        },
+        "samples": [
+          {
+            "run": 1,
+            "lcp_ms": 248,
+            "cls": 0,
+            "navigation_duration_ms": 422.300000011921,
+            "synthetic_interaction_latency_ms": null
+          },
+          {
+            "run": 2,
+            "lcp_ms": 296,
+            "cls": 0,
+            "navigation_duration_ms": 582.8000000119209,
+            "synthetic_interaction_latency_ms": 138.80000001192093
+          },
+          {
+            "run": 3,
+            "lcp_ms": 252,
+            "cls": 0,
+            "navigation_duration_ms": 611,
+            "synthetic_interaction_latency_ms": 0
+          }
+        ],
+        "sample_policy": "LCP, CLS and navigation are medians of three local browser navigations; synthetic latency is the median of three independent keydown-to-focus samples",
+        "synthetic_samples": [
+          5.199999988079071,
+          4.600000023841858,
+          2.899999976158142
+        ]
+      }
+    ]
+  },
+  "accessibility": {
+    "reduced_motion": {
+      "emulated": true,
+      "all_cases_media_match": true,
+      "all_cases_active_animation_count_zero": true
+    },
+    "keyboard_skip_navigation": [
+      {
+        "id": "home-desktop",
+        "first_tab": {
+          "cls": "skip-link",
+          "href": "#main-content",
+          "id": null,
+          "tag": "A",
+          "text": "Skip to content",
+          "visible": true
+        },
+        "skip_activation": {
+          "active_id": null,
+          "active_tag": "BODY",
+          "hash": "#main-content",
+          "main_visible": true
+        },
+        "nav": {
+          "link_count": 7,
+          "positive_tabindex_count": 0,
+          "skip_href": "#main-content",
+          "visible_link_count": 7
+        }
+      },
+      {
+        "id": "investor-desktop",
+        "first_tab": {
+          "cls": "skip-link",
+          "href": "#main-content",
+          "id": null,
+          "tag": "A",
+          "text": "Skip to content",
+          "visible": true
+        },
+        "skip_activation": {
+          "active_id": null,
+          "active_tag": "BODY",
+          "hash": "#main-content",
+          "main_visible": true
+        },
+        "nav": {
+          "link_count": 7,
+          "positive_tabindex_count": 0,
+          "skip_href": "#main-content",
+          "visible_link_count": 7
+        }
+      },
+      {
+        "id": "projects-desktop",
+        "first_tab": {
+          "cls": "skip-link",
+          "href": "#main-content",
+          "id": null,
+          "tag": "A",
+          "text": "Skip to content",
+          "visible": true
+        },
+        "skip_activation": {
+          "active_id": null,
+          "active_tag": "BODY",
+          "hash": "#main-content",
+          "main_visible": true
+        },
+        "nav": {
+          "link_count": 7,
+          "positive_tabindex_count": 0,
+          "skip_href": "#main-content",
+          "visible_link_count": 7
+        }
+      },
+      {
+        "id": "research-desktop",
+        "first_tab": {
+          "cls": "skip-link",
+          "href": "#main-content",
+          "id": null,
+          "tag": "A",
+          "text": "Skip to content",
+          "visible": true
+        },
+        "skip_activation": {
+          "active_id": null,
+          "active_tag": "BODY",
+          "hash": "#main-content",
+          "main_visible": true
+        },
+        "nav": {
+          "link_count": 7,
+          "positive_tabindex_count": 0,
+          "skip_href": "#main-content",
+          "visible_link_count": 7
+        }
+      },
+      {
+        "id": "home-mobile",
+        "first_tab": {
+          "cls": "skip-link",
+          "href": "#main-content",
+          "id": null,
+          "tag": "A",
+          "text": "Skip to content",
+          "visible": true
+        },
+        "skip_activation": {
+          "active_id": null,
+          "active_tag": "BODY",
+          "hash": "#main-content",
+          "main_visible": true
+        },
+        "nav": {
+          "link_count": 7,
+          "positive_tabindex_count": 0,
+          "skip_href": "#main-content",
+          "visible_link_count": 1
+        }
+      },
+      {
+        "id": "investor-mobile",
+        "first_tab": {
+          "cls": "skip-link",
+          "href": "#main-content",
+          "id": null,
+          "tag": "A",
+          "text": "Skip to content",
+          "visible": true
+        },
+        "skip_activation": {
+          "active_id": null,
+          "active_tag": "BODY",
+          "hash": "#main-content",
+          "main_visible": true
+        },
+        "nav": {
+          "link_count": 7,
+          "positive_tabindex_count": 0,
+          "skip_href": "#main-content",
+          "visible_link_count": 1
+        }
+      },
+      {
+        "id": "projects-mobile",
+        "first_tab": {
+          "cls": "skip-link",
+          "href": "#main-content",
+          "id": null,
+          "tag": "A",
+          "text": "Skip to content",
+          "visible": true
+        },
+        "skip_activation": {
+          "active_id": null,
+          "active_tag": "BODY",
+          "hash": "#main-content",
+          "main_visible": true
+        },
+        "nav": {
+          "link_count": 7,
+          "positive_tabindex_count": 0,
+          "skip_href": "#main-content",
+          "visible_link_count": 1
+        }
+      },
+      {
+        "id": "research-mobile",
+        "first_tab": {
+          "cls": "skip-link",
+          "href": "#main-content",
+          "id": null,
+          "tag": "A",
+          "text": "Skip to content",
+          "visible": true
+        },
+        "skip_activation": {
+          "active_id": null,
+          "active_tag": "BODY",
+          "hash": "#main-content",
+          "main_visible": true
+        },
+        "nav": {
+          "link_count": 7,
+          "positive_tabindex_count": 0,
+          "skip_href": "#main-content",
+          "visible_link_count": 1
+        }
+      }
+    ],
+    "no_javascript": [
+      {
+        "id": "home-desktop-nojs",
+        "route": "/",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "javascript": "disabled",
+        "h1": "One evidence-native core. Multiple deep-tech systems.",
+        "h1_matches_expected": true,
+        "h1_visible": true,
+        "main_visible": true,
+        "main_inner_text_chars": 10498,
+        "main_text_content_chars": 14084,
+        "section_count": 10,
+        "visible_section_count": 10,
+        "reveal_enabled_class": false,
+        "screenshot": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/nojs/home-desktop.png",
+        "screenshot_sha256": "5778f26a85722020d5d6ebd97633248a6d369be2eb484d83e8f0cf458662aa35"
+      },
+      {
+        "id": "investor-desktop-nojs",
+        "route": "/funding/investor-deck/",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "javascript": "disabled",
+        "h1": "One evidence-native core. Multiple deep-tech paths to value.",
+        "h1_matches_expected": true,
+        "h1_visible": true,
+        "main_visible": true,
+        "main_inner_text_chars": 16463,
+        "main_text_content_chars": 19363,
+        "section_count": 14,
+        "visible_section_count": 14,
+        "reveal_enabled_class": false,
+        "screenshot": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/nojs/investor-desktop.png",
+        "screenshot_sha256": "f9a257e73c6cc503a6f3dfd0341645d3f9f5fb5060ae0bc0d29ccde16714da0f"
+      },
+      {
+        "id": "projects-desktop-nojs",
+        "route": "/projects/",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "javascript": "disabled",
+        "h1": "One architecture. Evidence, signals and deep-tech systems.",
+        "h1_matches_expected": true,
+        "h1_visible": true,
+        "main_visible": true,
+        "main_inner_text_chars": 11544,
+        "main_text_content_chars": 15843,
+        "section_count": 4,
+        "visible_section_count": 4,
+        "reveal_enabled_class": false,
+        "screenshot": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/nojs/projects-desktop.png",
+        "screenshot_sha256": "fcf66ddc3d3d6d8cb36d8e611c6214e973fd7c1902cef9c3ebdf4b2878902f1b"
+      },
+      {
+        "id": "research-desktop-nojs",
+        "route": "/research/",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "javascript": "disabled",
+        "h1": "Make the ambitious question testable before asking anyone to believe it.",
+        "h1_matches_expected": true,
+        "h1_visible": true,
+        "main_visible": true,
+        "main_inner_text_chars": 11780,
+        "main_text_content_chars": 13604,
+        "section_count": 11,
+        "visible_section_count": 11,
+        "reveal_enabled_class": false,
+        "screenshot": "artifacts/website-operator/capability-evidence/v45-final-local-browser-20260821T011720Z/nojs/research-desktop.png",
+        "screenshot_sha256": "7ed4ab70533a5a4117685317302c55dd8b99de1806576effc7d0e785f19118ca"
+      }
+    ],
+    "no_js_summary": {
+      "all_h1_match": true,
+      "all_h1_visible": true,
+      "all_main_visible": true,
+      "all_sections_visible": true,
+      "reveal_class_absent": true
+    }
+  }
+}

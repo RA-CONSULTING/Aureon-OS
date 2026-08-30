@@ -1,0 +1,263 @@
+{
+  "schema": "aureon-sector-blades-v1",
+  "positioning": {
+    "company": "Aureon Zorza Technologies is a research-led systems and innovation company.",
+    "thesis": "One proposed common systems grammar. One local-first software organism. One cross-cutting evidence control plane. Many high-consequence applications.",
+    "research_framework": {
+      "name": "Harmonic Nexus Core",
+      "role": "Proposed common systems grammar",
+      "evidence_state": "Company-authored and source-linked research proposition"
+    },
+    "delivery_system": {
+      "name": "Aureon OS",
+      "role": "Company-built local-first software organism",
+      "evidence_state": "Inspectable public implementation"
+    },
+    "evidence_control_plane": {
+      "name": "Evidence OS",
+      "role": "Cross-cutting provenance, authority and review control plane within Aureon OS",
+      "evidence_state": "Company-built architecture with independent assurance still open"
+    },
+    "application_model": "Mission-specific blades translate the shared method into bounded sector propositions and prototypes.",
+    "feedback_loop": "HNC research question → Aureon OS workflow → Evidence OS source lineage → claim state → human authority → bounded action → retained receipt → new evidence.",
+    "core_owner": "Evidence OS, operating as the cross-cutting control plane within Aureon OS",
+    "core": [
+      "Source lineage",
+      "Claim-state control",
+      "Human review authority",
+      "Bounded action",
+      "Retained decision receipt"
+    ],
+    "evidence_states": [
+      {
+        "id": "implemented-core",
+        "label": "Implemented core",
+        "meaning": "Company-built source, workflow or control logic is inspectable."
+      },
+      {
+        "id": "tested-prototype",
+        "label": "Tested prototype",
+        "meaning": "A bounded prototype or protocol has local test evidence; domain outcomes remain unproven."
+      },
+      {
+        "id": "sector-programme",
+        "label": "Sector programme",
+        "meaning": "A defined use case and next validation route exist; no customer deployment or outcome is implied."
+      },
+      {
+        "id": "open-research-hypothesis",
+        "label": "Open research hypothesis",
+        "meaning": "An attributable proposition and test route exist; independent validation remains open."
+      }
+    ],
+    "boundary": "HNC is Aureon's proposed common systems grammar, not established universal science. Aureon OS is the company-built local-first software organism, not proof of autonomous production operation. Evidence OS is the provenance, authority and review control plane within Aureon OS, not the whole company or independent assurance. A blade is an evidence-labelled application route, not a customer deployment, partnership, investment outcome or independent validation."
+  },
+  "lanes": [
+    {
+      "id": "commercial-now",
+      "label": "Available for scoped evaluation",
+      "description": "Company-owned operating workflows that can be inspected and scoped now. No customer outcome or production certification is implied."
+    },
+    {
+      "id": "sector-partner",
+      "label": "Scalable sector theses",
+      "description": "Mission-specific applications of the same core. Commercial validation and qualified delivery partners remain external proof gates."
+    },
+    {
+      "id": "gated-deep-tech",
+      "label": "Gated deep-tech options",
+      "description": "Research-led programmes that advance only through explicit physical, technical, partner and independent-authority proof gates."
+    }
+  ],
+  "blades": [
+    {
+      "id": "evidence-operations",
+      "lane": "commercial-now",
+      "name": "Grant and diligence evidence operations",
+      "evidence_state": "Implemented core",
+      "buyer": "Evidence-heavy SMEs, funders, technical reviewers and delivery teams",
+      "problem_or_use_case": "Turn scattered evidence into a source-linked review packet with a named human approval gate.",
+      "shared_core": ["Source lineage", "Claim-state control", "Human review authority", "Retained decision receipt"],
+      "strategic_relevance": "A scoped commercial entry point for evidence-heavy organisations that need faster review without sacrificing provenance or human authority.",
+      "public_evidence_basis": "Public source and architecture material establish the reusable evidence-control mechanism and its stated boundaries.",
+      "next_validation": "Run one design-partner workflow end to end and measure review time, source coverage and unresolved-gap detection.",
+      "public_boundary": "Inspectable source and a company-built implementation do not establish production deployment, customer adoption, revenue or independent security validation.",
+      "source_links": [
+        {"label": "Inspect the shared core", "href": "projects/#core"},
+        {"label": "Explore strategic route themes", "href": "funding/#route-register"},
+        {"label": "Inspect public source", "href": "https://github.com/RA-CONSULTING/Aureon-OS"}
+      ]
+    },
+    {
+      "id": "research-assurance",
+      "lane": "commercial-now",
+      "name": "Research and technical assurance",
+      "evidence_state": "Implemented core",
+      "buyer": "R&D teams, research leads, technical reviewers and innovation programmes",
+      "problem_or_use_case": "Keep hypotheses, sources, null models, test criteria, corrections and reviewer decisions connected.",
+      "shared_core": ["Source lineage", "Claim-state control", "Human review authority", "Retained decision receipt"],
+      "strategic_relevance": "Extends the same evidence controls into technical diligence and research assurance, where review quality depends on traceable sources and explicit stopping conditions.",
+      "public_evidence_basis": "ORCID and Zenodo establish attribution and public record availability; the public notebook explains methods and versioned corrections.",
+      "next_validation": "Select one bounded claim, agree a reproduction method with an independent reviewer and publish the result.",
+      "public_boundary": "Publication proves existence and attribution; it does not prove peer review, scientific validity, engineering readiness or commercial value.",
+      "source_links": [
+        {"label": "Open the research method", "href": "research/"},
+        {"label": "Review claim states", "href": "diligence/#evidence-language"},
+        {"label": "Open ORCID", "href": "https://orcid.org/0009-0004-2792-4649"}
+      ]
+    },
+    {
+      "id": "ai-governance-compute",
+      "lane": "sector-partner",
+      "name": "AI governance and compute-scale evaluation",
+      "evidence_state": "Sector programme",
+      "buyer": "AI product teams, assurance leads and research-compute programmes",
+      "problem_or_use_case": "Preserve test provenance, model-output context, human approval and export records during trustworthy-AI evaluation.",
+      "shared_core": ["Source lineage", "Claim-state control", "Human review authority", "Bounded action"],
+      "strategic_relevance": "Frames how Aureon's provenance and human-authority controls could support trustworthy-AI evaluation at greater scale.",
+      "public_evidence_basis": "Public code and architecture establish the basis for a governed evaluation proposition.",
+      "next_validation": "Secure a bounded allocation, execute a reproducible evaluation and retain the complete review record.",
+      "public_boundary": "The public thesis is not a claim of compute access, funding, validated performance or programme endorsement.",
+      "source_links": [
+        {"label": "Explore the public route map", "href": "funding/#route-register"},
+        {"label": "Inspect the operating model", "href": "projects/#core"}
+      ]
+    },
+    {
+      "id": "advanced-connectivity",
+      "lane": "sector-partner",
+      "name": "Secure and resilient advanced connectivity",
+      "evidence_state": "Sector programme",
+      "buyer": "Connectivity innovators, infrastructure teams and programme consortia",
+      "problem_or_use_case": "Create inspectable assurance records for network evidence, operational claims and human release decisions.",
+      "shared_core": ["Source lineage", "Claim-state control", "Human review authority", "Retained decision receipt"],
+      "strategic_relevance": "Frames an inspectable-assurance proposition for resilient connectivity, where operational claims must remain attributable and reviewable.",
+      "public_evidence_basis": "The public shared-core architecture establishes the assurance basis for a connectivity proposition.",
+      "next_validation": "Identify a design partner and validate one bounded connectivity workflow.",
+      "public_boundary": "The public thesis is not a claim of network deployment, partner appointment or performance results.",
+      "source_links": [
+        {"label": "Explore the public route map", "href": "funding/#route-register"},
+        {"label": "Compare all application blades", "href": "projects/#blades"}
+      ]
+    },
+    {
+      "id": "createch",
+      "lane": "sector-partner",
+      "name": "Evidence Studio for Createch AI workflows",
+      "evidence_state": "Sector programme",
+      "buyer": "Creative studios, cultural organisations and AI-assisted production teams",
+      "problem_or_use_case": "Keep source rights, model contribution, review authority and approved outputs inspectable across creative workflows.",
+      "shared_core": ["Source lineage", "Claim-state control", "Human review authority", "Bounded action"],
+      "strategic_relevance": "Frames a rights-aware assurance layer for creative AI workflows without separating provenance from approval.",
+      "public_evidence_basis": "The public shared-core architecture establishes the provenance and authority basis for a Createch proposition.",
+      "next_validation": "Run a rights-aware workflow with a design partner and measure provenance coverage and approval-cycle reduction.",
+      "public_boundary": "The public thesis is not a claim of customer deployment, rights clearance or validated outcome.",
+      "source_links": [
+        {"label": "Explore the public route map", "href": "funding/#route-register"},
+        {"label": "See the shared control core", "href": "projects/#core"}
+      ]
+    },
+    {
+      "id": "energy-flexibility",
+      "lane": "sector-partner",
+      "name": "Energy flexibility assurance",
+      "evidence_state": "Sector programme",
+      "buyer": "Flexibility providers, energy innovators and programme delivery teams",
+      "problem_or_use_case": "Attach provenance, review conditions and human authority to consumer-led flexibility evidence.",
+      "shared_core": ["Source lineage", "Claim-state control", "Human review authority", "Retained decision receipt"],
+      "strategic_relevance": "Frames evidence governance for flexibility decisions where data lineage, consent and accountable authority determine trust.",
+      "public_evidence_basis": "The public shared-core architecture establishes an evidence-governance basis for an energy-flexibility proposition.",
+      "next_validation": "Agree a lawful data boundary and validate one auditable flexibility decision with a sector partner.",
+      "public_boundary": "The public thesis is not a claim of operational deployment, customer evidence or energy-performance results.",
+      "source_links": [
+        {"label": "Explore the public route map", "href": "funding/#route-register"},
+        {"label": "Review evidence boundaries", "href": "diligence/#evidence-language"}
+      ]
+    },
+    {
+      "id": "sen-evidence",
+      "lane": "sector-partner",
+      "name": "Human-in-the-loop SEN evidence support",
+      "evidence_state": "Sector programme",
+      "buyer": "Education innovators, local services and accountable planning teams",
+      "problem_or_use_case": "Support earlier, evidence-led planning while keeping sensitive decisions with qualified humans.",
+      "shared_core": ["Source lineage", "Claim-state control", "Human review authority", "Bounded action"],
+      "strategic_relevance": "Frames a non-diagnostic, human-gated evidence-support proposition for consequential education planning while retaining professional authority.",
+      "public_evidence_basis": "The public shared-core architecture establishes the human-authority and evidence basis for an accountable SEN proposition.",
+      "next_validation": "Agree ethics, safeguarding, data-governance and professional-authority boundaries with an eligible partner.",
+      "public_boundary": "The concept is non-diagnostic. It is not a contract, clinical validation, education partnership or authority to process child data.",
+      "source_links": [
+        {"label": "Explore the public route map", "href": "funding/#route-register"},
+        {"label": "Review human-authority controls", "href": "projects/#core"}
+      ]
+    },
+    {
+      "id": "maritime",
+      "lane": "sector-partner",
+      "name": "Maritime evidence and assurance",
+      "evidence_state": "Sector programme",
+      "buyer": "Maritime technology suppliers, ports, vessel operators and programme consortia",
+      "problem_or_use_case": "Create audit-ready evidence for compliance and project-delivery decisions in complex maritime supply chains.",
+      "shared_core": ["Source lineage", "Claim-state control", "Human review authority", "Retained decision receipt"],
+      "strategic_relevance": "Frames a reusable assurance proposition for fragmented evidence and accountability across complex maritime supply chains.",
+      "public_evidence_basis": "The public shared-core architecture establishes an assurance basis for a maritime proposition.",
+      "next_validation": "Secure an eligible maritime lead and define one asset-level evidence work package.",
+      "public_boundary": "The public thesis is not a claim of partnership, consortium appointment or funded activity.",
+      "source_links": [
+        {"label": "Explore strategic route themes", "href": "funding/"},
+        {"label": "Discuss a sector route", "href": "contact/?route=partner"}
+      ]
+    },
+    {
+      "id": "fintech-regtech",
+      "lane": "sector-partner",
+      "name": "Fintech, RegTech and cyber assurance",
+      "evidence_state": "Sector programme",
+      "buyer": "Fintech clusters, regulated SMEs and accountable-AI adoption teams",
+      "problem_or_use_case": "Connect compliance evidence, audit readiness and AI-governance decisions without hiding human accountability.",
+      "shared_core": ["Source lineage", "Claim-state control", "Human review authority", "Retained decision receipt"],
+      "strategic_relevance": "Frames how compliance evidence and accountable-AI controls could connect in regulated workflows where auditability is commercially decisive.",
+      "public_evidence_basis": "The public shared-core architecture establishes a governance basis for a regulated-workflow proposition.",
+      "next_validation": "Select one regulated workflow, agree the control standard and recruit a qualified design partner.",
+      "public_boundary": "A strategic proposition is not a commercial relationship, endorsement, customer outcome or funded project.",
+      "source_links": [
+        {"label": "Explore strategic route themes", "href": "funding/"},
+        {"label": "Discuss a sector route", "href": "contact/?route=partner"}
+      ]
+    },
+    {
+      "id": "pulse-cal",
+      "lane": "gated-deep-tech",
+      "name": "PULSE-CAL",
+      "evidence_state": "Open research hypothesis",
+      "buyer": "Earth-observation instrument teams, research laboratories and technology programmes",
+      "problem_or_use_case": "Test a reconfigurable plasma frequency-selective front end for calibration and interference discrimination in a representative microwave Earth-observation receiver chain.",
+      "shared_core": ["Source lineage", "Claim-state control", "Human review authority", "Retained decision receipt"],
+      "strategic_relevance": "Frames a differentiated Earth-observation option that could be advanced through explicit laboratory gates.",
+      "public_evidence_basis": "Public research records establish the attributable basis and proof boundaries for the PULSE-CAL proposition.",
+      "next_validation": "Complete calibrated S11/S21, switching-time, receiver-noise, repeatability, power and thermal tests against explicit controls.",
+      "public_boundary": "PULSE-CAL is the formal electro-optical materials and technology (EOMT) identity. It is neither flight hardware nor a mission-endorsed instrument, and no measured performance is claimed.",
+      "source_links": [
+        {"label": "Review the research boundary", "href": "research/"},
+        {"label": "Review the funding gate", "href": "funding/#route-register"}
+      ]
+    },
+    {
+      "id": "epas",
+      "lane": "gated-deep-tech",
+      "name": "EPAS mission assurance",
+      "evidence_state": "Open research hypothesis",
+      "buyer": "Space and defence innovation programmes, spacecraft-resilience teams and technical partners",
+      "problem_or_use_case": "Develop evidence-led spacecraft-resilience concepts through bounded breadboard and hardware-in-the-loop validation gates.",
+      "shared_core": ["Source lineage", "Claim-state control", "Human review authority", "Retained decision receipt"],
+      "strategic_relevance": "Provides a long-horizon mission-assurance option whose value depends on disciplined physical testing and independent technical authority.",
+      "public_evidence_basis": "Public research records establish the attributable basis and proof boundaries for the EPAS proposition.",
+      "next_validation": "Secure the relevant technical authority and execute the next laboratory or hardware-in-the-loop validation package.",
+      "public_boundary": "Research is not a defence contract, qualification, operational shield, mission endorsement or investment outcome.",
+      "source_links": [
+        {"label": "Review the research boundary", "href": "research/"},
+        {"label": "Explore the public route map", "href": "funding/#route-register"}
+      ]
+    }
+  ]
+}

@@ -1,29 +1,9 @@
 {
   "nodes": [
-    {"slug": "aioa-core", "group": "engineering"},
-    {"slug": "lsc-research", "group": "research"},
-    {"slug": "mhlm-mdlh", "group": "research"},
-    {"slug": "aureon-trading-system", "group": "partner"},
-    {"slug": "nexus-live-feed", "group": "partner"},
-    {"slug": "aqts", "group": "partner"},
-    {"slug": "aeds-environmental", "group": "lab"},
-    {"slug": "epas-shield", "group": "lab"},
-    {"slug": "hnc-framework", "group": "governance"},
-    {"slug": "ptms-memory", "group": "lab"},
-    {"slug": "ble-battery-optimization", "group": "lab"},
-    {"slug": "akasha-chronicles", "group": "archive"}
+    {
+      "slug": "aureon-trading-system",
+      "group": "platform"
+    }
   ],
-  "edges": [
-    {"from": "aioa-core", "to": "mhlm-mdlh", "label": "provenance"},
-    {"from": "aioa-core", "to": "lsc-research", "label": "case study"},
-    {"from": "aioa-core", "to": "hnc-framework", "label": "governance"},
-    {"from": "lsc-research", "to": "akasha-chronicles", "label": "archive"},
-    {"from": "mhlm-mdlh", "to": "ptms-memory", "label": "lineage"},
-    {"from": "aureon-trading-system", "to": "aqts", "label": "market systems"},
-    {"from": "aureon-trading-system", "to": "nexus-live-feed", "label": "data operations"},
-    {"from": "nexus-live-feed", "to": "aeds-environmental", "label": "monitoring"},
-    {"from": "aeds-environmental", "to": "ble-battery-optimization", "label": "measurement"},
-    {"from": "epas-shield", "to": "hnc-framework", "label": "review boundary"},
-    {"from": "ptms-memory", "to": "akasha-chronicles", "label": "preservation"}
-  ]
+  "edges": []
 }

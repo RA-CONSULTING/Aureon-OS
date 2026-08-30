@@ -1,0 +1,242 @@
+{
+  "authority_binding_valid": false,
+  "candidate_hash": "87d121383b7d07a0c2f1b04bd842bc17b4b3534570494d98938346b6c31160ce",
+  "cycle_id": "v45-19275eb4-20260821T014450Z",
+  "deployment_authority": "none",
+  "evidence_path": "artifacts/website-operator/cycle-evidence/v45-19275eb4-20260821T014450Z.json",
+  "receipt_sha256": "c16db39fcd95ee906967847bf82e5c7ca4bd6f536b0bf6fee90e76e13d8323c8",
+  "release_eligible": false,
+  "schema": "aureon.website-design-cycle-receipt.v1",
+  "stages": [
+    {
+      "capability_ids": [
+        "research_object_rendering",
+        "claim_state_linter",
+        "competitor_position_audit",
+        "content_inventory_connectors"
+      ],
+      "evidence_paths": [
+        "artifacts/website-operator/capability-evidence/research_object_rendering",
+        "artifacts/website-operator/capability-evidence/claim_state_linter",
+        "artifacts/website-operator/capability-evidence/competitor_position_audit",
+        "artifacts/website-operator/capability-evidence/content_inventory_connectors"
+      ],
+      "next_stage": "Route",
+      "ordinal": 1,
+      "outcome": "blocked",
+      "owner": "research_object",
+      "stage": "Sense"
+    },
+    {
+      "capability_ids": [
+        "information_architecture_routing",
+        "competitor_position_audit",
+        "content_inventory_connectors"
+      ],
+      "evidence_paths": [
+        "artifacts/website-operator/capability-evidence/information_architecture_routing",
+        "artifacts/website-operator/capability-evidence/competitor_position_audit",
+        "artifacts/website-operator/capability-evidence/content_inventory_connectors"
+      ],
+      "next_stage": "Constraint",
+      "ordinal": 2,
+      "outcome": "blocked",
+      "owner": "design_director",
+      "stage": "Route"
+    },
+    {
+      "capability_ids": [
+        "visual_identity_tokens",
+        "motion_interaction",
+        "information_architecture_routing",
+        "evidence_bound_copywriting",
+        "diagram_connectome_graphics",
+        "image_svg_generative_pipeline",
+        "claim_state_linter"
+      ],
+      "evidence_paths": [
+        "artifacts/website-operator/capability-evidence/visual_identity_tokens",
+        "artifacts/website-operator/capability-evidence/motion_interaction",
+        "artifacts/website-operator/capability-evidence/information_architecture_routing",
+        "artifacts/website-operator/capability-evidence/evidence_bound_copywriting",
+        "artifacts/website-operator/capability-evidence/diagram_connectome_graphics",
+        "artifacts/website-operator/capability-evidence/image_svg_generative_pipeline",
+        "artifacts/website-operator/capability-evidence/claim_state_linter"
+      ],
+      "next_stage": "Generate",
+      "ordinal": 3,
+      "outcome": "blocked",
+      "owner": "evidence_copy",
+      "stage": "Constraint"
+    },
+    {
+      "capability_ids": [
+        "visual_identity_tokens",
+        "layout_typography_grid",
+        "motion_interaction",
+        "evidence_bound_copywriting",
+        "research_object_rendering",
+        "diagram_connectome_graphics",
+        "image_svg_generative_pipeline"
+      ],
+      "evidence_paths": [
+        "artifacts/website-operator/capability-evidence/visual_identity_tokens",
+        "artifacts/website-operator/capability-evidence/layout_typography_grid",
+        "artifacts/website-operator/capability-evidence/motion_interaction",
+        "artifacts/website-operator/capability-evidence/evidence_bound_copywriting",
+        "artifacts/website-operator/capability-evidence/research_object_rendering",
+        "artifacts/website-operator/capability-evidence/diagram_connectome_graphics",
+        "artifacts/website-operator/capability-evidence/image_svg_generative_pipeline"
+      ],
+      "next_stage": "Test",
+      "ordinal": 4,
+      "outcome": "blocked",
+      "owner": "frontend_implementation",
+      "stage": "Generate"
+    },
+    {
+      "capability_ids": [
+        "layout_typography_grid",
+        "information_architecture_routing",
+        "research_object_rendering",
+        "diagram_connectome_graphics",
+        "image_svg_generative_pipeline",
+        "accessibility_reduced_motion",
+        "performance_core_web_vitals",
+        "claim_state_linter",
+        "design_qa_visual_regression"
+      ],
+      "evidence_paths": [
+        "artifacts/website-operator/capability-evidence/layout_typography_grid",
+        "artifacts/website-operator/capability-evidence/information_architecture_routing",
+        "artifacts/website-operator/capability-evidence/research_object_rendering",
+        "artifacts/website-operator/capability-evidence/diagram_connectome_graphics",
+        "artifacts/website-operator/capability-evidence/image_svg_generative_pipeline",
+        "artifacts/website-operator/capability-evidence/accessibility_reduced_motion",
+        "artifacts/website-operator/capability-evidence/performance_core_web_vitals",
+        "artifacts/website-operator/capability-evidence/claim_state_linter",
+        "artifacts/website-operator/capability-evidence/design_qa_visual_regression"
+      ],
+      "next_stage": "ResonanceCheck",
+      "ordinal": 5,
+      "outcome": "blocked",
+      "owner": "audit_benchmark",
+      "stage": "Test"
+    },
+    {
+      "capability_ids": [
+        "visual_identity_tokens",
+        "motion_interaction",
+        "evidence_bound_copywriting",
+        "competitor_position_audit",
+        "design_qa_visual_regression"
+      ],
+      "evidence_paths": [
+        "artifacts/website-operator/capability-evidence/visual_identity_tokens",
+        "artifacts/website-operator/capability-evidence/motion_interaction",
+        "artifacts/website-operator/capability-evidence/evidence_bound_copywriting",
+        "artifacts/website-operator/capability-evidence/competitor_position_audit",
+        "artifacts/website-operator/capability-evidence/design_qa_visual_regression"
+      ],
+      "next_stage": "Veto",
+      "ordinal": 6,
+      "outcome": "blocked",
+      "owner": "design_director",
+      "stage": "ResonanceCheck"
+    },
+    {
+      "capability_ids": [
+        "image_svg_generative_pipeline",
+        "accessibility_reduced_motion",
+        "performance_core_web_vitals",
+        "claim_state_linter",
+        "design_qa_visual_regression"
+      ],
+      "evidence_paths": [
+        "artifacts/website-operator/capability-evidence/image_svg_generative_pipeline",
+        "artifacts/website-operator/capability-evidence/accessibility_reduced_motion",
+        "artifacts/website-operator/capability-evidence/performance_core_web_vitals",
+        "artifacts/website-operator/capability-evidence/claim_state_linter",
+        "artifacts/website-operator/capability-evidence/design_qa_visual_regression"
+      ],
+      "next_stage": "AuthorityGate",
+      "ordinal": 7,
+      "outcome": "blocked",
+      "owner": "audit_benchmark",
+      "stage": "Veto"
+    },
+    {
+      "capability_ids": [
+        "homepl_deploy_cache_ssl_readback"
+      ],
+      "evidence_paths": [
+        "artifacts/website-operator/capability-evidence/homepl_deploy_cache_ssl_readback"
+      ],
+      "next_stage": "Deploy",
+      "ordinal": 8,
+      "outcome": "blocked-by-veto",
+      "owner": "ceo_owner_user",
+      "stage": "AuthorityGate"
+    },
+    {
+      "capability_ids": [
+        "homepl_deploy_cache_ssl_readback"
+      ],
+      "evidence_paths": [
+        "artifacts/website-operator/capability-evidence/homepl_deploy_cache_ssl_readback"
+      ],
+      "next_stage": "ReadBack",
+      "ordinal": 9,
+      "outcome": "blocked",
+      "owner": "homepl_deploy",
+      "stage": "Deploy"
+    },
+    {
+      "capability_ids": [
+        "homepl_deploy_cache_ssl_readback"
+      ],
+      "evidence_paths": [
+        "artifacts/website-operator/capability-evidence/homepl_deploy_cache_ssl_readback"
+      ],
+      "next_stage": "Ledger",
+      "ordinal": 10,
+      "outcome": "blocked",
+      "owner": "homepl_deploy",
+      "stage": "ReadBack"
+    },
+    {
+      "capability_ids": [
+        "homepl_deploy_cache_ssl_readback",
+        "design_qa_visual_regression",
+        "content_inventory_connectors"
+      ],
+      "evidence_paths": [
+        "artifacts/website-operator/capability-evidence/homepl_deploy_cache_ssl_readback",
+        "artifacts/website-operator/capability-evidence/design_qa_visual_regression",
+        "artifacts/website-operator/capability-evidence/content_inventory_connectors"
+      ],
+      "next_stage": "Expand",
+      "ordinal": 11,
+      "outcome": "immutable-in-memory-receipt-prepared",
+      "owner": "audit_benchmark",
+      "stage": "Ledger"
+    },
+    {
+      "capability_ids": [
+        "content_inventory_connectors"
+      ],
+      "evidence_paths": [
+        "artifacts/website-operator/capability-evidence/content_inventory_connectors"
+      ],
+      "next_stage": "Sense",
+      "ordinal": 12,
+      "outcome": "blocked",
+      "owner": "skill_writer",
+      "stage": "Expand"
+    }
+  ],
+  "state": "vetoed",
+  "target": "homepl:aureonzorzatechnologies.pl",
+  "veto_active": true,
+  "write_performed": false
+}

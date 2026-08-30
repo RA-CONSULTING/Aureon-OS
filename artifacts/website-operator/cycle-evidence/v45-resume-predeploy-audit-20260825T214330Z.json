@@ -1,0 +1,55 @@
+{
+  "schema": "aureon.website-resume-predeploy-audit.v1",
+  "captured_at": "2026-08-25T21:43:30Z",
+  "target": "https://aureonzorzatechnologies.pl/",
+  "state": "awaiting-named-human-homepl-login",
+  "deployment_performed": false,
+  "publication_complete": false,
+  "candidate": {
+    "source_commit": "5e099dc2735c5478704c6fcbed1dc626e6049828",
+    "archive": "artifacts/website-releases/v45-5e099dc2-20260821T021809Z/aureon-zorza-website.zip",
+    "archive_bytes": 2617662,
+    "archive_sha256": "a8d3a663a1b8d3a310af0ef01e9587234f35aaf7bba491ae3e8749655467b6db",
+    "package_files": 90,
+    "file_hash_manifest_sha256": "49f23e30540a93fab49fdaf031b61bb8454af2b23f25878b194e2624b426f1eb",
+    "exact_local_readback_passed": true
+  },
+  "validation": {
+    "pytest_passed": 68,
+    "pytest_failed": 0,
+    "ruff_check_passed": true,
+    "ruff_format_check_passed": true,
+    "strict_mypy_passed": true,
+    "site_audit_errors": 0,
+    "site_audit_warnings": 0
+  },
+  "public_readback": {
+    "method": "credential-free-https-get",
+    "routes_checked": 8,
+    "candidate_exact_matches": 0,
+    "v45_only_routes_present": 0,
+    "homepage_status": 200,
+    "homepage_last_modified": "2026-07-26T19:03:56Z",
+    "aureon_os_route_status": 404,
+    "public_attention_snapshot_status": 404,
+    "conclusion": "The live domain remains the July mixed-era surface; V45 is not published."
+  },
+  "provider_freshness": {
+    "github_snapshot_retained_as_of": "2026-08-21",
+    "orcid_snapshot_retained_groups": 74,
+    "fresh_provider_api_response_obtained": false,
+    "policy": "Retain the last verified values until a fresh official response succeeds; do not invent or infer drift."
+  },
+  "homepl": {
+    "browser_control_available": true,
+    "surface": "codex-in-app-browser",
+    "panel_open": true,
+    "authenticated": false,
+    "credentials_recorded": false,
+    "process_ftps_variables_present": false,
+    "fresh_served_root_backup_present": false,
+    "exact_served_root_bound": false,
+    "human_action_required": "Complete Home.pl login in the visible browser without sending credentials to the operator."
+  },
+  "next_gate": "After authenticated panel read-back: identify the exact website service and served root, take a fresh recursive backup, then request action-time confirmation bound to the candidate SHA-256 before public mutation."
+}

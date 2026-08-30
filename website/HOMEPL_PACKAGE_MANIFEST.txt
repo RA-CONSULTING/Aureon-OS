@@ -1,48 +1,34 @@
-PACKAGE_NAME: paczka Home.pl website Gary Luciferson
-ARCHIVE_NAME: paczka Home.pl website Gary Luciferson.zip
-CREATED_AT: 2026-07-12T17:48:21+02:00
-SOURCE_REPOSITORY: luciferprosun/RA-Consulting
-SOURCE_COMMIT: f21fbdbca1d2eb26f2080f3c2f26733ac9d93794
-HOSTING_MODEL: static files served directly from document root
-TOTAL_FILE_COUNT: 000109
-TOTAL_UNCOMPRESSED_BYTES: 000006834037
-ZIP_SIZE_BYTES: SEE_DESKTOP_COMPANION_MANIFEST
-ZIP_SHA256: SEE_DESKTOP_COMPANION_MANIFEST
-INDEX_HTML_AT_PACKAGE_ROOT: YES
-ZIP_ROOT_WRAPPER_DIRECTORY: NO
-HTACCESS_REQUIRED: NO
+STATUS: RETIRED_NON_DEPLOYABLE_SOURCE_RECORD
+RETIRED_AT: 2026-08-21
+PUBLICATION_AUTHORITY: NONE
+DO_NOT_UPLOAD_THIS_FILE: YES
+ARCHIVE_PUBLICATION: FORBIDDEN
+CURRENT_MANIFEST_SOURCE: scripts/website/build_package.py generates HOMEPL_PACKAGE_MANIFEST.txt inside each audited package.
+CURRENT_PACKAGE_POLICY: Use only the generated manifest bound to the exact package and companion ZIP SHA-256; source-tree entry lists are not publication instructions.
+SECURITY_BOUNDARY: The package builder excludes archive working surfaces and recognised secret-bearing names, directories, and suffixes.
+OWNER_GATE: A generated package and passing build do not grant deployment authority; current exact owner approval, backup, deployment receipt, and live read-back remain required.
 
-MAIN_ROOT_ENTRIES:
-- index.html
-- styles.css
-- script.js
-- robots.txt
-- sitemap.xml
-- assets/
-- data/
-- projects/
-- updates/
-- contact/
-- about/
-- vision/
-- publications/
-- archive/
-- research/
-- downloads/
-- HOMEPL_UPLOAD_README.md
-- CHANGES.md
-- HOMEPL_PACKAGE_MANIFEST.txt
-
-EXCLUDED_DEVELOPMENT_OR_SOURCE_MATERIAL:
-- .git, .github, node_modules, caches, environment files and credentials
-- scripts/, tools/, docs/ and repository audit/change documents
-- Playwright output, screenshots and local QA artifacts
-- unused internal JSON registries
-- raw bee source JPEG masters
-- unused superseded WebP/SVG visual variants
-- source ZIP archives and temporary files
-
-NOTE:
-The final ZIP checksum cannot be embedded inside the ZIP without changing the
-archive being checksummed. The authoritative ZIP size and SHA-256 are recorded
-in HOMEPL_PACKAGE_MANIFEST.txt placed beside the ZIP on the Desktop.
+HISTORICAL_RELEASE_RECORDS_BELOW_NON_AUTHORITATIVE:
+- The build script creates a timestamped ZIP and prints its SHA-256 beside the package.
+- The full server backup and deployment receipt are retained outside this source folder in the owner-controlled recovery output folder.
+- Current V13 release candidate: `aureon-homepl-20260722-004454.zip`, 114 files, SHA-256 `B86EAB2C9D8C7873376E77502E63C7082F0FFA7F54DB74E80A7711F2CB362ED7`.
+- V13 adds the four-lens investor diligence journey and corrects the AIRR Cloud Pilot to provider-confirmed submission while preserving the no-award and no-traction boundary.
+- V13 was published to `/public_html` on 22 July 2026 after creating protected recovery archive `aureon-live-pre-v13-20260722-005333.zip`; final manifest read-back succeeded for all 114 entries and the temporary upload was removed.
+- Current V14 release candidate: `aureon-homepl-20260722-011455.zip`, 114 files, 13,277,682 bytes, SHA-256 `26F69E37F6DA190C8B8E2D59737F3E4D84C4C219BDFEA441E4AA18EC5838D559`.
+- V14 adds the interactive five-stage homepage evidence control path, improves keyboard and mobile behavior, and corrects public company-control wording and dated Companies House follow-ups without increasing maturity, customer, revenue, certification or deployment claims.
+- V14 was published to `/public_html` on 22 July 2026 after creating protected recovery archive `aureon-live-pre-v14-20260722-011902.zip`; Home.pl reported 114 copied files and zero errors, the public read-back passed all 114 manifest entries, and the temporary upload was removed.
+- Current V15 release candidate: `aureon-homepl-20260722-013632.zip`, 114 files, 13,285,036 bytes, SHA-256 `4B52AF012CD252669C3B78417F45968C311F4E8AF73F07AC3A9282E9573A8011`.
+- V15 replaces the generated Platform detail with a static, search-visible product architecture, accessible four-layer control plane, operating contract, direct public-inspection route and explicit validation sequence while preserving the no-deployment, no-adoption, no-performance and no-independent-validation boundary.
+- V15 was published to `/public_html` on 22 July 2026 after creating protected recovery archive `aureon-live-pre-v15-20260722-014024.zip`; Home.pl reported 114 copied files and zero errors, the public read-back passed all 114 manifest entries, the live four-layer Platform interaction passed, and the temporary upload was removed.
+- Current V16 release candidate: `aureon-homepl-20260722-020810.zip`, 114 files, 13,290,583 bytes, SHA-256 `D16D5F95A8A187577FF86800C48CF0314052449A03AEE03C437524ABCFE24208`.
+- V16 rebuilds Research around an interactive four-stage proof path, adds programme-identity controls, corrects the research register to 13 unique records and corrects the public Evidence room to 17 unique records while preserving the no-independent-validation, no-performance and no-endorsement boundary.
+- V16 was published to `/public_html` on 22 July 2026 after creating protected recovery archive `aureon-live-pre-v16-20260722-021233.zip`; Home.pl reported 114 copied files and zero errors, the public read-back passed all 114 manifest entries, all 15 indexable routes exposed the V16 cache key, the live Research interaction passed, and the temporary upload was removed.
+- Current V17 release: `aureon-homepl-20260722-025424.zip`, 114 files, 13,296,395 bytes, SHA-256 `A1C190C0EE2BBE8AC977CC5C75FC6ABBB9D9F3DFC548BC972CA9D7981D7775E6`.
+- V17 rebuilds the Harmonic Nexus Journal as a searchable Research Note Observatory with a question/source/test/record reading model, six evidence-aware themes, 24 verified public links and a visible distinction between 23 archive-listed entries and one direct public note.
+- V17 was published to `/public_html` on 22 July 2026 after creating protected recovery archive `aureon-live-pre-v17-20260722-025022.zip`; Home.pl reported 114 copied files and zero extraction errors, the public read-back passed all 114 manifest entries, all 15 indexable routes returned HTTP 200, the live search and theme controls passed, and the temporary upload was removed.
+- Current V25 final release: `aureon-homepl-20260725-092715.zip`, 116 files, SHA-256 `896AF52A1C44E6362CFFD53BA19C87C2299FE5184A00A431A6DC99614917B99B`.
+- V25 reflects Gary Leckey's updated ORCID research profile, reconciles 74 public ORCID work groups with 73 current Zenodo records, expands the selected Evidence register to 18 records, adds the dated research-catalogue snapshot and V25 social image, and corrects the AIRR and investor-evidence boundaries.
+- V25 was published to `/public_html` on 25 July 2026 after creating protected recovery archive `aureon-live-pre-v25-25072026091309.zip` (263,828,085 bytes). Public read-back returned HTTP 200 for all 116 release paths; 89 matched the manifest byte for byte and 27 matched exactly after Home.pl's text-mode CRLF-to-LF normalisation.
+- Current V27 final release: `aureon-homepl-20260726-031224.zip`, 151 files, 16,977,926 bytes, SHA-256 `13FD3F8B65333535E70E51A232C516A8F0F37D7B8CCE8CC0377F231C2A9BE0C0`.
+- V27 rebuilds the public site as an institutional research publisher and evidence-system company: 74 ORCID work groups, 73 current Zenodo records, 34 public Substack research notes, six exact article-art mappings, seven research themes, and an explicit zero-independent-validation boundary.
+- V27 was published to `/public_html` on 26 July 2026 after creating and size-verifying protected server-side clone `/aureon-live-pre-v27-20260726-024714` (312,203,193 bytes). Home.pl reported 151 copied files and no errors; all primary decision routes returned the V27 cache key, selected production files matched local SHA-256 byte for byte, HTTPS/security/cache controls and nested-path 404 handling passed, and the temporary upload archive was removed.

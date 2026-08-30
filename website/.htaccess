@@ -1,0 +1,72 @@
+# Aureon public-site controls. Optional Apache features are guarded so a
+# missing provider module does not take the site offline.
+
+DirectoryIndex index.html
+ErrorDocument 404 /404.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Retire the historic product-specific slug in favour of the canonical platform record.
+  RewriteRule ^projects/aureon-trading-system/?$ https://aureonzorzatechnologies.pl/projects/aureon-os/ [R=301,L,NE]
+
+  # Server-side recovery material and release archives are never public.
+  RewriteRule ^(?:styleguide\.html(?:/|$)|archive(?:/|$)) - [R=404,L,NC]
+  RewriteRule ^(?:backup|public_html)(?:/|$) - [R=404,L,NC]
+  RewriteRule \.(?:zip|bak|log|sql|env|ini|md|ps1|sh)$ - [R=404,L,NC]
+
+  # Preserve path and query while enforcing TLS, including proxy-aware hosting.
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+  RewriteRule ^ https://aureonzorzatechnologies.pl%{REQUEST_URI} [R=301,L,NE]
+
+  # One public hostname prevents duplicate company and research records.
+  RewriteCond %{HTTP_HOST} !^aureonzorzatechnologies\.pl$ [NC]
+  RewriteRule ^ https://aureonzorzatechnologies.pl%{REQUEST_URI} [R=301,L,NE]
+</IfModule>
+
+<IfModule mod_deflate.c>
+  <IfModule mod_filter.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/csv
+    AddOutputFilterByType DEFLATE application/javascript application/json application/ld+json
+    AddOutputFilterByType DEFLATE application/xml image/svg+xml
+  </IfModule>
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/avif "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://api.github.com https://api.open-meteo.com https://earthquake.usgs.gov; manifest-src 'self'; upgrade-insecure-requests"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), geolocation=(), microphone=(), payment=(), usb=(), browsing-topics=()"
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+  Header always set Cross-Origin-Resource-Policy "same-origin"
+
+  <FilesMatch "\.(?:html?)$">
+    Header always set Cache-Control "no-cache, no-store, must-revalidate"
+    Header always set Pragma "no-cache"
+    Header always set Expires "0"
+  </FilesMatch>
+
+  <FilesMatch "\.(?:css|js|avif|webp|png|jpe?g|svg|woff2)$">
+    Header always set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  <FilesMatch "\.(?:json|xml|txt)$">
+    Header always set Cache-Control "public, max-age=3600, must-revalidate"
+  </FilesMatch>
+</IfModule>

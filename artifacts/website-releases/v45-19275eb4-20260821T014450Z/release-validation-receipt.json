@@ -1,0 +1,142 @@
+{
+  "schema": "aureon.website-release-validation.v1",
+  "created_at": "2026-08-21T01:44:50Z",
+  "release_id": "v45-19275eb4-20260821T014450Z",
+  "target": "https://aureonzorzatechnologies.pl/",
+  "state": "blocked-before-production",
+  "production_eligible": false,
+  "deployment_performed": false,
+  "homepl_live_readback_passed": false,
+  "source": {
+    "repository": "RA-CONSULTING/Aureon-OS",
+    "branch": "website/v45-investor-rebuild-20260820",
+    "commit": "19275eb48ffa706c6dadd87a02f56bbf86776fd8",
+    "remote_branch_readback_match": true,
+    "website_tree_clean_at_build": true
+  },
+  "candidate": {
+    "archive": "artifacts/website-releases/v45-19275eb4-20260821T014450Z/aureon-zorza-website.zip",
+    "archive_bytes": 2617666,
+    "archive_sha256": "87d121383b7d07a0c2f1b04bd842bc17b4b3534570494d98938346b6c31160ce",
+    "package_file_count": 90,
+    "package_uncompressed_bytes": 3494147,
+    "file_hash_record_count": 89,
+    "file_hash_manifest_sha256": "ece109ff97f47b870dcc5a5e0840c9c976d6450dda549c00058b2c0f5ed2e6f8",
+    "deterministic_rebuild_sha256_match": true,
+    "exact_directory_rebuild_readback_passed": true,
+    "archive_excludes_private_evidence": true,
+    "archive_excludes_working_archive_and_styleguide": true,
+    "archive_secret_suffix_scan_passed": true
+  },
+  "validation": {
+    "pytest": {
+      "passed": 63,
+      "failed": 0,
+      "files": [
+        "tests/test_website_tooling.py",
+        "tests/test_website_design_capability_set.py",
+        "tests/test_website_design_capability_implementations.py"
+      ]
+    },
+    "ruff_check_passed": true,
+    "ruff_format_check_passed": true,
+    "strict_mypy_source_files": 22,
+    "strict_mypy_passed": true,
+    "site_audit_errors": 0,
+    "site_audit_warnings": 0,
+    "javascript_syntax_files": 3,
+    "javascript_syntax_passed": true,
+    "json_xml_svg_parse_passed": true,
+    "git_diff_check_passed": true
+  },
+  "content": {
+    "coverage_receipt": "artifacts/website-operator/capability-evidence/content_source_inventory/v45-content-source-coverage-20260821.json",
+    "coverage_receipt_sha256": "ede34878e4b5fb60819f55782d54fe8c9fcc8dca2383a003c0fab64dc97aa1d5",
+    "claim_binding_gaps": 0,
+    "approved_but_hidden": 0,
+    "github_snapshot_as_of": "2026-08-21",
+    "substack_families_approved": 6,
+    "substack_current_placements_approved": 15,
+    "unmapped_images_blocked": 1,
+    "internal_financial_figures_published": false,
+    "content_gate": "pass"
+  },
+  "browser_evidence": {
+    "scope": "local-preview-only-not-homepl-live",
+    "run_id": "v45-final-local-browser-20260821T011720Z",
+    "final_evidence_sha256": "235d0aae648a6ad46ec2cbcedb255f0502fa7ac58fa49be1372c67e958720fc7",
+    "visual_manifest_sha256": "69cd7d228bbb6324c52a8e974559bda39a5379b62878240085bb8814dde61bfc",
+    "performance_input_sha256": "ffb3966b49df1da882634e8a368e764d874ec639e30bb2d229c22cc308914804",
+    "visual_cases": 8,
+    "visual_regressions": 0,
+    "document_horizontal_overflow_cases": 0,
+    "reduced_motion_active_animation_cases": 0,
+    "no_javascript_routes_with_visible_main_content": 4,
+    "median_lcp_ms_min": 252,
+    "median_lcp_ms_max": 564,
+    "maximum_median_cls": 0.015640679285934135,
+    "field_inp": "unavailable",
+    "synthetic_keyboard_latency_mislabeled_as_inp": false
+  },
+  "competitor_positioning": {
+    "brief": "docs/audits/AUREON_WEBSITE_COMPETITOR_DESIGN_BRIEF_20260821.md",
+    "brief_sha256": "7d99b6a0ab26c0ec0cf58a61bf64438135d4239288e472f4e5efd7a881f07366",
+    "fixture_sha256": "3e62952135616012604457c85cc4305f521ec1af3765142d3812333e6a6e7d08",
+    "official_primary_sources": 7,
+    "copy_instruction": "positioning-only-do-not-copy"
+  },
+  "hnc_cycle": {
+    "schema": "aureon.website-design-cycle-receipt.v1",
+    "cycle_id": "v45-19275eb4-20260821T014450Z",
+    "candidate_hash": "87d121383b7d07a0c2f1b04bd842bc17b4b3534570494d98938346b6c31160ce",
+    "target": "homepl:aureonzorzatechnologies.pl",
+    "state": "vetoed",
+    "veto_active": true,
+    "authority_binding_valid": false,
+    "receipt_sha256": "c16db39fcd95ee906967847bf82e5c7ca4bd6f536b0bf6fee90e76e13d8323c8",
+    "receipt_file_sha256": "29bb551c2f068aa327ebefbce08e0554508b30f1c36eee6c432c0ebd20e693a1",
+    "registered_capabilities": 15,
+    "registry_version": "2.0.0",
+    "closed_loop_stages": 12,
+    "deployment_authority": "none",
+    "write_performed": false
+  },
+  "blocking_gates": [
+    {
+      "code": "fresh-homepl-backup-missing",
+      "owner": "homepl_deploy",
+      "required": "Fresh recursive served-root backup with producer-bound manifest and non-zero exact readback"
+    },
+    {
+      "code": "homepl-protocol-unverified",
+      "owner": "homepl_deploy",
+      "required": "Reconfirm the authenticated served root and implicit FTPS 990 or use the named Home.pl provider gate; do not guess protocol or root"
+    },
+    {
+      "code": "chrome-control-unavailable",
+      "owner": "ceo_owner_user",
+      "required": "Update or reinstall the Codex Chrome plugin so the signed-in Home.pl tab can be controlled and read back"
+    },
+    {
+      "code": "exact-candidate-authority-unbound",
+      "owner": "ceo_owner_user",
+      "required": "Bind action-time approval to archive SHA-256 87d121383b7d07a0c2f1b04bd842bc17b4b3534570494d98938346b6c31160ce and the verified Home.pl served root"
+    },
+    {
+      "code": "live-readback-missing",
+      "owner": "homepl_deploy",
+      "required": "Exact 90-file remote/public readback plus TLS, cache, critical-route, redirect, 404 and security checks"
+    },
+    {
+      "code": "field-inp-unavailable",
+      "owner": "audit_benchmark",
+      "required": "Collect and label representative live interaction evidence without substituting synthetic keyboard timing for field INP"
+    }
+  ],
+  "private_data": {
+    "credentials_recorded": false,
+    "gmail_message_ids_recorded": false,
+    "private_drive_links_recorded": false,
+    "private_evidence_packaged": false
+  }
+}
